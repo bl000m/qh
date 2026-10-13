@@ -1,0 +1,23 @@
+from dataclasses import dataclass
+from enum import Enum
+
+from app.core.models import ContextId, SubjectId
+
+
+class PolicyAction(str, Enum):
+    READ_CONTEXT = "read_context"
+    PROJECT_CONTEXT = "project_context"
+    CHAT = "chat"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class PolicyRequest:
+    subject_id: SubjectId
+    action: PolicyAction
+    context_ids: tuple[ContextId, ...] = ()
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class PolicyDecision:
+    allowed: bool
+    reason: str | None = None

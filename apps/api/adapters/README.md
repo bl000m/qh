@@ -1,9 +1,15 @@
 # Backend adapters
 
-The future GraphitiAdapter lives in this Python backend, not in a separate
-container or TypeScript package. Graphiti is a Python library dependency of
-this adapter. Its port and implementation are deferred to the relevant tickets.
+`context/` reserves the location for implementations of
+`app.core.ports.ContextEngine`, including the future Graphiti adapter.
+`llm/` reserves implementations of `app.core.ports.LLMProvider`.
 
-Adapters will depend on QH Core contracts. Core must never import adapters,
-FastAPI, Graphiti, MCP or LLM provider SDKs. No Graphiti dependency or dummy
-adapter is installed by this scaffold.
+Both namespaces are deliberately empty of concrete adapters. Their future
+implementations accept configuration/clients through explicit constructors and
+translate SDK requests/results into QH domain values. SDK objects and exceptions
+must not leak into port signatures. Never import these modules from Core.
+
+Graphiti will be a Python library in this backend, not a separate container or
+TypeScript package. No Graphiti/provider dependency, dummy production adapter,
+policy rule or application behavior is installed by QH-2. FastAPI's inbound
+adapter lives in `app/api`; the independent MCP service owns its transport.
