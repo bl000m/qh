@@ -49,3 +49,15 @@ lock-python:
 	$(COMPOSE) build backend
 	$(COMPOSE) run --rm --no-deps -v "$(CURDIR):/workspace" -w /workspace backend uv pip compile apps/api/pyproject.toml --extra dev --python-version 3.12 --universal --generate-hashes --only-binary :all: --output-file apps/api/requirements.lock
 	$(COMPOSE) run --rm --no-deps -v "$(CURDIR):/workspace" -w /workspace backend uv pip compile services/mcp-server/pyproject.toml --extra dev --python-version 3.12 --universal --generate-hashes --only-binary :all: --output-file services/mcp-server/requirements.lock
+
+.PHONY: oidc-up oidc-stop test-oidc seed-oidc-demo
+oidc-up:
+	python3 scripts/init_oidc_env.py
+	$(COMPOSE) --profile oidc up --build -d --wait --wait-timeout 300
+	python3 scripts/configure_keycloak.py
+oidc-stop:
+	$(COMPOSE) --profile oidc stop keycloak
+test-oidc:
+	python3 scripts/verify_oidc.py
+seed-oidc-demo:
+	$(COMPOSE) exec -T backend python -m adapters.postgres.demo_identities

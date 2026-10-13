@@ -3,6 +3,9 @@
 from uuid import UUID
 
 import psycopg
+import os
+
+from adapters.postgres.config import database_url
 
 # QH IDs are independent from the fixed IdP subjects in the imported demo realm.
 DEMO_IDENTITIES = (
@@ -25,3 +28,20 @@ def provision_demo(connection: psycopg.Connection, *, issuer: str) -> None:
             ).fetchone()
             if row[0] != user_id:
                 raise ValueError("Existing external identity cannot be rebound")
+
+
+def main() -> None:
+    url = database_url()
+    if url.host != "postgres" or url.database != "qh":
+        raise SystemExit("Only the local QH development database may be provisioned.")
+    with psycopg.connect(host=url.host, port=url.port, dbname=url.database,
+                        user=url.username, password=url.password, connect_timeout=5) as connection:
+        revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
+        if revision != ("0002_oidc_identities",):
+            raise SystemExit("QH-5 migration must be approved and applied before provisioning.")
+        provision_demo(connection, issuer=os.environ["OIDC_ISSUER"])
+    print("Two local QH demo identities provisioned idempotently; no Context Spaces created.")
+
+
+if __name__ == "__main__":
+    main()

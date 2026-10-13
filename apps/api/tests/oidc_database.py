@@ -26,7 +26,7 @@ def isolated_database():
     name = "qh5_test_" + uuid4().hex
     with connect() as application:
         before = application.execute("SELECT version_num FROM alembic_version").fetchall()
-        assert before == [("0001_qh_schema",)], "Unexpected application revision: stop"
+        assert before in ([("0001_qh_schema",)], [("0002_oidc_identities",)]), "Unexpected application revision: stop"
         before_users = application.execute("SELECT count(*) FROM users").fetchone()
     with connect() as admin:
         admin.autocommit = True

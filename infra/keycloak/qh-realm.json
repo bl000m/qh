@@ -1,0 +1,123 @@
+{
+  "realm": "qh",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "qh-user"
+      }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "qh:api",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "QH API audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "qh-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "Subject",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "Realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "multivalued": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "qh-api",
+      "protocol": "openid-connect",
+      "bearerOnly": true
+    },
+    {
+      "clientId": "qh-web",
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:${FRONTEND_PORT}/oidc/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:${FRONTEND_PORT}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": [
+        "qh:api"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "2e381a22-b8e0-44d7-928b-52d6549da101",
+      "username": "alice",
+      "firstName": "Alice",
+      "lastName": "Demo",
+      "email": "alice@example.invalid",
+      "emailVerified": true,
+      "enabled": true,
+      "realmRoles": [
+        "qh-user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${QH_ALICE_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "2e381a22-b8e0-44d7-928b-52d6549da102",
+      "username": "bob",
+      "firstName": "Bob",
+      "lastName": "Demo",
+      "email": "bob@example.invalid",
+      "emailVerified": true,
+      "enabled": true,
+      "realmRoles": [
+        "qh-user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${QH_BOB_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

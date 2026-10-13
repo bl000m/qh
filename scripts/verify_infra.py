@@ -59,16 +59,18 @@ def run(argv: list[str], label: str, timeout: int = 40) -> str:
 
 def inspect_services(docker: str, compose: list[str]) -> dict:
     ids = run(compose + ["ps", "--all", "--quiet"], "Compose container listing").split()
-    require(len(ids) == 5, "Expected exactly five existing Compose containers")
+    require(len(ids) in (5, 6), "Expected five base containers and optional Keycloak")
     entries = json.loads(run([docker, "inspect", *ids], "Container inspection"))
     services = {}
     for entry in entries:
         name = entry["Config"]["Labels"]["com.docker.compose.service"]
+        if name == "keycloak" and entry["State"]["Status"] == "exited":
+            continue  # A stopped optional profile must not break base checks.
         require(name not in services, "Duplicate Compose service")
         require(entry["State"]["Status"] == "running", f"{name} is not running")
         require(entry["State"].get("Health", {}).get("Status") == "healthy", f"{name} is not healthy")
         services[name] = entry
-    require(set(services) == EXPECTED, "Unexpected Compose service set")
+    require(set(services) in (EXPECTED, EXPECTED | {"keycloak"}), "Unexpected Compose service set")
     return services
 
 
@@ -82,6 +84,10 @@ def verify_topology(docker: str, services: dict) -> list[list]:
     require(app != data, "App and data networks must be separate")
     require(networks["mcp"] == {app}, "MCP must join only the app network")
     require(networks["backend"] == {app, data}, "Backend must join app and data networks")
+    if "keycloak" in services:
+        require(networks["keycloak"] == {app}, "Keycloak must not join the data network")
+        require(any(m["Type"] == "volume" and m["Destination"] == "/opt/keycloak/data"
+                    for m in services["keycloak"]["Mounts"]), "Keycloak requires persistent storage")
     metadata = json.loads(run([docker, "network", "inspect", data], "Data network inspection"))
     require(metadata[0]["Internal"] is True, "Data network is not internal")
     projects = {info["Config"]["Labels"]["com.docker.compose.project"] for info in services.values()}
@@ -97,7 +103,7 @@ def verify_topology(docker: str, services: dict) -> list[list]:
             require(any(m["Type"] == "volume" and m["Destination"] == destination
                         and m["Name"] == f"{project}_{volume}" for m in info["Mounts"]),
                     f"{name} is missing named persistent storage at {destination}")
-    for name in ("frontend", "backend", "mcp"):
+    for name in ({"frontend", "backend", "mcp"} | ({"keycloak"} if "keycloak" in services else set())):
         bindings = services[name]["HostConfig"].get("PortBindings") or {}
         require(bool(bindings), f"{name} has no published application port")
         require(all(binding["HostIp"] == "127.0.0.1"
@@ -170,7 +176,8 @@ def main() -> None:
     compose = [args.docker_cli, "compose", "--env-file", ".env", "-f", "infra/docker/docker-compose.yml"]
     services = inspect_services(args.docker_cli, compose)
     targets = verify_topology(args.docker_cli, services)
-    print("PASS: five healthy services, internal DB network, named volumes and loopback app ports")
+    print("PASS: five healthy base services" + (" + optional Keycloak" if "keycloak" in services else "")
+          + ", internal DB network, named volumes and loopback app ports")
     verify_connections(compose, targets)
     if args.persistence:
         verify_persistence(args.docker_cli, compose, services)

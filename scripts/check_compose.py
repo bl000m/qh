@@ -12,20 +12,33 @@ import subprocess
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compose-cli", help="Optional standalone Compose executable")
+    parser.add_argument("--oidc", action="store_true", help="Also validate optional Keycloak profile")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     command = [args.compose_cli] if args.compose_cli else ["docker", "compose"]
     command += [
         "--env-file", ".env", "-f", "infra/docker/docker-compose.yml",
-        "config", "--format", "json",
     ]
+    if args.oidc:
+        command += ["--profile", "oidc"]
+    command += ["config", "--format", "json"]
     # Capture configuration in memory: resolved environment contains credentials.
     result = subprocess.run(command, cwd=root, capture_output=True, text=True)
     if result.returncode:
         raise SystemExit("FAIL: Compose config could not be resolved; run make config locally.")
     config = json.loads(result.stdout)
     services = config["services"]
-    assert set(services) == {"frontend", "backend", "mcp", "neo4j", "postgres"}
+    expected = {"frontend", "backend", "mcp", "neo4j", "postgres"}
+    assert set(services) == expected | ({"keycloak"} if args.oidc else set())
+    if args.oidc:
+        idp = services["keycloak"]
+        assert idp["profiles"] == ["oidc"]
+        assert set(idp["networks"]) == {"app"}
+        assert all(port["host_ip"] == "127.0.0.1" for port in idp["ports"])
+        assert any(m["type"] == "volume" and m["target"] == "/opt/keycloak/data" for m in idp["volumes"])
+        assert all(idp["environment"].get(key) for key in
+                   ("KC_BOOTSTRAP_ADMIN_PASSWORD", "QH_ALICE_PASSWORD", "QH_BOB_PASSWORD"))
+        print("PASS: optional Keycloak profile, app-only network, loopback port, persistent IdP volume")
     assert config["networks"]["data"]["internal"] is True
     for name in ("neo4j", "postgres"):
         service = services[name]
