@@ -1,0 +1,23 @@
+[project]
+name = "qh-api"
+version = "0.1.0"
+description = "QH API backend"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi==0.116.1",
+  "pydantic==2.11.7",
+  "uvicorn==0.35.0",
+  "watchfiles==1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.4.1",
+  "httpx==0.28.1",
+  "psycopg[binary]==3.2.9",
+  "neo4j==5.28.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

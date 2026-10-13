@@ -1,0 +1,21 @@
+{
+  "name": "qh-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "docker compose --env-file .env -f infra/docker/docker-compose.yml up frontend",
+    "build:web": "npm run build --workspace apps/web",
+    "dev:api": "docker compose --env-file .env -f infra/docker/docker-compose.yml up backend",
+    "dev:mcp": "docker compose --env-file .env -f infra/docker/docker-compose.yml up mcp",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22.14.0 <25",
+    "npm": ">=10.0.0 <12"
+  }
+}

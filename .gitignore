@@ -1,0 +1,65 @@
+# Node
+node_modules/
+.npm/
+.vite/
+
+# Build
+**/dist/
+**/.next/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.tsbuildinfo
+
+# Local credentials and private keys
+secrets/
+.secrets/
+.aws/
+.ssh/
+credentials.json
+credentials.*.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+
+# Local database files, dumps and bind-mounted storage
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.dump
+*.backup
+/data/
+/infra/docker/data/
+/infra/docker/volumes/
+pgdata/
+neo4j-data/
+neo4j-logs/
+
+# Temporary files and test output
+/tmp/
+.cache/
+*.tmp
+*.swp
+*.swo
+.coverage
+htmlcov/
