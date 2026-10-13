@@ -10,7 +10,7 @@ def create_app(*, services: ApplicationServices | None = None,
                security: SecurityBindings | None = None) -> FastAPI:
     """Compose the HTTP adapter with explicitly supplied application services.
 
-    The health-only scaffold runs without business services. Future business
+    Health runs without business services; unbound authentication fails closed. Future business
     routes must require explicit bindings rather than silently installing fake
     or concrete adapters. This factory does not create any outbound adapter.
     """

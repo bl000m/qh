@@ -4,7 +4,7 @@ Local sovereign context platform scaffold: React + TypeScript + Vite frontend,
 Python + FastAPI backend, independent Python MCP adapter, Neo4j Community and
 PostgreSQL. Graphiti will be a replaceable Python adapter inside the backend.
 QH-2 defines domain/application contracts and explicit service bindings;
-concrete adapters and application features belong to later tickets. See
+QH-5 adds OIDC identity and owner policy; other application features belong to later tickets. See
 [ADR 0001](docs/adr/0001-modular-architecture.md).
 
 See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) and
@@ -12,6 +12,8 @@ See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) an
 [QH-2 verification](docs/verification-qh-2.md) and
 [QH-3 infrastructure evidence](docs/verification-qh-3.md), plus
 [QH-4 foundation evidence](docs/verification-qh-4.md).
+OIDC setup and pending application activation are described in
+[QH-5 authentication](docs/qh-5-authentication.md).
 
 ## Prerequisites
 
@@ -183,6 +185,22 @@ in [schema details](docs/postgres-schema.md) and [ADR 0002](docs/adr/0002-canoni
 `make migrate` requires separate approval for the application database; API
 startup does not apply migrations. Rebuild after dependency changes and run with
 the backend's updated hash-locked dependencies; install no packages on macOS.
+
+## Optional OIDC development (QH-5)
+
+```bash
+make oidc-up
+make test-oidc
+make oidc-stop
+```
+
+Keycloak runs as an optional profile with a separate persistent volume; the five
+base services remain the standard bootstrap. Real login uses Authorization Code
+with PKCE. `GET /auth/me` returns the mapped QH user ID. Identity mapping requires
+the additive QH-5 migration and demo provisioning: **these have not been applied
+to `qh` and require explicit approval**. Tests migrate and seed only isolated
+databases. See [setup and checks](docs/qh-5-authentication.md) and the
+[identity ADR](docs/adr/0002-identity-and-authorization.md).
 
 ## Dependency locks
 

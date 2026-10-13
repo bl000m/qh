@@ -5,6 +5,10 @@ import hashlib
 from html.parser import HTMLParser
 import os
 import secrets
+import socket
+import subprocess
+import sys
+import time
 from urllib.parse import parse_qs, urlencode, urlparse
 from uuid import uuid4
 
@@ -114,6 +118,36 @@ def test_real_oidc_login_mapping_and_owner_isolation():
         with TestClient(create_runtime_app()) as client:
             assert client.get("/auth/me", headers={"Authorization": "Bearer " + tokens[0]}).json() == {
                 "user_id": str(DEMO_IDENTITIES[0][1])}
+        # Exercise the same production factory over TCP, with the isolated DB.
+        with socket.socket() as listener:
+            listener.bind(("127.0.0.1", 0))
+            port = listener.getsockname()[1]
+        server = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "app.bootstrap:create_runtime_app", "--factory",
+             "--host", "127.0.0.1", "--port", str(port)],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        try:
+            deadline = time.monotonic() + 15
+            with httpx.Client(base_url=f"http://127.0.0.1:{port}", timeout=5) as client:
+                while True:
+                    assert server.poll() is None, "Isolated HTTP server failed to start"
+                    try:
+                        if client.get("/health").status_code == 200:
+                            break
+                    except httpx.ConnectError:
+                        pass
+                    assert time.monotonic() < deadline, "Isolated HTTP server not ready"
+                    time.sleep(0.1)
+                for token, identity in zip(tokens, DEMO_IDENTITIES):
+                    response = client.get("/auth/me", headers={"Authorization": "Bearer " + token})
+                    assert response.status_code == 200
+                    assert response.json() == {"user_id": str(identity[1])}
+                assert client.get("/auth/me").status_code == 401
+                assert client.get("/test/private/anything").status_code == 404
+        finally:
+            server.terminate()
+            server.wait(timeout=10)
         with connect() as connection:
             assert connection.execute("SELECT count(*) FROM users").fetchone() == (2,)
             assert connection.execute("SELECT count(*) FROM user_identities").fetchone() == (2,)
