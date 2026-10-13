@@ -1,8 +1,20 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="QH API", version="0.1.0")
+from app.api.health import router as health_router
+from app.composition import ApplicationServices
 
 
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    return {"status": "ok", "service": "qh-api"}
+def create_app(*, services: ApplicationServices | None = None) -> FastAPI:
+    """Compose the HTTP adapter with explicitly supplied application services.
+
+    The health-only scaffold runs without business services. Future business
+    routes must require explicit bindings rather than silently installing fake
+    or concrete adapters. This factory does not create any outbound adapter.
+    """
+    application = FastAPI(title="QH API", version="0.1.0")
+    application.state.services = services
+    application.include_router(health_router)
+    return application
+
+
+app = create_app()
