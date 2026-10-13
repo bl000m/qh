@@ -33,5 +33,5 @@ def test_health_scaffold_does_not_construct_business_services() -> None:
     application = create_app()
     assert application.state.services is None
     assert {route.path for route in application.routes} == {
-        "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc", "/health",
+        "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc", "/health", "/auth/me",
     }

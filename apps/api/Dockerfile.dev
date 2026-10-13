@@ -8,4 +8,4 @@ RUN uv pip install --system --require-hashes --only-binary :all: --no-deps -r re
 COPY apps/api ./
 COPY tests /workspace/tests
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app"]
+CMD ["uvicorn", "app.bootstrap:create_runtime_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app", "--reload-dir", "adapters"]

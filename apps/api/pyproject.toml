@@ -11,12 +11,13 @@ dependencies = [
   "alembic==1.16.4",
   "sqlalchemy==2.0.43",
   "psycopg[binary]==3.2.9",
+  "httpx==0.28.1",
+  "PyJWT[crypto]==2.10.1",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest==8.4.1",
-  "httpx==0.28.1",
   "neo4j==5.28.2",
 ]
 

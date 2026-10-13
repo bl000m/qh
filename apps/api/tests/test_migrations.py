@@ -52,7 +52,7 @@ def table_names(connection) -> set[str]:
 
 def test_empty_database_upgrade_rollback_and_reapply(empty_database) -> None:
     config = empty_database
-    command.upgrade(config, "head")
+    command.upgrade(config, "0001_qh_schema")
     with connect() as connection:
         assert table_names(connection) == TABLES | {"alembic_version"}
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [("0001_qh_schema",)]
@@ -64,8 +64,8 @@ def test_empty_database_upgrade_rollback_and_reapply(empty_database) -> None:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == []
         assert connection.execute("SELECT value FROM unrelated_marker").fetchone() == ("retained",)
         assert connection.execute("SELECT count(*) FROM pg_proc WHERE proname LIKE 'qh_%'").fetchone() == (0,)
-    command.upgrade(config, "head")
-    command.upgrade(config, "head")
+    command.upgrade(config, "0001_qh_schema")
+    command.upgrade(config, "0001_qh_schema")
     with connect() as connection:
         assert table_names(connection) == TABLES | {"alembic_version", "unrelated_marker"}
 
@@ -88,7 +88,7 @@ def insert_revision(connection, data, *, revision_id=None, item_id=None, space_i
 
 @pytest.fixture
 def persisted(empty_database):
-    command.upgrade(empty_database, "head")
+    command.upgrade(empty_database, "0001_qh_schema")
     data = {key: uuid4() for key in ("owner", "space", "other_space", "source", "source_revision", "item", "revision")}
     with connect() as connection:
         connection.execute("INSERT INTO users (id,display_name) VALUES (%s,'Owner')", (data["owner"],))
