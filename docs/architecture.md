@@ -34,6 +34,11 @@ independent of backend startup and has no DB credentials or data network access.
 - `apps/web` imports public wire contracts only; no backend implementation imports.
 - `apps/api/app/core` owns immutable Python domain values, ContextEngine and
   LLMProvider outbound Protocols and the ContextService inbound contract.
+- ContextId names a Context Space. ContextSearchHit has distinct retrieval identity
+  and optional canonical item revision plus source revision provenance. Queries
+  require explicit nonempty space scope; Core must authorize it, not trust the
+  caller-supplied IDs. ContextProjection carries exact item/source revision
+  references and is a formatting contract, not an Approved Snapshot.
 - `app/policy`, `app/projections` and `app/chat` own their request/result values
   and PolicyService, ProjectionService and ChatService Protocols. Responsibilities
   and method signatures are documented in ADR 0001; no business logic is present.
@@ -55,6 +60,11 @@ independent of backend startup and has no DB credentials or data network access.
 - `packages/shared` is reserved for public schemas and TypeScript wire types;
   Python domain interfaces are not duplicated here.
 - `infra/docker` owns networking, persistence and development orchestration.
+- `apps/api/adapters/postgres` owns environment connection settings and Alembic
+  revisions for canonical sources/items/provenance. No ORM enters Core and API
+  startup never migrates. See [schema details](postgres-schema.md) for the seven
+  foundation tables, immutability and atomic provenance assembly. Projection,
+  Snapshot and Share persistence is deferred to its feature tickets.
 
 ## Development and persistence
 

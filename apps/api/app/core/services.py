@@ -8,7 +8,7 @@ class ContextService(Protocol):
     """Inbound contract for future authorized context retrieval.
 
     Implementations coordinate the policy boundary and ContextEngine. They must
-    return QH records rather than infrastructure entities. QH-2 defines only the
+    return scoped QH search hits rather than infrastructure entities. Defines only the
     contract; it does not implement authorization, retrieval or ingestion.
     """
 

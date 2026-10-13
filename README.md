@@ -10,7 +10,8 @@ concrete adapters and application features belong to later tickets. See
 See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) and
 [QH-1 verification](docs/verification-qh-1.md),
 [QH-2 verification](docs/verification-qh-2.md) and
-[QH-3 infrastructure evidence](docs/verification-qh-3.md).
+[QH-3 infrastructure evidence](docs/verification-qh-3.md), plus
+[QH-4 foundation evidence](docs/verification-qh-4.md).
 
 ## Prerequisites
 

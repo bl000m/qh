@@ -39,7 +39,10 @@ retrieval-result identities are distinct. Replace the ambiguous ContextRecord
 with ContextSearchHit using typed revision/provenance references. ContextQuery
 requires an explicit set of space IDs; it is a scope constraint, not proof of
 authorization. ContextProjection identifies the selected item revisions instead
-of using space IDs as source identifiers. Ports and application contracts remain
+of using space IDs as source identifiers and preserves source revision provenance.
+Hits backed only by sources can be returned before Understanding Items are
+persisted; they are retrieval results, not confirmed canonical understanding.
+Ports and application contracts remain
 framework-free and explicitly injected; no production authorization is added here.
 
 ## Minimal QH-4 implementation scope

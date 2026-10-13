@@ -5,7 +5,7 @@ from app.projections.models import ContextProjection, ProjectionRequest
 
 @runtime_checkable
 class ProjectionService(Protocol):
-    """Project already-authorized QH records into text with source identifiers.
+    """Project already-authorized hits into text with exact revision references.
 
     The caller is responsible for authorized input. Implementations must not
     retrieve graph data, invoke an LLM or import transport serializers here.

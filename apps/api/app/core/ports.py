@@ -10,7 +10,9 @@ class ContextEngine(Protocol):
     """Retrieve context through a replaceable graph/search implementation.
 
     This port has no authorization, transport, graph-driver or Graphiti types.
-    The ContextService boundary owns the future authorized retrieval use case.
+    Query scope names explicit Context Spaces; it is not proof of authorization.
+    The ContextService boundary authorizes scope and results before disclosure.
+    Adapters return QH hit/revision/provenance IDs, never internal engine objects.
     """
 
     async def search(self, query: ContextQuery) -> ContextResult: ...

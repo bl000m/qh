@@ -4,15 +4,23 @@ from dataclasses import dataclass
 
 from app.chat.models import ChatRequest, ChatResponse
 from app.core.models import (
-    ContextId, ContextQuery, ContextRecord, ContextRequest, ContextResult,
+    ContextId, ContextQuery, ContextSearchHit, ContextRequest, ContextResult,
     GenerationRequest, GenerationResult, Message, MessageRole,
+    ItemRevisionRef, SourceRevisionRef, RetrievalHitId, SourceId, SourceRevisionId,
+    UnderstandingItemId, UnderstandingRevisionId,
 )
 from app.core.ports import ContextEngine, LLMProvider
 from app.policy.models import PolicyDecision, PolicyRequest
 from app.projections.models import ContextProjection, ProjectionRequest
 
-RECORD = ContextRecord(id=ContextId("test-context"), content="test content")
-RESULT = ContextResult(contexts=(RECORD,))
+SPACE = ContextId("test-space")
+ITEM_REVISION = ItemRevisionRef(context_id=SPACE, item_id=UnderstandingItemId("test-item"),
+                               revision_id=UnderstandingRevisionId("test-item-revision"))
+SOURCE_REVISION = SourceRevisionRef(source_id=SourceId("test-source"),
+                                   revision_id=SourceRevisionId("test-source-revision"))
+HIT = ContextSearchHit(id=RetrievalHitId("test-hit"), context_id=SPACE,
+                       excerpt="test content", provenance=(SOURCE_REVISION,), item_revision=ITEM_REVISION)
+RESULT = ContextResult(hits=(HIT,))
 MESSAGE = Message(role=MessageRole.ASSISTANT, content="test reply")
 GENERATION = GenerationResult(message=MESSAGE)
 

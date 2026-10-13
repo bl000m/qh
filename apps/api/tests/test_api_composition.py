@@ -7,7 +7,7 @@ from app.main import create_app
 from app.policy.models import PolicyDecision
 from app.projections.models import ContextProjection
 from tests.fakes import (
-    GENERATION, RECORD, RESULT,
+    GENERATION, ITEM_REVISION, SOURCE_REVISION, RESULT,
     FakeChatService, FakeContextEngine, FakeContextService,
     FakeLLMProvider, FakePolicyService, FakeProjectionService,
 )
@@ -17,7 +17,8 @@ def test_api_factory_preserves_explicit_service_bindings() -> None:
     services = ApplicationServices(
         context=FakeContextService(FakeContextEngine(RESULT)),
         policy=FakePolicyService(PolicyDecision(allowed=False, reason="test-only")),
-        projections=FakeProjectionService(ContextProjection(text="test", context_ids=(RECORD.id,))),
+        projections=FakeProjectionService(ContextProjection(text="test", item_revisions=(ITEM_REVISION,),
+                                                          source_revisions=(SOURCE_REVISION,))),
         chat=FakeChatService(FakeLLMProvider(GENERATION)),
     )
     application = create_app(services=services)

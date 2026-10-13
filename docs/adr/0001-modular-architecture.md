@@ -6,6 +6,12 @@ Status: Accepted
 
 Scope: [QH-2](https://contextlab.atlassian.net/browse/QH-2)
 
+Refinement: [ADR 0002](0002-canonical-understanding-persistence.md) records the
+owner-approved QH-4 domain semantics. ContextId identifies a space; ContextRecord
+is replaced by ContextSearchHit, queries require explicit space scope, and the
+formatting projection carries exact item/source revision references. These are
+minimal contract refinements, not implemented retrieval/authorization/snapshots.
+
 ## Context
 
 The QH-1 scaffold and QH-3 Compose base work. Context engines and LLM providers
@@ -24,7 +30,7 @@ Graphiti, Neo4j, MCP and provider SDKs. No generic repository or DI container.
 | LLMProvider.generate(GenerationRequest) → GenerationResult | core/ports.py | Outbound generation using QH messages only |
 | ContextService.retrieve(ContextRequest) → ContextResult | core/services.py | Future authorized retrieval coordinating policy and engine |
 | PolicyService.evaluate(PolicyRequest) → PolicyDecision | policy/services.py | Future subject/action/context access decisions |
-| ProjectionService.project(ProjectionRequest) → ContextProjection | projections/services.py | Future presentation of already-authorized records with source IDs |
+| ProjectionService.project(ProjectionRequest) → ContextProjection | projections/services.py | Future presentation of authorized hits with item/source revision references |
 | ChatService.respond(ChatRequest) → ChatResponse | chat/services.py | Future coordination of policy, context, projections and provider |
 
 Locations above are relative to `apps/api/app`. These are contracts only;

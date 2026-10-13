@@ -10,24 +10,51 @@ from typing import NewType
 
 ContextId = NewType("ContextId", str)
 SubjectId = NewType("SubjectId", str)
+UnderstandingItemId = NewType("UnderstandingItemId", str)
+UnderstandingRevisionId = NewType("UnderstandingRevisionId", str)
+SourceId = NewType("SourceId", str)
+SourceRevisionId = NewType("SourceRevisionId", str)
+RetrievalHitId = NewType("RetrievalHitId", str)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ContextRecord:
-    id: ContextId
-    content: str
-    title: str = ""
+class ItemRevisionRef:
+    context_id: ContextId
+    item_id: UnderstandingItemId
+    revision_id: UnderstandingRevisionId
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SourceRevisionRef:
+    source_id: SourceId
+    revision_id: SourceRevisionId
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ContextSearchHit:
+    """A retrieval result, not a Context Space or canonical understanding row."""
+
+    id: RetrievalHitId
+    context_id: ContextId
+    excerpt: str
+    provenance: tuple[SourceRevisionRef, ...]
+    item_revision: ItemRevisionRef | None = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ContextQuery:
     text: str
+    context_ids: tuple[ContextId, ...]
     limit: int = 20
+
+    def __post_init__(self) -> None:
+        if not self.context_ids:
+            raise ValueError("ContextQuery requires an explicit nonempty space scope")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ContextResult:
-    contexts: tuple[ContextRecord, ...]
+    hits: tuple[ContextSearchHit, ...]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
