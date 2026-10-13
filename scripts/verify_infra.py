@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
+from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {"frontend", "backend", "mcp", "postgres", "neo4j"}
@@ -126,20 +128,60 @@ def verify_connections(compose: list[str], targets: list[list]) -> None:
         print(f"PASS: {name} cannot connect to either DB IP/port (two TCP probes)")
 
 
+def verify_persistence(docker: str, compose: list[str], before: dict) -> None:
+    token = uuid4().hex
+    helper = compose + ["exec", "-T", "backend", "python", "/workspace/tests/infra/persistence_probe.py"]
+    print(f"Persistence probe token: {token}", flush=True)
+    try:
+        run(helper + ["write", token], "Writing disposable persistence markers")
+        print("Restarting only postgres and neo4j; retaining containers and volumes", flush=True)
+        run(compose + ["restart", "--timeout", "30", "postgres", "neo4j"], "Database restart", timeout=90)
+        deadline = time.monotonic() + 180
+        while True:
+            entries = json.loads(run([docker, "inspect", before["postgres"]["Id"], before["neo4j"]["Id"]],
+                                     "Database readiness inspection"))
+            if all(entry["State"].get("Health", {}).get("Status") == "healthy" for entry in entries):
+                break
+            require(time.monotonic() < deadline, "Databases did not become healthy after restart")
+            time.sleep(2)
+        after = inspect_services(docker, compose)
+        require(all(after[name]["Id"] == info["Id"] for name, info in before.items()),
+                "A container was replaced during the probe")
+        verify_topology(docker, after)
+        for name in ("postgres", "neo4j"):
+            require(after[name]["Mounts"] == before[name]["Mounts"], "Database mounts changed")
+        run(helper + ["read", token], "Reading persistence markers after restart")
+        print("PASS: both database markers survived restart; container IDs and volume mounts unchanged", flush=True)
+    finally:
+        try:
+            run(helper + ["cleanup", token], "Cleanup of this probe's markers")
+        except (OSError, RuntimeError, subprocess.TimeoutExpired):
+            print(f"FAIL: probe cleanup incomplete; retry helper cleanup with token {token}", file=sys.stderr)
+            raise
+        print("PASS: only this probe's SQL schema and Neo4j node removed; cleanup confirmed", flush=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--docker-cli", default="docker")
+    parser.add_argument("--persistence", action="store_true",
+                        help="Write disposable markers and restart only the existing database containers")
     args = parser.parse_args()
     compose = [args.docker_cli, "compose", "--env-file", ".env", "-f", "infra/docker/docker-compose.yml"]
     services = inspect_services(args.docker_cli, compose)
     targets = verify_topology(args.docker_cli, services)
     print("PASS: five healthy services, internal DB network, named volumes and loopback app ports")
     verify_connections(compose, targets)
+    if args.persistence:
+        verify_persistence(args.docker_cli, compose, services)
 
 
 if __name__ == "__main__":
     try:
         main()
-    except (OSError, RuntimeError, subprocess.TimeoutExpired, ValueError, KeyError) as error:
+    except RuntimeError as error:
+        print(f"FAIL: {error}", file=sys.stderr)
+        raise SystemExit(1)
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError) as error:
         print(f"FAIL: {type(error).__name__}: infrastructure verification did not complete", file=sys.stderr)
         raise SystemExit(1)

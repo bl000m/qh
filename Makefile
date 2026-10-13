@@ -1,6 +1,6 @@
 COMPOSE = docker compose --env-file .env -f infra/docker/docker-compose.yml
 
-.PHONY: config build up down logs ps test smoke verify verify-running verify-infra lock-node lock-python
+.PHONY: config build up down logs ps test smoke verify verify-running verify-infra verify-persistence lock-node lock-python
 config:
 	$(COMPOSE) config --quiet
 build:
@@ -34,6 +34,9 @@ verify-infra:
 	$(COMPOSE) up --no-recreate --no-build -d --wait --wait-timeout 240
 	python3 scripts/check_compose.py
 	python3 scripts/verify_infra.py
+verify-persistence:
+	$(MAKE) config
+	python3 scripts/verify_infra.py --persistence
 lock-node:
 	docker run --rm -v "$(CURDIR):/workspace" -w /workspace node:22.14.0-bookworm-slim npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 lock-python:

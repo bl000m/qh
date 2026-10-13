@@ -8,7 +8,9 @@ concrete adapters and application features belong to later tickets. See
 [ADR 0001](docs/adr/0001-modular-architecture.md).
 
 See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) and
-[verification evidence](docs/verification-qh-1.md).
+[QH-1 verification](docs/verification-qh-1.md),
+[QH-2 verification](docs/verification-qh-2.md) and
+[QH-3 infrastructure evidence](docs/verification-qh-3.md).
 
 ## Prerequisites
 
@@ -46,6 +48,10 @@ make down
 services to become healthy. Stop following logs with Ctrl-C. `make down` removes
 containers and networks, preserving database volumes. Do not add `--volumes`
 unless you explicitly intend to destroy local database data.
+
+To stop while retaining existing containers, use
+`docker compose --env-file .env -f infra/docker/docker-compose.yml stop`.
+Use `make verify-infra` to start/wait again without rebuilding or replacing them.
 
 Equivalent commands without Make:
 
@@ -126,10 +132,7 @@ docker inspect qh-postgres-1 qh-neo4j-1 --format '{{.Name}} {{json .HostConfig.P
 
 Expect internal network `true`, no DB host port bindings and only `qh_data` for
 both databases. Do not print full Compose config or container environments into
-shared logs, since they include local credentials. Persistence validation can
-be performed by creating disposable probe data from the backend, running
-`make down` / `make up`, checking the same data and cleaning up the probes.
-This check is separate from the non-mutating connection smoke tests.
+shared logs, since they include local credentials.
 
 ## Infrastructure verification (QH-3)
 
@@ -144,6 +147,26 @@ TCP probes from frontend and MCP to the DB IPs must fail. Database ports remain
 unpublished. The host's existing Python 3 orchestrates Docker CLI using only the
 standard library; Node/Python network probes and DB tests run in containers.
 Images must already be built (`make build` for initial setup). No cleanup occurs.
+
+To explicitly test persistence on the running stack:
+
+```bash
+make verify-persistence
+```
+
+This repeats infrastructure checks, writes a marker in a unique PostgreSQL
+schema and one tagged Neo4j node, restarts **only the two database containers**,
+waits for health and verifies both markers survived. It confirms unchanged
+container IDs and named volume mounts, then removes only its own probe data.
+Existing application data, containers, images and volumes are retained. The
+database restart briefly interrupts connections; it is not part of routine
+`make verify-running`. No container recreation or volume deletion is performed.
+If cleanup fails, the printed UUID identifies the residual probe. After restoring
+database availability, retry just that cleanup using the reported token:
+
+```bash
+docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python /workspace/tests/infra/persistence_probe.py cleanup <probe-token>
+```
 
 ## Dependency locks
 

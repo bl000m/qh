@@ -1,8 +1,9 @@
 # QH architecture
 
-The repository contains the working QH-1 scaffold, the minimum Compose base from
-QH-3 and the QH-2 domain/application contracts. Concrete services and application
-features remain deferred. See [ADR 0001](adr/0001-modular-architecture.md).
+The repository contains the working QH-1 scaffold, the five-service Compose
+environment from QH-3 and the QH-2 domain/application contracts. Concrete
+services and application features remain deferred. See
+[ADR 0001](adr/0001-modular-architecture.md).
 
 ## Containers
 
@@ -61,8 +62,17 @@ are never embedded in committed defaults. Changing passwords in `.env` does
 not rotate credentials on initialized database volumes; use the database
 administration workflow rather than deleting data.
 
-Build, health, protocol and persistence validation results are recorded
-separately in `docs/verification-qh-1.md`. This remains a local POC.
+Build, health and protocol results are recorded in `docs/verification-qh-1.md`.
+QH-3's runtime isolation and database restart/persistence evidence are in
+`docs/verification-qh-3.md`. `make verify-infra` checks five healthy services,
+network and volume attachments, authenticated DB queries from backend and
+denied TCP connections from frontend/MCP directly to both database IPs.
+`make verify-persistence` additionally writes UUID-scoped markers, restarts only
+existing DB containers, verifies the markers and removes only that probe's data.
+Neither check deletes or replaces containers, images or volumes. Host Python
+stdlib orchestrates Docker; database and TCP probes run in the containers.
+These checks implement infrastructure verification, not application behavior.
+This remains a local POC.
 
 QH-2's AST tests enforce inward imports across all inner modules, and an isolated
 Python subprocess imports their contracts without site packages. Contract tests
