@@ -1,5 +1,10 @@
 # QH-4 verification
 
+This report records the implementation checks before deployment authorization.
+The subsequent [authorized local deployment](verification-qh-4-local-deployment.md)
+applies the migration to QH and deploys the rebuilt backend; historical NOT TESTED
+entries below describe the earlier run, not the current local deployment.
+
 Ticket: [QH-4](https://contextlab.atlassian.net/browse/QH-4).
 Verdict: **PASS within the user-approved scope in ADR 0002.** The Jira action
 list still names five preliminary tables; the owner's subsequent D1–D7 approval

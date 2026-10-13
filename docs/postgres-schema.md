@@ -81,6 +81,8 @@ the exact test-created databases, without FORCE or volume/container cleanup.
 The upgrade/downgrade/reapply test verifies unrelated data survives rollback;
 normal tests never migrate or downgrade the QH application database.
 
-`make migrate` exists for a separately authorized upgrade of the QH database;
-do not execute it as part of QH-4 delivery. API startup never migrates the schema.
-Current execution evidence is recorded in verification-qh-4.md at delivery.
+`make migrate` upgrades the QH application database and requires explicit user
+authorization; API startup never migrates the schema. The user authorized the
+initial local upgrade after the isolated verification. See
+[implementation checks](verification-qh-4.md) and
+[local deployment](verification-qh-4-local-deployment.md) for actual results.
