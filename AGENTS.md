@@ -35,6 +35,25 @@ changing module boundaries.
 - Never automatically change Jira status. Any Jira write requires explicit
   user authorization; status changes require user approval.
 
+## Versioning and verification
+
+- Before ticket work, verify Git and the baseline. If either is missing, propose
+  the baseline contents and obtain user approval before the first commit.
+- Split a ticket into coherent independent units when useful (often 2–4, never
+  a fixed quota). Commit verified units incrementally instead of waiting for
+  the end of the ticket.
+- Authorization to implement a ticket permits local commits. Use conventional
+  messages with its Jira key; each commit must have one clear purpose.
+- Before each commit, run relevant checks and review git status, working/staged
+  diffs and exclusions. Stage explicit files/hunks; keep unrelated or user-owned
+  changes out unless approved. Never include secrets or local data.
+- Remote pushes (including force pushes) and destructive resets require explicit
+  approval. The Jira authorization rules above also apply.
+- At ticket completion, list each commit's hash, message, purpose and checks.
+- Prefer Medium reasoning when sufficient; increase for architecture, security
+  or complex problems. Use targeted checks per unit and full verification at
+  integration or when changes/failures justify it, not after every small edit.
+
 ## Docker-first development
 
 - Prefer Docker Compose for running services, installing dependencies and tests.
