@@ -3,7 +3,9 @@
 Local sovereign context platform scaffold: React + TypeScript + Vite frontend,
 Python + FastAPI backend, independent Python MCP adapter, Neo4j Community and
 PostgreSQL. Graphiti will be a replaceable Python adapter inside the backend.
-Core contracts and application features are deferred to QH-2 and later tickets.
+QH-2 defines domain/application contracts and explicit service bindings;
+concrete adapters and application features belong to later tickets. See
+[ADR 0001](docs/adr/0001-modular-architecture.md).
 
 See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) and
 [verification evidence](docs/verification-qh-1.md).
@@ -76,10 +78,17 @@ Compose; prefer Make to avoid requiring npm on the host.
 make verify
 ```
 
-This runs Compose validation, build/startup, FastAPI health test, MCP health and
+This runs Compose validation, build/startup, domain/adapter contract and import
+boundary tests, FastAPI health test, MCP health and
 an actual SDK client exchange (`initialize`, `list_tools`, `scaffold_ping`),
 frontend TypeScript checks/build, live Vite HTTP smoke checks, and authenticated
 PostgreSQL/Neo4j connections from the backend container.
+
+On an already running development stack, use `make verify-running` to run the
+same configuration, unit and smoke checks without rebuilding or replacing
+containers. New source/test files are picked up through the existing bind mounts.
+This target requires all five services to be running. It does not prove a fresh
+image build or startup; those checks are reported separately.
 
 Individual commands, after `make up`:
 

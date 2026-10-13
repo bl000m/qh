@@ -1,6 +1,6 @@
 COMPOSE = docker compose --env-file .env -f infra/docker/docker-compose.yml
 
-.PHONY: config build up down logs ps test smoke verify lock-node lock-python
+.PHONY: config build up down logs ps test smoke verify verify-running lock-node lock-python
 config:
 	$(COMPOSE) config --quiet
 build:
@@ -23,6 +23,10 @@ smoke:
 verify:
 	$(MAKE) config
 	$(MAKE) up
+	$(MAKE) test
+	$(MAKE) smoke
+verify-running:
+	$(MAKE) config
 	$(MAKE) test
 	$(MAKE) smoke
 lock-node:

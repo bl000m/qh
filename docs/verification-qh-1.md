@@ -115,5 +115,8 @@ The earlier missing Docker application/daemon blocker has been resolved. The
 repository's earlier static checks and skill frontmatter verification were
 separate from the container execution recorded here. The optional official
 skill validator was previously blocked by missing PyYAML on the host; it was
-not rerun or used as evidence for QH-1 startup. This directory has no .git
-metadata and this task did not create a commit.
+not rerun or used as evidence for QH-1 startup. At the time of this QH-1 report,
+the directory had no .git metadata and no commit was created. The subsequent
+QH-2 preflight initialized Git; the user committed the approved baseline as
+`e91a01b`. See
+`initial-commit-review.md` and `verification-qh-2.md`.

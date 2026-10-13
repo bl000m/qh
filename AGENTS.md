@@ -10,9 +10,12 @@ changing module boundaries.
 - `apps/api`: Python + FastAPI. FastAPI is an inbound adapter, not QH Core.
 - `services/mcp-server`: independent Python adapter using the official `mcp`
   SDK. It must not import backend implementation files or access databases.
-- Future QH Core is Python, independent of FastAPI, Graphiti, MCP and LLM SDKs.
+- `apps/api/app/core` is Python, independent of FastAPI, Graphiti, MCP and LLM SDKs.
   Inbound adapters and outbound adapter implementations depend on Core ports;
   Core never imports them. Assemble dependencies at the application boundary.
+- `app/policy`, `app/projections` and `app/chat` own their application contracts;
+  `app/composition.py` holds explicit service bindings. Keep their types and
+  dependencies consistent with `docs/adr/0001-modular-architecture.md`.
 - Graphiti is a Python library integrated through a replaceable adapter inside
   the backend. Never create a Graphiti microservice or TypeScript adapter.
 - `packages/shared`: public wire schemas/types, not Python domain interfaces.
@@ -72,3 +75,6 @@ changing module boundaries.
 - Keep credentials in ignored `.env` files and configuration keys in
   `.env.example`. Never commit secrets or include them in image build contexts.
 - Do not delete database volumes or reset local data without explicit approval.
+- Respect task-specific restrictions on container replacement. Use
+  `make verify-running` for an existing stack when container recreation is not
+  authorized.

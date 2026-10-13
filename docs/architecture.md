@@ -1,7 +1,8 @@
 # QH architecture
 
-This consolidation implements the QH-1 scaffold and the minimum Compose base
-requested from QH-3. QH-2 domain ports, module design and its ADR are deferred.
+The repository contains the working QH-1 scaffold, the minimum Compose base from
+QH-3 and the QH-2 domain/application contracts. Concrete services and application
+features remain deferred. See [ADR 0001](adr/0001-modular-architecture.md).
 
 ## Containers
 
@@ -21,19 +22,28 @@ independent of backend startup and has no DB credentials or data network access.
 ## Module boundaries
 
 - `apps/web` imports public wire contracts only; no backend implementation imports.
-- `apps/api/app` currently contains only the FastAPI health endpoint. Future
-  Python QH Core will be independent of transport, persistence and LLM libraries.
+- `apps/api/app/core` owns immutable Python domain values, ContextEngine and
+  LLMProvider outbound Protocols and the ContextService inbound contract.
+- `app/policy`, `app/projections` and `app/chat` own their request/result values
+  and PolicyService, ProjectionService and ChatService Protocols. Responsibilities
+  and method signatures are documented in ADR 0001; no business logic is present.
+- `app/composition.py` holds the explicitly supplied ApplicationServices bindings.
+  `app/main.py:create_app(services=...)` composes the HTTP transport. Services are
+  optional only for the health-only scaffold; no production fakes are installed.
+- `app/api` owns FastAPI routes. The only current business-independent route
+  remains `/health`.
 - API, MCP and outbound adapters depend on Core interfaces. Core must never
   import FastAPI, Graphiti, MCP, adapters or provider SDKs. Composition roots
   assemble implementations through dependency injection.
-- The future GraphitiAdapter belongs under `apps/api/adapters`. Graphiti will
-  be a Python library within the backend, never a sixth container. Its domain
-  port and implementation are intentionally not defined in this consolidation.
+- `apps/api/adapters/context` reserves ContextEngine implementations, including
+  the future Graphiti adapter. `apps/api/adapters/llm` reserves LLMProvider
+  implementations. Graphiti will be a backend Python library, never a sixth
+  container. Neither integration nor any production adapter is implemented yet.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
 - `packages/shared` is reserved for public schemas and TypeScript wire types;
-  the initial TypeScript domain/Graphiti placeholders have been removed.
+  Python domain interfaces are not duplicated here.
 - `infra/docker` owns networking, persistence and development orchestration.
 
 ## Development and persistence
@@ -53,3 +63,10 @@ administration workflow rather than deleting data.
 
 Build, health, protocol and persistence validation results are recorded
 separately in `docs/verification-qh-1.md`. This remains a local POC.
+
+QH-2's AST tests enforce inward imports across all inner modules, and an isolated
+Python subprocess imports their contracts without site packages. Contract tests
+exercise fake adapters and explicit bindings. For an existing stack use
+`make verify-running` to avoid replacing containers. QH-2 results and commit
+history are recorded in `docs/verification-qh-2.md`; the approved baseline is
+recorded in `docs/initial-commit-review.md`.
