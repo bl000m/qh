@@ -131,6 +131,20 @@ be performed by creating disposable probe data from the backend, running
 `make down` / `make up`, checking the same data and cleaning up the probes.
 This check is separate from the non-mutating connection smoke tests.
 
+## Infrastructure verification (QH-3)
+
+```bash
+make verify-infra
+```
+
+This validates Compose, starts/waits for the five services without rebuilding
+or replacing existing containers, then verifies actual health/network/volume
+settings. Authenticated backend queries prove both DBs are reachable; separate
+TCP probes from frontend and MCP to the DB IPs must fail. Database ports remain
+unpublished. The host's existing Python 3 orchestrates Docker CLI using only the
+standard library; Node/Python network probes and DB tests run in containers.
+Images must already be built (`make build` for initial setup). No cleanup occurs.
+
 ## Dependency locks
 
 The frontend uses root `package-lock.json` and `npm ci`. Each Python service
