@@ -67,8 +67,9 @@ choices consistent with approved decisions do not require interruption.
 - Graphiti is a Python library integrated through a replaceable adapter inside
   the backend. Never create a Graphiti microservice or TypeScript adapter.
 - `packages/shared`: public wire schemas/types, not Python domain interfaces.
-- `infra/docker`: exactly five Compose services: frontend, backend, mcp,
-  neo4j and postgres. Keep infrastructure separate from application code.
+- `infra/docker`: five base Compose services: frontend, backend, mcp, neo4j
+  and postgres; optional local Keycloak profile under the approved
+  `docs/adr/0002-identity-and-authorization.md`. Keep infrastructure separate.
 - Document new module responsibilities and adapter contracts. Do not implement
   business logic before module boundaries and contracts are established.
 

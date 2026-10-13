@@ -31,6 +31,30 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
+### Identity and authorization (QH-5)
+
+[Identity ADR](adr/0002-identity-and-authorization.md) records the approved
+separation. Keycloak is optional local infrastructure; the five base services
+remain unchanged. Internal QH identities are independent of external identities.
+
+```mermaid
+flowchart LR
+    Client[OIDC client] -->|login / PKCE| IdP[Keycloak: replaceable OIDC IdP]
+    IdP -->|signed access token| Client
+    Client -->|Bearer token| API[FastAPI security adapter]
+    API -->|verify signature, issuer, audience, time| IdP
+    API --> General[General OAuth roles / scopes gate]
+    General --> Mapping[PostgreSQL: issuer + subject to QH user ID]
+    Mapping --> Policy[QH PolicyService: resource authorization]
+    Policy -->|allow before private read| Content[Authorized QH content]
+    MCP[Future remote MCP OAuth: grants / consent] -. separate tickets .-> API
+```
+
+Both applicable gates must allow access. A general OAuth scope does not grant
+access to another owner's Context Space. QH Core receives only QH domain IDs.
+`GET /auth/me` is the stable identity endpoint; private owner probe routes are
+test-only. Remote delegated MCP OAuth is outside QH-5.
+
 - `apps/web` imports public wire contracts only; no backend implementation imports.
 - `apps/api/app/core` owns immutable Python domain values, ContextEngine and
   LLMProvider outbound Protocols and the ContextService inbound contract.
