@@ -3,6 +3,9 @@
 `context/` reserves the location for implementations of
 `app.core.ports.ContextEngine`, including the future Graphiti adapter.
 `llm/` reserves implementations of `app.core.ports.LLMProvider`.
+`postgres/` owns environment-based connection settings and Alembic migrations.
+It is infrastructure outside Core, with no ORM domain models or repositories.
+Run migrations explicitly; API startup never changes the database schema.
 
 Both namespaces are deliberately empty of concrete adapters. Their future
 implementations accept configuration/clients through explicit constructors and
