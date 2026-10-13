@@ -168,13 +168,29 @@ database availability, retry just that cleanup using the reported token:
 docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python /workspace/tests/infra/persistence_probe.py cleanup <probe-token>
 ```
 
+## PostgreSQL foundation (QH-4)
+
+```bash
+make test-migrations
+```
+
+Alembic revisions live in the backend PostgreSQL adapter. Tests create empty,
+isolated databases, verify upgrade/downgrade, integrity and immutability, and
+remove only their own test databases. They never migrate the QH application DB.
+The approved foundation and deferred Projection/Snapshot/Share tables are described
+in [schema details](docs/postgres-schema.md) and [ADR 0002](docs/adr/0002-canonical-understanding-persistence.md).
+`make migrate` requires separate approval for the application database; API
+startup does not apply migrations. Rebuild after dependency changes and run with
+the backend's updated hash-locked dependencies; install no packages on macOS.
+
 ## Dependency locks
 
 The frontend uses root `package-lock.json` and `npm ci`. Each Python service
 uses a fully resolved `requirements.lock`, with exact versions and hashes,
 installed using uv 0.8.4 with `--require-hashes --no-deps`. Development/test
-dependencies are included because these are development images. Database drivers
-in the backend dev dependencies are used only by infrastructure smoke checks.
+dependencies are included because these are development images. psycopg,
+SQLAlchemy and Alembic are migration dependencies; the Neo4j driver remains a
+development dependency for infrastructure smoke checks.
 
 After intentionally changing dependency manifests, regenerate locks in containers:
 
