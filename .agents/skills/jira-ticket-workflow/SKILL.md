@@ -1,42 +1,54 @@
 ---
 name: jira-ticket-workflow
-description: Implement or verify a QH Jira ticket using Atlassian MCP, Docker-first development and evidence against its acceptance criteria. Use for ticket-scoped repository work; never update Jira automatically.
+description: Analyze, implement or verify a QH Jira ticket using the Product Contract, approved ADRs, Atlassian MCP and Docker evidence. Use for ticket-scoped work; escalate unresolved domain decisions and never update Jira automatically.
 ---
 
 # Jira ticket workflow
 
-1. Read the requested ticket through Atlassian MCP, including description,
-   acceptance criteria, status, links and relevant comments. Resolve the
-   accessible site before using its cloud ID. Record the ticket URL and exact
-   Done criteria; ask for missing requirements only if they block the work.
-2. Read repository `AGENTS.md` and `docs/architecture.md`. Inspect files and
-   ticket dependencies; verify actual implementation and Docker availability.
-   Verify Git/baseline and follow AGENTS.md's versioning policy; a missing
-   baseline needs a reviewed proposal and approval before the first commit.
-   Do not infer completion from ticket status or the presence of files.
-3. Define the changes needed for this ticket. Preserve the user's architecture
-   decisions and leave unrelated/future tickets unimplemented. Identify
-   independent commit units when appropriate, without forcing a fixed number.
-4. Implement incrementally and run relevant checks through Docker Compose.
-   Install dependencies only in containers using committed lockfiles. Use the
-   README/Makefile commands. Run targeted checks before each coherent local
-   commit, review/stage only its files or hunks, and reference the Jira key.
-   Ticket implementation authorization permits local commits under AGENTS.md;
-   do not defer all commits to ticket completion. Run full checks at integration
-   or when justified, not after every small edit. Apply its reasoning guidance.
-   If Docker is blocked, record the precise cause and continue independent
-   work; do not install global Mac runtimes/packages or silently substitute
+1. Read the ticket, dependencies and acceptance criteria through Atlassian MCP,
+   including relevant comments/links. Resolve the accessible site before using
+   its cloud ID. Record the URL and exact Done criteria.
+2. Read `AGENTS.md` and relevant sections of the mandatory
+   [Product Contract](../../../docs/product/QH_PRODUCT_CONTRACT.md). Do not infer
+   domain meaning solely from table names, code or incomplete Jira descriptions.
+3. Consult relevant approved ADRs in `docs/adr` and `docs/architecture.md`.
+   Distinguish approved principles, V0.1 choices, open hypotheses and future work.
+4. Inspect code, Git/baseline and Docker availability. Identify missing decisions,
+   contradictions and architectural/privacy risks before defining the scope.
+   Follow AGENTS.md's baseline/versioning policy; do not infer Done from files
+   or ticket status.
+5. Apply **STOP AND ASK** under AGENTS.md whenever its triggers apply. Present
+   the missing decision, feasible alternatives, consequences, benefits/risks and
+   a reasoned recommendation; wait for explicit approval for the affected part.
+   Distinguish structural decisions from implementation details under AGENTS.md:
+   unapproved domain/canonical data/authorization/architecture/public contract
+   changes need approval; module layout, SQL/index details, tests and reversible
+   refactoring within approved contracts are autonomous. Do not reopen approved
+   decisions unless a concrete contradiction, new risk or technical constraint
+   emerges; explain that specific issue. Continue independent, already-defined
+   work without anticipating unresolved choices. QH-4's approved scope is in
+   [ADR 0002](../../../docs/adr/0002-canonical-understanding-persistence.md).
+6. Implement only after blocking decisions are resolved and the ticket work is
+   authorized. Keep scope bounded, preserve approved dependencies and use Docker
+   for execution, dependency installation and tests with committed lockfiles.
+   Respect analysis-only or documentation-only requests. If Docker is blocked,
+   report the cause; do not install global Mac packages or silently substitute
    host execution for container validation.
-5. Produce a checklist for every acceptance criterion: PASS (executed and
-   satisfied), FAIL (executed and failed, or a definite missing requirement),
-   or NOT TESTED (not executed). Include command, observed result and evidence.
-   A static check is evidence only for a static requirement. Never treat an
-   unexecuted build, health check or MCP exchange as passing.
-6. Summarize changed files, repeatable commands, residual work and blockers,
-   plus each local commit's hash, message, purpose and executed checks.
-   Prepare a Jira-ready summary if useful, but do not post it or change Jira
-   automatically. No remote push, force push, destructive reset or Jira write
-   without the explicit authorization required by AGENTS.md.
+7. Split useful logical units and create incremental, verified local commits
+   referencing the Jira key under AGENTS.md. Run pertinent checks before each
+   commit and stage only its files/hunks. Use targeted checks during development
+   and full verification at integration or when justified; follow its reasoning
+   guidance. Preserve suspended and user-owned work.
+8. Compare executed checks with every Done criterion: PASS (executed/satisfied),
+   FAIL (executed/failed or definitely missing), NOT TESTED (not executed).
+   Record commands and evidence; distinguish static, build, runtime, protocol and
+   persistence results. Never claim an unexecuted test passed or a tested draft
+   model was approved.
+9. Summarize modifications, repeatable commands, residual decisions/blockers and
+   each local commit's hash, message, purpose and checks. Prepare a Jira-ready
+   summary if useful, but do not post it automatically. No remote push, force
+   push, destructive reset or Jira write without the authorization AGENTS.md
+   requires; never automatically change Jira status.
 
 Keep credentials out of logs, tracked files and build contexts. Preserve data
 volumes. Final delivery must make the ticket's Done verdict and its limits clear.

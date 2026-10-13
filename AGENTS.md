@@ -3,6 +3,54 @@
 QH is a modular, sovereign context platform. Read `docs/architecture.md` before
 changing module boundaries.
 
+## QH Product Invariants
+
+QH is a sovereign context environment: people build, preserve, query, govern and
+selectively share persistent understanding through Context Spaces, independently
+of AI providers/models. Its differentiators are owner control, persistent identity
+and lifecycle, structured understanding, provenance distinct from interpretation,
+portability and selective sharing. Substantial decisions remain human-controlled;
+backend authorization precedes disclosure to AI providers. V0.1 approved projections
+are immutable snapshots.
+
+Before decisions about Context Space, understanding, provenance, projection,
+ownership, authorization or sharing, read the relevant sections of
+[QH Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), the mandatory functional
+reference. Never infer the functional model solely from table names, existing code
+or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
+understanding, revisions and governance; Graphiti/Neo4j is replaceable derived
+semantic state. Follow approved ADR 0002 for the V0.1 model and ticket boundaries.
+
+## Autonomy and STOP AND ASK
+
+Structural decisions require user approval: domain meaning, canonical data,
+authorization rules, architectural responsibilities, public contracts and product
+invariants. Apply STOP AND ASK if they are not already defined by the Product
+Contract or approved ADRs. Do not reopen approved decisions unless a concrete
+contradiction, new risk or technical constraint makes them impractical; explain
+that specific issue rather than restarting a general architecture review.
+
+Make implementation decisions autonomously within approved contracts: internal
+module layout, index names, migration details, tests, local refactoring and other
+reversible technical choices. Do not request approval for every SQL field/file/test.
+
+For unresolved structural choices, stop the affected implementation when:
+
+- A ticket omits a necessary domain choice or contradicts the Product Contract.
+- The Product Contract does not resolve an ambiguity.
+- Architectural alternatives have different structural consequences.
+- A choice changes the canonical model or persistence responsibilities.
+- A decision may compromise privacy, authorization or data sovereignty.
+- Implementation requires a significant deviation from an approved ADR.
+- A change makes Graphiti, an LLM provider or another adapter hard to replace.
+- A decision introduces a service or changes public contracts.
+
+Identify the missing decision; present feasible alternatives, consequences,
+benefits/risks and a reasoned recommendation. Wait for explicit user approval
+before implementing the affected part. Continue only independent, already-defined
+work without anticipating the blocked decision. Ordinary reversible technical
+choices consistent with approved decisions do not require interruption.
+
 ## Architecture and dependency direction
 
 - `apps/web`: React + TypeScript + Vite. TypeScript is strict and extends the

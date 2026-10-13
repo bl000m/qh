@@ -1,5 +1,14 @@
 # QH architecture
 
+Read the [QH Product Contract](product/QH_PRODUCT_CONTRACT.md) before decisions
+about the domain or persistence. It is the functional reference; this document
+and ADRs describe technical boundaries. Conflicts require STOP AND ASK, not
+inference from existing code. [ADR 0002](adr/0002-canonical-understanding-persistence.md)
+records the approved V0.1 model: PostgreSQL holds canonical sources, understanding,
+revisions and governance; Graphiti/Neo4j is derived and replaceable. QH-4 supplies
+schema and minimal contract corrections, without graph duplication or feature
+workflows. Applying migrations to the QH application database still needs approval.
+
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. Concrete
 services and application features remain deferred. See
