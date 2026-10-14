@@ -105,3 +105,5 @@ The manual smoke creates indexes without deleting existing ones, ingests a harml
 synthetic source, searches through `ContextEngine`, checks source revision provenance
 and searches a different empty space. Real semantic extraction and embedding
 calls are required for the ticket's live Done criterion, so mocks cannot complete it.
+
+See [executed verification and remaining Done criterion](verification-qh-7.md).
