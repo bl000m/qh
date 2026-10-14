@@ -1,0 +1,249 @@
+{
+  "new_requests": 7,
+  "input_tokens": 4318,
+  "output_tokens": 279,
+  "estimated_cost_usd": 0.00045970000000000006,
+  "cache_hits": {
+    "extraction": 1,
+    "embedding": 9
+  },
+  "requests": [
+    {
+      "number": 1,
+      "endpoint": "https://api.mistral.ai/v1/embeddings",
+      "model": "mistral-embed",
+      "payload_sha256": "efdf7ee4e2fba8b6c3e62fba5c4ee78fb386086daac6940680c9981f3b6c5dd4",
+      "max_output_tokens": 0,
+      "pre_send_estimate_usd": 0.0001106,
+      "input": "Cedar Observatory",
+      "http_status": 200,
+      "usage": {
+        "prompt_audio_seconds": null,
+        "prompt_tokens": 7,
+        "total_tokens": 7,
+        "completion_tokens": 0,
+        "request_count": null,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null,
+        "service_tier": null,
+        "prompt_token_details": null
+      },
+      "estimated_cost_usd": 7.000000000000001e-07,
+      "dimensions": 1024
+    },
+    {
+      "number": 2,
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "model": "ministral-3b-2512",
+      "payload_sha256": "29a8a702cf4aa3dc3fd44f7aefacc3d5e1c45affbbaca2d98247ca2a4f8b3f50",
+      "max_output_tokens": 16384,
+      "pre_send_estimate_usd": 0.0024962,
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 1406,
+        "total_tokens": 1505,
+        "completion_tokens": 99,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 0.00015050000000000003,
+      "result": {
+        "edges": [
+          {
+            "source_entity_name": "Ada",
+            "target_entity_name": "Cedar Observatory",
+            "relation_type": "FOUNDED",
+            "fact": "Ada founded Cedar Observatory",
+            "valid_at": "2026-10-14T22:42:56.367783Z",
+            "invalid_at": null,
+            "episode_indices": [
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "number": 3,
+      "endpoint": "https://api.mistral.ai/v1/embeddings",
+      "model": "mistral-embed",
+      "payload_sha256": "af5fdf490f637dc1ef833e00542eb48a475db88480baa6563ffc996baba538e1",
+      "max_output_tokens": 0,
+      "pre_send_estimate_usd": 0.00011180000000000001,
+      "input": "Ada founded Cedar Observatory",
+      "http_status": 200,
+      "usage": {
+        "prompt_audio_seconds": null,
+        "prompt_tokens": 10,
+        "total_tokens": 10,
+        "completion_tokens": 0,
+        "request_count": null,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null,
+        "service_tier": null,
+        "prompt_token_details": null
+      },
+      "estimated_cost_usd": 1.0000000000000002e-06,
+      "dimensions": 1024
+    },
+    {
+      "number": 4,
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "model": "ministral-3b-2512",
+      "payload_sha256": "ff26d5a8ed81da9620c8e8603d3ab17e97371d2e7316c37f24dc00d2099cdd8e",
+      "max_output_tokens": 4096,
+      "pre_send_estimate_usd": 0.0010176,
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 932,
+        "total_tokens": 976,
+        "completion_tokens": 44,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 9.760000000000001e-05,
+      "result": {
+        "extracted_entities": [
+          {
+            "name": "Cedar Observatory",
+            "entity_type_id": 0,
+            "episode_indices": [
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "model": "ministral-3b-2512",
+      "payload_sha256": "ab455eea56cc8a0bb2883f6f9da17a370418f1318ab4595b3d9fa2aede1dab09",
+      "max_output_tokens": 16384,
+      "pre_send_estimate_usd": 0.0024909000000000003,
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 1391,
+        "total_tokens": 1494,
+        "completion_tokens": 103,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 0.00014940000000000003,
+      "result": {
+        "edges": [
+          {
+            "source_entity_name": "Cedar Observatory",
+            "target_entity_name": "Bea",
+            "relation_type": "FOUNDED_BY",
+            "fact": "Cedar Observatory was founded by Bea",
+            "valid_at": "2026-10-14T23:04:07.515975Z",
+            "invalid_at": null,
+            "episode_indices": [
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "number": 6,
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "model": "ministral-3b-2512",
+      "payload_sha256": "1c6a7d52f435ee19b6b305decc7ae99b10d432c86c04467611977d73cc8671ee",
+      "max_output_tokens": 4096,
+      "pre_send_estimate_usd": 0.0008505000000000001,
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 564,
+        "total_tokens": 597,
+        "completion_tokens": 33,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 5.970000000000001e-05,
+      "result": {
+        "summaries": [
+          {
+            "name": "Cedar Observatory",
+            "summary": "Founded by Bea in 2023."
+          }
+        ]
+      }
+    },
+    {
+      "number": 7,
+      "endpoint": "https://api.mistral.ai/v1/embeddings",
+      "model": "mistral-embed",
+      "payload_sha256": "e063bdef38272b52c672d28bccbacc494eda9e9c9111f0fb1a33f0002712c300",
+      "max_output_tokens": 0,
+      "pre_send_estimate_usd": 0.0001117,
+      "input": "Who founded the observatory?",
+      "http_status": 200,
+      "usage": {
+        "prompt_audio_seconds": null,
+        "prompt_tokens": 8,
+        "total_tokens": 8,
+        "completion_tokens": 0,
+        "request_count": null,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null,
+        "service_tier": null,
+        "prompt_token_details": null
+      },
+      "estimated_cost_usd": 8.000000000000001e-07,
+      "dimensions": 1024
+    }
+  ],
+  "functional": [
+    {
+      "ingested": "A",
+      "source_id": "qh7-synthetic-e6362c64a5f0446f93dedc340be1278e",
+      "revision_id": "revision-1"
+    },
+    {
+      "ingested": "B",
+      "source_id": "qh7-source-b-06e0335d759e4ab29baed3ea5a51bf49",
+      "revision_id": "revision-1"
+    },
+    {
+      "searched": "A",
+      "facts": [
+        "Ada founded Cedar Observatory"
+      ],
+      "provenance_valid": true,
+      "space_isolation_valid": true
+    }
+  ],
+  "stopped": "Semantic search returned no hits for B",
+  "spaces": {
+    "A": "qh7-uuid-probe-e6362c64a5f0446f93dedc340be1278e",
+    "B": "qh7-smoke-b-06e0335d759e4ab29baed3ea5a51bf49"
+  },
+  "cached_embedding_inputs": [
+    "Ada",
+    "Cedar Observatory",
+    "Ada founded Cedar Observatory",
+    "Who founded the observatory?"
+  ]
+}

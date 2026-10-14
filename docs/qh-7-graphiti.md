@@ -55,14 +55,16 @@ Pinned-source review and an offline HTTP contract test cover:
 - Neo4j driver constructed outside a running loop to avoid implicit index writes;
   schema initialization occurs only through the explicit `initialize()` operation.
 
-`mistral-small-latest` is an extraction candidate for compatibility testing, not
-a final model decision or a verified live extraction result. `MISTRAL_LLM_MODEL`
+`ministral-3b-2512` was selected for the first real smoke as the low-cost
+structured-output candidate. Its live result is mixed: space A succeeds, while
+space B misses an entity and yields no retrievable fact. It is not yet validated
+as a reliable extraction model. See the verification report and recorded ledger. `MISTRAL_LLM_MODEL`
 has no default and must be chosen explicitly. Alias revisions may change; record
 the actual model in the per-request review before live verification. The pinned
 Graphiti generic client sends the configured main model for extraction; its
 small-model setting is deliberately the same model. `mistral-embed` is the initial
-embedding configuration. Schema quality and actual semantic behavior remain to
-be verified through individually authorized real requests before final selection.
+embedding configuration. Schema quality and actual semantic behavior must be validated within explicit
+request or bounded-experiment authorization before final model selection.
 
 References checked during implementation: [Graphiti provider configuration](https://help.getzep.com/graphiti/configuration/llm-configuration),
 [pinned generic client](https://github.com/getzep/graphiti/blob/v0.30.2/graphiti_core/llm_client/openai_generic_client.py),
@@ -76,20 +78,24 @@ Documentation compatibility is separate from a successful real-provider smoke.
 
 `billing.py` gates every HTTP attempt. Default authorization denies all calls.
 Only configured Mistral HTTPS POST endpoints/models are allowed. Redirects,
-streaming, provider retries and paid reranking are disabled. Each approval covers
-one request body only and is consumed even on failure. Embedding batch operations
-are split into serial single-text requests; each needs its own approval, and the
-HTTP boundary rejects arrays with multiple inputs. No permit is cached;
-concurrent Graphiti requests wait for separate approval prompts.
+streaming, provider retries and paid reranking are disabled. Without explicit
+experiment authorization, approvals cover individual requests and are consumed
+even on failure. An explicitly authorized bounded experiment may instead supply
+an approval callback backed by a persistent request counter, estimated budget
+check, model/scope allowlist and stop-on-error handling. It must not ask again for
+individual requests inside that grant. Default behavior still denies all calls.
+Embedding batches are split into serial single-text requests; the HTTP boundary
+rejects arrays with multiple inputs. The transport lock serializes provider sends.
 
 The manual terminal prompt displays provider, endpoint, model, extraction/embedding
 purpose, payload hash/size, maximum output tokens where available, and cost status.
 The current estimate is explicitly unavailable: exact input tokenization and a
 verified tariff for the selected model are not configured. Before an agent executes
 a real request it must also present any calculable estimate to the owner in chat
-and wait for explicit authorization for that single request. Terminal confirmation
-must never be entered by the agent without that authorization. A smoke invocation
-can generate many calls; invocation approval does not authorize those calls.
+and verify that it is covered by either single-request authorization or a bounded
+experiment grant under AGENTS.md. Terminal confirmation must never be entered
+without applicable authorization. A generic smoke invocation does not itself grant
+permission to spend; explicit experiment limits must be enforced before each send.
 
 The actual API key belongs exclusively in the ignored local VPS `.env`. Never
 paste it into the conversation, pass it as a command argument, print environment
@@ -103,7 +109,12 @@ entry point is `make smoke-graphiti`. It requires a terminal; it is not part of
 startup, `test`, `verify`, `verify-running` or CI. Do not invoke it automatically.
 For agent-assisted execution retain the interactive process, show each pending
 request to the owner, then enter its unique `ALLOW` token only after the matching
-explicit authorization. A refusal/error stops the smoke; no automatic retry.
+explicit authorization, unless a bounded experiment was explicitly authorized.
+The first bounded experiment used a separate temporary runner with a persistent
+ledger, 30-request/0.05-USD guards, serial sends and no retries. It stopped after
+seven new requests on missing semantic results in space B. No rerun is implied.
+Some optional Graphiti operations catch ordinary exceptions, so experiment-level
+stop signals must also prevent subsequent sends. No automatic retry is allowed.
 The synthetic UUID-named scope is printed and retained for inspection. No existing
 data or volumes are deleted. Partial derived state can remain after a stopped run.
 
