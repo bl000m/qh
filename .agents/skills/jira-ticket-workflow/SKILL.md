@@ -13,7 +13,10 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
    domain meaning solely from table names, code or incomplete Jira descriptions.
 3. Consult relevant approved ADRs in `docs/adr` and `docs/architecture.md`.
    Distinguish approved principles, V0.1 choices, open hypotheses and future work.
-4. Inspect code, Git/baseline and Docker availability. Identify missing decisions,
+4. Identify the delta against previous verification reports under AGENTS.md;
+   inspect only relevant code, Git/baseline and Docker availability, with preflight
+   proportional to risk. Repeat completed work only if changes invalidate it,
+   regressions emerge or evidence is insufficient. Identify missing decisions,
    contradictions and architectural/privacy risks before defining the scope.
    Follow AGENTS.md's baseline/versioning policy; do not infer Done from files
    or ticket status.

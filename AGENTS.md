@@ -80,6 +80,9 @@ choices consistent with approved decisions do not require interruption.
   ticket requirements.
 - Inspect the repository and scope changes to the requested ticket. Use
   `.agents/skills/jira-ticket-workflow/SKILL.md` for ticket-based work.
+- Identify the delta against previous verified results before implementation.
+  Reuse them; repeat completed work only for changed behavior, regressions or
+  insufficient evidence. Scale preflight to the change's actual risk.
 - Verify the Definition of Done with actual execution evidence. Report each
   criterion as PASS, FAIL or NOT TESTED, with commands and observed results.
 - Never claim tests passed if they were not executed. Distinguish static review
