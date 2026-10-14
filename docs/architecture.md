@@ -35,7 +35,7 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
-### Identity and authorization (QH-5)
+### Identity and authorization (QH-5 / QH-29)
 
 [Identity ADR](adr/0002-identity-and-authorization.md) records the approved
 separation. Keycloak is optional local infrastructure; the five base services
@@ -50,7 +50,8 @@ flowchart LR
     API --> General[General OAuth roles / scopes gate]
     General --> Mapping[PostgreSQL: issuer + subject to QH user ID]
     Mapping --> Policy[QH PolicyService: resource authorization]
-    Policy -->|allow before private read| Content[Authorized QH content]
+    Policy -->|allow before private read / retrieval| Governance[Content governance: future approved scope / revisions]
+    Governance --> Content[Authorized QH content]
     MCP[Future remote MCP OAuth: grants / consent] -. separate tickets .-> API
 ```
 
@@ -58,6 +59,17 @@ Both applicable gates must allow access. A general OAuth scope does not grant
 access to another owner's Context Space. QH Core receives only QH domain IDs.
 `GET /auth/me` is the stable identity endpoint; private owner probe routes are
 test-only. Remote delegated MCP OAuth is outside QH-5.
+
+QH-29 formalizes `PolicyService` as the one logical resource-decision point,
+initially implemented by the backend's existing `OwnerPolicyService`, with
+replaceability through explicit injection. Future REST (QH-9) and MCP (QH-24)
+share that policy through the authenticated backend; MCP has no direct DB access,
+duplicate owner rules or unverified-identity bypass. Default deny precedes private
+reads, semantic retrieval and LLM disclosure. Authentication, resource decisions
+and content governance are separate responsibilities: the owner READ_CONTEXT
+gate is implemented, while granular projection/snapshot scope and revocation
+remain QH-14–QH-22. The diagram's governance stage records that future boundary,
+not a currently implemented filtering engine.
 
 - `apps/web` imports public wire contracts only; no backend implementation imports.
 - `apps/api/app/core` owns immutable Python domain values, ContextEngine and
