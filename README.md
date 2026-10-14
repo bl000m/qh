@@ -117,8 +117,8 @@ make check-secrets
 make lint
 ```
 
-The authorized push was performed; hosted results remain NOT TESTED while GitHub
-Actions read access is blocked by invalid/unavailable credentials. See
+The authorized push passed both hosted jobs on 2026-10-14:
+[quality and OIDC run](https://github.com/bl000m/qh/actions/runs/38550589615). See
 [QH-6 delta and evidence](docs/verification-qh-6.md).
 
 Individual commands, after `make up`:

@@ -5,7 +5,8 @@ Ticket: [QH-6](https://contextlab.atlassian.net/browse/QH-6), read in full throu
 Atlassian MCP. Scope: residual quality/CI work only. No product model, API,
 Graphiti or OIDC implementation changed. The owner subsequently authorized a
 push to test hosted Actions, followed by a local report commit. The push succeeded;
-no Jira write was performed.
+both hosted jobs were subsequently verified successful after CLI reauthentication.
+No Jira write was performed. The report updates remain local.
 
 ## Existing evidence reused
 
@@ -57,11 +58,11 @@ was added. No full architecture or secret-history audit was repeated.
 
 | Criterion | Result | Evidence |
 | --- | --- | --- |
-| Versioned Actions workflow matches existing commands, no paid/external LLM service | PASS, static/local | `make lint-workflows` passes actionlint 1.7.7 in Docker; actual commands above and no provider key inputs |
-| Hosted Actions execution/results | NOT TESTED — read access blocked | Authorized `git push origin main` succeeded at `e696b5409a81f0da25d6f26b0783cbc0c82440cf`. GitHub connector returns 404 for repository/runs; existing gh CLI returns HTTP 401 Bad credentials. No hosted success or failure is inferred from the push |
+| Versioned Actions workflow matches existing commands, no paid/external LLM service | PASS, local/hosted | actionlint 1.7.7, Docker gate, lint/build/typechecks and both OIDC checks pass locally and on GitHub; no provider key inputs |
+| Hosted Actions execution/results | PASS | Push run [38550589615](https://github.com/bl000m/qh/actions/runs/38550589615), full SHA `e696b5409a81f0da25d6f26b0783cbc0c82440cf`; `quality` and `oidc` both completed successfully on fresh Ubuntu 24.04 hosted runners |
 | Existing local commands and only missing integrations | PASS | One complete `make verify` after integration: 127 backend + 10 guard + 2 MCP + 5 smoke = 144 passed; all application image builds/health waits, Ruff, TypeScript/shared checks and Vite build passed |
-| Existing complete OIDC check remains available | PASS, local | `make test-oidc-application`: 1 passed, 1 deselected; `make test-oidc`: 1 passed, 1 deselected; actual local Keycloak, current API, isolated owner checks reused |
-| Secret guard and Core boundaries preserved | PASS, local/static | New guard's positive/negative cases, real index check, existing AST and isolated import tests included in backend suite; CI masking/config reviewed. Hosted CI log inspection remains NOT TESTED |
+| Existing complete OIDC check remains available | PASS, local/hosted | `make test-oidc-application`: 1 passed, 1 deselected; `make test-oidc`: 1 passed, 1 deselected, on both environments; existing Keycloak/API/isolated owner checks reused |
+| Secret guard and Core boundaries preserved | PASS, local/hosted | Guard and AST/isolated import tests included in both gates; hosted logs reviewed with redaction visible and no private-key/GitHub-token/LLM-key pattern matches. This is the scoped minimum guard, not a complete secret/history audit |
 | Permanent workflow is proportionate and based on prior verified delta | PASS, review | Only short AGENTS/skill additions; all preexisting approval/autonomy/commit rules preserved |
 | No development database/volume/data deleted | PASS | DB/IdP container IDs and mounts equal QH-5 snapshot; live topology/isolation check passes; application remains `0002_oidc_identities`, 2 users/bindings and 0 spaces; no application migration/seed in this ticket |
 
@@ -83,9 +84,11 @@ Additional actual OIDC checks and network/volume probes were targeted.
 | --- | --- |
 | `6ab729f` — `docs(QH-6): require delta-based ticket preflight` | Brief AGENTS/skill rule; diff/reference review; formal validator unavailable as noted above |
 | `e696b54` — `ci(QH-6): add reproducible Docker quality and OIDC gates` | Workflow and minimal missing gates; targeted tests/lint/actionlint/index checks; integration results recorded here |
+| `6e3b363` — `docs(QH-6): record authorized push and hosted access blocker` | Initial report and README; successful push recorded while API access was unavailable; index, diff and links checks |
 
-Final documentation commit updates README and this report. Its hash/message is
-reported in the delivery; `git log -3 --oneline` reproduces all QH-6 commits.
+Final documentation commit updates README and this report with hosted evidence.
+Its hash/message is reported in the delivery; `git log -4 --oneline` reproduces
+all QH-6 commits. The two report commits were not pushed.
 Local validation source references: [Actions syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 [checkout v5 release](https://github.com/actions/checkout/releases/tag/v5.0.0),
 [actionlint Docker usage](https://github.com/rhysd/actionlint/blob/main/docs/usage.md),
@@ -98,25 +101,42 @@ QH-6's fresh test databases use `qh6_test_*` and are retained; prior isolated
 databases remain untouched. Existing QH-4 tests still clean only their own
 temporary databases, never development data/volumes.
 
-## Authorized push and hosted access
+## Authorized push and hosted evidence
 
 `git push origin main` succeeded: remote advanced from `9842027` to
 `e696b5409a81f0da25d6f26b0783cbc0c82440cf`, publishing the two QH-6 implementation
 commits. [Pushed commit](https://github.com/bl000m/qh/commit/e696b5409a81f0da25d6f26b0783cbc0c82440cf)
 and [Actions on main](https://github.com/bl000m/qh/actions?query=branch%3Amain).
 
-Hosted observation is blocked, not a tested pipeline failure: the connected
-GitHub app cannot read `bl000m/qh` (404 for repository and runs). The existing
-`/opt/homebrew/bin/gh` executable was reused, with no installation, but
-`gh run list --repo bl000m/qh --branch main --event push` returns HTTP 401
-`Bad credentials`. No token was printed or copied into repository files.
-The owner was asked to reauthenticate that CLI with an account that can access
-the repository. A hosted run ID, job outcomes, test counts and log redaction
-cannot yet be verified. They remain NOT TESTED; no success is claimed.
+Initial observation was blocked by GitHub app visibility (404) and invalid CLI
+credentials (401), not a pipeline failure. The owner reauthenticated the existing
+`/opt/homebrew/bin/gh`; no new tool was installed and no token was printed or
+copied into repository files. Subsequent run/job/log reads succeeded.
 
-After authentication, inspect runs for the pushed full SHA and both `quality`
-and `oidc` jobs, then replace these pending results with actual evidence. Hosted
-runner architecture/network/registry/permissions and log redaction are not proven
-by local execution or static actionlint. Branch protection/settings and later
-application features remain outside this change. The report commit is local;
-publishing it is not part of this verification push.
+Actual [run 38550589615](https://github.com/bl000m/qh/actions/runs/38550589615):
+event `push`, full head SHA above, conclusion `success`. It ran on 2026-10-14
+from 12:35:05 to 12:39:29 Europe/Paris (approximately 4m24s).
+
+| Hosted job | Result | Executed evidence |
+| --- | --- | --- |
+| [quality — 115807298142](https://github.com/bl000m/qh/actions/runs/38550589615/job/115807298142) | PASS | Checkout, ephemeral credentials, actionlint, existing `make verify`, stop and cleanup steps all succeed; 127 backend + 10 guard + 2 MCP + 5 smoke = 144 passed; both Ruff checks, Vite build and workspace TypeScript checks pass. Job duration approximately 1m55s |
+| [oidc — 115808059336](https://github.com/bl000m/qh/actions/runs/38550589615/job/115808059336) | PASS | Existing Keycloak setup and migrations/provisioning on its fresh runner succeed; deployed OIDC test 1 passed/1 deselected, isolated OIDC test 1 passed/1 deselected; stop and cleanup succeed. Job duration approximately 2m23s |
+
+Both hosted jobs use the Ubuntu 24.04 runner label. This
+confirms the new unversioned/empty application preflight works in the complete
+standard gate on a fresh hosted environment, not only the local snapshot test.
+
+Logs were captured for review without dumping raw output into the conversation
+or repository. Only test/build counts and review summaries were emitted. Redaction
+markers (`***`) are visible; private-key, GitHub-token and LLM-key patterns have
+no matches. Generated credentials are handled by the masking protocol, with no
+raw environment/Compose/inspect dumps or uploaded credential artifacts observed.
+As elsewhere, these checks do not constitute an exhaustive secret detector.
+The existing Starlette/AnyIO warning appears in hosted tests and is non-failing.
+
+Read commands: `gh run list --repo bl000m/qh --branch main --event push`,
+`gh run view 38550589615 --repo bl000m/qh --json headSha,status,conclusion,url,event,createdAt,updatedAt,jobs`,
+and `gh run view 38550589615 --repo bl000m/qh --log` (captured and reviewed).
+Only the push trigger was executed; PR/manual triggers were statically validated.
+Branch protection/settings and later application features remain outside scope.
+The report update is committed locally; publishing it is not part of this push.
