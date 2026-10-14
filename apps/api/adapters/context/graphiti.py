@@ -1,9 +1,10 @@
 """Replaceable derived semantic adapter. Callers authorize scope before invocation."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import NAMESPACE_URL, uuid5
 
+from graphiti_core.errors import NodeNotFoundError
 from graphiti_core.nodes import EpisodeType, EpisodicNode
 from graphiti_core.search.search_config_recipes import EDGE_HYBRID_SEARCH_RRF
 
@@ -57,6 +58,20 @@ class GraphitiContextEngine:
             "context_id": str(context_id), "source_id": str(source.source_id),
             "revision_id": str(source.revision_id)}}, separators=(",", ":"))
         try:
+            # Graphiti 0.30.2 treats uuid as an existing episode lookup, not a
+            # creation ID. Persist only the derived episode before extraction.
+            try:
+                episode = await EpisodicNode.get_by_uuid(self.client.driver, identifier)
+            except NodeNotFoundError:
+                episode = EpisodicNode(uuid=identifier, name=identifier, group_id=scope,
+                    source=EpisodeType.text, source_description=descriptor, content=text,
+                    created_at=datetime.now(timezone.utc), valid_at=reference_time)
+                await episode.save(self.client.driver)
+            else:
+                if (episode.group_id != scope or episode.source != EpisodeType.text
+                        or episode.source_description != descriptor or episode.content != text
+                        or episode.valid_at != reference_time):
+                    raise ValueError("Existing derived episode conflicts with the source revision")
             await self.client.add_episode(name=identifier, episode_body=text,
                 source_description=descriptor, reference_time=reference_time,
                 source=EpisodeType.text, group_id=scope, uuid=identifier,

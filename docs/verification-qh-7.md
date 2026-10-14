@@ -101,3 +101,62 @@ The final documentation commit adds this report; its hash is available in
 `git log -3 --oneline` and the delivery summary. Checks: documentation/reference
 review, staged whitespace and secret guard. No further provider call is authorized
 by these implementation or verification results.
+
+
+## UUID correction and VPS activation — 2026-10-15
+
+The real Neo4j preflight exposed a gap in the earlier mocked ingestion check:
+Graphiti 0.30.2 interprets `add_episode(uuid=...)` as an existing-episode lookup.
+A new deterministic ID raised `NodeNotFoundError` before the provider boundary.
+Installed source inspection of `Graphiti.add_episode` and
+`EpisodicNode.get_by_uuid` confirmed that behavior. The previous hosted CI success
+at commit `3ed53db` did not cover this real API behavior.
+
+The adapter now creates only the missing derived EpisodicNode via its Graphiti
+API before requesting extraction. Existing episode content, scope, descriptor,
+type and reference time must match; conflicting reuse fails before provider
+access. No Core contract, architecture, canonical PostgreSQL persistence or QH-8
+workflow changes. A denied extraction may leave a partial derived episode; full
+ingestion idempotence and concurrent conflicting writers are not claimed.
+
+Executed checks:
+
+- Regression test calls the real installed `Graphiti.add_episode`, with in-memory
+  episode storage and the real SDK/approval transport. New UUID and matching reuse
+  reach two separate denied approvals; conflicting text never reaches approval
+  or overwrites the stored episode. No network is available. The same new test
+  fails against the original adapter at its missing-approval assertion, confirming
+  it detects the regression rather than reproducing the implementation.
+- Targeted adapter, architecture and contract tests: **63 PASS** both in an
+  isolated network-less image with current source and after backend activation.
+  Running command: `sudo -n docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python -m pytest -q -p no:cacheprovider tests/test_graphiti_context.py tests/test_architecture.py tests/test_contracts.py`.
+- Backend Ruff check: **PASS** before build and in the recreated backend.
+- `sudo -n docker compose --env-file .env -f infra/docker/docker-compose.yml build backend`:
+  **PASS**, only backend image built. Dependency lock unchanged.
+- `sudo -n docker compose --env-file .env -f infra/docker/docker-compose.yml up -d --no-deps --no-build --force-recreate --wait --wait-timeout 120 backend`:
+  **PASS**, only backend recreated. Before/after container ID and mount comparison
+  confirms the other five container IDs and every mount unchanged. No volumes or
+  existing data deleted; no migrations executed.
+- Installed backend version: **0.30.2**, confirmed with importlib.metadata;
+  installed-source UUID semantics verified with inspect.getsource. Required
+  Mistral/Neo4j settings all nonempty; no key printed, changed or validated externally.
+- Actual Neo4j preflight inside the updated backend: **PASS**, fresh UUID and its
+  reuse both reach the HTTP approval boundary. Both approvals deliberately denied;
+  an additional in-memory HTTP transport would fail any attempted send. **Zero
+  external requests sent**. One partial synthetic episode retained in scope
+  `qh7-uuid-probe-e6362c64a5f0446f93dedc340be1278e`; existing data untouched.
+- First pending request observed: Mistral Cloud, POST
+  `https://api.mistral.ai/v1/chat/completions`, model `ministral-3b-2512`, entity
+  extraction for `Ada founded Cedar Observatory.`, 5056-byte serialized request,
+  max output 4096 tokens. This was denied, not executed. Actual live payload/hash
+  must be reviewed again before single-request authorization.
+- Backend local `/health`: **HTTP 200**. One non-failing upstream Pydantic Config
+  deprecation warning remains in targeted tests.
+
+The full 139-test baseline was previously executed; this limited adapter fix uses
+63 targeted checks plus the actual Neo4j/HTTP-boundary probe, without repeating
+unaffected migration/frontend/MCP/OIDC suites. Real semantic extraction, embedding
+and end-to-end retrieval remain **NOT TESTED** and QH-7 remains **not Done**.
+The environment is ready for the individually authorized live smoke; no real
+Mistral API call, remote push, merge, CI rerun or Jira write was performed.
+The correction is a new local `fix(QH-7)` commit; existing commits are unchanged.

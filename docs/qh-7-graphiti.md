@@ -18,7 +18,13 @@ these adapter operations or bypasses the existing policy boundary.
 `ingest_source` is an adapter-only test/integration entry point, not a new Core
 port or canonical ingestion workflow. It accepts existing QH source/revision IDs,
 text and an aware reference time. UUID5 of the space/source/revision tuple identifies
-the derived episode; its versioned `source_description` encodes those IDs. This
+the derived episode; its versioned `source_description` encodes those IDs.
+Graphiti 0.30.2 interprets an explicit `add_episode(uuid=...)` as a lookup of an
+existing episode. The adapter therefore creates the derived `EpisodicNode` first
+when missing, using the public Graphiti node API. Existing episodes must match
+scope, source descriptor, text, type and reference time; conflicting inputs fail
+before provider access and never overwrite that episode. A denied extraction
+can leave this synthetic/derived episode without extracted entities or edges. This
 is disposable semantic state, not a canonical mapping table or trusted proof of
 ownership. QH-8 still owns source persistence and canonical episode mapping.
 Prior episodes are explicitly empty for this single-source integration; it does

@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+from graphiti_core.errors import NodeNotFoundError
+from graphiti_core.nodes import EpisodicNode
+
 import httpx
 import pytest
 
@@ -33,12 +36,15 @@ def engine():
     edge = SimpleNamespace(uuid="edge-a", group_id=group_id(SPACE), fact="Ada founded Cedar.",
                            episodes=[ep.uuid])
     client = SimpleNamespace(search_=AsyncMock(return_value=SimpleNamespace(edges=[edge])),
-        add_episode=AsyncMock(), build_indices_and_constraints=AsyncMock(), close=AsyncMock())
+        add_episode=AsyncMock(), driver=SimpleNamespace(),
+        build_indices_and_constraints=AsyncMock(), close=AsyncMock())
     loader = AsyncMock(return_value=[ep])
     return GraphitiContextEngine(client, episode_loader=loader), edge, ep
 
 
-def test_ingest_and_normalize_with_fresh_adapter():
+def test_ingest_and_normalize_with_fresh_adapter(monkeypatch):
+    monkeypatch.setattr(EpisodicNode, "get_by_uuid", AsyncMock(side_effect=NodeNotFoundError("missing")))
+    monkeypatch.setattr(EpisodicNode, "save", AsyncMock())
     adapter, edge, ep = engine()
     assert isinstance(adapter, ContextEngine)
     assert run(adapter.ingest_source(context_id=SPACE, source=SOURCE, text="Ada founded Cedar.",
@@ -213,6 +219,60 @@ def test_pinned_graphiti_mistral_wire_contract(monkeypatch):
             assert len(vectors) == 2 and all(len(vector) == 1024 for vector in vectors)
             assert len(descriptions) == len(requests) == 3
             assert all("synthetic-test-key" not in str(d) for d in descriptions)
+        finally:
+            await adapter.close()
+            await sdk.close()
+    run(scenario())
+
+
+def test_real_graphiti_fresh_episode_reaches_denied_http_without_network(monkeypatch):
+    """Use installed Graphiti.add_episode, not a mock of its UUID semantics."""
+    from adapters.context.factory import create_graphiti_engine
+    for key, value in {"MISTRAL_LLM_MODEL": "ministral-3b-2512",
+                       "MISTRAL_EMBEDDING_MODEL": "mistral-embed",
+                       "MISTRAL_API_KEY": "synthetic-test-key", "NEO4J_URI": "bolt://localhost:7687",
+                       "NEO4J_USER": "neo4j", "NEO4J_PASSWORD": "synthetic-password"}.items():
+        monkeypatch.setenv(key, value)
+
+    async def scenario():
+        stored, lookups, pending, sent = {}, [], [], []
+        async def lookup(driver, identifier):
+            lookups.append(identifier)
+            if identifier not in stored:
+                raise NodeNotFoundError(identifier)
+            return stored[identifier]
+        async def save(node, driver):
+            stored[node.uuid] = node
+        async def deny(description):
+            pending.append(description)
+            return False
+        def network(request):
+            sent.append(request)
+            raise AssertionError("No external request may be sent")
+        monkeypatch.setattr(EpisodicNode, "get_by_uuid", lookup)
+        monkeypatch.setattr(EpisodicNode, "get_by_uuids", AsyncMock(return_value=[]))
+        monkeypatch.setattr(EpisodicNode, "save", save)
+        adapter, sdk = await create_graphiti_engine(approval=deny)
+        sdk._client._transport.inner = httpx.MockTransport(network)
+        reference_time = datetime.now(timezone.utc)
+        try:
+            for _ in range(2):
+                # The deliberate HTTP refusal is the only expected ingestion failure.
+                with pytest.raises(ContextEngineError):
+                    await adapter.ingest_source(context_id=SPACE, source=SOURCE,
+                        text="Ada founded Cedar Observatory.", reference_time=reference_time)
+            identifier = episode_id(SPACE, SOURCE)
+            assert len(stored) == 1 and lookups == [identifier] * 4
+            assert stored[identifier].content == "Ada founded Cedar Observatory."
+            assert stored[identifier].group_id == group_id(SPACE)
+            assert len(pending) == 2 and sent == []
+            assert all(d.endpoint == "https://api.mistral.ai/v1/chat/completions" for d in pending)
+            assert all(d.model == "ministral-3b-2512" for d in pending)
+            # Never overwrite an episode when a caller reuses a revision with different content.
+            with pytest.raises(ContextEngineError):
+                await adapter.ingest_source(context_id=SPACE, source=SOURCE,
+                    text="Conflicting revision content.", reference_time=reference_time)
+            assert len(pending) == 2 and stored[identifier].content == "Ada founded Cedar Observatory."
         finally:
             await adapter.close()
             await sdk.close()
