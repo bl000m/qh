@@ -15,18 +15,23 @@ ps:
 	$(COMPOSE) ps
 test:
 	$(COMPOSE) exec -T backend python -m pytest -q
+	$(COMPOSE) exec -T backend python -m pytest -q /workspace/tests/quality
 	$(COMPOSE) exec -T mcp python -m pytest -q
 smoke:
 	$(COMPOSE) exec -T frontend npm run build:web
 	$(COMPOSE) exec -T frontend npm run typecheck
 	$(COMPOSE) exec -T backend python -m pytest -q /workspace/tests/smoke
 verify:
+	$(MAKE) check-secrets
 	$(MAKE) config
 	$(MAKE) up
+	$(MAKE) lint
 	$(MAKE) test
 	$(MAKE) smoke
 verify-running:
+	$(MAKE) check-secrets
 	$(MAKE) config
+	$(MAKE) lint
 	$(MAKE) test
 	$(MAKE) smoke
 verify-infra:
@@ -45,6 +50,15 @@ test-migrations:
 	$(COMPOSE) exec -T backend python -m pytest -q tests/test_migrations.py
 lock-node:
 	docker run --rm -v "$(CURDIR):/workspace" -w /workspace node:22.14.0-bookworm-slim npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+.PHONY: lint check-secrets lint-workflows
+lint:
+	$(COMPOSE) exec -T backend ruff check --no-cache app adapters tests /workspace/tests /workspace/scripts
+	$(COMPOSE) exec -T mcp ruff check --no-cache app tests
+check-secrets:
+	python3 scripts/check_secrets.py
+lint-workflows:
+	docker run --rm -v "$(CURDIR)/.github/workflows:/workflows:ro" rhysd/actionlint:1.7.7 -color /workflows/quality.yml
 lock-python:
 	$(COMPOSE) build backend
 	$(COMPOSE) run --rm --no-deps -v "$(CURDIR):/workspace" -w /workspace backend uv pip compile apps/api/pyproject.toml --extra dev --python-version 3.12 --universal --generate-hashes --only-binary :all: --output-file apps/api/requirements.lock

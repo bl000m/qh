@@ -18,6 +18,14 @@ def connect():
                           user=url.username, password=url.password, connect_timeout=5)
 
 
+def application_snapshot(connection):
+    tables = {row[0] for row in connection.execute(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")}
+    revision = connection.execute("SELECT version_num FROM alembic_version").fetchall() if "alembic_version" in tables else None
+    users = connection.execute("SELECT count(*) FROM users").fetchone() if "users" in tables else None
+    return tables, revision, users
+
+
 @contextmanager
 def isolated_database():
     original = os.environ["POSTGRES_DB"]
@@ -25,9 +33,9 @@ def isolated_database():
     assert original == "qh", "Unexpected application database: stop"
     name = "qh5_test_" + uuid4().hex
     with connect() as application:
-        before = application.execute("SELECT version_num FROM alembic_version").fetchall()
-        assert before in ([("0001_qh_schema",)], [("0002_oidc_identities",)]), "Unexpected application revision: stop"
-        before_users = application.execute("SELECT count(*) FROM users").fetchone()
+        before = application_snapshot(application)
+        assert before[1] in (None, [("0001_qh_schema",)], [("0002_oidc_identities",)]), "Unexpected application revision: stop"
+        assert before[1] is not None or not before[0], "Unversioned nonempty schema: stop"
     with connect() as admin:
         admin.autocommit = True
         admin.execute(sql.SQL("CREATE DATABASE {} TEMPLATE template0").format(sql.Identifier(name)))
@@ -40,5 +48,4 @@ def isolated_database():
     finally:
         os.environ["POSTGRES_DB"] = original
         with connect() as application:
-            assert application.execute("SELECT version_num FROM alembic_version").fetchall() == before
-            assert application.execute("SELECT count(*) FROM users").fetchone() == before_users
+            assert application_snapshot(application) == before

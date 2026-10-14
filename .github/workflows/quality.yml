@@ -1,0 +1,72 @@
+name: QH quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qh-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Generate runner-only credentials
+        run: |
+          python3 scripts/init_env.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from scripts.check_secrets import env_values, SECRET_NAME
+          for key, value in env_values(Path('.env').read_text()).items():
+              if SECRET_NAME.search(key) and value:
+                  print('::add-mask::' + value)
+          PY
+      - name: Validate workflow
+        run: make lint-workflows
+      - name: Existing Docker quality gate
+        run: make verify
+      - name: Stop runner services without deleting volumes
+        if: always()
+        run: docker compose --env-file .env -f infra/docker/docker-compose.yml stop
+
+  oidc:
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Generate runner-only credentials
+        run: |
+          python3 scripts/init_env.py
+          python3 scripts/init_oidc_env.py
+          python3 - <<'PY'
+          from pathlib import Path
+          from scripts.check_secrets import env_values, SECRET_NAME
+          for key, value in env_values(Path('.env').read_text()).items():
+              if SECRET_NAME.search(key) and value:
+                  print('::add-mask::' + value)
+          PY
+      - name: Existing local OIDC setup on disposable hosted runner
+        run: |
+          make oidc-up
+          make migrate
+          make seed-oidc-demo
+      - name: Existing deployed and isolated OIDC checks
+        run: |
+          make test-oidc-application
+          make test-oidc
+      - name: Stop runner services without deleting volumes
+        if: always()
+        run: docker compose --env-file .env -f infra/docker/docker-compose.yml --profile oidc stop
