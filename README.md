@@ -12,7 +12,7 @@ See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) an
 [QH-2 verification](docs/verification-qh-2.md) and
 [QH-3 infrastructure evidence](docs/verification-qh-3.md), plus
 [QH-4 foundation evidence](docs/verification-qh-4.md).
-OIDC setup and pending application activation are described in
+OIDC setup and authorized local application activation are described in
 [QH-5 authentication](docs/qh-5-authentication.md).
 
 ## Prerequisites
@@ -197,8 +197,9 @@ make oidc-stop
 Keycloak runs as an optional profile with a separate persistent volume; the five
 base services remain the standard bootstrap. Real login uses Authorization Code
 with PKCE. `GET /auth/me` returns the mapped QH user ID. Identity mapping requires
-the additive QH-5 migration and demo provisioning: **these have not been applied
-to `qh` and require explicit approval**. Tests migrate and seed only isolated
+the additive QH-5 migration and demo provisioning: **these were applied to local
+`qh` with explicit approval on 2026-10-14**. Future migrations still require approval.
+`make test-oidc-application` verifies deployed identities read-only; other OIDC tests migrate and seed only isolated
 databases. See [setup and checks](docs/qh-5-authentication.md) and the
 [identity ADR](docs/adr/0002-identity-and-authorization.md).
 

@@ -59,8 +59,9 @@ and [advisory locks](https://www.postgresql.org/docs/16/explicit-locking.html#AD
 
 QH-5 prepares the additive `0002_oidc_identities` revision: `user_identities`
 maps unique `(issuer, subject)` pairs to `users.id` without changing these seven
-tables. It has been tested with upgrade/downgrade on isolated data, but has not
-been applied to database `qh`. See [identity setup](qh-5-authentication.md).
+tables. It has been tested with upgrade/downgrade on isolated data and
+applied to database `qh` with explicit approval on 2026-10-14. See
+[identity setup](qh-5-authentication.md).
 
 - QH-8: ingestion, original-source locators and engine episode mapping; existing
   source revisions already preserve original content/origin and provenance IDs.

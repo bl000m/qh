@@ -12,6 +12,7 @@ The earlier uncommitted demo implementation is preserved only in ignored
 make up                  # five base services; no IdP required for health
 make oidc-up             # build/wait base services + optional Keycloak
 make test-oidc           # real login and HTTP tests with an isolated database
+make test-oidc-application # read-only check of deployed identities in qh
 make oidc-stop           # stop only the optional IdP, preserve its data
 make down                # stop base stack, preserve named volumes
 docker compose --env-file .env -f infra/docker/docker-compose.yml --profile oidc down
@@ -69,9 +70,10 @@ token claims. The local demo provisioning associates fixed, independent QH UUIDs
 with the two imported IdP subjects, idempotently, refusing an existing binding
 to another QH user. No Context Space is created by application provisioning.
 
-The prepared additive revision is `0002_oidc_identities`. **It has not been
-applied to database `qh`.** Both commands below require the owner's explicit
-authorization for application deployment; neither is run by startup or tests:
+The additive revision `0002_oidc_identities` and the two demo identity bindings
+**were applied to local database `qh` with explicit authorization on 2026-10-14**.
+The migration/provisioning commands below require the owner's explicit
+authorization; neither is run by startup or tests:
 
 ```sh
 make migration-current
@@ -79,9 +81,10 @@ make migrate             # only after explicit application migration approval
 make seed-oidc-demo       # only after explicit application provisioning approval
 ```
 
-Until then, a valid token cannot resolve its identity against the default `qh`
-schema; `/auth/me` returns 503. Tests exercise the actual runtime composition
-against isolated migrated databases, including persistent identity lookup.
+The deployed `/auth/me` now resolves Alice and Bob's real OIDC tokens into their
+distinct QH IDs. `make test-oidc-application` verifies this read-only against the
+running backend and `qh`. The other OIDC tests use isolated databases. Without
+the identity mapping schema, identity resolution fails closed with 503.
 
 The owner policy receives QH IDs only. General authentication/permissions run
 first; Core authorization precedes private content reads. Missing and foreign
@@ -95,6 +98,7 @@ registered only by tests. Production exposes `/health` and `/auth/me`; it has no
 python3 scripts/check_compose.py
 python3 scripts/check_compose.py --oidc
 make test-oidc
+make test-oidc-application
 make verify-running
 make verify-infra
 docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend \
@@ -103,7 +107,8 @@ docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backen
 ```
 
 QH-5 tests create uniquely named `qh5_test_*` databases and retain them for
-inspection; they never migrate/seed `qh`. The migration test compares all seven
+inspection; they never migrate/seed `qh`. The deployed identity check only reads
+`qh` and calls the live backend. The migration test compares all seven
 canonical tables before/after upgrade and downgrade. Existing QH-4 tests remain
 pinned to their foundation revision and remove only their own temporary test
 databases. No global cleanup or persistent volume deletion is performed.

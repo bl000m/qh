@@ -151,3 +151,33 @@ def test_real_oidc_login_mapping_and_owner_isolation():
         with connect() as connection:
             assert connection.execute("SELECT count(*) FROM users").fetchone() == (2,)
             assert connection.execute("SELECT count(*) FROM user_identities").fetchone() == (2,)
+
+
+@pytest.mark.skipif(os.environ.get("QH_RUN_OIDC_APPLICATION") != "1",
+                    reason="Run make test-oidc-application after approved deployment")
+def test_live_application_identity():
+    # Read-only: no migrations, provisioning or Context Spaces in application DB.
+    assert os.environ["POSTGRES_HOST"] == "postgres" and os.environ["POSTGRES_DB"] == "qh"
+    with connect() as connection:
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0002_oidc_identities",)
+        for _, identity, subject in DEMO_IDENTITIES:
+            assert connection.execute(
+                "SELECT u.id FROM user_identities i JOIN users u ON u.id=i.user_id "
+                "WHERE i.issuer=%s AND i.subject=%s AND u.status='active'",
+                (ISSUER, subject),
+            ).fetchone() == (identity,)
+    with httpx.Client(base_url="http://backend:8000", timeout=10) as client:
+        assert client.get("/health").status_code == 200
+        assert set(client.get("/openapi.json").json()["paths"]) == {"/health", "/auth/me"}
+        for name, identity in zip(("alice", "bob"), DEMO_IDENTITIES):
+            token = login(name, os.environ["QH_" + name.upper() + "_PASSWORD"])
+            response = client.get("/auth/me?user_id=spoof", headers={
+                "Authorization": "Bearer " + token, "X-User-ID": "spoof",
+            })
+            assert response.status_code == 200
+            assert response.json() == {"user_id": str(identity[1])}
+        for headers in ({}, {"X-User-ID": "spoof"}, {"Authorization": "Bearer false"}):
+            response = client.get("/auth/me", headers=headers)
+            assert response.status_code == 401
+            assert response.headers["WWW-Authenticate"] == "Bearer"
+        assert client.get("/test/private/anything").status_code == 404

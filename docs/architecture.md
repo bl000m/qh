@@ -29,7 +29,7 @@ authorization. See
 Compose service names are internal DNS names. The browser uses host loopback
 URLs, not Docker service names. The backend resolves identities and owners in
 PostgreSQL; it never applies migrations during startup. See
-[QH-5 setup](qh-5-authentication.md) for the pending application activation.
+[QH-5 setup](qh-5-authentication.md) for the authorized local application activation.
 Backend startup waits for PostgreSQL readiness and an authenticated Neo4j probe. MCP is
 independent of backend startup and has no DB credentials or data network access.
 
