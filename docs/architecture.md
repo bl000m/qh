@@ -22,7 +22,7 @@ authorization. See
 | frontend | Node 22.14.0; React, TypeScript, Vite | Serve frontend in development | app; loopback 5173 |
 | backend | Python 3.12.9; FastAPI | HTTP adapter; `/health`, OIDC `/auth/me`, Core owner policy | app + data; loopback 8000 |
 | mcp | Python 3.12.9; official MCP SDK 1.12.4 | Independent Streamable HTTP transport; `/mcp`, `/health`, `scaffold_ping` | app; loopback 3001 |
-| neo4j | Neo4j Community 5.26.5 | Future graph persistence | internal data only; no host ports |
+| neo4j | Neo4j Community 5.26.5 | Derived semantic state (QH-7) | internal data only; no host ports |
 | postgres | PostgreSQL 16.8 | Canonical QH persistence and external identity mapping | internal data only; no host ports |
 | keycloak (optional profile `oidc`) | Keycloak 26.4.7; OIDC | Local authentication and general roles/scopes; independent persistent IdP volume | app only; loopback 8080 |
 
@@ -94,10 +94,14 @@ not a currently implemented filtering engine.
 - API, MCP and outbound adapters depend on Core interfaces. Core must never
   import FastAPI, Graphiti, MCP, adapters or provider SDKs. Composition roots
   assemble implementations through dependency injection.
-- `apps/api/adapters/context` reserves ContextEngine implementations, including
-  the future Graphiti adapter. `apps/api/adapters/llm` reserves LLMProvider
-  implementations. Graphiti will be a backend Python library, never a sixth
-  container. Neither integration nor any production adapter is implemented yet.
+- `apps/api/adapters/context` implements the replaceable Graphiti ContextEngine
+  adapter (QH-7). Its explicit factory supplies Mistral Cloud extraction/embedding
+  clients with per-request approval and local RRF, outside Core. It is never
+  constructed by API startup or automatic tests/CI against live providers.
+  `apps/api/adapters/llm` still reserves chat LLMProvider implementations. Graphiti
+  is a backend Python library, never a sixth container. Source revision metadata
+  is derived episode state; canonical ingestion remains QH-8. See
+  [adapter boundaries and manual smoke](qh-7-graphiti.md).
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
