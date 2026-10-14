@@ -51,19 +51,25 @@ before implementing the affected part. Continue only independent, already-define
 work without anticipating the blocked decision. Ordinary reversible technical
 choices consistent with approved decisions do not require interruption.
 
-## External services and per-call cost authorization
+## External services and bounded cost authorization
 
-No paid or potentially billable external call is preauthorized. Before **each
-single request**, identify the provider, endpoint and model (if applicable),
-explain its purpose, estimate the cost when calculable, and wait for explicit
-user authorization. Authorization covers only that request: never subsequent
-calls, batches, automatic retries or other models. This applies to LLM extraction,
-embeddings, reranking, real smoke tests and every other metered external service.
+Paid or potentially billable external calls require explicit prior user
+authorization. Authorization may cover one request or an entire experiment with
+an explicit budget, maximum request count, authorized providers/models and precise
+scope. Within an authorized experiment, proceed without asking again for each
+included request; enforce and account for its limits before every external send.
+Without such experiment authorization, obtain consent for each single request,
+identifying provider, endpoint/model, purpose and estimated cost when calculable.
+This applies to extraction, embeddings, reranking, live smoke tests and all other
+metered external services. Authorization never extends beyond its stated limits.
 
-Implementation, mock tests, lint, builds and non-billable local checks may proceed
-autonomously. Container startup, automated tests and CI must never activate paid
-provider calls. Keep real provider smoke tests separate and enforce authorization
-for every underlying external request, including library/SDK retries.
+Stop on errors, invalid results, unexpected behavior or risk of exceeding the
+authorized limits. Retries and parallel paid requests require explicit inclusion
+in the authorization; otherwise disable them. Report requests, token usage and
+estimated cost after the experiment. Ordinary implementation, mock tests, lint,
+builds and free local checks may proceed autonomously. Container startup,
+automated tests and CI must never activate paid provider calls. Keep real provider
+smoke tests separate and enforce authorization at the underlying HTTP boundary.
 
 Mistral Cloud is the initial QH-7 extraction and embedding provider; preserve
 provider-independent Core contracts and verify model compatibility with the pinned
