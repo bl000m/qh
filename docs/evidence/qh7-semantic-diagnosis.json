@@ -1,0 +1,58 @@
+{
+  "external_requests": 0,
+  "database_writes": 0,
+  "prompt_hashes": {
+    "A_entities": {
+      "expected": "1cba9da865ad5eead45f1dfa259c101abea8fbfd5c94e04f85ca0b1e6665509a",
+      "reconstructed": "1cba9da865ad5eead45f1dfa259c101abea8fbfd5c94e04f85ca0b1e6665509a",
+      "match": true
+    },
+    "B_entities": {
+      "expected": "ff26d5a8ed81da9620c8e8603d3ab17e97371d2e7316c37f24dc00d2099cdd8e",
+      "reconstructed": "ff26d5a8ed81da9620c8e8603d3ab17e97371d2e7316c37f24dc00d2099cdd8e",
+      "match": true
+    },
+    "B_edges": {
+      "expected": "ab455eea56cc8a0bb2883f6f9da17a370418f1318ab4595b3d9fa2aede1dab09",
+      "reconstructed": "ab455eea56cc8a0bb2883f6f9da17a370418f1318ab4595b3d9fa2aede1dab09",
+      "match": true
+    },
+    "B_summary": {
+      "expected": "1c6a7d52f435ee19b6b305decc7ae99b10d432c86c04467611977d73cc8671ee",
+      "reconstructed": "1c6a7d52f435ee19b6b305decc7ae99b10d432c86c04467611977d73cc8671ee",
+      "match": true
+    }
+  },
+  "checks": {
+    "entity_requests_equal_after_Ada_Bea_substitution": true,
+    "2023_absent_from_summary_request": true,
+    "technical_reference_timestamp": "2026-10-14T23:04:07.515975+00:00",
+    "edge_time_equals_episode_reference": true,
+    "A_edge_time_equals_episode_reference": true,
+    "source_has_no_explicit_date": true,
+    "entity_schema_accepts_missing_Bea": true,
+    "edge_schema_accepts_unknown_endpoint": true,
+    "summary_schema_accepts_unsupported_year": true,
+    "edge_prompt_requires_listed_endpoints": true,
+    "all_reconstructed_hashes_match": true
+  },
+  "replay": {
+    "returned_edges": 0,
+    "llm_calls": [
+      "extract_edges.edge",
+      "extract_nodes.extract_summaries_batch"
+    ],
+    "summary_after_graphiti": "Founded by Bea in 2023."
+  },
+  "proposed_guards": {
+    "missing_expected_fixture_entities": [
+      "Bea"
+    ],
+    "unknown_edge_endpoints": [
+      "Bea"
+    ],
+    "unsupported_summary_years": [
+      "2023"
+    ]
+  }
+}

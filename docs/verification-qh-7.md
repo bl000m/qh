@@ -246,3 +246,21 @@ approval or successful QH-7 completion is claimed. Local commit purposes/checks:
 the following evidence commit records this failed live outcome and usage.
 Both use staged diff/whitespace review and the secret guard; code/tests/dependencies
 were unchanged by this experiment, so the prior 63-test adapter evidence is reused.
+
+
+## Offline diagnosis after failed bounded smoke
+
+See [causal diagnosis and smallest proposed correction](qh-7-semantic-diagnosis.md).
+Four reconstructed SDK request hashes match the originals exactly. A/B entity
+prompts differ only by the synthetic person's name; Bea is absent in the raw
+model response. Actual Graphiti replay drops its unmatched edge and accepts the
+unsupported summary year. The summary input contains no 2023; the technical 2026
+reference time is distinct, and its copying into semantic valid_at is also not
+supported by either undated fixture. All saved schema shapes validate, which
+explains why syntax validation did not catch the semantic defects.
+
+The standalone diagnostic ran using mocked SDK HTTP and scoped Neo4j reads:
+**zero external requests and zero database writes**. Script Ruff and index/secret
+checks pass. No adapter/prompt/production behavior was changed; proposed guards
+and a possible 8B comparison remain proposals. Existing commits and data remain
+intact. QH-7's live Done verdict remains FAIL, with no push/merge/Jira write.
