@@ -51,6 +51,25 @@ before implementing the affected part. Continue only independent, already-define
 work without anticipating the blocked decision. Ordinary reversible technical
 choices consistent with approved decisions do not require interruption.
 
+## External services and per-call cost authorization
+
+No paid or potentially billable external call is preauthorized. Before **each
+single request**, identify the provider, endpoint and model (if applicable),
+explain its purpose, estimate the cost when calculable, and wait for explicit
+user authorization. Authorization covers only that request: never subsequent
+calls, batches, automatic retries or other models. This applies to LLM extraction,
+embeddings, reranking, real smoke tests and every other metered external service.
+
+Implementation, mock tests, lint, builds and non-billable local checks may proceed
+autonomously. Container startup, automated tests and CI must never activate paid
+provider calls. Keep real provider smoke tests separate and enforce authorization
+for every underlying external request, including library/SDK retries.
+
+Mistral Cloud is the initial QH-7 extraction and embedding provider; preserve
+provider-independent Core contracts and verify model compatibility with the pinned
+Graphiti version before final model selection. Store its API key exclusively in
+the ignored local VPS `.env`; never put it in the repository, logs or conversation.
+
 ## Architecture and dependency direction
 
 - `apps/web`: React + TypeScript + Vite. TypeScript is strict and extends the
