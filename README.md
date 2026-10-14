@@ -83,6 +83,10 @@ Compose; prefer Make to avoid requiring npm on the host.
 
 ## Verification
 
+The gate includes `make check-secrets` (Git index and local credential matches)
+and `make lint` (Ruff 0.14.0 correctness rules in Python containers), followed by
+the existing tests, frontend typechecks and builds. No formatting churn is enforced.
+
 ```bash
 make verify
 ```
@@ -98,6 +102,24 @@ same configuration, unit and smoke checks without rebuilding or replacing
 containers. New source/test files are picked up through the existing bind mounts.
 This target requires all five services to be running. It does not prove a fresh
 image build or startup; those checks are reported separately.
+
+GitHub Actions runs the same `make verify` on pull requests and pushes to `main`.
+The separate OIDC job runs only after that gate passes, using the existing local
+Keycloak setup and `make test-oidc-application` / `make test-oidc` on an ephemeral
+hosted runner. CI creates its own credentials; no repository secrets or paid LLM
+services are needed. Application migrations/provisioning in that job apply only
+to its disposable runner database, never the Mac development database.
+The [workflow](.github/workflows/quality.yml) is pinned and can be checked locally:
+
+```bash
+make lint-workflows
+make check-secrets
+make lint
+```
+
+The authorized push was performed; hosted results remain NOT TESTED while GitHub
+Actions read access is blocked by invalid/unavailable credentials. See
+[QH-6 delta and evidence](docs/verification-qh-6.md).
 
 Individual commands, after `make up`:
 
