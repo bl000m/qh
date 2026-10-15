@@ -13,6 +13,10 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
    domain meaning solely from table names, code or incomplete Jira descriptions.
 3. Consult relevant approved ADRs in `docs/adr` and `docs/architecture.md`.
    Distinguish approved principles, V0.1 choices, open hypotheses and future work.
+   ADR 0003 supersedes the Graphiti runtime choice; read the current QH-30
+   deployment checkpoint and post-cutover proposal before treating old ticket
+   category names as mandatory registered types. Do not edit live bind-mounted
+   QH-30 source when an isolated implementation worktree is required.
 4. Identify the delta against previous verification reports under AGENTS.md;
    inspect only relevant code, Git/baseline and Docker availability, with preflight
    proportional to risk. Repeat completed work only if changes invalidate it,

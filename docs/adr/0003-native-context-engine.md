@@ -6,8 +6,28 @@ Status: architecture direction authorized by the owner through
 The owner has approved a single versioned type registry and stable identities with
 immutable revision references, universal endpoints and temporal metadata. The owner
 authorized incremental implementation/testing on a dedicated disposable database.
-Migration 0003 has three canonical tables and 0004 adds operational outbox/state; **persistent QH application and
-public contract changes remain unauthorized**.
+Migration 0003 has three canonical tables and 0004 adds operational outbox/state.
+
+## Dated amendment — post-cutover and isolated cleanup proposal
+
+2026-10-15: owner-authorized persistent cutover succeeded at schema 0004, backend
+image/commit `fd50b1ba67061ea95285a2ffce122939524ab93f`; synthetic end-to-end smoke,
+controlled backend restart and preservation of six Graphiti nodes were verified.
+See [execution evidence](../qh-30-plan.md#persistent-cutover-execution-and-read-only-historical-inventory).
+The pre-cutover milestone gates below record their historical context and do not
+reverse that completed authorization. Public-contract changes remain gated.
+
+The owner's subsequent review clarifies that item/entity/relation are structural
+shapes and semantic meanings need no fixed category list. The
+[post-cutover proposal](../qh-semantic-consolidation.md) compares three generic write
+profiles against specialized schemas/rules, documents selective-retrieval limits,
+and prepares 0005 without modifying 0001–0004 or historical bindings. Generic-profile
+defaults, persistent 0005 and a new image require separate acceptance. Existing
+registry/version behavior and optional specialization remain supported. This
+proposal is isolated from the mounted QH-30 checkout; no extraction/embedding or
+advanced semantic retrieval is claimed.
+
+## Historical decision and pre-cutover implementation record
 
 ## Context and supersession
 

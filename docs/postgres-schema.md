@@ -1,4 +1,4 @@
-# PostgreSQL schema: deployed foundation and isolated QH-30 extension
+# PostgreSQL schema: deployed 0004 and prepared cleanup
 
 Authority: [ADR 0002](adr/0002-canonical-understanding-persistence.md) and the
 [Product Contract](product/QH_PRODUCT_CONTRACT.md). The original uncommitted
@@ -7,12 +7,14 @@ to QH. Its old test results are historical, not evidence for the new schema.
 
 ## Current state and authority
 
-- **Persistent QH:** migrations 0001/0002 (QH-4/5). Last read-only inventory found
-  all canonical/identity tables empty; recheck before any authorized cutover.
-- **QH-30 branch:** approved migrations 0003/0004, repository, incremental worker
-  and retrieval verified only on dedicated disposable PostgreSQL/Neo4j servers.
-- **Not authorized:** applying 0003/0004 or activating the native runtime in QH.
-  No volume recreation is needed for the proposed empty-schema upgrade.
+- **Persistent QH:** schema `0004_projection_outbox`, native backend/worker at
+  `fd50b1ba67061ea95285a2ffce122939524ab93f`. The authorized cutover retained two
+  synthetic proposed item revisions with `qh.decision/1` bindings and exact source
+  evidence; the database is no longer empty. See dated QH-30 execution evidence.
+- **This separate cleanup branch:** generic-profile regressions work on 0004;
+  prepared `0005_retire_legacy_category` is tested only on disposable databases.
+- **Not authorized:** further persistent writes/migrations/deployment. Do not use
+  `make migrate` (moving head) against QH or edit its mounted QH-30 source.
 
 The executable migration files define the SQL. [ADR 0003](adr/0003-native-context-engine.md)
 defines current architecture; [QH-30 plan](qh-30-plan.md) retains test evidence and
@@ -113,18 +115,41 @@ before implementation. ADR 0003 records the succession; no historical migration 
 immutable payload was rewritten. Graphiti episode mappings in the historical QH-8
 list above are superseded by canonical item/source revision IDs.
 
-QH-30 isolated implementation (2026-10-15): migration `0003_native_semantics` adds
+QH-30 implementation (isolated verification followed by authorized cutover): migration `0003_native_semantics` adds
 three tables: semantic_type_versions, item_revision_types, relation_revision_details.
 The entity marker proposal was removed as redundant. Universal endpoints reference
 QH-4 item/revision/space triples; temporal metadata belongs to every revision
 binding. Pinned schemas/rules and publication guards enforce immutable assembly.
-Migrations 0001/0002 are unchanged. Migration 0003 has been tested only on the
-qh30-sql-test disposable server; persistent QH remains on its original schema.
+Migrations 0001/0002 are unchanged. Migration 0003 was verified on
+qh30-sql-test before its authorized application; persistent QH is now at 0004.
 See qh-30-plan.md for compatibility, validator profile, execution evidence and gates.
 
-QH-30 migration 0004 (isolated only): projection_outbox + context_projection_state
+QH-30 migration 0004 (deployed): projection_outbox + context_projection_state
 are operational, not new canonical semantic entities. SQL publication/current-pointer
 triggers queue work atomically; per-scope counters, token leases and recovery epochs
 support incremental processing. Readiness uses these counters instead of full SQL
-snapshot scans. Rebuild still comes from canonical data. Persistent QH inventory is
-empty at revision 0002; no persistent migration/recreation has been performed.
+snapshot scans. Rebuild still comes from canonical data. Persistent QH is now at 0004, retaining the synthetic smoke records; no database
+or volume recreation was performed.
+
+
+## Prepared 0005 — not deployed
+
+The [post-cutover proposal](qh-semantic-consolidation.md) distinguishes structural
+shape, open-ended content and optional specialization. New generic profiles do
+not require a schema migration: trusted provisioning can register them on 0004.
+They are tested candidates, not automatically registered runtime defaults.
+
+`0005_retire_legacy_category` removes the obsolete column and only its BEFORE INSERT
+publication check. It takes a table lock, refuses any non-null historical category,
+uses no CASCADE or immutability bypass, and preserves all other locks/constraints/
+triggers, registry records, immutable bindings and data. The repository omits the
+column on writes/exports on both 0004 and 0005; runtime accepts only explicitly known
+schema revisions. The deployed fd50 image requires 0004 and must not be started
+against 0005. This needs a separately reviewed image/migration transition.
+
+The eleven immutable v1 seeds stay reproducible in applied 0003 and remain readable
+for existing references; they do not prescribe new semantic categories. Do not
+rewrite `qh.decision/1` smoke bindings or delete unused registry records to make the
+registry count equal three. A future database with non-null legacy categories
+requires an explicit preservation decision before removal. Downgrade refuses;
+recovery is a reviewed forward repair, preserving actual content.

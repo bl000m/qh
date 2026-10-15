@@ -20,8 +20,15 @@ reference. Never infer the functional model solely from table names, existing co
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
-QH-30 migrations 0003/0004 and its native worker are verified in isolation only;
-persistent application and runtime activation require explicit authorization.
+QH-30 is active on the VPS at schema 0004 with image/source commit
+fd50b1ba67061ea95285a2ffce122939524ab93f. The QH-30 worktree supplies live
+backend bind mounts: implement changes in a separate worktree. No further
+persistent writes/migrations, deployment or cleanup are authorized by a planning task.
+Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
+three-generic-profile proposal and prepared, undeployed 0005. Semantic meanings
+are open-ended content, not mandatory registry types or the eleven QH-4 categories.
+Optional specialized schemas/rules remain supported; never rewrite applied
+migrations or immutable historical bindings to force a new vocabulary.
 
 ## Autonomy and STOP AND ASK
 

@@ -9,12 +9,13 @@ revisions and governance. [ADR 0003](adr/0003-native-context-engine.md), authori
 by QH-30, makes semantic entities/relations canonical there and Neo4j a rebuildable
 operational Context Graph. Graphiti remains an archived prototype on its own branch. QH-4 supplies
 schema and minimal contract corrections, without graph duplication or feature
-workflows. Applying migrations to the QH application database still needs approval.
+workflows. Further persistent migrations/deployment still need separate approval.
 
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
-implemented and tested in isolation under QH-30. Persistent QH remains at 0002;
-0003/0004 application and native runtime activation are not authorized. Production business routes remain deferred except QH-5
+implemented, tested in isolation and active on the VPS at schema 0004 with commit
+`fd50b1ba67061ea95285a2ffce122939524ab93f`. Persistent synthetic smoke and controlled
+backend restart passed; see the dated QH-30 cutover evidence. Production business routes remain deferred except QH-5
 identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
@@ -101,8 +102,9 @@ not a currently implemented filtering engine.
   ContextEngine (QH-30). PostgreSQL is authoritative; the graph is an operational
   projection, never a second canonical repository. `adapters/llm` reserves replaceable
   provider clients. Extractor/resolver/repository/projector/retriever responsibilities,
-  synchronization, rebuild and approval boundaries are in ADR 0003. No production
-  context binding, paid call, Graphiti runtime or new service is activated here.
+  synchronization, rebuild and approval boundaries are in ADR 0003. Native runtime
+  and incremental worker are bound by the backend lifespan; extraction/provider
+  calls and public context routes remain future work.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
@@ -155,10 +157,10 @@ recorded in `docs/initial-commit-review.md`.
 Source revision → authorized interpretation → validated canonical proposal/ACID
 commit → idempotent operational graph projection → authorized retrieval and bulk
 canonical hydration. See [ADR 0003](adr/0003-native-context-engine.md). Versioned embedding artifact caching remains future work. Migration 0004 now implements transactional
-outbox/state with a backend-local incremental worker in isolation; full-snapshot
+outbox/state with a backend-local incremental worker, verified and deployed; full-snapshot
 reconciliation is explicit recovery, not an ordinary query prerequisite. No distributed transaction or automatic
-re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) is implemented/tested only in isolated migrations 0003/0004
-and a real SQL-to-Neo4j slice; persistent application remains gated. Existing OIDC, PolicyService and public contracts remain unchanged.
+re-extraction during rebuild. [QH-4 delta and cutover](qh-30-plan.md) record migrations 0003/0004, real SQL-to-Neo4j
+tests and their authorized persistent activation. Existing OIDC, PolicyService and public contracts remain unchanged.
 
 ### Universal semantic model (QH-30)
 
@@ -167,7 +169,11 @@ are extensible through immutable versioned schemas; one space can mix domains.
 Provenance, revisions, temporal meaning and validation belong to the universal
 nucleus; PolicyService remains independent of semantic type. Domain Packs are a
 future optional composition mechanism only. See ADR 0003 and the approved SQL model/evidence in [QH-30 plan](qh-30-plan.md).
-Only disposable test migration execution is authorized; persistent migration and
-public DTO changes remain gated. QH-31 Source Vault, Domain Packs, LLM extraction
+Further persistent migrations, backend changes and public DTO changes remain gated.
+The [post-cutover proposal](qh-semantic-consolidation.md) evaluates three generic
+write profiles with optional specialized types. Meaning stays in extensible content;
+shape selects storage constraints. Its prepared 0005 removes null legacy category
+metadata without rewriting historical types/bindings. This branch is not live: do
+not edit the QH-30 worktree mounted by the active backend. QH-31 Source Vault, Domain Packs, LLM extraction
 and advanced vector retrieval are not implemented. Ordinary native queries use
 per-scope sync state and candidate hydration; full reconciliation is explicit recovery.
