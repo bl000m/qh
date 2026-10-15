@@ -7,8 +7,12 @@
 | Approved | PostgreSQL canonical; native rebuildable Neo4j; versioned universal semantic model |
 | Completed in isolation | 0003 three canonical tables; real repository; multidomain SQL→Neo4j integration; 0004 two operational tables and incremental worker |
 | Verified | Latest runtime/strict CI checkpoint: 178 tests passed, Ruff/actionlint; previous 101-test outbox milestone retained below |
-| Persistent QH | Last read-only inventory: 0002, zero canonical/identity rows; no 0003/0004 application or native runtime activation |
-| Remaining | Explicit cutover/runtime activation approval and hosted CI execution; runtime composition and integrated CI job are now implemented below. Extraction, embeddings/cache and advanced retrieval remain future work |
+| Persistent QH | Cutover authorized and completed: 0004, native backend/worker active at fd50b1b; two retained synthetic proposed decisions/spaces and two ready outbox intents |
+| Remaining | Owner review after successful cutover; merge and historical retirement still unauthorized. Extraction, embeddings/cache and advanced retrieval remain future work |
+
+The final **Persistent cutover execution and read-only historical inventory** section
+records the current deployment. Earlier authorization/deployment gates below describe
+their historical milestone and were superseded only by the owner-authorized cutover.
 
 Historical sections below preserve what was true at each milestone. Earlier deferrals
 of the outbox are superseded by the final **Incremental outbox and backend worker**
@@ -894,32 +898,34 @@ replacement/native graph activation; retained synthetic smoke/bootstrap writes a
 backend restart; remote push/CI execution and branch-protection changes. No such
 operations, Jira writes, merge or paid APIs were performed by this milestone.
 
-## Definitive VPS cutover runbook — commands prepared, execution NOT authorized
+## Definitive VPS cutover runbook — corrected invocation, execution recorded below
 
-Publication/PR/hosted CI are authorized for QH-30. The commands in this section
-that stop/replace the backend, migrate, initialize the native graph or write smoke
-data remain blocked until the owner explicitly authorizes the persistent cutover.
-The post-cutover historical-resource inventory is also deferred until successful
-native activation; no archival/removal is authorized.
+Publication/PR/hosted CI and the controlled cutover were subsequently authorized
+for runtime commit `fd50b1ba67061ea95285a2ffce122939524ab93f`. Execution results are
+recorded below. These retained commands are not authorization to repeat migrations,
+backend replacement or synthetic writes after acceptance.
+The post-cutover historical-resource inventory was performed read-only after
+successful native acceptance; no archival/removal is authorized.
 
 ### Pin and validate the accepted revision (safe preparation)
 
-Use Bash and Docker access on the VPS. The final PR head must have successful
-quality, oidc and native-integration checks. Keep this worktree at that clean
-accepted commit throughout activation: bind mounts make later edits live code.
+Use Bash and Docker access on the VPS. The authorized runtime revision has successful
+quality, oidc and native-integration checks. Bind-mounted runtime files must remain
+identical to that revision. The later documentation-only correction/record does not
+change the image or authorize any application code change.
 
 ```bash
 cd /home/ubuntu/qh-worktrees/qh-30
 set -euo pipefail
 test "$(git branch --show-current)" = feat/QH-30-native-context-engine
 test -z "$(git status --porcelain)"
-QH30_DEPLOY_COMMIT=$(git rev-parse HEAD)
+QH30_DEPLOY_COMMIT=fd50b1ba67061ea95285a2ffce122939524ab93f
 export QH_NATIVE_BACKEND_IMAGE="qh-native-backend:${QH30_DEPLOY_COMMIT}"
 export QH_NATIVE_CONTEXT_ENABLED=false
 export QH_NATIVE_GRAPH_NAMESPACE=qh-native
 QH30_ENV=/home/ubuntu/qh/.env
 test -f "$QH30_ENV"
-QH30_COMPOSE=(docker compose --project-directory /home/ubuntu/qh-worktrees/qh-30
+QH30_COMPOSE=(docker compose
   --env-file "$QH30_ENV" -p qh
   -f /home/ubuntu/qh-worktrees/qh-30/infra/docker/docker-compose.yml
   -f /home/ubuntu/qh-worktrees/qh-30/infra/docker/qh30-runtime.yml)
@@ -957,7 +963,7 @@ Ensure all external/manual canonical writers are quiescent. Both DB services,
 frontend/MCP/Keycloak and all volumes remain running/unchanged.
 
 ```bash
-test "$(git rev-parse HEAD)" = "$QH30_DEPLOY_COMMIT"
+test -z "$(git diff --name-only "$QH30_DEPLOY_COMMIT" -- . ':(exclude)docs/qh-30-plan.md')"
 test -z "$(git status --porcelain)"
 test "$(docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{.Id}}')" = "$QH30_IMAGE_ID"
 "${QH30_COMPOSE[@]}" stop backend
@@ -1039,3 +1045,93 @@ failure leaves durable pending/failed work and preserves canonical data.
   retirement plan with use/shared-resource/disk/risk evidence. No historical
   resource is removed by this cutover. Preserve Graphiti branch, Draft PR #1 and
   architectural evidence regardless of future infrastructure retirement.
+
+
+## Persistent cutover execution and read-only historical inventory
+
+Owner-authorized on 2026-10-15, including the explicit correction to omit
+`--project-directory`. Runtime code/image remain **fd50b1ba67061ea95285a2ffce122939524ab93f**.
+This subsequent edit changes only this documentation file. The corrected Compose
+invocation uses absolute `-f` paths and `-p qh`; its default project directory is
+`infra/docker`, so relative build/bind paths resolve to the native worktree.
+The rejected invocation resolved build context to `/home/ubuntu` and backend mounts
+to `/home/ubuntu/apps/...`; it was stopped before mutation and never deployed.
+
+### Observed acceptance results
+
+| Check | Actual result |
+| --- | --- |
+| Last preflight | PASS: 0002, eight empty application tables; exact five native mounts; matching DB settings; existing volumes/networks |
+| PostgreSQL targets | PASS: explicit 0003 then 0004; 14 tables, 71 validated constraints, 24 enabled triggers, 11 compatibility type versions |
+| Native backend | PASS: only `qh-backend-1` replaced; container `813b466e674d73bc363bc8d253db432cab30b3f4d837d53e323d33ec0842c30e` |
+| Image | `qh-native-backend:fd50b1ba67061ea95285a2ffce122939524ab93f`, ID `sha256:0d30a854117eefebb14f83ec2ffcf892f7d9c383a6d9c66576d66d9067547e45`; revision label matches |
+| First smoke | PASS: source → SQL/outbox → actual application worker → authorized graph retrieval → exact canonical provenance; foreign user denied |
+| Controlled restart | PASS: same new backend container/image/mounts, new process start time; pre-restart data still retrievable and new post-restart intent processed |
+| Cross-space checks | PASS: each owner gets exactly its own hit; foreign and mixed scopes denied; both scopes ready 1/1, attempts 1, no persisted error |
+| Temporal/validation | Unknown fact/validity bounds remain null; interpretations remain proposed; no automatic confirmation |
+| Graph namespace | `qh-native`; 10 nodes: two each QH30Item/Revision/Slice/Source/Sync; zero relationships to Graphiti nodes |
+| Graphiti integrity | PASS: 3 Entity + 3 Episodic, four incident relationships, identical IDs/labels/properties/relationship fingerprint before and after activation/restart |
+| Shared services | PASS: PostgreSQL, Neo4j, frontend, MCP, Keycloak container IDs/images/mounts retained; qh_app/qh_data network IDs and DB volume names unchanged |
+| CI / publication | Draft PR #2, runtime head fd50b1b; hosted run 38727480617 passed quality/oidc/native-integration, 178 native tests with zero skips; no merge |
+
+The three native settings (enabled=true, namespace=qh-native, commit-tagged image)
+are retained in the existing ignored `/home/ubuntu/qh/.env`, mode 0600. Provider
+settings were preserved and not printed. Only use native Compose paths for backend
+operations; `/home/ubuntu/qh` remains the historical checkout, not the backend source.
+No LLM, embedding or paid-provider request occurred during activation.
+
+Retained synthetic records (all exact IDs and canonical metadata are in private
+local evidence outside Git at `/home/ubuntu/qh-cutover-evidence`):
+
+| Probe | Context Space | Item revision | Source revision |
+| --- | --- | --- | --- |
+| Before restart | 0b6d7e9f-8fff-4f05-8878-b8e49aeb32df | 2aa3bf8a-b531-4b51-8293-509d5aa6d7aa | 31f60c61-1dd2-4a24-97ab-8c29c1b0fdec |
+| After restart | 36143133-3dde-43d7-a2a1-c7886a8e87a1 | 24bd95a7-74e2-4c77-a7df-ba0aaed0ba1d | 65790291-9b1c-4de8-8f22-b4ab8ed33646 |
+
+There are four synthetic user metadata rows, zero OIDC mappings, two spaces/sources/
+source revisions/items/item revisions/provenance rows, and two ready outbox rows.
+Neither smoke record nor historical data was deleted. Restart acceptance proves
+retained reads and fresh post-restart processing; deliberate ack-loss/crash/outage
+injection remains disposable CI evidence, not a persistent failure experiment.
+
+Nonblocking diagnostic observation: Neo4j emitted UnknownPropertyKeyWarning for
+`scope_manifests_json`. The reused reader asks for the optional full-reconciliation
+manifest, while incremental readiness uses epoch/version counters and does not
+require that property. Both retrieval/scope gates passed. No property, runtime code
+or historical fact was modified to suppress the warning; any cleanup is later work.
+
+Historical graph integrity SHA-256:
+`f604509c02424ecd613ae965e873ec4ba880461b37c122c3757a14c1ff032f32`.
+This covers exact six nodes and four incident relationships, not just counts.
+
+### Read-only inventory and retirement proposal — nothing removed
+
+Measurements are a live snapshot, rounded decimal MB unless stated otherwise.
+Volumes use allocated bytes from `du -sB1`; Docker image sizes include shared layers.
+They are not additive guaranteed reclaim totals. Full IDs, mount owners, network
+members and private artifact paths are retained in local inventory evidence.
+
+| Resource | Purpose / current use | Shared? | Proposal and risk / potential benefit |
+| --- | --- | --- | --- |
+| qh-postgres-1, qh_postgres_data (~98 MB) | Canonical QH at 0004, retained smoke and governance foundation | Active QH | Preserve; deleting loses canonical data |
+| qh-neo4j-1, qh_neo4j_data (~543 MB), qh_neo4j_logs | Native graph and historical six Graphiti nodes coexist in the same instance/database | Active QH + history | Preserve container/volumes. Any future historical-node cleanup requires exact export/IDs and separate approval; no database/volume deletion |
+| qh_app, qh_data; frontend/MCP/Keycloak and qh_keycloak_data | Current application network, UI/MCP scaffolds and identity service | Active QH | Preserve; removal interrupts live services |
+| qh-backend:latest and qh-backend:qh7 | Old Graphiti backend images; zero container references after replacement | Not runtime; layers/cache shared | Candidates after acceptance/archive approval. ~544 MB virtual each but only ~0.53 MB unique per image in Docker df; joint reclaim depends on shared layers/cache. They cannot safely roll back the upgraded SQL schema |
+| qh-surreal-spike-surreal-1 / postgres-1 / neo4j-1 | Still-running isolated unfinished spike; no native QH dependency | Dedicated containers/data/network; base PG/Neo images shared | Archive uncommitted experiment/results before separately authorizing stop/removal. ~606 MiB observed RAM across the three; Neo4j writable layer ~170 MB. Its neo4j/system databases are online; no nodes were returned in its user graph inventory |
+| qh-surreal-spike_surreal-data, pg-data, neo-data and their /logs volumes | Dedicated spike persistence; network qh-surreal-spike_default has only those three containers | No production sharing | ~667 MB allocated in total at measurement. Eligible only after archive decision; deletion loses experiment state. Container-specified anonymous logs are mapped in evidence |
+| surrealdb/surrealdb:v3.3.0 | Used only by spike SurrealDB container | Exclusive image | ~481 MB image, candidate only after that container is retired. Keep postgres:16.8-alpine3.21 and neo4j:5.26.5-community images: QH and tests still use them |
+| qh30-sql-test, qh30-native-neo4j-test, qh30-native-test network | Native regression infrastructure, distinct from Graphiti/SurrealDB and production | Shared by ongoing QH-30 tests | Not obsolete history. Can later be stopped/recreated with explicit authorization; current total RAM ~801 MiB, test graph volume ~548 MB plus logs; PG is tmpfs |
+| /home/ubuntu/qh (Graphiti branch 77de43c) | Historical Git branch plus common Git object store, VPS .env, active frontend/MCP/Keycloak mounts | Strongly shared | Preserve whole checkout now (~4.8 MB measured including common Git objects); removing breaks worktrees/configuration/live mounts. Branch/PR #1/evidence must remain permanently available |
+| /tmp/qh-surrealdb | Spike worktree b1769b6 with untracked spike/ | Experiment only; common Git shared | ~1.0 MB. Archive uncommitted work before any future move/removal; do not classify as a completed benchmark |
+| /tmp/qh7-* and qh7_* | 36 checkpoints, response/cache/log/helper artifacts, including qh7-graphiti and uuid-before-fix | Historical reproduction evidence | ~2.2 MB combined. Preserve useful evidence; classify/redact content before any archive/pruning. Naming-only inventory does not certify every artifact contains no sensitive data |
+| qh30-runtime-ci-local-integration image and /tmp/qh30* | Native CI image and ongoing test/cutover helpers/credentials | Native development, not historical Graphiti | ~430 MB image almost entirely shared with current native image; no useful independent 430 MB reclaim claim. Preserve required credentials securely; later select only redundant generated artifacts |
+| Docker build cache | ~1.533 GB aggregate cache across historical and native builds | Mixed/shared | Not all attributable to Graphiti; no global prune. Select build records only in a separately reviewed cleanup |
+
+Progressive proposal (all steps require separate approval): first archive necessary
+spike/untracked material and provider-free checkpoints, retain branch/PR #1 and
+canonical evidence; then stop only the dedicated spike containers and observe QH;
+then remove only proven exclusive spike data/images/network after archive validation;
+finally consider unused old backend images and individually identified temporary/cache
+artifacts. Keep shared services/volumes/base images/common Git checkout intact.
+No retirement operation, branch/worktree deletion, Jira write, merge or paid API
+was performed. Persistent cutover acceptance and this inventory stop here for owner review.
