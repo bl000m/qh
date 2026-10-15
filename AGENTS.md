@@ -20,8 +20,17 @@ reference. Never infer the functional model solely from table names, existing co
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
-QH-30 migrations 0003/0004 and its native worker are verified in isolation only;
-persistent application and runtime activation require explicit authorization.
+QH-30 is active on the VPS at schema 0004 with image/source commit
+fd50b1ba67061ea95285a2ffce122939524ab93f. The QH-30 worktree supplies live
+backend bind mounts: implement changes in a separate worktree. No further
+persistent writes/migrations, deployment or cleanup are authorized by a planning task.
+Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
+approved three generic profiles, open descriptor contract, authorized structured selection and
+prepared, undeployed 0005. Controlled registration is explicit; never infer new
+SQL types or human validation from descriptors. Semantic meanings
+are open-ended content, not mandatory registry types or the eleven QH-4 categories.
+Optional specialized schemas/rules remain supported; never rewrite applied
+migrations or immutable historical bindings to force a new vocabulary.
 
 ## Autonomy and STOP AND ASK
 
@@ -106,6 +115,16 @@ Keep provider secrets exclusively in ignored local configuration, never logs or 
   user authorization; status changes require user approval.
 
 ## Versioning and verification
+
+Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
+runtime-source changes. Root still supplies frontend/MCP and readonly IdP mounts;
+never switch its branch or remove mounted worktrees until authorized detachment.
+Use separate owner approval for each merge; preserve published native ancestry.
+
+Follow [versioning and logical milestones](docs/versioning.md), maintain
+[CHANGELOG](CHANGELOG.md) and the [deployment register](docs/deployments.md).
+Separate product versions, migration targets, semantic versions and image identities.
+Tags, GitHub Releases and Jira milestone/version writes require explicit approval.
 
 - Before ticket work, verify Git and the baseline. If either is missing, propose
   the baseline contents and obtain user approval before the first commit.

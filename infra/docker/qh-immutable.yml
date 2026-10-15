@@ -1,0 +1,21 @@
+# Opt-in application deployment from reviewed images. Base DB/IdP resources stay intact.
+# Requires Docker Compose supporting !reset (tested with v5.6.0).
+services:
+  frontend:
+    image: ${QH_FRONTEND_IMAGE:?Pin the reviewed frontend image}
+    build: !reset null
+    volumes: !reset []
+  backend:
+    image: ${QH_NATIVE_BACKEND_IMAGE:?Pin the reviewed native backend image}
+    build: !reset null
+    volumes: !reset []
+    command: [uvicorn, 'app.bootstrap:create_runtime_app', --factory, --host, '0.0.0.0', --port, '8000']
+    environment:
+      WATCHFILES_FORCE_POLLING: !reset null
+  mcp:
+    image: ${QH_MCP_IMAGE:?Pin the reviewed MCP image}
+    build: !reset null
+    volumes: !reset []
+    command: [uvicorn, 'app.main:app', --host, '0.0.0.0', --port, '3001']
+    environment:
+      WATCHFILES_FORCE_POLLING: !reset null

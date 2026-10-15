@@ -2,6 +2,12 @@
 
 ## Current checkpoint — read this before historical milestones
 
+Post-cutover semantic foundation: [approved model, audit closure and QH-8 plan](qh-semantic-consolidation.md).
+A separate branch/worktree based on preserved `42a20c7` implements the approved generic structural
+profiles, controlled provisioning, exact descriptor selection and prepared 0005. No persistent change/deployment is authorized. The
+specialized-default QH-8 proposal at the end is historical; demonstration meanings
+need not each be registered SQL types. Deployed code remains pinned to fd50b1b.
+
 | State | Result |
 | --- | --- |
 | Approved | PostgreSQL canonical; native rebuildable Neo4j; versioned universal semantic model |
@@ -17,9 +23,10 @@ their historical milestone and were superseded only by the owner-authorized cuto
 Historical sections below preserve what was true at each milestone. Earlier deferrals
 of the outbox are superseded by the final **Incremental outbox and backend worker**
 section. Historical test counts are not additive totals or evidence of deployment.
-`make migrate` runs `upgrade head` and grants no authorization. Any future cutover
-must recheck the inventory and explicitly target **0004_projection_outbox** from
-the reviewed native commit/image; do not apply it now.
+`make migrate` runs `upgrade head` and grants no authorization. The completed
+cutover explicitly targeted **0004_projection_outbox** from fd50b1b; do not repeat
+that historical activation procedure. The separate semantic-foundation document
+above prepares the next 0004 → 0005 transition, which remains unauthorized.
 
 Historical CI proposal, now implemented by the `native-integration` job below
 (hosted execution/required-check configuration still pending): a required job with
@@ -1136,7 +1143,7 @@ artifacts. Keep shared services/volumes/base images/common Git checkout intact.
 No retirement operation, branch/worktree deletion, Jira write, merge or paid API
 was performed. Persistent cutover acceptance and this inventory stop here for owner review.
 
-## Post-cutover consolidation and QH-8 proposal (planning only)
+## Historical post-cutover consolidation and first QH-8 proposal (planning only)
 
 The owner authorized publication of documentation-only `eeadeef` on QH-30.
 Draft PR #2 now targets that commit. Hosted [run 38736085229](https://github.com/bl000m/qh/actions/runs/38736085229)

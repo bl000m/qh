@@ -39,7 +39,8 @@ def isolated_database():
     with connect() as application:
         before = application_snapshot(application)
         assert before[1] in (None, [("0001_qh_schema",)], [("0002_oidc_identities",)],
-                             [("0003_native_semantics",)], [("0004_projection_outbox",)]), "Unexpected application revision: stop"
+                             [("0003_native_semantics",)], [("0004_projection_outbox",)],
+                             [("0005_retire_legacy_category",)]), "Unexpected application revision: stop"
         assert before[1] is not None or not before[0], "Unversioned nonempty schema: stop"
     with connect() as admin:
         admin.autocommit = True

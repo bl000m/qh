@@ -4,8 +4,6 @@ import asyncio
 from copy import deepcopy
 from uuid import uuid4
 
-from alembic import command
-from alembic.config import Config
 import psycopg
 import pytest
 
@@ -17,7 +15,7 @@ from adapters.context.incremental import (
 )
 from adapters.context.native import AuthorizedNativeContextService, NativeContextError
 from app.core.models import ContextQuery, ContextRequest, SubjectId
-from tests.test_canonical_graph_pipeline import pipeline as legacy_pipeline
+from tests.test_canonical_graph_pipeline import pipeline as pipeline, drain
 from tests.test_migrations import empty_database as empty_database
 from tests.test_native_context import A, B, real_engine as real_engine
 from tests.test_native_semantics_sql import (
@@ -26,11 +24,10 @@ from tests.test_native_semantics_sql import (
 
 
 @pytest.fixture
-def inc(legacy_pipeline):
-    repo, bob, old, service, rows = legacy_pipeline
-    command.upgrade(Config("adapters/postgres/alembic.ini"), "0004_projection_outbox")
+def inc(pipeline):
+    repo, bob, graph, service, rows = pipeline
     projector = IncrementalProjector(
-        old.driver, namespace="qh30-inc-" + repo.url.database
+        graph.driver, namespace="qh30-inc-" + repo.url.database
     )
     projector.initialize()
     worker = ProjectionWorker(repo, projector, (A,))
@@ -44,17 +41,6 @@ def inc(legacy_pipeline):
         service=AuthorizedNativeContextService(policy=service.policy, engine=engine),
         rows=rows,
     )
-
-
-def drain(worker):
-    count = 0
-    for _ in range(100):
-        event = worker.claim()
-        if event is None:
-            return count
-        assert worker.process(event), repr(worker.last_error)
-        count += 1
-    raise AssertionError("Unexpected unbounded queue")
 
 
 def query(p, text="Cedar", scopes=(A,), subject=None):

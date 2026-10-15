@@ -10,12 +10,13 @@ QH è un ambiente sovrano di contesto, indipendente dai provider e dai modelli
 di IA, che permette alle persone di costruire, conservare, interrogare, governare
 e condividere selettivamente il proprio stato di comprensione.
 
-Il suo oggetto fondamentale è il **Context Space**: uno stato persistente e
+Il suo oggetto fondamentale è il **Context Space**: uno stato persistente, evolutivo e
 strutturato di comprensione di una situazione, costruito progressivamente
 attraverso interazioni tra persone, IA e fonti informative. Non è una cartella
 di file, un insieme di chunk vettoriali o una semplice cronologia di conversazioni.
 
-Lo stato di comprensione può rappresentare:
+Lo stato di comprensione può rappresentare, fra altri significati, i seguenti
+**esempi non esaustivi**. Non sono categorie strutturali obbligatorie:
 
 | Elemento | Significato |
 | --- | --- |
@@ -29,10 +30,21 @@ Lo stato di comprensione può rappresentare:
 | CONCEPTS AND ENTITIES | Concetti e soggetti |
 | RELATIONSHIPS | Relazioni tra elementi |
 | UNCERTAINTIES | Incertezze |
-| PROVENANCE | Origine, affidabilità e storia delle informazioni |
+| PROVENANCE | Riferimenti alle evidenze e storia delle informazioni |
 
-Questo elenco descrive capacità funzionali, non impone tabelle, enum o un grafo
-proprietario. Le fonti originali devono essere distinguibili dalle interpretazioni
+Il modello è universale, estensibile e indipendente dai domini: uno stesso spazio
+può combinare significati già noti e nuovi. `item`, `entity`, `relation` sono forme
+strutturali per identità, revisioni ed endpoint; non costituiscono una tassonomia
+semantica completa. Decisioni, ipotesi, osservazioni e altri significati possono
+vivere nello stesso tipo strutturale generico, senza una categoria obbligatoria.
+Contenuti strutturati e descrittori facoltativi possono esprimerli senza enum chiusi.
+Tipi specializzati sono estensioni opzionali motivate da reali esigenze di schema
+o regole versionate; non occorre registrare un tipo per ogni nuovo significato.
+
+Provenienza, temporalità, versionamento, stato di validazione e autorizzazioni sono
+dimensioni trasversali, indipendenti dal significato e dal dominio. Affidabilità della
+fonte, confidenza del modello e validazione umana restano distinte. Questo elenco
+non impone tabelle, enum o un grafo proprietario. Le fonti originali devono essere distinguibili dalle interpretazioni
 e dagli elementi di comprensione derivati.
 
 QH non è un agente che decide autonomamente il futuro stato di un progetto.
@@ -126,8 +138,14 @@ Provenienza, revisioni, temporalità, incertezza e validazione restano comuni,
 con governance indipendente dal dominio. I Domain Packs sono una possibilità
 futura componibile, non una funzionalità implementata. Il modello SQL QH-30 è approvato: registro unico tipo/versione, forme strutturali
 item/entity/relation, endpoint universali con identità e revisioni immutabili,
-temporalità comune. Le migrazioni 0003/0004 sono implementate e verificate soltanto
-in isolamento; applicazione persistente e cambi ai contratti pubblici restano non autorizzati.
+temporalità comune. Le migrazioni 0003/0004 e il worker sono stati verificati in isolamento e attivati
+con autorizzazione nel cutover del 2026-10-15 (immagine `fd50b1b`, evidenze QH-30).
+La [semantic foundation post-cutover](../qh-semantic-consolidation.md) attua i tre profili generici
+iniziali, i descrittori multipli facoltativi con valore libero e certezza dell’assegnazione
+(distinta dalla validazione dell’elemento) e la selezione strutturata autorizzata.
+Queste scelte sono approvate dal proprietario; provisioning, migrazione 0005 e nuovo
+backend richiedono ancora autorizzazione per l’ambiente persistente. Il VPS resta a
+0004/fd50b1b. Nessun nuovo contratto pubblico è implicito.
 
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono
 event sourcing completo o revisioni globali del Context Space. Uno snapshot
@@ -148,9 +166,9 @@ integrità sono introdotte nei relativi ticket. Non replicare il grafo Graphiti
 in PostgreSQL né implementare un Comprehension Graph proprietario durante QH-4.
 Aggiornamento autorizzato del 2026-10-15: QH-30 sostituisce la scelta Graphiti con
 un motore QH nativo (ADR 0003), senza riaprire le altre invarianti. Il modello SQL
-è approvato e verificato in isolamento; il database QH resta a 0002. Le categorie
-storiche non classificano le nuove revisioni: il registro versionato è la sola
-autorità semantica. Source Vault (QH-31) resta futuro: la rappresentazione inline
+è approvato, verificato e attivato a 0004. Le categorie storiche non classificano
+le nuove revisioni: il binding registrato governa schema e forma, mentre il significato
+non è limitato ai nomi del registro. Source Vault (QH-31) resta futuro: la rappresentazione inline
 non impone che i byte originali siano conservati in PostgreSQL.
 
 ## Ipotesi da validare ed evoluzioni del modello

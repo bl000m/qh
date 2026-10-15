@@ -32,7 +32,7 @@ def provision_demo(connection: psycopg.Connection, *, issuer: str) -> None:
 
 def require_identity_schema(connection) -> None:
     revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
-    if revision not in (("0002_oidc_identities",), ("0003_native_semantics",), ("0004_projection_outbox",)):
+    if revision not in (("0002_oidc_identities",), ("0003_native_semantics",), ("0004_projection_outbox",), ("0005_retire_legacy_category",)):
         raise ValueError("A supported QH identity schema must be applied before provisioning")
 
 

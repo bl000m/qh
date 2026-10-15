@@ -257,7 +257,6 @@ class CanonicalRepository:
                     )
                 }
                 values.update(
-                    category=None,
                     validated_by=revision.get("validated_by"),
                     validated_at=revision.get("validated_at"),
                     based_on_revision_id=revision.get("based_on_revision_id"),
@@ -265,6 +264,38 @@ class CanonicalRepository:
                 if "created_at" in revision:
                     values["created_at"] = revision["created_at"]
                 self._immutable(c, "understanding_item_revisions", values)
+
+    def descriptor_candidates(self, context_ids, values, *, include_tentative=False,
+                              limit=20, after_revision_id=None):
+        """Exact any-of descriptor selection, no text prerequisite or inferred aliases.
+
+        Keyset pagination covers all historical revisions, not only selected heads.
+        This JSON predicate may scan scoped rows; it is not an indexed search claim.
+        """
+        if isinstance(values, (str, bytes)):
+            raise ValueError("Descriptor values must be an explicit collection")
+        values = tuple(values)
+        if (not 1 <= len(values) <= 100 or
+                any(not isinstance(v, str) or not v for v in values) or
+                not 1 <= limit <= 100 or not isinstance(include_tentative, bool)):
+            raise ValueError("Explicit descriptor values and bounded limit required")
+        after_revision_id = None if after_revision_id is None else str(UUID(str(after_revision_id)))
+        certainty = ["asserted", "tentative"] if include_tentative else ["asserted"]
+        with self.connect() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            scopes = self._authorize(c, context_ids)
+            return json_values(c.execute("""
+                SELECT r.id, r.context_space_id FROM understanding_item_revisions r
+                WHERE r.context_space_id=ANY(%s::uuid[])
+                  AND (%s::uuid IS NULL OR r.id>%s::uuid)
+                  AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(
+                      CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
+                           THEN r.content->'descriptors' ELSE '[]'::jsonb END) d
+                    WHERE d->>'value'=ANY(%s::text[]) AND d->>'certainty'=ANY(%s::text[]))
+                ORDER BY r.id LIMIT %s
+                """, (scopes, after_revision_id, after_revision_id, list(values), certainty, limit)
+            ).fetchall())
 
     def read_snapshot(self, context_ids, revision_ids=None):
         """Authorized, consistent bulk read; all history unless IDs explicitly given.
@@ -295,6 +326,7 @@ class CanonicalRepository:
                 ),
             ).fetchall()
             for row in rows:
+                row.pop("category", None)  # 0004 historical metadata is not a semantic binding.
                 row["relation"] = None
                 if row["structural_kind"] == "relation":
                     row["relation"] = {
@@ -327,23 +359,6 @@ class CanonicalRepository:
                     "understanding_item_revisions": rows,
                 }
             )
-
-    @contextmanager
-    def projection_lock(self, slice_id, scopes):
-        # Session lock survives read transactions, but no SQL transaction spans Neo4j I/O.
-        with self.connect(autocommit=True) as c:
-            self._authorize(c, scopes)
-            c.execute(
-                "SELECT pg_advisory_lock(hashtextextended(%s,0))",
-                ("projection:" + slice_id,),
-            )
-            try:
-                yield
-            finally:
-                c.execute(
-                    "SELECT pg_advisory_unlock(hashtextextended(%s,0))",
-                    ("projection:" + slice_id,),
-                )
 
     def read_affected_snapshot(self, context_id, revision_id):
         """Only changed revision and transitive immutable anchors, using FK indexes."""

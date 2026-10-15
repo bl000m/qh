@@ -1,6 +1,7 @@
 """Application factory/lifespan against the real dedicated SQL and Neo4j servers."""
 
 import asyncio
+import json
 from copy import deepcopy
 import os
 from pathlib import Path
@@ -46,10 +47,13 @@ def configure(monkeypatch, namespace):
     monkeypatch.setenv("NEO4J_PASSWORD", os.environ["QH30_TEST_NEO4J_PASSWORD"])
 
 
-def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, monkeypatch, caplog):
+@pytest.mark.parametrize("schema", ["0004_projection_outbox", "0005_retire_legacy_category"])
+def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, monkeypatch, caplog, schema):
     repo, bob, graph, _, rows = pipeline
     from alembic.config import Config
-    command.upgrade(Config("adapters/postgres/alembic.ini"), "0004_projection_outbox")
+    command.upgrade(Config("adapters/postgres/alembic.ini"), schema)
+    from adapters.postgres.semantic_profiles import register_generic_profiles
+    register_generic_profiles(repo)
     namespace = "qh30-runtime-" + uuid4().hex
     configure(monkeypatch, namespace)
     runtimes = []
@@ -98,6 +102,17 @@ def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, mon
             )
             assert probe.returncode == 0, probe.stdout + probe.stderr
             assert "PASS: backend worker" in probe.stdout
+            retained = json.loads(probe.stdout.strip().splitlines()[-1])
+        # Recreate the actual application runtime, then verify the very same IDs
+        # via the read-only probe. No second source/import/extraction is needed.
+        with TestClient(create_runtime_app()):
+            checked = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve().parents[3] / "scripts/smoke_qh30_runtime.py"),
+                 "--verify-scope", retained["scope"], "--owner-id", retained["owner"]],
+                capture_output=True, text=True, timeout=40,
+            )
+            assert checked.returncode == 0, checked.stdout + checked.stderr
+            assert json.loads(checked.stdout.strip().splitlines()[-1]) == retained
         assert all(r.thread is None for r in runtimes)
         assert "synthetic-private-message-never-logged" not in caplog.text
         assert "ConnectionError" in caplog.text
@@ -107,7 +122,8 @@ def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, mon
             session.run("MATCH (n) WHERE n.key STARTS WITH $prefix OR n.id STARTS WITH $prefix OR n.slice_id STARTS WITH $prefix DETACH DELETE n", prefix=namespace + ":").consume()
 
 
-def test_native_start_refuses_old_schema_without_migration(pipeline, monkeypatch):
+def test_native_start_refuses_old_schema_without_migration(empty_database, real_engine, monkeypatch):
+    command.upgrade(empty_database, "0003_native_semantics")
     configure(monkeypatch, "qh30-runtime-old-" + uuid4().hex)
     with pytest.raises(RuntimeError, match="requires migration 0004"):
         with TestClient(create_runtime_app()):
@@ -119,3 +135,61 @@ def test_runtime_disabled_keeps_existing_factory_behavior(monkeypatch):
     with TestClient(create_runtime_app()) as client:
         assert client.app.state.native_context is None
         assert client.get("/health").status_code == 200
+
+
+def test_0005_separate_backend_process_recovers_pending_intent(pipeline, monkeypatch):
+    """Actual Uvicorn process exit/restart; no in-memory runtime object is reused."""
+    from alembic.config import Config
+    from adapters.postgres.semantic_profiles import register_generic_profiles
+    from adapters.context.incremental import IncrementalContextEngine, IncrementalProjector
+    from adapters.context.native import AuthorizedNativeContextService
+
+    repo, _, graph, service, rows = pipeline
+    command.upgrade(Config("adapters/postgres/alembic.ini"), "0005_retire_legacy_category")
+    register_generic_profiles(repo)
+    namespace = "qh005-process-" + uuid4().hex
+    configure(monkeypatch, namespace)
+    processes = []
+
+    def start():
+        process = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "app.bootstrap:create_runtime_app", "--factory",
+             "--host", "127.0.0.1", "--port", "0"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        processes.append(process)
+        return process
+
+    def ready(process):
+        assert process.poll() is None, "Temporary backend process failed"
+        return repo.sync_status((A,))[0]["sync_state"] == "ready"
+
+    try:
+        first = start()
+        wait_until(lambda: ready(first))
+        first.terminate()
+        # Uvicorn may re-raise SIGTERM after graceful lifespan shutdown.
+        assert first.wait(timeout=30) in (0, -15)
+        proposal = deepcopy(rows[0])
+        proposal.update(id=str(uuid4()), item_id=str(uuid4()), revision_no=1,
+                        type_id="qh.generic.item", based_on_revision_id=None)
+        proposal["content"] = {"text": "Cedar pending process restart",
+                               "descriptors": [{"value": "reversible_pause", "certainty": "asserted"}]}
+        repo.save(revisions=[proposal])
+        assert repo.sync_status((A,))[0]["sync_state"] == "pending"
+        second = start()
+        assert first.pid != second.pid
+        wait_until(lambda: ready(second))
+        reader = AuthorizedNativeContextService(policy=service.policy,
+            engine=IncrementalContextEngine(repo, IncrementalProjector(graph.driver, namespace=namespace)))
+        result = asyncio.run(reader.select_descriptors(subject_id=SubjectId(repo.subject_id),
+            context_ids=(A,), values=["reversible_pause"]))
+        assert [str(h.item_revision.revision_id) for h in result.hits] == [proposal["id"]]
+        assert str(result.hits[0].provenance[0].revision_id) == proposal["provenance"][0]
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=30)
+        with graph.driver.session() as session:
+            session.run("MATCH (n) WHERE n.key STARTS WITH $prefix OR n.id STARTS WITH $prefix OR n.slice_id STARTS WITH $prefix DETACH DELETE n", prefix=namespace + ":").consume()

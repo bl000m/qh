@@ -27,42 +27,24 @@ A = ContextId(FIXTURE["source_revisions"][0]["context_space_id"])
 B = ContextId(FIXTURE["source_revisions"][1]["context_space_id"])
 
 
-# Fixture-only schema registry; no Domain Pack loader or production SQL contract.
-SCHEMAS = {
-    ("qh." + kind, 1): category
-    for kind, category in (
-        ("decision", "decision"),
-        ("hypothesis", "hypothesis"),
-        ("open_question", "open_question"),
-        ("entity", "entity"),
-        ("relationship", "relationship"),
-        ("observation", "current_state"),
-        ("preference", "preference"),
-    )
-}
+# Specialized extension examples; SQL tests validate the real schema profile.
+FIXTURE_TYPES = {r["type_id"]: r["structural_kind"] for r in FIXTURE["understanding_item_revisions"]}
 
 
-def validate_content(category, content):
+def validate_fixture(snapshot):
+    """Offline fixture checks belong to tests, never the production projector."""
     from datetime import datetime
 
-    if SCHEMAS[(content["semantic_type"], content["schema_version"])] != category:
-        raise ValueError("Incompatible broad category")
-    properties = content["properties"]
-    if not isinstance(properties, dict) or properties["uncertainty"] != "unassessed":
-        raise ValueError("Invalid fixture properties")
-    event = properties["event_at"]
-    if event is not None and datetime.fromisoformat(event).tzinfo is None:
-        raise ValueError("Timezone required")
-    if category == "relationship":
-        for field in (
-            "subject_item_id",
-            "subject_revision_id",
-            "object_item_id",
-            "object_revision_id",
-            "predicate",
-        ):
-            if not isinstance(properties[field], str) or not properties[field]:
-                raise ValueError("Invalid relation properties")
+    for row in snapshot["understanding_item_revisions"]:
+        if row["type_version"] != 1 or FIXTURE_TYPES.get(row["type_id"]) != row["structural_kind"]:
+            raise NativeContextError("Invalid fixture semantic binding")
+        try:
+            for field in ("fact_from", "fact_to", "valid_from", "valid_to"):
+                if row[field] is not None and datetime.fromisoformat(row[field]).tzinfo is None:
+                    raise ValueError("Timezone required")
+        except ValueError as exc:
+            raise NativeContextError("Invalid fixture semantic time") from exc
+    return checked_rows(snapshot)
 
 
 def loader(snapshot, calls):
@@ -126,7 +108,7 @@ def test_canonical_fixture_validation_before_projection(bad):
     if bad == "state":
         row["validation_state"] = "silently_approved"
     with pytest.raises(NativeContextError):
-        checked_rows(snapshot, validate_content)
+        validate_fixture(snapshot)
 
 
 @pytest.fixture
@@ -136,6 +118,7 @@ def real_engine():
         pytest.skip(
             "Dedicated QH30_TEST_NEO4J_URI required; no production graph fallback"
         )
+    assert uri == "bolt://qh30-native-neo4j-test:7687", "Dedicated graph required"
     from neo4j import GraphDatabase
 
     driver = GraphDatabase.driver(
@@ -150,7 +133,6 @@ def real_engine():
         driver,
         slice_id="qh30-test-" + uuid4().hex,
         read_snapshot=loader(snapshot, calls),
-        validate_content=validate_content,
     )
     engine.initialize()
     try:
@@ -203,7 +185,6 @@ def test_real_projection_replay_rebuild_and_hydration(real_engine):
         engine.driver,
         slice_id=engine.slice_id,
         read_snapshot=loader(snapshot, []),
-        validate_content=validate_content,
     )
     assert search(fresh) == first
     with pytest.raises(NativeContextError):
@@ -298,19 +279,19 @@ def test_real_transaction_failure_rolls_back_new_rows_and_manifest(real_engine):
 @pytest.mark.parametrize("bad", ["unknown_type", "unknown_version", "properties"])
 def test_versioned_schema_rejection(bad):
     snapshot = deepcopy(FIXTURE)
-    content = snapshot["understanding_item_revisions"][0]["content"]
+    row = snapshot["understanding_item_revisions"][0]
     if bad == "unknown_type":
-        content["semantic_type"] = "unknown.domain_type"
+        row["type_id"] = "unknown.domain_type"
     elif bad == "unknown_version":
-        content["schema_version"] = 999
+        row["type_version"] = 999
     else:
-        content["properties"]["event_at"] = "invalid-time"
+        row["fact_from"] = "invalid-time"
     with pytest.raises(NativeContextError, match="semantic"):
-        checked_rows(snapshot, validate_content)
+        validate_fixture(snapshot)
 
 
 def test_three_domain_fixtures_share_universal_contract():
-    rows = {r["revision_id"]: r for r in checked_rows(FIXTURE, validate_content)}
+    rows = {r["revision_id"]: r for r in validate_fixture(FIXTURE)}
     assert {case["domain"] for case in FIXTURE["cases"]} == {
         "professional",
         "health",
@@ -323,7 +304,7 @@ def test_three_domain_fixtures_share_universal_contract():
             r["validation_state"] == "proposed" and r["evidence"] for r in revisions
         )
         assertion = revisions[2]
-        event = assertion["content"]["properties"]["event_at"]
+        event = assertion["temporal"]["fact_from"]
         assert (event is not None) == (case["domain"] == "professional")
         source = next(
             s
@@ -333,10 +314,10 @@ def test_three_domain_fixtures_share_universal_contract():
         assert assertion["text"] in source["content"]
         assert revisions[3]["text"] in source["content"]
         assert source["created_at"] != event
-        assert revisions[3]["category"] == "relationship"
+        assert revisions[3]["structural_kind"] == "relation"
     health = next(c for c in FIXTURE["cases"] if c["domain"] == "health")
     assert (
-        rows[health["revision_ids"][2]]["content"]["semantic_type"] == "qh.observation"
+        rows[health["revision_ids"][2]]["semantic_type"] == "qh.observation"
     )
 
 
@@ -355,21 +336,21 @@ def test_real_universal_relationship_projection_and_endpoint_integrity(real_engi
         ).single()
         assert record["n"] == 3 and set(record["predicates"]) == {"associated_with"}
         assert set(record["shapes"]) == {
-            "decision->entity",
-            "current_state->decision",
-            "relationship->preference",
+            "item->entity",
+            "item->item",
+            "relation->item",
         }
     broken = deepcopy(snapshot)
     relation = next(
         r
         for r in broken["understanding_item_revisions"]
-        if r["category"] == "relationship"
+        if r["structural_kind"] == "relation"
     )
-    relation["content"]["properties"]["subject_revision_id"] = "unavailable"
+    relation["relation"]["source_revision_id"] = "unavailable"
     with pytest.raises(NativeContextError, match="endpoint"):
         engine.replace(broken, generation="invalid")
     foreign = deepcopy(snapshot)
-    endpoint_id = relation["content"]["properties"]["object_revision_id"]
+    endpoint_id = relation["relation"]["target_revision_id"]
     endpoint = next(
         r for r in foreign["understanding_item_revisions"] if r["id"] == endpoint_id
     )
@@ -384,8 +365,8 @@ def test_real_stable_id_must_match_anchor(real_engine):
     relation = next(
         r
         for r in snapshot["understanding_item_revisions"]
-        if r["category"] == "relationship"
+        if r["structural_kind"] == "relation"
     )
-    relation["content"]["properties"]["subject_item_id"] = "wrong-logical-id"
+    relation["relation"]["source_item_id"] = "wrong-logical-id"
     with pytest.raises(NativeContextError, match="stable item"):
         engine.replace(snapshot, generation="mismatched")
