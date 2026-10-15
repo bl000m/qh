@@ -101,3 +101,8 @@ identity migration above remain unchanged. [Proposed canonical delta](qh-30-plan
 reuses entity/relationship item revisions and their provenance rather than
 duplicating identities/validation. No new migration is applied; Graphiti episode
 mapping in the historical deferred-features list is superseded by canonical IDs.
+
+QH-30 universal-type clarification: the eleven categories are enforced by a CHECK;
+JSONB object validation is not versioned semantic validation. The proposed additive
+type/version registry and revision references are documented in `qh-30-plan.md`.
+No domain-specific schema, registry migration or historical rewrite has been applied.

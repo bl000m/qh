@@ -119,6 +119,14 @@ current_state, decision, hypothesis, open_question, constraint, preference,
 concept, entity, relationship, uncertainty. Classificazione epistemica e stato
 di validazione sono dimensioni differenti.
 
+Chiarimento approvato QH-30/QH-8/QH-10 (2026-10-15): il nucleo semantico è
+universale e queste categorie non chiudono la tassonomia. Tipi e proprietà sono
+estensibili tramite schemi versionati; uno spazio può mescolare domini.
+Provenienza, revisioni, temporalità, incertezza e validazione restano comuni,
+con governance indipendente dal dominio. I Domain Packs sono una possibilità
+futura componibile, non una funzionalità implementata. Il delta SQL concreto
+resta proposto in ADR 0003 e richiede approvazione prima delle migrazioni.
+
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono
 event sourcing completo o revisioni globali del Context Space. Uno snapshot
 contiene esattamente contenuti e revisioni autorizzati all'approvazione.

@@ -158,3 +158,12 @@ embedding artifact cache and measurable projection progress are required when
 persistent processing is introduced; no distributed transaction or automatic
 re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) remains a proposal, not
 a migration. Existing OIDC, PolicyService and public contracts remain unchanged.
+
+### Universal semantic model (QH-30)
+
+The native engine is independent of Context Space domain. Types and properties
+are extensible through immutable versioned schemas; one space can mix domains.
+Provenance, revisions, temporal meaning and validation belong to the universal
+nucleus; PolicyService remains independent of semantic type. Domain Packs are a
+future optional composition mechanism only. See ADR 0003 and the pending SQL
+delta in [QH-30 plan](qh-30-plan.md); no migration or public DTO is approved here.

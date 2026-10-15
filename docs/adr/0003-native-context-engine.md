@@ -47,6 +47,41 @@ Change of embedding model invalidates that cache/index configuration, not source
 or canonical understanding. No arbitrary canonical graph copies or second editable
 truth. Owner IDs on child records derive from their space, not independent copies.
 
+## Universal semantics, extensions and independent governance
+
+Owner decision recorded in the updated QH-30, QH-8 and QH-10 tickets on
+2026-10-15: QH is domain-neutral. Professional, health, family and personal
+contexts use the same persistence and engine boundaries; a Context Space can mix
+these domains. `decision`, `hypothesis` and `open_question` are initial types,
+not a closed ontology.
+
+The universal nucleus carries stable item/entity identities, immutable revisions,
+relations with explicit endpoints, exact evidence, supported event time distinct
+from acquisition time, uncertainty and validation. Model confidence, source
+reliability and human validation are separate dimensions. An AI inference remains
+a proposal; a symptom is not a diagnosis and a declared preference is not an
+inferred personality trait. Governance/PolicyService remains independent of type:
+a domain label never grants access or approval.
+
+Semantic type identifiers and immutable schema versions describe extensible
+properties; neither Core enums nor database-per-domain schemas define the ontology.
+Unknown type/version or invalid properties must fail validation, without coercing
+into a known type or silently selecting the latest schema. Retain older schemas
+for historical revisions. Stable scope/provenance/endpoint constraints remain
+relational constraints, not optional JSON conventions. The concrete additive SQL
+mapping is proposed in the QH-30 plan and still requires approval.
+
+Neo4j uses generic revision/entity/relation structures and type/predicate values as
+data; adding a vocabulary must not require dynamic Cypher labels, a new database
+or a second interpretation. Graph projections retain schema version and canonical
+references, then hydrate through the authorized canonical repository.
+
+Future **Domain Packs** may compose namespaced vocabularies, versioned schemas,
+extraction instructions and specialized rules. They are optional extensions, not
+exclusive Context Space kinds, authorization systems or new services. No pack
+runtime, domain-specific Core module or domain workflow is implemented here.
+Conflicting pack schemas must not reinterpret an existing immutable type version.
+
 ## One logical interpretation, separate transactions
 
 1. Authenticate and apply the existing general permission gate plus PolicyService
