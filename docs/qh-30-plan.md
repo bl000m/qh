@@ -893,3 +893,149 @@ Required authorizations still outstanding: persistent 0003/0004 application; bac
 replacement/native graph activation; retained synthetic smoke/bootstrap writes and
 backend restart; remote push/CI execution and branch-protection changes. No such
 operations, Jira writes, merge or paid APIs were performed by this milestone.
+
+## Definitive VPS cutover runbook — commands prepared, execution NOT authorized
+
+Publication/PR/hosted CI are authorized for QH-30. The commands in this section
+that stop/replace the backend, migrate, initialize the native graph or write smoke
+data remain blocked until the owner explicitly authorizes the persistent cutover.
+The post-cutover historical-resource inventory is also deferred until successful
+native activation; no archival/removal is authorized.
+
+### Pin and validate the accepted revision (safe preparation)
+
+Use Bash and Docker access on the VPS. The final PR head must have successful
+quality, oidc and native-integration checks. Keep this worktree at that clean
+accepted commit throughout activation: bind mounts make later edits live code.
+
+```bash
+cd /home/ubuntu/qh-worktrees/qh-30
+set -euo pipefail
+test "$(git branch --show-current)" = feat/QH-30-native-context-engine
+test -z "$(git status --porcelain)"
+QH30_DEPLOY_COMMIT=$(git rev-parse HEAD)
+export QH_NATIVE_BACKEND_IMAGE="qh-native-backend:${QH30_DEPLOY_COMMIT}"
+export QH_NATIVE_CONTEXT_ENABLED=false
+export QH_NATIVE_GRAPH_NAMESPACE=qh-native
+QH30_ENV=/home/ubuntu/qh/.env
+test -f "$QH30_ENV"
+QH30_COMPOSE=(docker compose --project-directory /home/ubuntu/qh-worktrees/qh-30
+  --env-file "$QH30_ENV" -p qh
+  -f /home/ubuntu/qh-worktrees/qh-30/infra/docker/docker-compose.yml
+  -f /home/ubuntu/qh-worktrees/qh-30/infra/docker/qh30-runtime.yml)
+"${QH30_COMPOSE[@]}" config --quiet
+python3 scripts/check_secrets.py
+docker build -f apps/api/Dockerfile.dev \
+  --label "org.opencontainers.image.revision=${QH30_DEPLOY_COMMIT}" \
+  -t "$QH_NATIVE_BACKEND_IMAGE" .
+QH30_IMAGE_ID=$(docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{.Id}}')
+test "$(docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$QH30_DEPLOY_COMMIT"
+printf 'Accepted commit: %s\nImage: %s\nImage ID: %s\n' "$QH30_DEPLOY_COMMIT" "$QH_NATIVE_BACKEND_IMAGE" "$QH30_IMAGE_ID"
+```
+
+Do not copy/view API keys. Compose passes only declared database/OIDC/native
+settings; no Mistral settings or provider SDK work is activated. The current
+Dockerfile includes locked development dependencies, including the Neo4j driver.
+
+### Read-only gate immediately before authorization/execution
+
+```bash
+docker exec qh-postgres-1 sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "BEGIN READ ONLY; SELECT version_num FROM alembic_version; SELECT '\''users'\'',count(*) FROM users UNION ALL SELECT '\''user_identities'\'',count(*) FROM user_identities UNION ALL SELECT '\''context_spaces'\'',count(*) FROM context_spaces UNION ALL SELECT '\''sources'\'',count(*) FROM sources UNION ALL SELECT '\''source_revisions'\'',count(*) FROM source_revisions UNION ALL SELECT '\''understanding_items'\'',count(*) FROM understanding_items UNION ALL SELECT '\''understanding_item_revisions'\'',count(*) FROM understanding_item_revisions UNION ALL SELECT '\''item_revision_provenance'\'',count(*) FROM item_revision_provenance; COMMIT;"'
+docker inspect qh-backend-1 --format '{{.Id}} {{.Image}} {{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}'
+docker inspect qh-postgres-1 qh-neo4j-1 --format '{{.Name}} {{.Id}} {{range .Mounts}}{{.Type}}:{{.Name}}:{{.Destination}} {{end}}'
+```
+
+Expected: 0002 and eight zero counts. Stop if different; do not classify new rows
+as disposable. Record old backend image/mounts and DB container/volume identities
+in a restrictive local operational note, not a full environment/container dump.
+No historical-resource inventory or backup/export of Neo4j is needed at this gate.
+
+### Authorized maintenance window ONLY
+
+The following commands are **not executed by publication/CI authorization**.
+Ensure all external/manual canonical writers are quiescent. Both DB services,
+frontend/MCP/Keycloak and all volumes remain running/unchanged.
+
+```bash
+test "$(git rev-parse HEAD)" = "$QH30_DEPLOY_COMMIT"
+test -z "$(git status --porcelain)"
+test "$(docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{.Id}}')" = "$QH30_IMAGE_ID"
+"${QH30_COMPOSE[@]}" stop backend
+"${QH30_COMPOSE[@]}" run --rm --no-deps backend \
+  alembic -c adapters/postgres/alembic.ini upgrade 0003_native_semantics
+"${QH30_COMPOSE[@]}" run --rm --no-deps backend \
+  alembic -c adapters/postgres/alembic.ini upgrade 0004_projection_outbox
+"${QH30_COMPOSE[@]}" run --rm --no-deps backend \
+  alembic -c adapters/postgres/alembic.ini current
+```
+
+Each explicit migration is transactional; because these are separate invocations,
+a failed 0004 can leave **0003 committed**. Keep the backend stopped, diagnose and
+retry/repair forward; do not assume both migrations rolled back or run downgrade.
+Verify 0004, the three canonical/two operational tables and unchanged zero counts
+before enabling the runtime. A count/constraint mismatch stops the procedure.
+
+```bash
+docker exec qh-postgres-1 sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "BEGIN READ ONLY; SELECT version_num FROM alembic_version; SELECT table_name FROM information_schema.tables WHERE table_schema='\''public'\'' AND table_name IN ('\''semantic_type_versions'\'','\''item_revision_types'\'','\''relation_revision_details'\'','\''projection_outbox'\'','\''context_projection_state'\'') ORDER BY table_name; SELECT count(*) FROM understanding_item_revisions; SELECT count(*) FROM sources; SELECT count(*) FROM projection_outbox; COMMIT;"'
+export QH_NATIVE_CONTEXT_ENABLED=true
+"${QH30_COMPOSE[@]}" up -d --no-deps --no-build --wait --wait-timeout 120 backend
+test "$(docker inspect qh-backend-1 --format '{{.Image}}')" = "$QH30_IMAGE_ID"
+docker inspect qh-backend-1 --format '{{range .Mounts}}{{.Source}}:{{.Destination}} {{end}}'
+"${QH30_COMPOSE[@]}" exec -T backend python -c 'from pathlib import Path; assert Path("adapters/context/runtime.py").is_file(); import urllib.request; assert urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=5).status == 200; print("PASS: native files and backend health")'
+"${QH30_COMPOSE[@]}" logs --no-color --tail 60 backend
+```
+
+All five source mounts must point into `/home/ubuntu/qh-worktrees/qh-30`, including
+scripts/tests. They must no longer point at `/home/ubuntu/qh`. DB container IDs and
+volume names must match the pre-cutover values. The process must finish native
+startup (schema/connectivity/index initialization and worker thread creation);
+health alone is not projection proof. Routine Uvicorn logging may suppress the
+worker's INFO line; the smoke proves actual processing. Restrict log inspection to
+this backend and never print raw environments. Native label/index additions are
+expected only after this authorized activation, retaining historical Graphiti data.
+
+### Authorized synthetic acceptance and restart/recovery
+
+```bash
+"${QH30_COMPOSE[@]}" exec -T backend python /workspace/scripts/smoke_qh30_runtime.py --write-synthetic
+"${QH30_COMPOSE[@]}" restart --timeout 40 backend
+"${QH30_COMPOSE[@]}" exec -T backend python -c 'import time,urllib.request; time.sleep(2); assert urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=5).status == 200; print("PASS: restarted backend health")'
+"${QH30_COMPOSE[@]}" exec -T backend python /workspace/scripts/smoke_qh30_runtime.py --write-synthetic
+```
+
+Each smoke retains two synthetic users without login mappings, one space/source
+and one proposed decision. It waits for the application worker, validates exact
+SQL-backed provenance and denies the foreign subject. Record both printed scope
+IDs. No real user/source text, LLM or embedding request is involved. The second
+smoke proves the restarted process handles newly committed work. Deliberate crash,
+ack-loss and DB-outage injection stay in disposable CI tests; do not stop the
+shared persistent Neo4j merely to reproduce them.
+
+If health is not ready immediately after restart, poll it for up to 120 seconds
+before acceptance; do not rerun the write probe until health succeeds. Both smoke
+results and DB identity checks must pass before writer resumption. Projection
+failure leaves durable pending/failed work and preserves canonical data.
+
+### Failure handling and deferred historical inventory
+
+- Before migration: leave/restart the old backend only if PostgreSQL is still
+  exactly 0002 and its original image/configuration are verified unchanged.
+- At 0003 or 0004: keep writers stopped. Never restart the Graphiti/category writer
+  against the upgraded schema. Use the pinned native image for reviewed forward
+  repair. Preserve original backend image/configuration, but it is not a safe
+  schema rollback mechanism.
+- Native activation/smoke failure: stop only the backend or set native opt-in false
+  and recreate only that backend if needed for identity/health diagnosis. Do not
+  claim context availability in disabled mode. Preserve smoke IDs, outbox state,
+  redacted causes and all canonical records. Do not delete history, force ready,
+  change epochs manually or downgrade. Rebuild is an explicit reviewed maintenance
+  operation if markers are inconsistent; ordinary provider-free retries cover
+  transient delivery failures.
+- Never use `down`, `--volumes`, database recreation or volume pruning on project
+  `qh` during this procedure. If real data appear, select a reviewed preservation/
+  backup/restore path before proceeding; this zero-row runbook is no longer enough.
+- Only **after owner-authorized activation and successful acceptance**, inventory
+  historical Graphiti/SurrealDB resources read-only and propose a separate staged
+  retirement plan with use/shared-resource/disk/risk evidence. No historical
+  resource is removed by this cutover. Preserve Graphiti branch, Draft PR #1 and
+  architectural evidence regardless of future infrastructure retirement.
