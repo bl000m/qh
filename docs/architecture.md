@@ -183,3 +183,17 @@ and advanced vector retrieval are not implemented. Ordinary native queries use
 per-scope sync state and candidate hydration; `ProjectionWorker.rebuild` is explicit recovery.
 The separate snapshot reconciler and full-scope query scans have been retired from the active implementation;
 its generation publisher remains necessary for rebuild.
+
+## QH-8 internal extraction boundary
+
+`app/understanding` owns conversational import, provider-neutral output validation,
+exact Unicode citations and conservative local-reference resolution. It calls the
+existing LLMProvider and injected CanonicalRepository; Core/public DTOs are unchanged.
+`adapters/llm/offline.py` supplies explicit fixture and captured-response replay
+implementations, never auto-bound at startup. The trusted internal caller needs
+separate import/extraction authorization; the existing owner READ_CONTEXT check is
+an additional read gate, not a new write or external-provider disclosure grant.
+Sources commit before generation; validated proposed revisions/evidence commit as
+one batch through the existing SQL outbox. No provider transaction or direct graph
+write is introduced. Checkpoints are revalidated against immutable source revisions;
+replay never changes current/confirmation. This feature is not deployed on the VPS.

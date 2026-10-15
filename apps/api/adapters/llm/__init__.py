@@ -1,1 +1,1 @@
-"""Future LLMProvider implementations; provider SDKs stay in this namespace."""
+"""Replaceable LLMProvider adapters; QH-8 offline fixtures/replay make no calls."""
