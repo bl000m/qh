@@ -8,6 +8,7 @@ List-price cost from observed tokens is not an independently verified invoice.
 from decimal import Decimal
 import json
 import os
+import re
 from pathlib import Path
 import fcntl
 
@@ -120,9 +121,11 @@ class MistralProvider:
         )
         self.transport = transport
         self.last_exchange = None
+        self.last_failure = None
 
     async def _request(self, method, path, *, payload=None, maximum=Decimal(0)):
         self.last_exchange = None
+        self.last_failure = None
         attempt = self.budget.reserve(path, maximum)
         try:
             async with httpx.AsyncClient(
@@ -141,6 +144,21 @@ class MistralProvider:
                     },
                 )
             if response.status_code != 200:
+                # Preserve diagnostic codes, never arbitrary provider messages/headers.
+                self.last_failure = {"http_status": response.status_code}
+                try:
+                    details = response.json()
+                    for field in ("code", "type"):
+                        value = details.get(field)
+                        if isinstance(value, (str, int)) and re.fullmatch(
+                            r"[A-Za-z0-9_.-]{1,80}", str(value)
+                        ):
+                            self.last_failure[field] = str(value)
+                except (ValueError, AttributeError):
+                    pass
+                after = response.headers.get("retry-after", "")
+                if re.fullmatch(r"[0-9]{1,8}", after):
+                    self.last_failure["retry_after_seconds"] = int(after)
                 raise MistralError("Mistral HTTP " + str(response.status_code))
             data = response.json()
             self.last_exchange = dict(request=payload, response=data, attempt=attempt)

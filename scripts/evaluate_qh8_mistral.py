@@ -264,10 +264,28 @@ def execute(*, out, live, replay_from=None):
             )
         return results
     except Exception as exc:
+        if runtime is not None:
+            try:
+                failure = repo.read_snapshot(tuple(manifest["scopes"].values()))
+                failure["sync_status"] = repo.sync_status(
+                    tuple(manifest["scopes"].values())
+                )
+                with repo.connect() as c:
+                    c.execute("SET TRANSACTION READ ONLY")
+                    failure["source_revision_count"] = c.execute(
+                        "SELECT count(*) AS n FROM source_revisions"
+                    ).fetchone()["n"]
+                dump(out / "failure-state.json", failure)
+            except Exception:
+                dump(
+                    out / "failure-state.json",
+                    {"status": "diagnostic snapshot unavailable"},
+                )
         dump(
             out / "experiment-error.json",
             dict(
                 type=type(exc).__name__,
+                provider_diagnostic=getattr(provider, "last_failure", None),
                 message=str(exc)
                 if isinstance(exc, MistralError)
                 else "Experiment stopped; inspect protected artifacts",

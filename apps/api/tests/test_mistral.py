@@ -180,3 +180,29 @@ def test_reference_is_separate_literal_and_dataset_is_new():
         for item in ref["expected"]:
             for evidence in item["evidence"]:
                 assert evidence["quote"] in turns[evidence["turn_id"]]
+
+
+def test_error_diagnostics_keep_only_bounded_codes_and_numeric_retry_after(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("MISTRAL_API_KEY", "synthetic-private-token")
+    provider = MistralProvider(
+        budget=budget(tmp_path),
+        transport=httpx.MockTransport(
+            lambda req: httpx.Response(
+                429,
+                json={
+                    "code": "1300",
+                    "type": "rate_limited",
+                    "message": "synthetic-private-token",
+                },
+                headers={"Retry-After": "2", "X-Secret": "synthetic-private-token"},
+            )
+        ),
+    )
+    with pytest.raises(MistralError):
+        asyncio.run(provider.generate(REQUEST))
+    assert provider.last_failure == dict(
+        http_status=429, code="1300", type="rate_limited", retry_after_seconds=2
+    )
+    assert "synthetic-private-token" not in json.dumps(provider.last_failure)
