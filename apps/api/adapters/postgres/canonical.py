@@ -6,6 +6,7 @@ are defense in depth, not a new policy action. Registration is explicit provisio
 
 from contextlib import contextmanager
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 import psycopg
@@ -17,6 +18,8 @@ TEMPORAL = ("fact_from", "fact_to", "valid_from", "valid_to")
 
 
 def json_values(value):
+    if isinstance(value, Decimal):
+        return float(value)
     if isinstance(value, dict):
         return {k: json_values(v) for k, v in value.items()}
     if isinstance(value, (tuple, list)):
@@ -330,3 +333,37 @@ class CanonicalRepository:
                     "SELECT pg_advisory_unlock(hashtextextended(%s,0))",
                     ("projection:" + slice_id,),
                 )
+
+    def read_affected_snapshot(self, context_id, revision_id):
+        """Only changed revision and transitive immutable anchors, using FK indexes."""
+        with self.connect() as c:
+            self._authorize(c, (context_id,))
+            ids = c.execute(
+                """WITH RECURSIVE affected(id) AS (
+                SELECT id FROM understanding_item_revisions WHERE id=%s AND context_space_id=%s
+                UNION
+                SELECT endpoint.id FROM affected a
+                  JOIN relation_revision_details d ON d.item_revision_id=a.id
+                  CROSS JOIN LATERAL (VALUES(d.source_revision_id),(d.target_revision_id)) endpoint(id)
+                  WHERE d.context_space_id=%s
+                ) SELECT id FROM affected""",
+                (revision_id, context_id, context_id),
+            ).fetchall()
+        return self.read_snapshot((context_id,), [r["id"] for r in ids])
+
+    def sync_status(self, context_ids):
+        """O(number of requested scopes), no canonical revision scan."""
+        with self.connect() as c:
+            scopes = self._authorize(c, context_ids)
+            rows = c.execute(
+                """SELECT s.*,o.state AS next_state,o.attempts,o.error_code,o.error_type,
+                CASE WHEN s.desired_version=s.applied_version THEN 'ready' ELSE COALESCE(o.state,'failed') END AS sync_state,
+                CASE WHEN o.id IS NULL THEN 0 ELSE EXTRACT(EPOCH FROM clock_timestamp()-o.created_at) END AS lag_seconds
+                FROM context_projection_state s LEFT JOIN projection_outbox o
+                  ON o.context_space_id=s.context_space_id AND o.scope_version=s.applied_version+1
+                WHERE s.context_space_id=ANY(%s::uuid[]) ORDER BY s.context_space_id""",
+                (scopes,),
+            ).fetchall()
+            if len(rows) != len(scopes):
+                raise RuntimeError("Projection state missing")
+            return json_values(rows)

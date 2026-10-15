@@ -12,7 +12,10 @@ Run migrations explicitly; API startup never changes the database schema.
 `context/native.py` supplies QH-30 Neo4j projection/retrieval with retained fixtures
 or real PostgreSQL snapshots. `reconcile` performs explicit full reconciliation;
 SQL-backed composition enables readiness/completeness checks before retrieval.
-No persistent worker/outbox, production route or startup binding is activated; `llm/` remains
+`context/incremental.py` supplies the backend-local outbox worker, monotonic graph
+projector and ordinary bounded-hydration retrieval; 0004 owns operational SQL state.
+The full reconciler is retained for explicit recovery. No production route or
+startup binding is activated; `llm/` remains
 reserved. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.

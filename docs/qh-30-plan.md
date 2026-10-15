@@ -6,7 +6,7 @@ QH-8 and QH-10. QH-4 and QH-7 were read previously. The owner has already
 realigned QH-30/QH-8/QH-10 and their native-engine dependencies on Jira. [ADR 0003](adr/0003-native-context-engine.md)
 records the architecture direction. The owner approved the canonical principles
 and implementation/testing on a disposable PostgreSQL server only. Applying the
-migration to persistent QH remains unauthorized. This is not a Jira update.
+migrations 0003/0004 to persistent QH remains unauthorized. This is not a Jira update.
 
 ## Baseline and preserved work
 
@@ -28,7 +28,7 @@ No QH database, volume or existing container is migrated, reset or replaced.
 | Provenance | item_revision_provenance, exact source revision and same-space FKs; immutable publication, advisory-lock assembly-before-revision | Reuse, including for entity/relation revisions; optional precise citation validation against source content remains application logic initially |
 | Semantic entities | entity-category revisions can already hold structured content | No detail table: registered entity shape plus immutable publication suffices |
 | Semantic relations | relationship-category content JSONB can encode a relation, but SQL cannot enforce JSON endpoint membership/type/scope | Implemented universal item endpoints with stable IDs/revision anchors; temporal metadata is common to all revision bindings |
-| Projection/sync | No outbox, projector generation/version/progress tables | Isolated full-snapshot reconciliation now works without new tables; durable incremental outbox still requires review |
+| Projection/sync | No outbox, projector generation/version/progress tables | Migration 0004 adds transactional outbox + per-scope state; backend-local incremental worker verified in isolation |
 | Rebuild without paid calls | Original content/revisions already independent of engine | Canonical entity/relation content plus retained versioned embedding artifacts/cache missing; do not call LLM during rebuild |
 
 Evidence: `apps/api/adapters/postgres/migrations/versions/0001_qh_schema.py` and
@@ -442,9 +442,11 @@ corrected and the affected real tests rerun successfully.
 No new runtime dependencies or manifest/lock changes. QH Core/public signatures,
 Compose QH, migrations 0001/0002 and the persistent QH data/volumes are unchanged.
 
-## PostgreSQL → Neo4j integrated increment (isolated)
+## PostgreSQL → Neo4j full-snapshot increment (historical isolated milestone)
 
-No migration after 0003 and no new table. `adapters/postgres/canonical.py` implements
+This milestone used only 0003; its O(n) ordinary path is superseded by the
+incremental 0004 implementation below. Full reconciliation remains explicit recovery.
+`adapters/postgres/canonical.py` implements
 `CanonicalRepository.register_types/save/read_snapshot/projection_lock`. Existing
 Core `ContextQuery`, `ContextResult`, item/source revision references and
 PolicyService remain unchanged. The adapter uses internal SQL-shaped records, not
@@ -501,13 +503,9 @@ are intentionally O(n) for this small milestone. This proves correctness, not an
 incremental/high-throughput architecture. Per-scope generation selection is fixed
 by the caller; reconcile the complete scope set owned by that slice.
 
-**Future proposal, not applied:** for incremental background processing, one durable
-projection-intent/outbox table with scope, canonical revision, projector version,
-dedup key, pending/processing/done/failed state, attempts and redacted last cause.
-Insert intent atomically with canonical publication; use bounded worker batches,
-idempotent graph upserts, canonical reread and periodic full reconciliation for
-repair. This new table/dispatch contract requires approval before implementation.
-No broker/new service/container is proposed for the initial worker.
+The former incremental-outbox proposal is now implemented in migration 0004 and
+validated below; it is no longer deferred or an ordinary full-snapshot dependency.
+No broker/new service/container is introduced.
 
 ### Writer compatibility inventory and prepared adaptation
 
@@ -517,7 +515,7 @@ entry points; historical QH-4/QH-5 fixtures remain on their own schema revisions
 | Existing writer / entry point | 0003 impact / action |
 | --- | --- |
 | Application Understanding Item/source SQL writers | None existed before this increment; no production category writer to convert. New CanonicalRepository writes registered bindings and null legacy category |
-| `demo_identities.provision_demo` | INSERTs touch users/user_identities only, compatible and idempotent. CLI preflight previously required exactly 0002; `require_identity_schema` now explicitly accepts 0002 or 0003, rejecting unrecognized revisions. Existing local database restriction is preserved |
+| `demo_identities.provision_demo` | INSERTs touch users/user_identities only, compatible and idempotent. CLI preflight previously required exactly 0002; `require_identity_schema` now explicitly accepts 0002, 0003 or 0004, rejecting unrecognized revisions. Existing local database restriction is preserved |
 | Historical QH-4/QH-5 migration test helpers | Deliberately use historical category writes against pinned old migrations; do not rewrite history or make them write invalid payloads against head |
 | `Makefile:migrate` | Calls upgrade head, so do not use it for this rollout. Apply the explicitly reviewed 0003 target from the native worktree/image only after authorization |
 | Graphiti branch/runtime | Preserved; never silently replace its checkout/mount or treat its Neo4j graph as canonical SQL backfill |
@@ -564,43 +562,163 @@ not repeated. Demonstration outcomes:
 | Race/read correctness | Canonical changes during publication detected; two projectors serialized; missing nodes, forged temporal data and SQL failure fail closed with cause retained |
 | Persistent QH | PASS: retained baseline schema/data dump hash, container ID and mounts unchanged; no persistent migration or volume change |
 
-### Safe plan for later persistent application — not executed
+### Persistent application plan — superseded by the inventory below
 
-1. Obtain explicit authorization for the persistent migration and reviewed runtime
-   deployment. Pin branch/commit/image and migration **0003_native_semantics**;
-   preserve the Graphiti branch/PR and other worktrees. Inventory actual category/
-   payload shapes, pending writers, current Alembic revision and row counts/hashes.
-   Stop on incomplete legacy relations, mixed shapes or temporal mapping ambiguity.
-2. Quiesce **all** canonical writers, including scripts; retain the old runtime
-   configuration. Create a custom-format `pg_dump` of the explicitly identified QH
-   database, with restrictive file permissions and a checksum; retain role/grant
-   recreation information and required local configuration securely. No secrets
-   in Git/logs/chat. Keep an independent verified copy under the approved backup
-   process; no new external storage/provider call is authorized here.
-3. Restore that backup into a **new isolated database** with no application clients,
-   using pg_restore with --exit-on-error, --single-transaction and explicit target/
-   role mapping. Check tables, constraints, all canonical row hashes/counts,
-   provenance/current pointers and identities. Apply 0003 to the restored clone;
-   run the preflight and registered-writer/read/projection smoke there. This exact
-   backup/restore rehearsal remains **NOT TESTED** here and is mandatory before
-   the persistent change; database test migration is not a backup rehearsal.
-4. With writers still paused and the backup verified, run the pinned migration
-   explicitly against the intended persistent PostgreSQL. DDL/backfill is atomic:
-   any rejection aborts. Verify unchanged historical row hashes/counts, eleven
-   seeded bindings, FK/trigger inventories and application identity reads. Deploy
-   the adapted registered writer/reader and correct native-worktree configuration;
-   do not switch Compose mounts/Graphiti code implicitly or run upgrade head.
-5. Build a fresh operational graph generation from canonical SQL and validate
-   scopes/provenance/temporal metadata before exposure. Keep historical Graphiti
-   data and the previous graph generation untouched until explicitly retired.
-   Resume writes only after acceptance, with fresh-read/reconciliation monitoring.
-6. Failure before resuming writes: keep writes paused; an atomic migration failure
-   leaves the old schema. For a completed but unusable deployment, restore the
-   verified pre-change backup into a new replacement database and explicitly
-   switch configuration only after verification/authorization. Do not downgrade
-   0003, overwrite the old volume or delete data. After new writes resume, restoring
-   an older backup would lose them: preserve/export them and choose reviewed
-   forward repair or an explicitly approved recovery procedure instead.
+The earlier backup/clone procedure was conditional on actual content. The read-only
+inventory in this increment found an empty QH database, so no elaborate data backup/
+restore rehearsal is required for the recommended empty-schema activation. Migration
+execution and runtime activation still require explicit authorization.
 
-No claim of a tested production restore, deployed worker or complete QH-30 DoD.
-This increment stops at the persistent-application approval checkpoint.
+## Incremental outbox and backend worker — implemented in isolation
+
+Migration `0004_projection_outbox` follows unchanged 0003. It adds **two operational
+tables**, not canonical semantic objects:
+
+- `projection_outbox`: stable intent ID, scope/item/exact revision, kind
+  revision/current, per-scope sequence, pending/processing/ready/failed, attempts,
+  availability, token/lease deadline, completion and redacted error code/class.
+  Identity fields are immutable; retry/ack metadata is mutable. Canonical FKs and
+  unique revision-intent/per-scope-version keys prevent duplicate canonical intent.
+- `context_projection_state`: scope PK, recovery epoch, desired/applied versions
+  and last success. This small row is required for commit-order sequencing,
+  contiguous acknowledgements, constant-size readiness checks and worker fencing.
+  It is operational/reconstructible state, not a Context Space domain revision.
+
+AFTER INSERT revision triggers and explicit current-pointer-change triggers enqueue
+in the **same SQL transaction** as publication. All SQL writers are covered, not
+only CanonicalRepository. Deferred schema/endpoint validation failure rolls back
+the intent and desired version too. Sequence allocation locks the scope state row:
+commit order is serialized per scope, and rollback does not leave scope-version
+gaps. Global outbox identity gaps are harmless and are never used as a watermark.
+Existing 0003 revisions are queued once during migration; new spaces get state
+rows automatically. This one-time backfill is not a normal-query/rebuild scan.
+
+### Incremental execution and retry semantics
+
+`adapters/context/incremental.py` contains IncrementalProjector, ProjectionWorker
+and IncrementalContextEngine. It runs inside the backend Python process via
+`ProjectionWorker.run(stop_event)` or bounded `run_once`, not a new microservice.
+The actual polling loop is tested. No automatic production startup is enabled
+while persistent 0003/0004 application remains prohibited.
+
+Claim: short SQL transaction, per-scope row lock with SKIP LOCKED, claim only
+applied+1, expiring token lease and attempt count. Workers can progress across
+independent scopes; concurrent workers cannot claim the same unexpired head.
+A restarted worker reclaims expired leases. Finish requires both the original
+epoch and current token. SQL outages leave the lease recoverable; polling resumes.
+Failures retry with bounded exponential delay (2–60 seconds), without paid APIs.
+
+Projection: `read_affected_snapshot` follows only the changed immutable revision
+and its transitive relation anchors by indexed IDs. One head lookup uses the
+item/revision-number index. The Neo4j transaction MERGEs only these assertions,
+provenance and relation edges, updates the affected item head monotonically, then
+advances its scope marker. A predecessor gap is rejected for later delivery;
+old/duplicate deliveries do not change newer marker/head data. Lost acknowledgement
+is replayed without duplicate graph nodes. Namespaces separate independent canonical
+databases sharing the test graph. Current-pointer selection is copied explicitly;
+a deliberate canonical selection of an older confirmed revision is not an automatic
+projection regression. Historical assertions remain immutable.
+
+Errors: failed state, exception **class** only (no SDK message/SQL/source/credential),
+attempts, timestamps and queue lag are available through owner-scoped sync_status.
+The live worker retains the actual cause for internal diagnosis. Unavailable Neo4j
+never rolls back or erases the committed canonical revision/intention.
+
+### Ordinary retrieval versus explicit recovery
+
+The existing PolicyService authorizes first. IncrementalContextEngine then reads
+per-scope SQL counters and Neo4j epoch/version markers, runs the existing scoped
+text candidate query, hydrates only candidate IDs in SQL, and rechecks counters
+before returning. Pending/failed/missing-marker or changed-during-read state fails
+explicitly, **including empty results**. No ordinary scope snapshot, checksum scan
+or reconciliation is performed. Synchronization checks scale with requested scope
+count; candidate hydration is bounded by query limits. Basic substring matching
+is still the existing Neo4j search, not a new indexed/vector performance claim.
+
+Full `reconcile` remains available for the historical snapshot adapter. For the
+incremental projection use `ProjectionWorker.rebuild(scope)`: explicit maintenance
+locks the scope's state (briefly pausing scope commits), creates a new epoch and
+whole graph generation, fences old workers, reconstructs heads/anchors/provenance,
+and acknowledges the captured canonical set. Old generations remain retained.
+This exceptional maintenance path holds a SQL row lock across graph publication;
+ordinary worker processing does not. Loss of the rebuild acknowledgement fails
+marker/epoch checks closed and requires explicit retry. No LLM is needed.
+Manual graph corruption/partial deletion outside transactional worker writes needs
+explicit audit/rebuild; normal queries do not certify the entire graph with O(n)
+checks. Positive hits remain canonically revalidated. Outbox/state are not a second
+semantic truth and are not necessary to re-interpret sources during recovery.
+
+### Executed tests and observed behavior
+
+`tests/test_projection_outbox.py` reuses the real SQL/Neo4j pipeline fixture, then
+upgrades that disposable database from 0003 to 0004. All graph namespaces are tied
+to the unique test database; no persistent QH server is a test fallback.
+
+PASS: 13 outbox tests, then 86 tests (two added lease/identity tests plus the 84
+existing graph/pipeline/Core/identity regressions), plus the concurrent rollback
+and new-empty-space cases: **101 distinct tests**. Ruff passed. Unchanged 0003 schema evidence was reused.
+
+| Requirement | Actual evidence |
+| --- | --- |
+| Atomic outbox | Exact canonical replay adds no event; deferred validation and multi-record failure roll back intent/counter |
+| Affected-only update | One item update loads/projects exactly one revision; instrumentation rejects read_snapshot without exact IDs on ordinary worker and query paths |
+| Durable failure/restart | Failed state and lag recorded; real local Bolt connection refusal retried; expired worker lease recovered; polling survives temporary SQL exception |
+| Ack loss/duplicates/order | Graph commits then synthetic SQL ack loss; retry projects zero rows; future delivery rejected until predecessor, older delivery cannot regress head/marker |
+| Lease/epoch fencing | Old token may complete graph I/O but cannot ack a replacement lease; rebuild fences old workers |
+| Commit order | Two concurrent SQL publishers, one rollback: next committed intent gets exactly next scope version despite a global event-ID gap |
+| Empty-schema activation | Newly created space gets state automatically, fresh empty query needs no snapshot scan, first committed revision creates/projections its intent |
+| Fresh reads/isolation | Pending state blocks both hits/empty results; owner/mixed scopes denied; two owners independently retrieve Cedar/Birch |
+| Rebuild | Explicit new generation reconstructs current canonical data and item heads, retaining prior generations and exact evidence |
+| Writers | Identity provisioning preflight supports 0004 and stays idempotent; existing historical migration tests stay pinned |
+
+Reproduction inside the locked backend image with the existing dedicated SQL/Neo4j
+env files and qh30-native-test network:
+`python -m pytest -q -x --tb=short -p no:cacheprovider tests/test_projection_outbox.py`.
+The integrated regression command from the previous checkpoint remains valid.
+No Core/public DTO, production Compose or migrations 0001/0002/0003 changed.
+
+### Persistent PostgreSQL inventory and simplest activation recommendation
+
+Read-only transaction against **qh-postgres-1**, not a fixture: Alembic
+**0002_oidc_identities**. Public schema has only the nine expected tables
+(including alembic_version). Aggregates, without reading/displaying text or identities:
+
+| Data | Rows |
+| --- | ---: |
+| users / user_identities | 0 / 0 |
+| context_spaces | 0 |
+| sources / source_revisions | 0 / 0 |
+| understanding_items / understanding_item_revisions | 0 / 0 |
+| item_revision_provenance | 0 |
+
+There are **no canonical data, accounts or development records to preserve in this
+PostgreSQL database**. The retained read-only dump hash, container ID and mounts
+are unchanged. This says nothing about the separate historical Neo4j Graphiti
+prototype; its graph, branch, PR and volumes must remain untouched.
+
+Recommendation after explicit authorization: advance the **empty existing schema**
+with the pinned migrations 0003 → 0004, which is simpler and less destructive than
+recreating a database/container/volume. This is an empty-schema initialization,
+not a historical-data conversion. A clean logical database recreation is possible
+only with separate explicit authorization but adds no benefit for these counts.
+Do not build an elaborate data-backup/restore procedure for zero rows.
+
+Activation steps, **not executed**:
+1. Reconfirm this read-only inventory immediately before activation and stop
+   canonical writers. Pin reviewed commit/image and 0004 target, not upgrade head.
+   If any data have appeared, stop and choose the earlier backup/verified-clone
+   migration path based on their actual shape; do not classify them as disposable.
+2. Authorize and apply 0003/0004 to the empty QH schema without deleting volumes.
+   Verify three canonical + two operational tables, triggers/constraints, and
+   unchanged empty canonical counts. Keep Graphiti runtime/data/worktrees separate.
+3. Explicitly compose the registered repository, incremental engine/PolicyService
+   and backend worker with correct QH configuration. Bootstrap identities/spaces
+   only through separately authorized existing workflows. Verify scoped synthetic
+   write → pending → worker → ready → retrieval, then resume writers.
+4. On initialization failure, transactional DDL rollback preserves the prior schema;
+   diagnose/retry before activation. After new canonical data exist, do not discard
+   them or attempt destructive downgrade: stop writes and use reviewed repair/
+   backup-and-restore based on actual content. Migrations remain forward-only.
+
+Persistent 0003/0004 execution, destructive recreation, push/merge, Jira writes and
+paid APIs remain unauthorized and were not performed. QH-30 remains in progress.

@@ -6,7 +6,7 @@ Status: architecture direction authorized by the owner through
 The owner has approved a single versioned type registry and stable identities with
 immutable revision references, universal endpoints and temporal metadata. The owner
 authorized incremental implementation/testing on a dedicated disposable database.
-Migration 0003 is implemented with three tables; **persistent QH application and
+Migration 0003 has three canonical tables and 0004 adds operational outbox/state; **persistent QH application and
 public contract changes remain unauthorized**.
 
 ## Context and supersession
@@ -148,8 +148,8 @@ No production PostgreSQL-to-Neo4j repository/outbox is activated.
    be explainable; it must not silently merge identities or confirm an AI claim.
 5. Canonical Repository commits the affected records/revisions/provenance and a
    durable projection intent atomically in PostgreSQL when incremental dispatch is
-   introduced. The current isolated full-reconciliation slice discovers all committed
-   revisions without an outbox; it does not claim a persistent worker. Preserve QH-4 provenance
+   introduced. Migration 0004 now supplies this intent with SQL triggers; the
+   backend-local leased worker performs ordinary incremental projection. Preserve QH-4 provenance
    assembly-before-publication and immutable revisions. An optimistic expected
    revision/content fingerprint prevents publishing against silently changed input.
    Interpretation failures never become a fully successful ingestion.
@@ -289,15 +289,16 @@ The owner chooses PostgreSQL + native Neo4j now; no migration to another databas
    no extraction and no live vectors. A fixture is not deployed PostgreSQL persistence. The subsequent isolated increment
    now uses the real CanonicalRepository for writes, snapshot reads and hydration.
 3. Canonical model and isolated SQL-to-Neo4j integration are verified. Explicit full
-   reconciliation, scope freshness checks and replay/rebuild use no extra table.
-   This O(n) milestone is not an incremental worker; outbox proposal needs approval. Next:
+   reconciliation remains explicit recovery. Approved migration 0004 adds the
+   transactional outbox and per-scope operational counters/epoch. Ordinary worker
+   processing and query freshness no longer scan canonical scopes. Next:
    explicit persistent-application approval, transactional persistence/
    outbox/cache and recovery; then native extraction/resolution and advanced hybrid
    retrieval. QH-8 retains the three persistent typed Understanding Items demo.
 
-Stop before applying migration 0003 to the **persistent QH database** or changing
+Stop before applying migrations 0003/0004 to the **persistent QH database** or changing
 public contracts. Only the disposable QH-30 test database is authorized. The detailed SQL model,
-embedding artifact storage, outbox implementation and lifecycle selection remain
+embedding artifact storage and lifecycle selection remain
 subsequent review points. Registration/publication currently requires READ COMMITTED;
 other transaction isolation modes fail closed. This migration is forward-only and downgrade is refused; use a reviewed restore
 or forward repair because the old CHECK cannot represent arbitrary new types. This ADR does not mark QH-30 or QH-8 Done.
@@ -307,3 +308,14 @@ metadata may refer opaquely to an external original; context retrieval never
 performs a download or grants original-byte access. No Vault backend/contract is
 implemented here. See the QH-30 plan for the real pipeline evidence, writer
 inventory and gated backup/restore/cutover procedure.
+
+Incremental synchronization (owner-authorized, 2026-10-15): per-scope sequence
+allocation serializes commits; token leases and epochs fence stale workers;
+Neo4j marker/affected-node writes are one transaction and acknowledgements are
+contiguous. Pending/failed SQL state or mismatched graph epoch/version blocks
+retrieval before disclosure. Readiness checks use operational state, not ordinary
+full-snapshot reconciliation. Full rebuild/audit is explicit maintenance, including
+its scope lock across publication. Backend worker uses no new service/broker.
+See QH-30 plan for executed failure/concurrency evidence and read-only inventory:
+persistent PostgreSQL is empty, so a gated empty-schema upgrade is recommended
+instead of an excessive historical-data backup procedure. No persistent execution.

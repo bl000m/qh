@@ -155,8 +155,9 @@ Source revision → authorized interpretation → validated canonical proposal/A
 commit → idempotent operational graph projection → authorized retrieval and bulk
 canonical hydration. See [ADR 0003](adr/0003-native-context-engine.md). Outbox,
 embedding artifact cache and measurable projection progress are required when
-incremental processing is introduced. The isolated full-snapshot reconciliation
-currently uses no outbox; see its explicit O(n) trade-off in QH-30. No distributed transaction or automatic
+incremental processing is introduced. Migration 0004 now implements transactional
+outbox/state with a backend-local incremental worker in isolation; full-snapshot
+reconciliation is explicit recovery, not an ordinary query prerequisite. No distributed transaction or automatic
 re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) is implemented/tested only in isolated migration 0003
 and a real SQL-to-Neo4j slice; persistent application remains gated. Existing OIDC, PolicyService and public contracts remain unchanged.
 

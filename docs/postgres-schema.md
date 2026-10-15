@@ -117,3 +117,10 @@ binding. Pinned schemas/rules and publication guards enforce immutable assembly.
 Migrations 0001/0002 are unchanged. Migration 0003 has been tested only on the
 qh30-sql-test disposable server; persistent QH remains on its original schema.
 See qh-30-plan.md for compatibility, validator profile, execution evidence and gates.
+
+QH-30 migration 0004 (isolated only): projection_outbox + context_projection_state
+are operational, not new canonical semantic entities. SQL publication/current-pointer
+triggers queue work atomically; per-scope counters, token leases and recovery epochs
+support incremental processing. Readiness uses these counters instead of full SQL
+snapshot scans. Rebuild still comes from canonical data. Persistent QH inventory is
+empty at revision 0002; no persistent migration/recreation has been performed.

@@ -221,7 +221,7 @@ class NativeContextEngine:
                 "FOR (r:QH30Slice) REQUIRE r.id IS UNIQUE"
             ).consume()
 
-    def replace(self, snapshot, *, generation):
+    def replace(self, snapshot, *, generation, transaction_guard=None):
         rows = checked_rows(
             snapshot, self.validate_content
         )  # Reject before opening a graph transaction.
@@ -255,6 +255,8 @@ class NativeContextEngine:
         ).hexdigest()
 
         def write(tx):
+            if transaction_guard is not None:
+                transaction_guard(tx)
             old = tx.run(
                 "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS active",
                 id=self.slice_id,
