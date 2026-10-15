@@ -42,7 +42,7 @@ class NativeRuntime:
             with self.repository("").connect() as c:
                 if c.execute("SELECT version_num FROM alembic_version").fetchone()[
                     "version_num"
-                ] != "0004_projection_outbox":
+                ] not in ("0004_projection_outbox", "0005_retire_legacy_category"):
                     raise RuntimeError("Native runtime requires migration 0004")
             self.driver.verify_connectivity()
             self.projector.initialize()

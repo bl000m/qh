@@ -46,10 +46,11 @@ def configure(monkeypatch, namespace):
     monkeypatch.setenv("NEO4J_PASSWORD", os.environ["QH30_TEST_NEO4J_PASSWORD"])
 
 
-def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, monkeypatch, caplog):
+@pytest.mark.parametrize("schema", ["0004_projection_outbox", "0005_retire_legacy_category"])
+def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, monkeypatch, caplog, schema):
     repo, bob, graph, _, rows = pipeline
     from alembic.config import Config
-    command.upgrade(Config("adapters/postgres/alembic.ini"), "0004_projection_outbox")
+    command.upgrade(Config("adapters/postgres/alembic.ini"), schema)
     namespace = "qh30-runtime-" + uuid4().hex
     configure(monkeypatch, namespace)
     runtimes = []

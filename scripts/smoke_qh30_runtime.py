@@ -35,7 +35,7 @@ def main():
     owner, foreign, scope = (str(uuid4()) for _ in range(3))
     repo = CanonicalRepository(url=url, subject_id=owner)
     with repo.connect() as c:
-        if c.execute("SELECT version_num FROM alembic_version").fetchone()["version_num"] != "0004_projection_outbox":
+        if c.execute("SELECT version_num FROM alembic_version").fetchone()["version_num"] not in ("0004_projection_outbox", "0005_retire_legacy_category"):
             raise SystemExit("Requires explicitly migrated 0004 schema")
         for subject in (owner, foreign):
             c.execute("INSERT INTO users(id,display_name) VALUES (%s,'QH native synthetic smoke')", (subject,))

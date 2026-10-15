@@ -39,7 +39,8 @@ def main():
     return pytest.main([
         "-q", "-x", "--tb=short", "-p", "no:cacheprovider",
         "-o", "faulthandler_timeout=60",
-        "tests/test_native_semantics_sql.py", "tests/test_projection_outbox.py",
+        "tests/test_native_semantics_sql.py", "tests/test_generic_semantics.py",
+        "tests/test_projection_outbox.py",
         "tests/test_canonical_graph_pipeline.py", "tests/test_native_runtime.py",
         "tests/test_native_context.py", "tests/test_architecture.py",
         "tests/test_contracts.py", "tests/test_identity_migration.py",
