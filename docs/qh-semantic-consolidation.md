@@ -148,8 +148,8 @@ remaining standalone-reconciler removal; previous verified commits are retained.
 
 | ID / priority | Existing element | Closure / commit | Reason or remaining boundary |
 | --- | --- | --- | --- |
-| A01 P0 | README, AGENTS, architecture, SQL notes, adapter notes | **Resolved** — `40832b6`, `8fd06bd`; documentation commit following `46eda1f` | Active environment is 0004/fd50 with native worker; separate 0005 branch is not deployed. No edits through live QH-30 mounts |
-| A02 P0 | Product Contract, ADR 0003 | **Resolved** — `40832b6`, `8fd06bd`; documentation commit following `46eda1f` | Generic profiles, open descriptors and authorized selection approved; deployment is separate. Dated amendment preserves earlier decisions |
+| A01 P0 | README, AGENTS, architecture, SQL notes, adapter notes | **Resolved** — `40832b6`, `8fd06bd`; `dead0e7` | Active environment is 0004/fd50 with native worker; separate 0005 branch is not deployed. No edits through live QH-30 mounts |
+| A02 P0 | Product Contract, ADR 0003 | **Resolved** — `40832b6`, `8fd06bd`; `dead0e7` | Generic profiles, open descriptors and authorized selection approved; deployment is separate. Dated amendment preserves earlier decisions |
 | A03 P1 | `context/native.py` legacy decoder / injected validator | **Resolved** — `f85b31c` | One registered PostgreSQL-shaped representation; no production category/content decoder or fixture validator |
 | A04 P1 | Canonical fixtures, compatibility mapping, duplicate time/endpoints, fixture probe | **Resolved** — `f85b31c`, `46eda1f` | Fixtures use actual bindings/time/details. Obsolete fixture-only `scripts/verify_qh30_native.py` removed; real runtime smoke/restart/rebuild tests replace it. Specialized fixtures still test optional extensions |
 | A05 P1 | Null legacy category and obsolete `qh30_publish` check | **Prepared; persistent authorization pending** — `5c8cd44` | 0005 removes only the null column/check. Non-null history aborts atomically; no canonical rewrite. VPS remains at 0004 |
@@ -178,7 +178,7 @@ No application dependency or service removal is justified merely by a Graphiti o
 SurrealDB keyword in a historical report. No QH or historical resource was stopped,
 deleted or pruned; execution used disposable test containers and test-owned data only.
 
-## Audit closure verification
+## Previous audit closure verification (46eda1f)
 
 Code unit **46eda1f2788cddf6169f03471f702b6fa631ab2e**, local only: removes the
 standalone snapshot reconciler, its full-scope query scans, repository advisory
@@ -205,11 +205,11 @@ operational path. The independent pre-0004 startup rejection test remains explic
 
 Test counts above are separate runs, not additive totals.
 
-The new candidate is `qh-semantic-candidate:46eda1f2788cddf6169f03471f702b6fa631ab2e`,
+The previous audit-closure candidate was `qh-semantic-candidate:46eda1f2788cddf6169f03471f702b6fa631ab2e`,
 Docker-inspected image ID `sha256:74313b1c89d0440aa206d1aa7f80080e83edcce1ad84e2d7dd1cb019c6c2c4aa`,
 OCI revision `46eda1f2788cddf6169f03471f702b6fa631ab2e`. Built from that exact
 Git archive, without ignored files. It supersedes the earlier a1eba04 candidate;
-the runbook below now pins this image. No image was deployed. Reproduce packaged
+the final publication candidate below now supersedes it. No image was deployed. Reproduce its packaged
 checks with the same command as the previous packaging record below, substituting
 this full image tag. Use the existing strict-suite command for complete local CI.
 
@@ -376,6 +376,52 @@ that cleanup migration. Surreal shutdown/archival, PR merge, Jira updates and pa
 provider experiments remain separately gated.
 
 
+## Final publication candidate — fresh image evidence
+
+Full image source: **95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4** on
+`refactor/QH-30-semantic-foundation`, including all runtime cleanup from `46eda1f`.
+`dead0e7` closes the matrix; `95b3a8f` adds changelog/versioning/deployment documents.
+The evidence/runbook commit follows the image source and changes Markdown only;
+preflight checks every tracked non-Markdown path against the tested source SHA.
+The three public Compose overrides are passed explicitly through sudo so its
+environment handling cannot silently select the old .env image.
+Branch HEAD and image source SHA are deliberately recorded separately: an image
+cannot contain the later commit documenting its own test result/identity.
+
+Built afresh from `git archive` of this commit with the OCI revision label, no
+ignored files or credential context. Candidate tag:
+`qh-semantic-candidate:95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4`.
+Docker-inspected ID: `sha256:dbae3e5701725c1bbcf99d1a0cc25f025e3df488adef8a7ae2f08a7e0ef34c2f`.
+OCI revision: `95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4`.
+This is a local image ID; no registry publication/digest is claimed. It supersedes
+both a1eba04 and 46eda1f candidates for the prepared activation below.
+
+| Verification on this image | Executed result |
+| --- | --- |
+| Strict integration, without bind mounts | PASS **261 tests, zero skips**, 316.60 s, fresh execution of `scripts/run_qh30_integration.py` in this exact image; covers SQL model/0005, generic semantics, outbox/rebuild, pipeline, runtime, Core/public contracts, OIDC crypto/identity and owner isolation |
+| Packaging cases | PASS in the same fresh strict run (included in 261, not an additional run): all five `test_native_runtime.py` cases plus `test_empty_install_0005_then_controlled_profiles`: 0004/0005 runtime, same-ID smoke/restart, actual separate backend processes recovering pending 0005 work, old-schema startup refusal and empty install/provisioning. No old-image test result is attributed to this image |
+| Artifact/source preflight | PASS: actual test container inspected with the expected image ID/OCI revision, zero mounts and only qh30-native-test. Read-only Compose render selects the new image, five exact worktree mounts, qh-native namespace and qh app/data networks; database ports remain unpublished. Non-Markdown drift check and nineteen actual-commit matrix entries pass |
+| Static / documentation | PASS Ruff inside the new image, actionlint, Git whitespace, secret/index guard and 35 local Markdown links/anchors; no runtime changes after the tested source commit |
+| Hosted CI / deployment | NOT EXECUTED — authorized preparation only |
+
+Fresh no-mount reproduction, dedicated test databases only:
+
+```bash
+sudo -n docker run --rm --network qh30-native-test \
+  --env-file /tmp/qh30-postgres-test.env --env-file /tmp/qh30-native-test.env \
+  --entrypoint python \
+  qh-semantic-candidate:95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4 \
+  -u /workspace/scripts/run_qh30_integration.py
+```
+
+[CHANGELOG](../CHANGELOG.md) holds Unreleased changes;
+[versioning and logical Jira milestones](versioning.md) distinguish planned product
+0.1.0, Git/image identity, SQL targets and semantic schema versions;
+[deployment register](deployments.md) records the executed 0004/fd50 cutover and
+this still-undeployed candidate. Jira milestone/version creation/assignment, tags
+and GitHub Releases remain pending explicit approval; no remote object was created.
+No QH-8 implementation is included.
+
 ## Deployment 0004 → 0005 — prepared, NOT authorized/executed
 
 The existing VPS image is **fd50b1ba67061ea95285a2ffce122939524ab93f**, with five
@@ -390,24 +436,29 @@ window (commands below are a runbook, not execution authorization):
 ```bash
 set -euo pipefail
 cd /home/ubuntu/qh-worktrees/qh-semantic-foundation
-QH_SEM_DEPLOY_COMMIT=46eda1f2788cddf6169f03471f702b6fa631ab2e
+QH_SEM_DEPLOY_COMMIT=95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4
 export QH_NATIVE_BACKEND_IMAGE="qh-semantic-candidate:${QH_SEM_DEPLOY_COMMIT}"
 export QH_NATIVE_GRAPH_NAMESPACE=qh-native
 export QH_NATIVE_CONTEXT_ENABLED=true
 # Require a clean tree and no executable/config drift after the reviewed code unit.
 test -z "$(git status --porcelain)"
-git diff --exit-code "$QH_SEM_DEPLOY_COMMIT" -- apps/api scripts tests infra .github \
-  ":(exclude)**/*.md"
-QH_SEM_COMPOSE=(sudo -n docker compose --env-file /home/ubuntu/qh/.env -p qh
+git diff --exit-code "$QH_SEM_DEPLOY_COMMIT" -- . \
+  ":(exclude)*.md" ":(exclude)**/*.md"
+# Pass these public override values explicitly through sudo; credentials stay in .env.
+QH_SEM_COMPOSE=(sudo -n env
+  "QH_NATIVE_BACKEND_IMAGE=$QH_NATIVE_BACKEND_IMAGE"
+  "QH_NATIVE_GRAPH_NAMESPACE=$QH_NATIVE_GRAPH_NAMESPACE"
+  "QH_NATIVE_CONTEXT_ENABLED=$QH_NATIVE_CONTEXT_ENABLED"
+  docker compose --env-file /home/ubuntu/qh/.env -p qh
   -f /home/ubuntu/qh-worktrees/qh-semantic-foundation/infra/docker/docker-compose.yml
   -f /home/ubuntu/qh-worktrees/qh-semantic-foundation/infra/docker/qh30-runtime.yml)
 "${QH_SEM_COMPOSE[@]}" config --quiet
-QH_SEM_IMAGE_ID=sha256:74313b1c89d0440aa206d1aa7f80080e83edcce1ad84e2d7dd1cb019c6c2c4aa
+QH_SEM_IMAGE_ID=sha256:dbae3e5701725c1bbcf99d1a0cc25f025e3df488adef8a7ae2f08a7e0ef34c2f
 test "$(sudo -n docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{.Id}}')" = "$QH_SEM_IMAGE_ID"
 test "$(sudo -n docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$QH_SEM_DEPLOY_COMMIT"
 ```
 
-The candidate was built from `git archive 46eda1f2788cddf6169f03471f702b6fa631ab2e`
+The candidate was built from `git archive 95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4`
 piped to Docker build, with the revision label above; ignored files/credentials
 never entered its build context. Reuse that exact tested image. If it is missing
 or differs, stop and rebuild/retest/review a new image identity before activation;

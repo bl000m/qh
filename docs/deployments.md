@@ -24,8 +24,14 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 ## Prepared — semantic foundation 0005, not deployed
 
 The [foundation publication record and runbook](qh-semantic-consolidation.md#deployment-0004--0005--prepared-not-authorizedexecuted)
-identify the reviewed candidate's full source SHA, image ID/OCI label and fresh
-no-mount packaging/integration results. Historical candidate results remain dated
+identify the reviewed candidate's fresh no-mount packaging/integration results.
+Prepared image source is `95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4`, tag
+`qh-semantic-candidate:95b3a8f8cdcd6c8133ac7d1252fe3d81d35a2fc4`, Docker image ID
+`sha256:dbae3e5701725c1bbcf99d1a0cc25f025e3df488adef8a7ae2f08a7e0ef34c2f`,
+with matching OCI revision. The later evidence commit changes documentation only;
+this is not the currently deployed fd50 image. Fresh strict integration passed
+**261 tests, zero skips**, 316.60 s, entirely in that image without source mounts;
+its six packaging/runtime cases are included in that run. Historical candidate results remain dated
 there and do not certify the latest image. Runtime remains 0004/fd50 until separate
 activation authorization; a green hosted CI will not constitute that authorization.
 
