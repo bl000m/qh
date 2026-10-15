@@ -8,6 +8,8 @@ from graphiti_core.errors import NodeNotFoundError
 from graphiti_core.nodes import EpisodeType, EpisodicNode
 from graphiti_core.search.search_config_recipes import EDGE_HYBRID_SEARCH_RRF
 
+from adapters.context.quality import ExtractionSession, SourceEvidence, active_extraction
+
 from app.core.models import (
     ContextId, ContextQuery, ContextResult, ContextSearchHit, RetrievalHitId,
     SourceId, SourceRevisionId, SourceRevisionRef,
@@ -30,7 +32,8 @@ def episode_id(context_id: ContextId, source: SourceRevisionRef) -> str:
 
 
 class GraphitiContextEngine:
-    def __init__(self, client, *, episode_loader=None):
+    def __init__(self, client, *, episode_loader=None, quality_observer=None):
+        self.quality_observer = quality_observer
         self.client = client
         self.episode_loader = episode_loader or self._load_episodes
 
@@ -57,6 +60,8 @@ class GraphitiContextEngine:
         descriptor = json.dumps({"qh_source_revision_v1": {
             "context_id": str(context_id), "source_id": str(source.source_id),
             "revision_id": str(source.revision_id)}}, separators=(",", ":"))
+        session = ExtractionSession(SourceEvidence(text, reference_time), self.quality_observer)
+        token = active_extraction.set(session)
         try:
             # Graphiti 0.30.2 treats uuid as an existing episode lookup, not a
             # creation ID. Persist only the derived episode before extraction.
@@ -76,8 +81,11 @@ class GraphitiContextEngine:
                 source_description=descriptor, reference_time=reference_time,
                 source=EpisodeType.text, group_id=scope, uuid=identifier,
                 previous_episode_uuids=[], update_communities=False)
+            session.check()  # Optional Graphiti stages may catch validation exceptions.
         except Exception:
             raise ContextEngineError("Semantic ingestion failed") from None
+        finally:
+            active_extraction.reset(token)
         return identifier
 
     async def search(self, query: ContextQuery) -> ContextResult:

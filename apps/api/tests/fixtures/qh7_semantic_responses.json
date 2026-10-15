@@ -1,0 +1,51 @@
+{
+  "2": {
+    "edges": [
+      {
+        "source_entity_name": "Ada",
+        "target_entity_name": "Cedar Observatory",
+        "relation_type": "FOUNDED",
+        "fact": "Ada founded Cedar Observatory",
+        "valid_at": "2026-10-14T22:42:56.367783Z",
+        "invalid_at": null,
+        "episode_indices": [
+          0
+        ]
+      }
+    ]
+  },
+  "4": {
+    "extracted_entities": [
+      {
+        "name": "Cedar Observatory",
+        "entity_type_id": 0,
+        "episode_indices": [
+          0
+        ]
+      }
+    ]
+  },
+  "5": {
+    "edges": [
+      {
+        "source_entity_name": "Cedar Observatory",
+        "target_entity_name": "Bea",
+        "relation_type": "FOUNDED_BY",
+        "fact": "Cedar Observatory was founded by Bea",
+        "valid_at": "2026-10-14T23:04:07.515975Z",
+        "invalid_at": null,
+        "episode_indices": [
+          0
+        ]
+      }
+    ]
+  },
+  "6": {
+    "summaries": [
+      {
+        "name": "Cedar Observatory",
+        "summary": "Founded by Bea in 2023."
+      }
+    ]
+  }
+}

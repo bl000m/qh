@@ -7,6 +7,7 @@ import httpx
 from openai import AsyncOpenAI
 
 from adapters.context.billing import Approval, ApprovedTransport, deny_call
+from adapters.context.quality import active_extraction
 
 
 async def create_graphiti_engine(*, approval: Approval = deny_call):
@@ -22,10 +23,38 @@ async def create_graphiti_engine(*, approval: Approval = deny_call):
     from adapters.context.graphiti import GraphitiContextEngine
 
     class NoRetryClient(OpenAIGenericClient):
+        async def generate_response(self, *args, **kwargs):
+            session = active_extraction.get()
+            if session:
+                session.check()
+            try:
+                answer = await super().generate_response(*args, **kwargs)
+                response_model = kwargs.get("response_model")
+                if response_model is not None:
+                    response_model.model_validate(answer)
+                if session:
+                    session.validate(kwargs.get("prompt_name", ""), answer)
+                return answer
+            except Exception:
+                if session and session.failure is None:
+                    session.failure = "Extraction provider stage failed"
+                raise
+
         async def _generate_response_with_retry(self, *args, **kwargs):
             return await self._generate_response(*args, **kwargs)
 
     class SingleInputEmbedder(OpenAIEmbedder):
+        async def create(self, input_data):
+            session = active_extraction.get()
+            if session:
+                session.check()
+            try:
+                return await super().create(input_data)
+            except Exception:
+                if session and session.failure is None:
+                    session.failure = "Extraction embedding stage failed"
+                raise
+
         async def create_batch(self, input_data_list):
             # One source string per request and separate approval, never a paid batch.
             return [await self.create([text]) for text in input_data_list]

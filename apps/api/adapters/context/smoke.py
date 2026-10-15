@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from adapters.context.billing import approve_in_terminal
 from adapters.context.factory import create_graphiti_engine
+from adapters.context.smoke_quality import SmokeFixture
 from app.core.models import ContextId, ContextQuery, SourceId, SourceRevisionId, SourceRevisionRef
 
 
@@ -14,6 +15,8 @@ async def main():
     if not sys.stdin.isatty():
         raise RuntimeError("Real smoke requires an interactive terminal and per-request approval")
     adapter, sdk = await create_graphiti_engine(approval=approve_in_terminal)
+    fixture = SmokeFixture("Ada founded Cedar Observatory.", frozenset({"Ada", "Cedar Observatory"}))
+    adapter.quality_observer = fixture.validate
     marker = uuid4().hex
     space = ContextId("qh7-smoke-" + marker)
     other = ContextId("qh7-empty-" + marker)
@@ -22,7 +25,7 @@ async def main():
     try:
         await adapter.initialize()
         await adapter.ingest_source(context_id=space, source=source,
-            text="Ada founded Cedar Observatory in Lyon. Cedar Observatory studies comets.",
+            text=fixture.text,
             reference_time=datetime.now(timezone.utc))
         result = await adapter.search(ContextQuery(text="Who founded the observatory?", context_ids=(space,)))
         assert result.hits and any(source in hit.provenance for hit in result.hits)
