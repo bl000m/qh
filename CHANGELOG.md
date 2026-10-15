@@ -23,6 +23,9 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 - Standalone snapshot reconciliation/full-scope query checks retired. Incremental
   outbox is the normal path; explicit worker rebuild retains its generation publisher.
 - Instructions distinguish active 0004/fd50 from the undeployed semantic foundation.
+- Prepared opt-in image-only Compose for the existing three app services; isolated
+  startup/smoke/restart verified, without changing shared DB/IdP resources. Main
+  consolidation and removal of live source mounts remain separately gated.
 
 ### Migration boundary
 

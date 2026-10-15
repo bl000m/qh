@@ -424,6 +424,14 @@ No QH-8 implementation is included.
 
 ## Deployment 0004 → 0005 — prepared, NOT authorized/executed
 
+**Later consolidation gate:** the owner now requires both native branches merged
+into main before deployment. The 95b3a8f pins and worktree-mounted commands below
+are a retained tested baseline, superseded operationally by the
+[final-main/image-only consolidation plan](main-consolidation.md). Reuse their
+backup, migration, integrity and recovery procedure with newly reviewed final-main
+images and the immutable Compose invocation; do not execute the old mounted
+activation as an alternative. No persistent activation has been performed.
+
 The existing VPS image is **fd50b1ba67061ea95285a2ffce122939524ab93f**, with five
 backend source mounts under `/home/ubuntu/qh-worktrees/qh-30`. Do not edit that
 checkout or rely on a changed image tag while old source remains mounted. This

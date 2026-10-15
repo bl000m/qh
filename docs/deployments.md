@@ -43,3 +43,9 @@ retained synthetic IDs, restart result and any repair. Never restart fd50 agains
 0005, remove history, delete synthetic data or restore over newer data as fallback.
 No target migration, profile provisioning, backend replacement or resource cleanup
 has occurred in this preparation.
+
+The owner's subsequent [main consolidation plan](main-consolidation.md) supersedes
+the worktree-mounted activation: merge QH-30 and semantic foundation through their
+separate approval gates, then build/review final-main images and deploy the three
+app services without source mounts. The 95b3a8f candidate remains verified baseline
+evidence, not the final consolidated release. No new executed deployment is added.

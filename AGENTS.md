@@ -116,6 +116,11 @@ Keep provider secrets exclusively in ignored local configuration, never logs or 
 
 ## Versioning and verification
 
+Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
+runtime-source changes. Root still supplies frontend/MCP and readonly IdP mounts;
+never switch its branch or remove mounted worktrees until authorized detachment.
+Use separate owner approval for each merge; preserve published native ancestry.
+
 Follow [versioning and logical milestones](docs/versioning.md), maintain
 [CHANGELOG](CHANGELOG.md) and the [deployment register](docs/deployments.md).
 Separate product versions, migration targets, semantic versions and image identities.
