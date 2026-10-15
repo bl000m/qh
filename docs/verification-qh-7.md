@@ -264,3 +264,47 @@ The standalone diagnostic ran using mocked SDK HTTP and scoped Neo4j reads:
 checks pass. No adapter/prompt/production behavior was changed; proposed guards
 and a possible 8B comparison remain proposals. Existing commits and data remain
 intact. QH-7's live Done verdict remains FAIL, with no push/merge/Jira write.
+
+
+## Minimal integrity correction and prepared B-only test — 2026-10-15
+
+Local implementation follows the owner-approved scope. Production has generic
+edge-reference and typed timestamp/provenance checks; named entity coverage and
+strict undated-source grounding are confined to declared smoke fixtures. The
+ContextVar failure latch survives swallowed optional-stage exceptions and prevents
+further provider stages or a fully successful adapter result. No missing entities,
+relationships or dates are inserted/repaired. No Core contract, canonical model,
+Understanding Item validation, dependency lock or infrastructure change.
+
+Saved real responses are copied into the backend test fixtures so Docker/CI tests
+need no provider credential or external call. Offline regressions cover missing
+Bea, an unknown raw edge endpoint before actual Graphiti filtering, both recorded
+reference timestamps, the invented 2023 summary, malformed/naive dates, legitimate
+relative-date acceptance in generic production checks, swallowed failures, source
+session isolation, missing experiment authorization, budget/count exhaustion and
+nonzero exit without followup after a B-only failure.
+
+Executed checks: **80 targeted tests PASS**, backend Ruff **PASS**, standalone
+B-only `--help` **PASS** without provider construction. Test command: backend
+`python -m pytest -q -p no:cacheprovider tests/test_extraction_quality.py
+tests/test_graphiti_context.py tests/test_architecture.py tests/test_contracts.py`.
+Initial production/fixture unit passed 75 tests; five B-runner checks brought the
+final total to 80. One upstream Pydantic Config deprecation warning remains.
+Index/working diff, whitespace and secret guard checked before each local commit.
+Prior full migration/frontend/MCP/OIDC results are reused for unchanged behavior.
+
+[New B-only plan](qh-7-b8-test-plan.md): official documented GA availability and
+0.15 USD/M input/output rate checked via public docs only. Authenticated account
+availability is NOT TESTED. Prepared runner limits are 12 new calls / 0.01 USD,
+expected roughly 0.0005–0.002 USD, serial/no retries, model 8B plus mistral-embed.
+No 8B experiment, Mistral API call, push, merge, CI rerun or Jira write was performed.
+Only public documentation reads and local free tests were used in this correction.
+The backend source bind mounts provide the updated code; no container/volume
+recreation or database changes were needed for these offline checks.
+
+Local commits: `83047a7` — `fix(QH-7): reject incoherent extraction and guard
+synthetic grounding` (production/fixture controls; 75 targeted tests, Ruff,
+index/secret checks). The next local commit contains the B-only runner, five
+additional checks and this execution plan; its hash is reported in the delivery.
+Live semantic success remains NOT TESTED after correction and QH-7 remains in
+progress. The next required approval is solely the new 8B bounded experiment.

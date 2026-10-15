@@ -124,3 +124,31 @@ and searches a different empty space. Real semantic extraction and embedding
 calls are required for the ticket's live Done criterion, so mocks cannot complete it.
 
 See [executed verification and remaining Done criterion](verification-qh-7.md).
+
+
+## Minimal extraction-integrity correction
+
+`quality.py` holds request-scoped source evidence and a failure latch using
+ContextVar, keeping concurrent ingestions separate. The factory checks raw LLM
+responses before Graphiti's lossy filtering: an edge endpoint must refer to an
+available extracted entity. A failure prevents subsequent LLM/embedding stages
+and the adapter checks the latch even if Graphiti catches an optional-stage
+exception. Existing ContextEngine/QH return contracts and ownership checks do not
+change. Partial derived episodes may remain; no transactional rollback is claimed.
+
+The production adapter has no expected person/entity names or fixture expectations.
+It validates single-episode provenance references and syntactically valid,
+timezone-aware semantic timestamps. Source text and technical reference_time are
+kept separate in SourceEvidence. It does not use lexical-year matching on arbitrary
+sources, reject legitimate relative dates, infer event time from ingestion time,
+or claim to verify arbitrary textual entailment.
+
+`smoke_quality.py` separately asserts the declared synthetic fixture's participants
+and, for explicitly undated fixtures, rejects semantic time bounds or temporal/
+numeric claims in facts/summaries. Optional fixture fact expectations are a narrow
+test oracle, never a production data-repair or universal extraction rule. Original
+responses are never filled in or rewritten. These are extraction quality checks,
+not Understanding Item approval/governance. QH-8 remains out of scope.
+
+See the [prepared, not executed, B-only 8B plan](qh-7-b8-test-plan.md) for the new
+model authorization boundary, limits, price estimate and success criteria.

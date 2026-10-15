@@ -83,9 +83,13 @@ def test_production_accepts_legitimate_relative_or_explicit_time():
     answer = deepcopy(PAYLOADS["5"])
     answer['edges'][0]['valid_at'] = "2025-10-15T00:00:00Z"
     session.validate("extract_edges.edge",answer)
-    # No lexical year matching or generic 'metadata equals event time' heuristic.
-    session.validate("extract_edges.edge",deepcopy(PAYLOADS["5"]))
-    session.validate("extract_nodes.extract_summaries_batch",deepcopy(PAYLOADS["6"]))
+    # Technical and semantic timestamps may legitimately coincide when the source supports it.
+    explicit = ExtractionSession(SourceEvidence("Bea founded Cedar Observatory at 2026-10-15T00:00:00Z.", NOW))
+    explicit.entities = {"Bea", "Cedar Observatory"}
+    answer['edges'][0]['valid_at'] = NOW.isoformat()
+    explicit.validate("extract_edges.edge", answer)
+    dated = ExtractionSession(SourceEvidence("Cedar Observatory was founded by Bea in 2023.", NOW))
+    dated.validate("extract_nodes.extract_summaries_batch",deepcopy(PAYLOADS["6"]))
 
 
 @pytest.mark.parametrize("value", ["not-a-date", "2026-02-30T00:00:00Z", "2026-10-15T00:00:00"])
@@ -135,4 +139,88 @@ def test_sessions_do_not_leak_between_concurrent_local_tasks():
             active_extraction.reset(token)
     async def scenario():
         await asyncio.gather(worker('first'),worker('second'))
+    asyncio.run(scenario())
+
+
+def test_smoke_b_refuses_without_new_experiment_authorization(monkeypatch):
+    from adapters.context import smoke_b
+    monkeypatch.setattr('sys.argv',['smoke_b','--ledger','/tmp/unused-qh7-ledger.json'])
+    with pytest.raises(SystemExit) as error:
+        smoke_b.main()
+    assert error.value.code == 2
+
+
+def test_smoke_b_limits_deny_before_network(tmp_path):
+    import httpx
+    from adapters.context.smoke_b import ExperimentTransport, ExperimentStopped, MAX_REQUESTS, BUDGET_USD
+    async def scenario():
+        def never_send(request):
+            raise AssertionError('Network should never be reached')
+        for exhausted in ('count','budget'):
+            guard=ExperimentTransport(tmp_path/(exhausted+'.json'),inner=httpx.MockTransport(never_send))
+            if exhausted=='count':
+                guard.records=[{}]*MAX_REQUESTS
+            else:
+                guard.cost=BUDGET_USD
+            with pytest.raises(ExperimentStopped):
+                await guard.handle_async_request(httpx.Request('POST','https://api.mistral.ai/v1/embeddings',
+                    json={'model':'mistral-embed','input':['Bea']}))
+            await guard.aclose()
+    asyncio.run(scenario())
+
+
+def test_smoke_fixture_refuses_missing_or_changed_relation():
+    from adapters.context.smoke_b import FIXTURE as fixture
+    for answer in ({'edges':[]},{'edges':[{'fact':'Bea owns Cedar Observatory'}]}):
+        with pytest.raises(ExtractionQualityError):
+            fixture.validate(SourceEvidence(SOURCE,NOW),'extract_edges.edge',answer)
+
+
+def test_b_runner_failure_has_nonzero_exit_and_no_followup(monkeypatch,tmp_path):
+    import httpx
+    from adapters.context import smoke_b
+    monkeypatch.setenv('MISTRAL_LLM_MODEL','offline')
+    monkeypatch.setenv('MISTRAL_EMBEDDING_MODEL','mistral-embed')
+    client=SimpleNamespace(_transport=SimpleNamespace(inner=httpx.MockTransport(lambda r: None)))
+    sdk=SimpleNamespace(_client=client,close=AsyncMock())
+    adapter=SimpleNamespace(initialize=AsyncMock(),ingest_source=AsyncMock(side_effect=ContextEngineError('test')),
+                            search=AsyncMock(),close=AsyncMock())
+    monkeypatch.setattr(smoke_b,'create_graphiti_engine',AsyncMock(return_value=(adapter,sdk)))
+    async def scenario():
+        try:
+            with pytest.raises(SystemExit) as error:
+                await smoke_b.run(tmp_path/'experiment.json')
+            assert error.value.code==1
+            adapter.search.assert_not_awaited()
+            assert json.loads((tmp_path/'experiment.json').read_text())['requests']==[]
+        finally:
+            await client._transport.inner.aclose()
+    asyncio.run(scenario())
+
+
+def test_b_experiment_accounts_success_and_stops_after_http_error(tmp_path):
+    import httpx
+    from adapters.context.smoke_b import ExperimentTransport, ExperimentStopped
+    async def scenario():
+        sent=[]
+        def reply(request):
+            sent.append(request)
+            if len(sent)==2:
+                return httpx.Response(429,json={'message':'synthetic failure'})
+            return httpx.Response(200,json={'data':[{'index':0,'embedding':[0.01]*1024}],
+                                            'usage':{'prompt_tokens':4,'completion_tokens':0}})
+        guard=ExperimentTransport(tmp_path/'usage.json',inner=httpx.MockTransport(reply))
+        request=httpx.Request('POST','https://api.mistral.ai/v1/embeddings',
+                             json={'model':'mistral-embed','input':['synthetic']})
+        try:
+            response=await guard.handle_async_request(request)
+            await response.aclose()
+            assert len(guard.records)==1 and guard.cost==pytest.approx(0.0000004)
+            with pytest.raises(ExperimentStopped):
+                await guard.handle_async_request(request)
+            with pytest.raises(ExperimentStopped):
+                await guard.handle_async_request(request)
+            assert len(sent)==2 and len(guard.records)==2  # Failed attempt counted; never retried.
+        finally:
+            await guard.aclose()
     asyncio.run(scenario())
