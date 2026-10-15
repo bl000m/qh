@@ -1,0 +1,388 @@
+{
+  "status": "Hand-curated explicit reference frozen before calls; not independently human-validated",
+  "cases": [
+    {
+      "name": "work",
+      "expected": [
+        {
+          "id": "goal",
+          "meaning": "objective",
+          "assertion": "Ridurre del 20% il tempo richiesta-assegnazione.",
+          "evidence": [
+            {
+              "turn_id": "work-1",
+              "quote": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM."
+            }
+          ]
+        },
+        {
+          "id": "pilot",
+          "meaning": "decision",
+          "assertion": "Pilota di due settimane con team Aster.",
+          "evidence": [
+            {
+              "turn_id": "work-2",
+              "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+            }
+          ]
+        },
+        {
+          "id": "panel",
+          "meaning": "relationship",
+          "assertion": "Team Aster gestisce il pannello delle assegnazioni.",
+          "evidence": [
+            {
+              "turn_id": "work-2",
+              "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+            }
+          ]
+        },
+        {
+          "id": "effect",
+          "meaning": "hypothesis",
+          "assertion": "Un pannello condiviso potrebbe ridurre duplicazioni; manca evidenza misurata.",
+          "evidence": [
+            {
+              "turn_id": "work-3",
+              "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni."
+            }
+          ]
+        },
+        {
+          "id": "budget",
+          "meaning": "constraint",
+          "assertion": "Budget massimo 300 EUR.",
+          "evidence": [
+            {
+              "turn_id": "work-4",
+              "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+            }
+          ]
+        },
+        {
+          "id": "crm",
+          "meaning": "constraint",
+          "assertion": "Nessuna esportazione dal CRM e nessun cambio CRM.",
+          "evidence": [
+            {
+              "turn_id": "work-4",
+              "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+            }
+          ]
+        },
+        {
+          "id": "deadline",
+          "meaning": "constraint",
+          "assertion": "Scadenza 2026-11-20, data soltanto; nessuna ora inventata.",
+          "evidence": [
+            {
+              "turn_id": "work-4",
+              "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "meaning": "open_question",
+          "assertion": "Autorizzatore accesso/responsabile sicurezza non deciso.",
+          "evidence": [
+            {
+              "turn_id": "work-5",
+              "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza."
+            }
+          ]
+        }
+      ],
+      "forbidden_inferences": [
+        "Il risparmio del 20% è già stato misurato.",
+        "Eli è responsabile della sicurezza.",
+        "Il CRM verrà sostituito."
+      ]
+    },
+    {
+      "name": "evolving",
+      "expected": [
+        {
+          "id": "original",
+          "meaning": "proposal",
+          "assertion": "Riunione settimanale originariamente proposta, mai adottata.",
+          "evidence": [
+            {
+              "turn_id": "evolving-1",
+              "quote": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta."
+            }
+          ]
+        },
+        {
+          "id": "trial",
+          "meaning": "decision",
+          "assertion": "Prova giornaliera di dieci minuti scelta il 3 novembre.",
+          "evidence": [
+            {
+              "turn_id": "evolving-2",
+              "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+            }
+          ]
+        },
+        {
+          "id": "withdrawn",
+          "meaning": "historical",
+          "assertion": "Proposta settimanale ritirata, non stato attuale.",
+          "evidence": [
+            {
+              "turn_id": "evolving-3",
+              "quote": "Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata."
+            }
+          ]
+        },
+        {
+          "id": "suspended",
+          "meaning": "current_state",
+          "assertion": "Prova giornaliera sospesa il 4 novembre.",
+          "evidence": [
+            {
+              "turn_id": "evolving-4",
+              "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+            }
+          ]
+        },
+        {
+          "id": "reason",
+          "meaning": "explanation",
+          "assertion": "Due assenti motivano la sospensione.",
+          "evidence": [
+            {
+              "turn_id": "evolving-4",
+              "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+            }
+          ]
+        },
+        {
+          "id": "no_return",
+          "meaning": "current_state",
+          "assertion": "Nessun ritorno implicito alle riunioni settimanali.",
+          "evidence": [
+            {
+              "turn_id": "evolving-5",
+              "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere."
+            }
+          ]
+        },
+        {
+          "id": "restart",
+          "meaning": "open_question",
+          "assertion": "Data di ripresa non decisa.",
+          "evidence": [
+            {
+              "turn_id": "evolving-5",
+              "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere."
+            }
+          ]
+        }
+      ],
+      "forbidden_inferences": [
+        "Le riunioni settimanali sono attualmente in vigore.",
+        "I briefing giornalieri sono già ripresi.",
+        "La ripresa è fissata per il 5 novembre."
+      ]
+    },
+    {
+      "name": "personal",
+      "expected": [
+        {
+          "id": "quiet",
+          "meaning": "preference",
+          "assertion": "Preferenza per bar tranquillo.",
+          "evidence": [
+            {
+              "turn_id": "personal-1",
+              "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre."
+            }
+          ]
+        },
+        {
+          "id": "crowds",
+          "meaning": "preference",
+          "assertion": "Evitare folla per oggi, non tratto personale permanente.",
+          "evidence": [
+            {
+              "turn_id": "personal-1",
+              "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre."
+            }
+          ]
+        },
+        {
+          "id": "train",
+          "meaning": "event",
+          "assertion": "Cancellazione treno passata il 9 ottobre alle 17:30Z.",
+          "evidence": [
+            {
+              "turn_id": "personal-2",
+              "quote": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani."
+            }
+          ]
+        },
+        {
+          "id": "walk",
+          "meaning": "intention",
+          "assertion": "Passeggiata futura il 17 ottobre alle 09:00Z, condizionata dal meteo.",
+          "evidence": [
+            {
+              "turn_id": "personal-3",
+              "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove."
+            }
+          ]
+        },
+        {
+          "id": "attendance",
+          "meaning": "hypothesis",
+          "assertion": "Presenza Casey solo possibile, non confermata.",
+          "evidence": [
+            {
+              "turn_id": "personal-4",
+              "quote": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza."
+            }
+          ]
+        },
+        {
+          "id": "ask",
+          "meaning": "intention",
+          "assertion": "Intenzione di chiedere a Lee un percorso coperto.",
+          "evidence": [
+            {
+              "turn_id": "personal-5",
+              "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta."
+            }
+          ]
+        },
+        {
+          "id": "route",
+          "meaning": "open_question",
+          "assertion": "Percorso non scelto.",
+          "evidence": [
+            {
+              "turn_id": "personal-5",
+              "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta."
+            }
+          ]
+        }
+      ],
+      "forbidden_inferences": [
+        "Robin è introverso o soffre di ansia.",
+        "Casey ha confermato la presenza.",
+        "La passeggiata è già avvenuta.",
+        "Lee ha già scelto il percorso."
+      ]
+    },
+    {
+      "name": "multilingual",
+      "expected": [
+        {
+          "id": "net",
+          "meaning": "measurement",
+          "assertion": "Preventivo netto 300 EUR, imposta esclusa.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-1",
+              "quote": "Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA."
+            }
+          ]
+        },
+        {
+          "id": "ceiling",
+          "meaning": "constraint",
+          "assertion": "Tetto 350 EUR imposta inclusa.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-2",
+              "quote": "Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo."
+            }
+          ]
+        },
+        {
+          "id": "gross",
+          "meaning": "measurement",
+          "assertion": "Totale finale 360 EUR imposta inclusa.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-3",
+              "quote": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases."
+            }
+          ]
+        },
+        {
+          "id": "bases",
+          "meaning": "explanation",
+          "assertion": "300/360 differenza di base fiscale, non contraddizione del prezzo netto.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-3",
+              "quote": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases."
+            }
+          ]
+        },
+        {
+          "id": "over",
+          "meaning": "constraint",
+          "assertion": "Totale eccede tetto di 10 EUR.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-4",
+              "quote": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment."
+            }
+          ]
+        },
+        {
+          "id": "approval",
+          "meaning": "current_state",
+          "assertion": "Nessun ordine approvato al momento.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-4",
+              "quote": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment."
+            }
+          ]
+        },
+        {
+          "id": "conditional",
+          "meaning": "hypothesis",
+          "assertion": "Ordine soltanto possibile se scontato a 350, non deciso.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-5",
+              "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+            }
+          ]
+        },
+        {
+          "id": "assignee",
+          "meaning": "open_question",
+          "assertion": "Responsabile richiesta sconto non assegnato.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-6",
+              "quote": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown."
+            }
+          ]
+        },
+        {
+          "id": "delivery",
+          "meaning": "uncertainty",
+          "assertion": "Data consegna ignota.",
+          "evidence": [
+            {
+              "turn_id": "multilingual-6",
+              "quote": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown."
+            }
+          ]
+        }
+      ],
+      "forbidden_inferences": [
+        "Un ordine è già approvato.",
+        "Alex richiederà sicuramente lo sconto.",
+        "La data di consegna è nota.",
+        "I 300 EUR sono un errore corretto cancellando il preventivo netto."
+      ]
+    }
+  ]
+}
