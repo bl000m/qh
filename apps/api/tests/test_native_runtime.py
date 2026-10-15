@@ -1,6 +1,7 @@
 """Application factory/lifespan against the real dedicated SQL and Neo4j servers."""
 
 import asyncio
+import json
 from copy import deepcopy
 import os
 from pathlib import Path
@@ -51,6 +52,8 @@ def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, mon
     repo, bob, graph, _, rows = pipeline
     from alembic.config import Config
     command.upgrade(Config("adapters/postgres/alembic.ini"), schema)
+    from adapters.postgres.semantic_profiles import register_generic_profiles
+    register_generic_profiles(repo)
     namespace = "qh30-runtime-" + uuid4().hex
     configure(monkeypatch, namespace)
     runtimes = []
@@ -99,6 +102,17 @@ def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, mon
             )
             assert probe.returncode == 0, probe.stdout + probe.stderr
             assert "PASS: backend worker" in probe.stdout
+            retained = json.loads(probe.stdout.strip().splitlines()[-1])
+        # Recreate the actual application runtime, then verify the very same IDs
+        # via the read-only probe. No second source/import/extraction is needed.
+        with TestClient(create_runtime_app()):
+            checked = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve().parents[3] / "scripts/smoke_qh30_runtime.py"),
+                 "--verify-scope", retained["scope"], "--owner-id", retained["owner"]],
+                capture_output=True, text=True, timeout=40,
+            )
+            assert checked.returncode == 0, checked.stdout + checked.stderr
+            assert json.loads(checked.stdout.strip().splitlines()[-1]) == retained
         assert all(r.thread is None for r in runtimes)
         assert "synthetic-private-message-never-logged" not in caplog.text
         assert "ConnectionError" in caplog.text

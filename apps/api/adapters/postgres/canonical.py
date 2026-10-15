@@ -265,6 +265,38 @@ class CanonicalRepository:
                     values["created_at"] = revision["created_at"]
                 self._immutable(c, "understanding_item_revisions", values)
 
+    def descriptor_candidates(self, context_ids, values, *, include_tentative=False,
+                              limit=20, after_revision_id=None):
+        """Exact any-of descriptor selection, no text prerequisite or inferred aliases.
+
+        Keyset pagination covers all historical revisions, not only selected heads.
+        This JSON predicate may scan scoped rows; it is not an indexed search claim.
+        """
+        if isinstance(values, (str, bytes)):
+            raise ValueError("Descriptor values must be an explicit collection")
+        values = tuple(values)
+        if (not 1 <= len(values) <= 100 or
+                any(not isinstance(v, str) or not v for v in values) or
+                not 1 <= limit <= 100 or not isinstance(include_tentative, bool)):
+            raise ValueError("Explicit descriptor values and bounded limit required")
+        after_revision_id = None if after_revision_id is None else str(UUID(str(after_revision_id)))
+        certainty = ["asserted", "tentative"] if include_tentative else ["asserted"]
+        with self.connect() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            scopes = self._authorize(c, context_ids)
+            return json_values(c.execute("""
+                SELECT r.id, r.context_space_id FROM understanding_item_revisions r
+                WHERE r.context_space_id=ANY(%s::uuid[])
+                  AND (%s::uuid IS NULL OR r.id>%s::uuid)
+                  AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(
+                      CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
+                           THEN r.content->'descriptors' ELSE '[]'::jsonb END) d
+                    WHERE d->>'value'=ANY(%s::text[]) AND d->>'certainty'=ANY(%s::text[]))
+                ORDER BY r.id LIMIT %s
+                """, (scopes, after_revision_id, after_revision_id, list(values), certainty, limit)
+            ).fetchall())
+
     def read_snapshot(self, context_ids, revision_ids=None):
         """Authorized, consistent bulk read; all history unless IDs explicitly given.
 

@@ -419,3 +419,29 @@ class IncrementalContextEngine:
         if before != after:
             raise NativeContextError("Projection advanced during retrieval; retry read")
         return ContextResult(hits=tuple(hits[: query.limit]))
+
+    async def select_descriptors(self, *, context_ids, values, include_tentative=False,
+                                 limit=20, after_revision_id=None):
+        context_ids = tuple(dict.fromkeys(context_ids))
+        before = await asyncio.to_thread(self._ready, context_ids)
+        candidates = await asyncio.to_thread(
+            self.repository.descriptor_candidates, context_ids, values,
+            include_tentative=include_tentative, limit=limit,
+            after_revision_id=after_revision_id,
+        )
+        hits = []
+        for scope in context_ids:
+            ids = [r["id"] for r in candidates if r["context_space_id"] == str(scope)]
+            if not ids:
+                continue
+            engine = NativeContextEngine(
+                self.projector.driver, slice_id=self.projector.key(scope),
+                read_snapshot=lambda scopes, refs: immutable_snapshot(
+                    self.repository.read_snapshot(scopes, refs)),
+            )
+            result = await engine.select_revisions(context_ids=(scope,), revision_ids=ids)
+            hits.extend(result.hits)
+        after = await asyncio.to_thread(self._ready, context_ids)
+        if before != after:
+            raise NativeContextError("Projection advanced during retrieval; retry read")
+        return ContextResult(hits=tuple(sorted(hits, key=lambda h: str(h.item_revision.revision_id))))

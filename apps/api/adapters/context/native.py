@@ -10,6 +10,7 @@ import json
 
 from app.core.models import (
     ContextId,
+    ContextQuery,
     ContextRequest,
     ContextResult,
     ContextSearchHit,
@@ -297,7 +298,18 @@ class NativeContextEngine:
             session.execute_write(write)
 
     async def search(self, query):
-        if not query.text.strip() or not 1 <= query.limit <= 100:
+        return await self._search(query)
+
+    async def select_revisions(self, *, context_ids, revision_ids):
+        """Internal exact-ID graph lookup for canonically selected descriptors."""
+        revision_ids = tuple(map(str, revision_ids))
+        if not 1 <= len(revision_ids) <= 100 or self.verify_readiness:
+            raise ValueError("Bounded incremental revision selection required")
+        query = ContextQuery(text="", context_ids=tuple(context_ids), limit=len(revision_ids))
+        return await self._search(query, revision_ids=revision_ids)
+
+    async def _search(self, query, revision_ids=None):
+        if (revision_ids is None and not query.text.strip()) or not 1 <= query.limit <= 100:
             raise ValueError("Nonempty query and bounded limit required")
 
         prepared = []
@@ -310,7 +322,8 @@ class NativeContextEngine:
                     raise NativeContextError("Canonical read failed") from exc
             with self.driver.session() as session:
                 active = session.run(
-                    "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS generation,s.scope_manifests_json AS manifest",
+                    "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS generation"
+                    + (",s.scope_manifests_json AS manifest" if self.verify_readiness else ""),
                     id=self.slice_id,
                 ).single()
                 if not active:
@@ -326,14 +339,16 @@ class NativeContextEngine:
                         )
                 return session.run(
                     """MATCH (r:QH30Revision {slice_id:$slice_id, generation:$generation})
-                    WHERE r.context_id IN $scopes AND ($verify OR toLower(r.text) CONTAINS toLower($text))
+                    WHERE r.context_id IN $scopes AND ($verify OR ($ids IS NOT NULL AND r.revision_id IN $ids)
+                         OR ($ids IS NULL AND toLower(r.text) CONTAINS toLower($text)))
                     OPTIONAL MATCH (r)-[:EVIDENCED_BY]->(e:QH30Source)
                     RETURN r AS revision, collect(properties(e)) AS evidence,
-                        toLower(r.text) CONTAINS toLower($text) AS matches
+                        ($ids IS NOT NULL OR toLower(r.text) CONTAINS toLower($text)) AS matches
                     ORDER BY r.revision_id LIMIT $limit""",
                     slice_id=self.slice_id,
                     scopes=[str(c) for c in query.context_ids],
                     text=query.text,
+                    ids=revision_ids,
                     limit=len(prepared[0]["understanding_item_revisions"]) + 1
                     if prepared
                     else query.limit,
@@ -342,6 +357,10 @@ class NativeContextEngine:
                 ).data()
 
         candidates = await asyncio.to_thread(read)
+        if revision_ids is not None and {
+            r["revision"]["revision_id"] for r in candidates
+        } != set(revision_ids):
+            raise NativeContextError("Selected revisions missing from graph; rebuild required")
         # One canonical bulk load; canonical text/state/provenance wins over graph.
         if prepared:
             expected_ids = {
@@ -442,3 +461,19 @@ class AuthorizedNativeContextService:
         if not decision.allowed:
             raise PermissionError("Context access denied")
         return await self.engine.search(request.query)
+
+    async def select_descriptors(self, *, subject_id, context_ids, values,
+                                 include_tentative=False, limit=20, after_revision_id=None):
+        """Internal authorized exact selection; no public port/HTTP DTO change."""
+        context_ids = tuple(context_ids)
+        decision = await self.policy.evaluate(PolicyRequest(
+            subject_id=subject_id, action=PolicyAction.READ_CONTEXT,
+            context_ids=tuple(context_ids),
+        ))
+        if not decision.allowed:
+            raise PermissionError("Context access denied")
+        return await self.engine.select_descriptors(
+            context_ids=tuple(context_ids), values=values,
+            include_tentative=include_tentative, limit=limit,
+            after_revision_id=after_revision_id,
+        )
