@@ -202,7 +202,40 @@ def test_error_diagnostics_keep_only_bounded_codes_and_numeric_retry_after(
     )
     with pytest.raises(MistralError):
         asyncio.run(provider.generate(REQUEST))
-    assert provider.last_failure == dict(
-        http_status=429, code="1300", type="rate_limited", retry_after_seconds=2
-    )
+    assert provider.last_failure["http_status"] == 429
+    assert provider.last_failure["code"] == "1300"
+    assert provider.last_failure["type"] == "rate_limited"
+    assert provider.last_failure["retry_after_seconds"] == 2
+    assert provider.last_failure["headers"] == {"retry-after": "2"}
+    assert provider.last_failure["message"] == "[REDACTED]"
+    assert provider.last_failure["latency_seconds"] >= 0
     assert "synthetic-private-token" not in json.dumps(provider.last_failure)
+
+
+def test_reviewed_429_reconciliation_preserves_attempts_and_uncertain_cost(tmp_path):
+    ledger = budget(tmp_path)
+    first = ledger.reserve("metadata", Decimal(0))
+    ledger.settle(first)
+    second = ledger.reserve("chat", Decimal("0.006"))
+    ledger.settle(second, error="Mistral HTTP 429")
+    before = json.loads(ledger.path.read_text())
+    ledger.reconcile_reviewed_429(
+        reason="Owner reports billing enabled and authorizes resumption"
+    )
+    state = json.loads(ledger.path.read_text())
+    assert state["calls"] == before["calls"] and not state["blocked"]
+    assert state["max_calls"] == 8 and state["max_usd"] == "0.20"
+    assert state["reconciliations"][0]["calls_retained"] == 2
+    assert state["reconciliations"][0]["failed_reservations_retained_usd"] == "0.006"
+    assert ledger.reserve("resumed chat", Decimal("0.006")) == 2
+    with pytest.raises(MistralError):
+        ledger.reconcile_reviewed_429(reason="Cannot unlock in flight")
+
+
+def test_review_cannot_unlock_unknown_failure(tmp_path):
+    ledger = budget(tmp_path)
+    index = ledger.reserve("chat", Decimal("0.006"))
+    ledger.settle(index, error="Mistral transport/response failure")
+    with pytest.raises(MistralError):
+        ledger.reconcile_reviewed_429(reason="Unknown consumption")
+    assert json.loads(ledger.path.read_text())["blocked"]

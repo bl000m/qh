@@ -5,12 +5,15 @@ MISTRAL_API_KEY. Raw successful response/usage stay separate from QH validation.
 List-price cost from observed tokens is not an independently verified invoice.
 """
 
+from datetime import datetime, timezone
 from decimal import Decimal
 import json
 import os
 import re
 from pathlib import Path
 import fcntl
+import hashlib
+import time
 
 import httpx
 
@@ -62,6 +65,38 @@ class ExperimentBudget:
             f.flush()
             os.fsync(f.fileno())
             return result
+
+    def reconcile_reviewed_429(self, *, reason):
+        """Explicit owner-reviewed resumption; retain failed attempts/reservations."""
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("Reviewed resumption reason required")
+
+        def update(state):
+            failed = [c for c in state["calls"] if c["status"] == "failed"]
+            if (
+                not state["blocked"]
+                or not failed
+                or any(c["status"] == "pending" for c in state["calls"])
+                or any(c.get("error") != "Mistral HTTP 429" for c in failed)
+            ):
+                raise MistralError("Only reviewed, settled HTTP 429 may resume")
+            previous_sha256 = hashlib.sha256(
+                json.dumps(state, sort_keys=True).encode()
+            ).hexdigest()
+            state.setdefault("reconciliations", []).append(
+                dict(
+                    time_utc=datetime.now(timezone.utc).isoformat(),
+                    reason=reason,
+                    previous_state_sha256=previous_sha256,
+                    calls_retained=len(state["calls"]),
+                    failed_reservations_retained_usd=str(
+                        sum(Decimal(c["reserved_usd"]) for c in failed)
+                    ),
+                )
+            )
+            state["blocked"] = False
+
+        self._change(update)
 
     def reserve(self, kind, maximum):
         def update(state):
@@ -127,6 +162,7 @@ class MistralProvider:
         self.last_exchange = None
         self.last_failure = None
         attempt = self.budget.reserve(path, maximum)
+        started = time.perf_counter()
         try:
             async with httpx.AsyncClient(
                 transport=self.transport or httpx.AsyncHTTPTransport(retries=0),
@@ -145,9 +181,40 @@ class MistralProvider:
                 )
             if response.status_code != 200:
                 # Preserve diagnostic codes, never arbitrary provider messages/headers.
-                self.last_failure = {"http_status": response.status_code}
+                self.last_failure = {
+                    "http_status": response.status_code,
+                    "latency_seconds": time.perf_counter() - started,
+                }
+                safe_headers = {}
+                for name in (
+                    "retry-after",
+                    "x-request-id",
+                    "x-ratelimit-limit-requests",
+                    "x-ratelimit-remaining-requests",
+                    "x-ratelimit-reset-requests",
+                    "x-ratelimit-limit-tokens",
+                    "x-ratelimit-remaining-tokens",
+                ):
+                    value = response.headers.get(name)
+                    if (
+                        value
+                        and len(value) <= 160
+                        and not any(ord(c) < 32 for c in value)
+                    ):
+                        safe_headers[name] = value.replace(self._key, "[REDACTED]")
+                self.last_failure["headers"] = safe_headers
                 try:
                     details = response.json()
+                    message = details.get("message")
+                    if isinstance(message, str):
+                        message = message.replace(self._key, "[REDACTED]")
+                        message = re.sub(
+                            r"Bearer\s+\S+", "Bearer [REDACTED]", message, flags=re.I
+                        )
+                        message = re.sub(
+                            r"sk-[A-Za-z0-9_-]{16,}", "[REDACTED]", message
+                        )
+                        self.last_failure["message"] = " ".join(message.split())[:500]
                     for field in ("code", "type"):
                         value = details.get(field)
                         if isinstance(value, (str, int)) and re.fullmatch(
@@ -161,7 +228,13 @@ class MistralProvider:
                     self.last_failure["retry_after_seconds"] = int(after)
                 raise MistralError("Mistral HTTP " + str(response.status_code))
             data = response.json()
-            self.last_exchange = dict(request=payload, response=data, attempt=attempt)
+            self.last_exchange = dict(
+                request=payload,
+                response=data,
+                attempt=attempt,
+                latency_seconds=time.perf_counter() - started,
+                http_status=response.status_code,
+            )
             if method == "POST":
                 usage = data.get("usage", {})
                 if any(

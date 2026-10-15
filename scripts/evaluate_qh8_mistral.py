@@ -111,7 +111,15 @@ def collect_pipeline(runtime, repo, owner, scope, ids):
     )
 
 
-def execute(*, out, live, replay_from=None):
+def execute(
+    *,
+    out,
+    live,
+    replay_from=None,
+    resume_from=None,
+    case_names=None,
+    reviewed_resumption=False,
+):
     expected = {
         "POSTGRES_HOST": "qh30-sql-test",
         "POSTGRES_DB": "qh30_admin",
@@ -127,7 +135,41 @@ def execute(*, out, live, replay_from=None):
     out.mkdir(mode=0o700, parents=True, exist_ok=False)
     cases = json.loads((FIXTURES / "mistral_unseen_conversations.json").read_text())
     dataset_hash = source_digest(FIXTURES / "mistral_unseen_conversations.json")
-    if live:
+    if case_names:
+        if set(case_names) - {c["name"] for c in cases} or len(set(case_names)) != len(
+            case_names
+        ):
+            raise ValueError("Explicit known nonduplicate cases required")
+        cases = [c for c in cases if c["name"] in case_names]
+    if live and resume_from:
+        resume_from = Path(resume_from)
+        manifest = json.loads((resume_from / "manifest.json").read_text())
+        if manifest["dataset_sha256"] != dataset_hash or manifest[
+            "reference_sha256"
+        ] != source_digest(FIXTURES / "mistral_evaluation_reference.json"):
+            raise ValueError("Frozen input/reference changed")
+        ledger = resume_from / "ledger.json"
+        budget = ExperimentBudget(ledger)
+        if reviewed_resumption:
+            dump(
+                out / "ledger-before-reconciliation.json",
+                json.loads(ledger.read_text()),
+            )
+            budget.reconcile_reviewed_429(
+                reason="Owner authorized resumption after reporting PAYG activation and positive credit; retain 2 attempts and USD 0.006 failed reservation"
+            )
+        provider = MistralProvider(budget=budget)
+        dump(
+            out / "resumption.json",
+            dict(
+                original_evidence=str(resume_from),
+                ledger=str(ledger),
+                cases=[c["name"] for c in cases],
+                model="mistral-small-2603",
+                billing_verification="owner statement; standard key cannot inspect admin billing/workspace; inferencing checked operationally",
+            ),
+        )
+    elif live:
         manifest = dict(
             mode="live",
             owner=str(uuid4()),
@@ -193,7 +235,7 @@ def execute(*, out, live, replay_from=None):
             url=url, driver=driver, policy=policy, namespace=namespace, poll_seconds=0.1
         )
         runtime.start()
-        if live:
+        if live and not resume_from:
             metadata = asyncio.run(provider.verify_model())
             dump(out / "model-availability.json", metadata)
         for case in cases:
@@ -317,9 +359,21 @@ if __name__ == "__main__":
     mode.add_argument("--live", action="store_true")
     mode.add_argument("--replay-from", type=Path)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--resume-from", type=Path)
+    parser.add_argument("--case", action="append", dest="case_names")
+    parser.add_argument("--reviewed-resumption", action="store_true")
     args = parser.parse_args()
     try:
-        execute(out=args.out, live=args.live, replay_from=args.replay_from)
+        if (args.resume_from or args.reviewed_resumption) and not args.live:
+            raise ValueError("Resumption requires explicit live mode")
+        execute(
+            out=args.out,
+            live=args.live,
+            replay_from=args.replay_from,
+            resume_from=args.resume_from,
+            case_names=args.case_names,
+            reviewed_resumption=args.reviewed_resumption,
+        )
     except Exception as exc:
         print("Experiment stopped:", type(exc).__name__, file=sys.stderr)
         raise SystemExit(1)
