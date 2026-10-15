@@ -1,253 +1,143 @@
 # QH
 
-Local sovereign context platform scaffold: React + TypeScript + Vite frontend,
-Python + FastAPI backend, independent Python MCP adapter, Neo4j Community and
-PostgreSQL. Graphiti will be a replaceable Python adapter inside the backend.
-QH-2 defines domain/application contracts and explicit service bindings;
-QH-5 adds OIDC identity and owner policy; other application features belong to later tickets. See
-[ADR 0001](docs/adr/0001-modular-architecture.md).
+QH is a sovereign context platform: people preserve, query, govern and selectively
+share persistent understanding through Context Spaces, independently of AI providers.
+Stable identity, immutable revisions, explicit validation and traceable evidence keep
+interpretations distinct from their sources and substantial decisions human-controlled.
+A space can contain multiple domains without a separate schema for each.
 
-See [architecture](docs/architecture.md), [permanent instructions](AGENTS.md) and
-[QH-1 verification](docs/verification-qh-1.md),
-[QH-2 verification](docs/verification-qh-2.md) and
-[QH-3 infrastructure evidence](docs/verification-qh-3.md), plus
-[QH-4 foundation evidence](docs/verification-qh-4.md).
-OIDC setup and authorized local application activation are described in
-[QH-5 authentication](docs/qh-5-authentication.md).
+## Implementation status
 
-## Prerequisites
+| Layer | State |
+| --- | --- |
+| Foundation on `main` | Docker scaffold, Core/application contracts, QH-4 PostgreSQL foundation, QH-5 OIDC identity and owner PolicyService |
+| QH environment | PostgreSQL at 0002; last read-only inventory found zero canonical/identity rows. Historical deployment reports describe their own dated environments |
+| QH-30 branch | Native canonical repository, 0003 semantic model, 0004 transactional outbox, incremental worker and authorized graph retrieval implemented and tested on isolated real databases |
+| Not activated in QH | Migrations 0003/0004 and native context runtime/worker; cutover requires explicit authorization |
+| Future | Source Vault (QH-31), Domain Packs, native Mistral extraction/resolution, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
-Docker with a running engine and Docker Compose v2.20 or newer (Docker Desktop
-on macOS is suitable). The host does not need Node, npm, Python application
-packages or a global runtime installation. Commands below run from repository
-root. `make` is a convenience wrapper; equivalent Compose commands are shown.
+Graphiti is a preserved historical prototype, not a native-engine dependency.
+The independent MCP server currently provides transport scaffolding, not a QH context
+client. Current native text search uses scoped substring matching.
 
-## Local configuration
+## Architecture and data flow
 
-Generate ignored credentials with the host's existing Python 3 (standard library
-only; no packages installed):
+The diagram describes the implemented QH-30 path **tested in isolation**. The worker
+runs in the backend process; no broker or new microservice is required. Core stays
+independent of FastAPI, database drivers and provider SDKs.
 
-```bash
-python3 scripts/init_env.py
+```mermaid
+flowchart LR
+    W[Internal authorized writer] --> R[Canonical repository]
+    R --> T[PostgreSQL transaction: revisions and outbox intent]
+    T --> PG[(PostgreSQL)]
+    PG -->|claim committed intent| Worker[Backend incremental worker]
+    Worker -->|affected assertions only| N[(Neo4j)]
+    Worker -->|acknowledge or retain retry state| PG
+    Q[Context request] --> P[PolicyService]
+    P -->|allow before retrieval| E[Native retrieval]
+    E -->|check sync state| PG
+    E -->|scoped candidates| N
+    N --> H[Hydrate exact candidates and recheck freshness]
+    H --> PG
+    H --> Result[Authorized result]
 ```
 
-Alternatively, copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` and
-`NEO4J_PASSWORD` locally. Use a Neo4j password of at least 8 characters. Empty
-credentials cause Compose validation to fail. Never commit `.env`. The helper
-uses random credentials, creates the file with mode 0600 and preserves an
-existing file. Credentials are not printed.
+Canonical publication and projection intent commit atomically. Leases, per-space
+sequences and epochs make retries idempotent and fence stale workers. Pending,
+failed or mismatched projection state blocks retrieval, including empty results.
+Queries do not require full reconciliation. Explicit rebuild/audit remains available;
+normal readiness checks do not certify arbitrary manual graph corruption.
 
-## Start and stop
+## PostgreSQL model through 0004
 
-```bash
-make config
-make up
-make ps
-make logs
-make down
+This simplified ERD describes the **branch schema**, not the currently deployed
+0002 database. Composite foreign keys enforce matching space and stable-ID/revision
+anchors. Revisions, provenance, type schemas and semantic rules are immutable;
+unknown fact/validity times stay null and are separate from acquisition metadata.
+
+```mermaid
+erDiagram
+    users ||--o{ user_identities : maps
+    users ||--o{ context_spaces : owns
+    context_spaces ||--o{ sources : contains
+    sources ||--o{ source_revisions : versions
+    context_spaces ||--o{ understanding_items : contains
+    understanding_items ||--o{ understanding_item_revisions : versions
+    understanding_item_revisions ||--|| item_revision_types : binds
+    semantic_type_versions ||--o{ item_revision_types : validates
+    understanding_item_revisions ||--o{ item_revision_provenance : cites
+    source_revisions ||--o{ item_revision_provenance : supports
+    understanding_item_revisions ||--o| relation_revision_details : describes
+    understanding_item_revisions ||--o{ relation_revision_details : anchors_endpoints
+    context_spaces ||--|| context_projection_state : tracks
+    context_spaces ||--o{ projection_outbox : queues
+    understanding_items ||--o{ projection_outbox : changes
 ```
 
-`make up` builds all application images and waits up to 240 seconds for all five
-services to become healthy. Stop following logs with Ctrl-C. `make down` removes
-containers and networks, preserving database volumes. Do not add `--volumes`
-unless you explicitly intend to destroy local database data.
+0003 adds three canonical tables: `semantic_type_versions`, `item_revision_types`
+(type binding and universal temporal bounds), `relation_revision_details` (universal
+item endpoints). No entity marker table is needed. 0004 adds two reconstructible
+operational tables: `projection_outbox` and `context_projection_state`. The outbox
+also references exact revisions where applicable. See [SQL details](docs/postgres-schema.md).
 
-To stop while retaining existing containers, use
-`docker compose --env-file .env -f infra/docker/docker-compose.yml stop`.
-Use `make verify-infra` to start/wait again without rebuilding or replacing them.
+## Neo4j operational graph
 
-Equivalent commands without Make:
+Actual labels and assertion edges in the native adapters:
 
-```bash
-docker compose --env-file .env -f infra/docker/docker-compose.yml config --quiet
-docker compose --env-file .env -f infra/docker/docker-compose.yml up --build -d --wait --wait-timeout 240
-docker compose --env-file .env -f infra/docker/docker-compose.yml down
+```mermaid
+flowchart LR
+    I[QH30Item: stable ID and selected heads]
+    R[QH30Revision: immutable assertion]
+    A[QH30Revision: source anchor]
+    B[QH30Revision: target anchor]
+    S[QH30Source: exact source revision reference]
+    R -->|EVIDENCED_BY| S
+    R -->|SUBJECT| A
+    R -->|OBJECT| B
+    I -. head properties reference revision IDs .-> R
+    Slice[QH30Slice] -. active_generation property .-> G[QH30Generation]
+    Sync[QH30Sync: scope epoch and applied version]
 ```
 
-Local endpoints:
+Dotted lines explain properties, not additional Cypher relationship types.
+Relation endpoints can reference any registered item shape. PostgreSQL remains the
+semantic and authorization authority; Neo4j retains operational assertions, evidence
+references and synchronization markers. Rebuild uses canonical data without LLM calls.
+Original-byte storage and access policy belong to future QH-31, not this graph.
 
-- Frontend: http://localhost:5173
-- Backend health: http://localhost:8000/health
-- MCP health: http://localhost:3001/health
-- MCP Streamable HTTP endpoint: http://localhost:3001/mcp
+## Development and verification
 
-Ports can be overridden in `.env`; they always bind to 127.0.0.1. Database ports
-are never published. Browser use of backend/MCP features is not implemented in
-this scaffold. `/mcp` requires a protocol client; an ordinary browser GET is not
-a protocol test.
+Use Docker Engine and Compose v2; dependencies install from committed lockfiles
+inside images. Keep credentials in ignored local `.env`, never in Git or logs.
+For a new local checkout, generate configuration with `python3 scripts/init_env.py`;
+inspect the selected worktree/configuration before starting services.
 
-Source edits reload automatically through bind mounts and polling. Dependencies
-live inside images, not host directories. After manifest or lock changes, run
-`make up` again to rebuild. The standalone npm service shortcuts delegate to
-Compose; prefer Make to avoid requiring npm on the host.
+- `make config`: validate Compose without printing credentials.
+- `make up`: build/start the development stack; use only when container changes are authorized.
+- `make verify-running`: verify an existing stack without rebuilding/replacing containers.
+- `make verify`: build/start plus existing quality checks; not proof of dedicated QH-30 integration coverage.
+- `make migrate`: **Alembic `upgrade head` against the configured database**. This command is not authorization to migrate persistent QH. A cutover must use the explicitly approved target/commit and configuration.
 
-## Verification
+API startup does not migrate. Preserve database volumes; never add volume deletion
+as routine cleanup. Do not point isolated tests at persistent QH. Dedicated QH-30
+server names, opt-in variables, executed results, reproduction commands and the
+proposed required integration CI job are in the [QH-30 checkpoint](docs/qh-30-plan.md).
+A green existing quality/OIDC CI gate can omit those integrated suites.
 
-The gate includes `make check-secrets` (Git index and local credential matches)
-and `make lint` (Ruff 0.14.0 correctness rules in Python containers), followed by
-the existing tests, frontend typechecks and builds. No formatting churn is enforced.
+## Modules and technical references
 
-```bash
-make verify
-```
+| Path / reference | Responsibility |
+| --- | --- |
+| `apps/api/app/core`, `app/policy` | SDK-free contracts and owner authorization |
+| `apps/api/adapters/postgres` | Canonical repository and additive migrations |
+| `apps/api/adapters/context` | Native graph projection, incremental worker and retrieval |
+| `apps/web`, `services/mcp-server`, `packages/shared` | Web scaffold, independent MCP transport, public wire types |
+| [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md) | Mandatory functional invariants |
+| [Architecture](docs/architecture.md), [ADR 0003](docs/adr/0003-native-context-engine.md) | Boundaries, decision succession and native-engine approval gates |
+| [AGENTS](AGENTS.md), [ticket skill](.agents/skills/jira-ticket-workflow/SKILL.md) | Development, authorization and evidence rules |
+| [OIDC setup](docs/qh-5-authentication.md), [adapter notes](apps/api/adapters/README.md) | Detailed setup and internal integration boundaries |
 
-This runs Compose validation, build/startup, domain/adapter contract and import
-boundary tests, FastAPI health test, MCP health and
-an actual SDK client exchange (`initialize`, `list_tools`, `scaffold_ping`),
-frontend TypeScript checks/build, live Vite HTTP smoke checks, and authenticated
-PostgreSQL/Neo4j connections from the backend container.
-
-On an already running development stack, use `make verify-running` to run the
-same configuration, unit and smoke checks without rebuilding or replacing
-containers. New source/test files are picked up through the existing bind mounts.
-This target requires all five services to be running. It does not prove a fresh
-image build or startup; those checks are reported separately.
-
-GitHub Actions runs the same `make verify` on pull requests and pushes to `main`.
-The separate OIDC job runs only after that gate passes, using the existing local
-Keycloak setup and `make test-oidc-application` / `make test-oidc` on an ephemeral
-hosted runner. CI creates its own credentials; no repository secrets or paid LLM
-services are needed. Application migrations/provisioning in that job apply only
-to its disposable runner database, never the Mac development database.
-The [workflow](.github/workflows/quality.yml) is pinned and can be checked locally:
-
-```bash
-make lint-workflows
-make check-secrets
-make lint
-```
-
-The authorized push passed both hosted jobs on 2026-10-14:
-[quality and OIDC run](https://github.com/bl000m/qh/actions/runs/38550589615). See
-[QH-6 delta and evidence](docs/verification-qh-6.md).
-
-Individual commands, after `make up`:
-
-```bash
-make test
-make smoke
-docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python -m pytest -q
-docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T mcp python -m pytest -q
-docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T frontend npm run build:web
-docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python -m pytest -q /workspace/tests/smoke
-```
-
-Optional static isolation check, using only the host's Python standard library:
-
-```bash
-python3 scripts/check_compose.py
-```
-
-This resolves Compose and checks service count, database volume/network settings,
-healthchecks and port bindings without printing credentials. It does not test
-running containers or effective network connectivity.
-
-`tests/smoke` uses internal service DNS and actual DB credentials without logging
-them. MCP tests need the running MCP server and use the official client over
-HTTP, not a direct call to the Python tool function. The frontend smoke checks
-that Vite serves HTML and transforms the React entry point; it does not claim
-browser rendering or end-to-end UI coverage.
-
-To verify effective database isolation after startup:
-
-```bash
-docker network inspect qh_data --format '{{.Internal}}'
-docker inspect qh-postgres-1 qh-neo4j-1 --format '{{.Name}} {{json .HostConfig.PortBindings}} {{json .NetworkSettings.Networks}}'
-```
-
-Expect internal network `true`, no DB host port bindings and only `qh_data` for
-both databases. Do not print full Compose config or container environments into
-shared logs, since they include local credentials.
-
-## Infrastructure verification (QH-3)
-
-```bash
-make verify-infra
-```
-
-This validates Compose, starts/waits for the five services without rebuilding
-or replacing existing containers, then verifies actual health/network/volume
-settings. Authenticated backend queries prove both DBs are reachable; separate
-TCP probes from frontend and MCP to the DB IPs must fail. Database ports remain
-unpublished. The host's existing Python 3 orchestrates Docker CLI using only the
-standard library; Node/Python network probes and DB tests run in containers.
-Images must already be built (`make build` for initial setup). No cleanup occurs.
-
-To explicitly test persistence on the running stack:
-
-```bash
-make verify-persistence
-```
-
-This repeats infrastructure checks, writes a marker in a unique PostgreSQL
-schema and one tagged Neo4j node, restarts **only the two database containers**,
-waits for health and verifies both markers survived. It confirms unchanged
-container IDs and named volume mounts, then removes only its own probe data.
-Existing application data, containers, images and volumes are retained. The
-database restart briefly interrupts connections; it is not part of routine
-`make verify-running`. No container recreation or volume deletion is performed.
-If cleanup fails, the printed UUID identifies the residual probe. After restoring
-database availability, retry just that cleanup using the reported token:
-
-```bash
-docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend python /workspace/tests/infra/persistence_probe.py cleanup <probe-token>
-```
-
-## PostgreSQL foundation (QH-4)
-
-```bash
-make test-migrations
-```
-
-Alembic revisions live in the backend PostgreSQL adapter. Tests create empty,
-isolated databases, verify upgrade/downgrade, integrity and immutability, and
-remove only their own test databases. They never migrate the QH application DB.
-The approved foundation and deferred Projection/Snapshot/Share tables are described
-in [schema details](docs/postgres-schema.md) and [ADR 0002](docs/adr/0002-canonical-understanding-persistence.md).
-`make migrate` requires separate approval for the application database; API
-startup does not apply migrations. Rebuild after dependency changes and run with
-the backend's updated hash-locked dependencies; install no packages on macOS.
-
-## Optional OIDC development (QH-5)
-
-```bash
-make oidc-up
-make test-oidc
-make oidc-stop
-```
-
-Keycloak runs as an optional profile with a separate persistent volume; the five
-base services remain the standard bootstrap. Real login uses Authorization Code
-with PKCE. `GET /auth/me` returns the mapped QH user ID. Identity mapping requires
-the additive QH-5 migration and demo provisioning: **these were applied to local
-`qh` with explicit approval on 2026-10-14**. Future migrations still require approval.
-`make test-oidc-application` verifies deployed identities read-only; other OIDC tests migrate and seed only isolated
-databases. See [setup and checks](docs/qh-5-authentication.md) and the
-[identity ADR](docs/adr/0002-identity-and-authorization.md).
-
-## Dependency locks
-
-The frontend uses root `package-lock.json` and `npm ci`. Each Python service
-uses a fully resolved `requirements.lock`, with exact versions and hashes,
-installed using uv 0.8.4 with `--require-hashes --no-deps`. Development/test
-dependencies are included because these are development images. psycopg,
-SQLAlchemy and Alembic are migration dependencies; the Neo4j driver remains a
-development dependency for infrastructure smoke checks.
-
-After intentionally changing dependency manifests, regenerate locks in containers:
-
-```bash
-make lock-node
-make lock-python
-make verify
-```
-
-Lock generation needs registry access, but installs no application packages on
-macOS. Base images use explicit runtime versions; validation of actual image
-builds is reported in the verification document, not inferred from these pins.
-
-## Jira workflow
-
-Use the repository skill `.agents/skills/jira-ticket-workflow/SKILL.md`. Read the
-ticket first, keep changes scoped, and report PASS / FAIL / NOT TESTED against
-its Definition of Done. Jira is not automatically updated.
+Earlier `docs/verification-*` reports retain dated evidence, not current deployment
+inventories. QH-30 remains in progress; isolated success does not establish its full
+product Definition of Done or authorize persistent cutover.

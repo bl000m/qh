@@ -40,7 +40,7 @@ compatibility map is inspectable with `git show 77de43c:docs/qh-7-graphiti.md`
 | Understanding Items and revisions | Stable item ID, revision ID/number, registered type/version, structured content, origin, validation/actor/time, predecessor, confirmed-current pointer | Relevant revision text/properties, registered type/version/state and canonical references for retrieval |
 | Semantic entities and relations | Stable identities, immutable assertion/revision data, endpoint identity, grounded event times and provenance; schema tested only in isolation | Revision/identity nodes, typed edges, traversal shortcuts and selected denormalizations; never independent edits |
 | Embeddings | Reusable, versioned derived artifact/cache keyed by canonical revision/content hash + provider/model/version/dimension/configuration | Vector and index configuration necessary for retrieval; can be repopulated from the cache |
-| Projection/sync metadata | Durable work intent, canonical version being projected and progress/error records (proposed additive schema) | Projector version/generation and applied canonical version, useful indexes |
+| Projection/sync metadata | Durable work intent, canonical version being projected and progress/error records (0004, verified in isolation) | Projector version/generation and applied canonical version, useful indexes |
 
 An embedding is not an authoritative semantic assertion. Cache persistence location
 and SQL shape require review, but retained artifacts are necessary for a rebuild
@@ -94,14 +94,14 @@ historical QH-4 migration. The owner subsequently approved the model and isolate
 migration tests; persistent application remains gated. See the concrete alternatives,
 constraints and migration gates in [QH-30 plan](../qh-30-plan.md).
 
-Recommend a single immutable type/version registry and one binding per item revision;
-replace the eleven-category CHECK rather than force new types into old buckets.
+The approved, isolated implementation uses a single immutable type/version registry and one binding per item revision,
+replacing the eleven-category CHECK without forcing new types into old buckets.
 A small item/entity/relation structural shape selects integrity constraints and is
 independent of domain/semantic classification. Historical category values remain
 unchanged as deprecated metadata; new revisions use only the registered type binding.
 No free-form unknown types, automatic latest schema or duplicated classification.
 
-Recommend relation endpoints as stable Understanding Item IDs **and** required
+The approved relation endpoints are stable Understanding Item IDs **and** required
 immutable item revision anchors. Composite same-space FKs target QH-4
 understanding_item_revisions directly and prove ID/revision/scope agreement.
 Endpoints can be decisions, constraints, observations, entities, events, states,
@@ -207,9 +207,9 @@ not define an unapproved public latest/proposal selection contract.
 
 There is no distributed ACID transaction across PostgreSQL and Neo4j. PostgreSQL
 commit is authoritative; a failed projection leaves durable pending/failed work,
-not a rolled-back canonical decision or a misleading ready result. Use a
-transactional outbox when persistent incremental processing begins, with a backend
-worker in the same service initially. No new broker/container is required.
+not a rolled-back canonical decision or a misleading ready result. Migration 0004 implements a
+transactional outbox and a backend-local worker, verified on disposable databases.
+Their activation in persistent QH remains unauthorized. No new broker/container is required.
 
 Delivery is at-least-once. Work identifies canonical scope/revision and projector
 version. The worker re-reads authoritative state; old deliveries cannot regress an
@@ -292,14 +292,13 @@ The owner chooses PostgreSQL + native Neo4j now; no migration to another databas
    reconciliation remains explicit recovery. Approved migration 0004 adds the
    transactional outbox and per-scope operational counters/epoch. Ordinary worker
    processing and query freshness no longer scan canonical scopes. Next:
-   explicit persistent-application approval, transactional persistence/
-   outbox/cache and recovery; then native extraction/resolution and advanced hybrid
+   explicit persistent-application/runtime approval; embedding cache remains future
+   work, followed by native extraction/resolution and advanced hybrid
    retrieval. QH-8 retains the three persistent typed Understanding Items demo.
 
 Stop before applying migrations 0003/0004 to the **persistent QH database** or changing
-public contracts. Only the disposable QH-30 test database is authorized. The detailed SQL model,
-embedding artifact storage and lifecycle selection remain
-subsequent review points. Registration/publication currently requires READ COMMITTED;
+public contracts. Only the disposable QH-30 test database is authorized. The SQL model is approved and verified in isolation.
+Embedding artifact storage and public lifecycle selection remain review points. Registration/publication currently requires READ COMMITTED;
 other transaction isolation modes fail closed. This migration is forward-only and downgrade is refused; use a reviewed restore
 or forward repair because the old CHECK cannot represent arbitrary new types. This ADR does not mark QH-30 or QH-8 Done.
 

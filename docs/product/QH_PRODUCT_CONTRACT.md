@@ -113,8 +113,8 @@ Snapshot e Share. Ogni fonte, elemento e proiezione appartiene a un solo Context
 Space; una proiezione produce più snapshot e uno snapshot può avere più share.
 L'owner delle entità figlie deriva dallo spazio, senza duplicazioni inutili.
 
-Gli Understanding Items hanno identità stabile, spazio, categoria, contenuto
-strutturato, origine, validazione e provenienza. Categorie iniziali: objective,
+Nel modello storico QH-4 gli Understanding Items hanno identità stabile, spazio, categoria, contenuto
+strutturato, origine, validazione e provenienza. Categorie storiche QH-4: objective,
 current_state, decision, hypothesis, open_question, constraint, preference,
 concept, entity, relationship, uncertainty. Classificazione epistemica e stato
 di validazione sono dimensioni differenti.
@@ -124,8 +124,10 @@ universale e queste categorie non chiudono la tassonomia. Tipi e proprietà sono
 estensibili tramite schemi versionati; uno spazio può mescolare domini.
 Provenienza, revisioni, temporalità, incertezza e validazione restano comuni,
 con governance indipendente dal dominio. I Domain Packs sono una possibilità
-futura componibile, non una funzionalità implementata. Il delta SQL concreto
-resta proposto in ADR 0003 e richiede approvazione prima delle migrazioni.
+futura componibile, non una funzionalità implementata. Il modello SQL QH-30 è approvato: registro unico tipo/versione, forme strutturali
+item/entity/relation, endpoint universali con identità e revisioni immutabili,
+temporalità comune. Le migrazioni 0003/0004 sono implementate e verificate soltanto
+in isolamento; applicazione persistente e cambi ai contratti pubblici restano non autorizzati.
 
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono
 event sourcing completo o revisioni globali del Context Space. Uno snapshot
@@ -146,7 +148,10 @@ integrità sono introdotte nei relativi ticket. Non replicare il grafo Graphiti
 in PostgreSQL né implementare un Comprehension Graph proprietario durante QH-4.
 Aggiornamento autorizzato del 2026-10-15: QH-30 sostituisce la scelta Graphiti con
 un motore QH nativo (ADR 0003), senza riaprire le altre invarianti. Il modello SQL
-additivo di entità/relazioni richiede ancora validazione del proprietario.
+è approvato e verificato in isolamento; il database QH resta a 0002. Le categorie
+storiche non classificano le nuove revisioni: il registro versionato è la sola
+autorità semantica. Source Vault (QH-31) resta futuro: la rappresentazione inline
+non impone che i byte originali siano conservati in PostgreSQL.
 
 ## Ipotesi da validare ed evoluzioni del modello
 

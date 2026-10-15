@@ -12,8 +12,9 @@ schema and minimal contract corrections, without graph duplication or feature
 workflows. Applying migrations to the QH application database still needs approval.
 
 The repository contains the working QH-1 scaffold, the five-service Compose
-environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine is being introduced under QH-30; schema changes remain
-pending owner review. Production business routes remain deferred except QH-5
+environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
+implemented and tested in isolation under QH-30. Persistent QH remains at 0002;
+0003/0004 application and native runtime activation are not authorized. Production business routes remain deferred except QH-5
 identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
@@ -153,12 +154,10 @@ recorded in `docs/initial-commit-review.md`.
 
 Source revision → authorized interpretation → validated canonical proposal/ACID
 commit → idempotent operational graph projection → authorized retrieval and bulk
-canonical hydration. See [ADR 0003](adr/0003-native-context-engine.md). Outbox,
-embedding artifact cache and measurable projection progress are required when
-incremental processing is introduced. Migration 0004 now implements transactional
+canonical hydration. See [ADR 0003](adr/0003-native-context-engine.md). Versioned embedding artifact caching remains future work. Migration 0004 now implements transactional
 outbox/state with a backend-local incremental worker in isolation; full-snapshot
 reconciliation is explicit recovery, not an ordinary query prerequisite. No distributed transaction or automatic
-re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) is implemented/tested only in isolated migration 0003
+re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) is implemented/tested only in isolated migrations 0003/0004
 and a real SQL-to-Neo4j slice; persistent application remains gated. Existing OIDC, PolicyService and public contracts remain unchanged.
 
 ### Universal semantic model (QH-30)
@@ -167,5 +166,8 @@ The native engine is independent of Context Space domain. Types and properties
 are extensible through immutable versioned schemas; one space can mix domains.
 Provenance, revisions, temporal meaning and validation belong to the universal
 nucleus; PolicyService remains independent of semantic type. Domain Packs are a
-future optional composition mechanism only. See ADR 0003 and the pending SQL
-delta in [QH-30 plan](qh-30-plan.md); no migration or public DTO is approved here.
+future optional composition mechanism only. See ADR 0003 and the approved SQL model/evidence in [QH-30 plan](qh-30-plan.md).
+Only disposable test migration execution is authorized; persistent migration and
+public DTO changes remain gated. QH-31 Source Vault, Domain Packs, LLM extraction
+and advanced vector retrieval are not implemented. Ordinary native queries use
+per-scope sync state and candidate hydration; full reconciliation is explicit recovery.

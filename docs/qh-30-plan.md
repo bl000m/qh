@@ -1,5 +1,31 @@
 # QH-30 / QH-7b — canonical delta and first native increment
 
+## Current checkpoint — read this before historical milestones
+
+| State | Result |
+| --- | --- |
+| Approved | PostgreSQL canonical; native rebuildable Neo4j; versioned universal semantic model |
+| Completed in isolation | 0003 three canonical tables; real repository; multidomain SQL→Neo4j integration; 0004 two operational tables and incremental worker |
+| Verified | 101 distinct tests in the outbox checkpoint, Ruff; earlier milestone evidence retained below |
+| Persistent QH | Last read-only inventory: 0002, zero canonical/identity rows; no 0003/0004 application or native runtime activation |
+| Remaining | Reviewed cutover/runtime composition, explicit activation approval, integrated CI coverage; extraction, embeddings/cache and advanced retrieval remain future work |
+
+Historical sections below preserve what was true at each milestone. Earlier deferrals
+of the outbox are superseded by the final **Incremental outbox and backend worker**
+section. Historical test counts are not additive totals or evidence of deployment.
+`make migrate` runs `upgrade head` and grants no authorization. Any future cutover
+must recheck the inventory and explicitly target **0004_projection_outbox** from
+the reviewed native commit/image; do not apply it now.
+
+CI proposal before merge (not configured): add a required integration job with
+runner-local disposable PostgreSQL and Neo4j, no published database ports, dedicated
+credentials/network and the test servers' enforced names. Run the SQL model,
+canonical pipeline and outbox suites with their explicit opt-in variables; fail
+if integration tests skip. Stop/remove only job-owned resources at completion.
+Existing green quality/OIDC gates do not establish these suites executed. No new
+persistent service, paid API or workflow execution is authorized by this proposal.
+
+
 Reference: [QH-30](https://contextlab.atlassian.net/browse/QH-30), read in full
 through Atlassian MCP on 2026-10-15, including subsequent updates to QH-30,
 QH-8 and QH-10. QH-4 and QH-7 were read previously. The owner has already
@@ -37,6 +63,10 @@ or migration rerun was needed to discover these code/schema gaps.
 
 ## Canonical model — approved principles, isolated SQL implementation
 
+The alternatives below retain the model review history. Implemented constraints
+are described in the subsequent table/constraint sections; outbox status is in
+the final incremental checkpoint.
+
 The review superseded the earlier two-level category/type recommendation from
 `bb967e3`. Principles and isolated implementation were subsequently approved by
 the owner. Migration `0003_native_semantics` now implements **three** additive
@@ -61,7 +91,7 @@ Exact source: `0001_qh_schema.py`, `CATEGORIES` and `ck_item_category`.
 | relationship | Structural shape: assertion with typed, scoped endpoints |
 | uncertainty | Epistemic/semantic content; distinct from confidence or validation metadata |
 
-All eleven are just category strings in today's SQL; entity/relationship are not
+In the QH-4 baseline, all eleven are just category strings; entity/relationship are not
 yet structurally enforced. A concept can later have an entity-shaped type if it
 needs referential identity, but the migration must not guess this from its name.
 The grouping above is analysis, not a reclassification of historical records.
@@ -311,14 +341,15 @@ never acquire confirmation through traversal. New semantic types may need new
 registered validation/extraction instructions, not schema migrations or a second
 interpretation pass. No hybrid-search performance claim follows from this review.
 
-Outbox/progress and versioned embedding cache remain separate proposed operational
-persistence work, not silently covered by approval of these three semantic tables.
+At this historical semantic-model checkpoint, outbox/progress and embedding cache
+were separate proposals. Outbox/progress are now implemented by 0004 below;
+versioned embedding cache remains future work.
 The existing three-domain fixtures and 67-test results are retained as prior slice
 evidence; the new tests below now exercise SQL plus generalized fixture endpoint projection,
 with the next section demonstrating actual SQL-to-graph integration in isolation,
 without claiming production deployment.
 
-## Fixture increment and current approval boundary
+## Historical fixture increment and its approval boundary
 
 The completed fixture increment implements a narrow internal native Neo4j projector/retriever with a synthetic
 canonical fixture shaped as existing QH-4 item revisions and provenance. The
@@ -351,7 +382,7 @@ QH-8. Re-estimate both tickets after schema review; original 1.5 h estimates ref
 to the superseded Graphiti scope. No Jira links, descriptions, states or comments
 were written by this work.
 
-## Executed native fixture increment
+## Historical executed native fixture increment
 
 Implementation: `apps/api/adapters/context/native.py` (`checked_rows`,
 `NativeContextEngine.replace/search`, `AuthorizedNativeContextService.retrieve`).
@@ -392,7 +423,7 @@ production PostgreSQL writes, outbox/cache, LLM extraction and hybrid semantic
 retrieval are NOT TESTED/not implemented in this increment. This does not satisfy
 the full QH-30 end-to-end Definition of Done.
 
-## Isolated SQL verification checkpoint
+## Historical isolated SQL verification checkpoint (0003)
 
 Tests: `apps/api/tests/test_native_semantics_sql.py`, reusing QH-4 database/revision
 helpers. Runs skip unless QH30_SQL_TEST=1, then refuse any host other than
@@ -517,7 +548,7 @@ entry points; historical QH-4/QH-5 fixtures remain on their own schema revisions
 | Application Understanding Item/source SQL writers | None existed before this increment; no production category writer to convert. New CanonicalRepository writes registered bindings and null legacy category |
 | `demo_identities.provision_demo` | INSERTs touch users/user_identities only, compatible and idempotent. CLI preflight previously required exactly 0002; `require_identity_schema` now explicitly accepts 0002, 0003 or 0004, rejecting unrecognized revisions. Existing local database restriction is preserved |
 | Historical QH-4/QH-5 migration test helpers | Deliberately use historical category writes against pinned old migrations; do not rewrite history or make them write invalid payloads against head |
-| `Makefile:migrate` | Calls upgrade head, so do not use it for this rollout. Apply the explicitly reviewed 0003 target from the native worktree/image only after authorization |
+| `Makefile:migrate` | Calls upgrade head, so do not use it for this rollout. Historical 0003-only instruction superseded: eventual cutover must explicitly target 0004_projection_outbox from the reviewed native worktree/image, after authorization |
 | Graphiti branch/runtime | Preserved; never silently replace its checkout/mount or treat its Neo4j graph as canonical SQL backfill |
 
 The adapted identity writer is tested against 0003 and the existing QH-5 regression

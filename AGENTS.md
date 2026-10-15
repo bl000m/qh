@@ -18,8 +18,10 @@ ownership, authorization or sharing, read the relevant sections of
 [QH Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), the mandatory functional
 reference. Never infer the functional model solely from table names, existing code
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
-understanding, revisions and governance; Graphiti/Neo4j is replaceable derived
-semantic state. Follow approved ADR 0002 for the V0.1 model and ticket boundaries.
+understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
+the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
+QH-30 migrations 0003/0004 and its native worker are verified in isolation only;
+persistent application and runtime activation require explicit authorization.
 
 ## Autonomy and STOP AND ASK
 
@@ -50,6 +52,17 @@ benefits/risks and a reasoned recommendation. Wait for explicit user approval
 before implementing the affected part. Continue only independent, already-defined
 work without anticipating the blocked decision. Ordinary reversible technical
 choices consistent with approved decisions do not require interruption.
+
+## Paid external calls
+
+Paid or potentially metered external calls require prior explicit authorization.
+Describe provider, endpoint, models, purpose and estimated cost before requesting
+authorization. Authorization may cover one call or a precisely scoped experiment
+with a maximum request count and estimated budget. Within an authorized experiment,
+proceed without per-call confirmations while enforcing all limits; stop on errors,
+unexpected behavior or risk of exceeding them. Retries and parallelism require
+coverage by that authorization. No paid calls during startup, automatic tests or CI.
+Keep provider secrets exclusively in ignored local configuration, never logs or chat.
 
 ## Architecture and dependency direction
 
@@ -129,6 +142,10 @@ choices consistent with approved decisions do not require interruption.
 - Keep credentials in ignored `.env` files and configuration keys in
   `.env.example`. Never commit secrets or include them in image build contexts.
 - Do not delete database volumes or reset local data without explicit approval.
+- `make migrate` runs Alembic `upgrade head`; its existence is not authorization
+  to migrate persistent QH. Use an explicitly reviewed target for an authorized
+  cutover. CI success does not prove dedicated PostgreSQL–Neo4j tests executed;
+  consult the QH-30 evidence and test environment gates.
 - Respect task-specific restrictions on container replacement. Use
   `make verify-running` for an existing stack when container recreation is not
   authorized.

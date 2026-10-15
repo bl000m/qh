@@ -1,11 +1,24 @@
-# QH-4 PostgreSQL foundation
+# PostgreSQL schema: deployed foundation and isolated QH-30 extension
 
 Authority: [ADR 0002](adr/0002-canonical-understanding-persistence.md) and the
 [Product Contract](product/QH_PRODUCT_CONTRACT.md). The original uncommitted
 five-table draft is replaced by revision 0001_qh_schema; it was never applied
 to QH. Its old test results are historical, not evidence for the new schema.
 
-## Implemented tables
+## Current state and authority
+
+- **Persistent QH:** migrations 0001/0002 (QH-4/5). Last read-only inventory found
+  all canonical/identity tables empty; recheck before any authorized cutover.
+- **QH-30 branch:** approved migrations 0003/0004, repository, incremental worker
+  and retrieval verified only on dedicated disposable PostgreSQL/Neo4j servers.
+- **Not authorized:** applying 0003/0004 or activating the native runtime in QH.
+  No volume recreation is needed for the proposed empty-schema upgrade.
+
+The executable migration files define the SQL. [ADR 0003](adr/0003-native-context-engine.md)
+defines current architecture; [QH-30 plan](qh-30-plan.md) retains test evidence and
+cutover gates. The following QH-4 sections describe their historical baseline.
+
+## Historical QH-4 foundation (migration 0001)
 
 | Table | Data / cardinality |
 | --- | --- |
@@ -87,27 +100,18 @@ the exact test-created databases, without FORCE or volume/container cleanup.
 The upgrade/downgrade/reapply test verifies unrelated data survives rollback;
 normal tests never migrate or downgrade the QH application database.
 
-`make migrate` upgrades the QH application database and requires explicit user
+`make migrate` executes Alembic `upgrade head` against the configured QH database and requires explicit user
 authorization; API startup never migrates the schema. The user authorized the
 initial local upgrade after the isolated verification. See
 [implementation checks](verification-qh-4.md) and
 [local deployment](verification-qh-4-local-deployment.md) for actual results.
 
-## QH-30 pivot: schema unchanged
+## Superseded proposals and approved QH-30 model
 
-[ADR 0003](adr/0003-native-context-engine.md) replaces the Graphiti direction
-with a native rebuildable Neo4j projection. The seven QH-4 tables and QH-5
-identity migration above remain unchanged. [Proposed canonical delta](qh-30-plan.md)
-reuses entity/relationship item revisions and their provenance rather than
-duplicating identities/validation. No new migration is applied; Graphiti episode
-mapping in the historical deferred-features list is superseded by canonical IDs.
-
-QH-30 universal-type clarification: the eleven categories are enforced by a CHECK;
-JSONB object validation is not versioned semantic validation. The proposed additive
-single type/version registry and per-revision bindings (replacing the eleven-category
-CHECK), plus stable entity endpoint IDs with exact revision anchors, are proposed
-in `qh-30-plan.md`. Historical category values would remain deprecated metadata.
-No domain-specific schema, registry migration or historical rewrite has been applied.
+The earlier category-plus-subtype and entity-only endpoint proposals were superseded
+before implementation. ADR 0003 records the succession; no historical migration or
+immutable payload was rewritten. Graphiti episode mappings in the historical QH-8
+list above are superseded by canonical item/source revision IDs.
 
 QH-30 isolated implementation (2026-10-15): migration `0003_native_semantics` adds
 three tables: semantic_type_versions, item_revision_types, relation_revision_details.
