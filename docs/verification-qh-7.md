@@ -308,3 +308,53 @@ index/secret checks). The next local commit contains the B-only runner, five
 additional checks and this execution plan; its hash is reported in the delivery.
 Live semantic success remains NOT TESTED after correction and QH-7 remains in
 progress. The next required approval is solely the new 8B bounded experiment.
+
+## Authorized B-only 8B experiment — 2026-10-15
+
+Owner authorized ministral-8b-2512 and mistral-embed, synthetic B only,
+12 requests / estimated 0.01 USD maximum, serial and without retries.
+Executed once: backend `python -m adapters.context.smoke_b
+--authorized-experiment --ledger /tmp/qh7-b8-authorized-20261015.json`.
+Key presence was checked without disclosure; Graphiti 0.30.2 verified.
+Result: **FAIL / stopped**, exit 1 after four HTTP 200 responses. No subsequent
+provider requests, retries or semantic search were performed.
+
+[Request/usage ledger](evidence/qh7-b8-smoke.json) and
+[read-only Neo4j audit](evidence/qh7-b8-local-audit.json) contain synthetic data.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Bea and Cedar Observatory extracted | PASS | Both names in raw parsed entity response, each episode index 0 |
+| Correct founding relationship | NOT TESTED successfully | Edge extraction request returned HTTP 200, ingestion then raised ContextEngineError |
+| No unsupported semantic dates | NOT TESTED | No validated edge/summary result captured; no semantic facts persisted |
+| Semantic retrieval and provenance | NOT TESTED | Search was never reached; local episode descriptor matches B source/revision |
+| No cross-space contamination | PASS for local stored-edge audit only | Zero edges with mismatching endpoint groups; A fact remains Ada founded Cedar Observatory |
+| End-to-end retrieval isolation | NOT TESTED | B ingestion failed before retrieval |
+| Request/budget/retry limits | PASS | Four requests, serial transport, no retry; estimated 0.0004523 USD |
+
+Calls: entity LLM 932 input + 73 output; Bea embedding 4 input; Cedar embedding
+7 input; edge LLM 1406 input + 597 output. Total **2349 input + 670 output =
+3019 tokens**, two chat and two embedding requests. LLM estimated 0.0004512 USD,
+embeddings 0.0000011 USD; total **0.0004523 USD**, tariff estimate rather than invoice.
+Account availability for both authorized models is demonstrated by HTTP 200.
+Eight request slots and estimated 0.0095477 USD remain unused; failure stop applies,
+so they were not consumed.
+
+Diagnostic limit: the runner records observations only after SDK JSON parsing,
+response-model validation and generic integrity checks. The fourth response was
+read with finish_reason stop and usage recorded, but no edge observation followed.
+The adapter deliberately masks underlying ingestion exceptions and logging was
+disabled; raw chat content was not retained. Therefore parsing, schema validation
+and pre-observer integrity rejection cannot be distinguished from these checkpoints.
+HTTP success does not establish a valid relation or grounded dates. No speculative
+repair, missing entity insertion or additional paid diagnostic was attempted.
+A future experiment should first improve local diagnostic capture (synthetic
+response content and sanitized failure stage) without changing extraction behavior.
+
+The 3B B sample omitted Bea, emitted an edge toward an unavailable entity and later
+an unsupported 2023 summary; the 8B sample fixes entity coverage but does not finish
+ingestion. The current 8B run also uses new fail-closed guards and a fresh technical
+timestamp/scope, so it is not a controlled model-only reliability comparison.
+One sample cannot establish general model superiority or production reliability.
+QH-7 remains in progress; successful live semantic completion remains unproven.
+No push, merge, Jira update, CI execution or data/volume deletion occurred.

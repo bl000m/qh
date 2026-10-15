@@ -1,0 +1,118 @@
+{
+  "requests": [
+    {
+      "number": 1,
+      "model": "ministral-8b-2512",
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "pre_send_estimate_usd": 0.0015264,
+      "max_output_tokens": 4096,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 932,
+        "total_tokens": 1005,
+        "completion_tokens": 73,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 0.00015075
+    },
+    {
+      "number": 2,
+      "model": "mistral-embed",
+      "endpoint": "https://api.mistral.ai/v1/embeddings",
+      "pre_send_estimate_usd": 0.00010920000000000001,
+      "max_output_tokens": 0,
+      "status": 200,
+      "usage": {
+        "prompt_audio_seconds": null,
+        "prompt_tokens": 4,
+        "total_tokens": 4,
+        "completion_tokens": 0,
+        "request_count": null,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null,
+        "service_tier": null,
+        "prompt_token_details": null
+      },
+      "estimated_cost_usd": 4.0000000000000003e-07
+    },
+    {
+      "number": 3,
+      "model": "mistral-embed",
+      "endpoint": "https://api.mistral.ai/v1/embeddings",
+      "pre_send_estimate_usd": 0.0001106,
+      "max_output_tokens": 0,
+      "status": 200,
+      "usage": {
+        "prompt_audio_seconds": null,
+        "prompt_tokens": 7,
+        "total_tokens": 7,
+        "completion_tokens": 0,
+        "request_count": null,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null,
+        "service_tier": null,
+        "prompt_token_details": null
+      },
+      "estimated_cost_usd": 7.000000000000001e-07
+    },
+    {
+      "number": 4,
+      "model": "ministral-8b-2512",
+      "endpoint": "https://api.mistral.ai/v1/chat/completions",
+      "pre_send_estimate_usd": 0.0037443,
+      "max_output_tokens": 16384,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 1406,
+        "total_tokens": 2003,
+        "completion_tokens": 597,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "service_tier": "standard"
+      },
+      "estimated_cost_usd": 0.00030045
+    }
+  ],
+  "estimated_cost_usd": 0.0004523,
+  "stopped": true,
+  "failure_reason": "Local/extraction validation failure: ContextEngineError",
+  "observations": [
+    {
+      "phase": "extract_nodes.extract_text",
+      "result": {
+        "extracted_entities": [
+          {
+            "name": "Bea",
+            "entity_type_id": 0,
+            "episode_indices": [
+              0
+            ]
+          },
+          {
+            "name": "Cedar Observatory",
+            "entity_type_id": 0,
+            "episode_indices": [
+              0
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "scope": "qh7-b-8b-f09a3fdbad5e48ffa95edd27bb3e22ed",
+    "source_id": "qh7-source-f09a3fdbad5e48ffa95edd27bb3e22ed",
+    "source_revision": "revision-1",
+    "text": "Bea founded Cedar Observatory."
+  }
+}
