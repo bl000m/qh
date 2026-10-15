@@ -116,6 +116,11 @@ Keep provider secrets exclusively in ignored local configuration, never logs or 
 
 ## Versioning and verification
 
+Follow [versioning and logical milestones](docs/versioning.md), maintain
+[CHANGELOG](CHANGELOG.md) and the [deployment register](docs/deployments.md).
+Separate product versions, migration targets, semantic versions and image identities.
+Tags, GitHub Releases and Jira milestone/version writes require explicit approval.
+
 - Before ticket work, verify Git and the baseline. If either is missing, propose
   the baseline contents and obtain user approval before the first commit.
 - Split a ticket into coherent independent units when useful (often 2–4, never
