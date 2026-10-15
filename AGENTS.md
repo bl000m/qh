@@ -64,8 +64,10 @@ choices consistent with approved decisions do not require interruption.
 - `app/policy`, `app/projections` and `app/chat` own their application contracts;
   `app/composition.py` holds explicit service bindings. Keep their types and
   dependencies consistent with `docs/adr/0001-modular-architecture.md`.
-- Graphiti is a Python library integrated through a replaceable adapter inside
-  the backend. Never create a Graphiti microservice or TypeScript adapter.
+- QH-30 / ADR 0003 replaces the archived Graphiti prototype with a native QH
+  Context Engine. PostgreSQL is canonical; Neo4j is a rebuildable operational
+  graph. Preserve the Graphiti branch/PR; do not copy its runtime/private hooks.
+  Keep the engine in the backend with no new production service by default.
 - `packages/shared`: public wire schemas/types, not Python domain interfaces.
 - `infra/docker`: five base Compose services: frontend, backend, mcp, neo4j
   and postgres; optional local Keycloak profile under the approved

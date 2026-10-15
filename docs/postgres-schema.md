@@ -92,3 +92,12 @@ authorization; API startup never migrates the schema. The user authorized the
 initial local upgrade after the isolated verification. See
 [implementation checks](verification-qh-4.md) and
 [local deployment](verification-qh-4-local-deployment.md) for actual results.
+
+## QH-30 pivot: schema unchanged
+
+[ADR 0003](adr/0003-native-context-engine.md) replaces the Graphiti direction
+with a native rebuildable Neo4j projection. The seven QH-4 tables and QH-5
+identity migration above remain unchanged. [Proposed canonical delta](qh-30-plan.md)
+reuses entity/relationship item revisions and their provenance rather than
+duplicating identities/validation. No new migration is applied; Graphiti episode
+mapping in the historical deferred-features list is superseded by canonical IDs.

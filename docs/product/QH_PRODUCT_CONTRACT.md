@@ -77,12 +77,15 @@ dai modelli che lo utilizzano. RAG, Graphiti, Neo4j, routing LLM e automazione
 sono strumenti possibili; non definiscono il prodotto.
 
 - QH Core è indipendente dai framework infrastrutturali.
-- Graphiti è un motore semantico sostituibile attraverso ContextEngine.
-- Neo4j è il database a grafo utilizzato inizialmente da Graphiti.
+- QH-30 autorizza un QH Context Engine nativo dietro ContextEngine; il prototipo
+  Graphiti resta conservato nella branch storica, non una dipendenza di runtime.
+- Neo4j è il Context Graph operativo derivato e ricostruibile, secondo
+  [ADR 0003](../adr/0003-native-context-engine.md).
 - PostgreSQL è canonico per fonti originali, comprensione persistita, revisioni,
-  proiezioni approvate e governance QH. Graphiti/Neo4j è un motore semantico derivato,
-  sostituibile per estrazione, relazioni semantiche e recupero; il suo stato deve
-  poter essere ricostruito senza dipendere da formati interni. La ricostruzione
+  entità e relazioni semantiche canoniche, proiezioni approvate e governance QH.
+  Neo4j contiene soltanto la proiezione operativa e gli indici utili al recupero;
+  deve poter essere ricostruito dai dati canonici e dagli embedding conservati,
+  senza ripetere interpretazione LLM o dipendere da formati Graphiti. La ricostruzione
   non modifica automaticamente decisioni umane approvate.
 - FastAPI espone le API applicative; MCP è un adapter esterno.
 - Le informazioni non autorizzate non devono essere trasmesse ai provider IA.
@@ -132,7 +135,10 @@ prevalgono sulle decisioni approvate.
 QH-4 predispone schema e migrazioni; non implementa ingestione Graphiti, validazione,
 Projection Engine, link, chat o client React. Tabelle differibili senza perdere
 integrità sono introdotte nei relativi ticket. Non replicare il grafo Graphiti
-in PostgreSQL né implementare un Comprehension Graph proprietario.
+in PostgreSQL né implementare un Comprehension Graph proprietario durante QH-4.
+Aggiornamento autorizzato del 2026-10-15: QH-30 sostituisce la scelta Graphiti con
+un motore QH nativo (ADR 0003), senza riaprire le altre invarianti. Il modello SQL
+additivo di entità/relazioni richiede ancora validazione del proprietario.
 
 ## Ipotesi da validare ed evoluzioni del modello
 

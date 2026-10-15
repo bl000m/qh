@@ -1,5 +1,9 @@
 # Identity and authorization
 
+Update 2026-10-15: [ADR 0003](0003-native-context-engine.md) / QH-30 changes only the context
+engine direction. The OIDC mapping, shared PolicyService and default-deny/resource
+boundaries in this decision remain unchanged.
+
 Status: approved by the project owner for QH-5 (2026-10-13).
 QH-29 / QH-6b adds the approved shared authorization boundary (2026-10-14).
 

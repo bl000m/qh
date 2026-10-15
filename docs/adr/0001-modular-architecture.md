@@ -1,5 +1,9 @@
 # ADR 0001 — QH Ports & Adapters
 
+Update 2026-10-15: The concrete Graphiti implementation choice below is historical and superseded
+by [ADR 0003](0003-native-context-engine.md) / QH-30. Dependency direction and
+all existing port signatures remain unchanged.
+
 Date: 2026-10-13
 
 Status: Accepted
