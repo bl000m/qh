@@ -54,7 +54,13 @@ def validate_content(category, content):
     if event is not None and datetime.fromisoformat(event).tzinfo is None:
         raise ValueError("Timezone required")
     if category == "relationship":
-        for field in ("subject_revision_id", "object_revision_id", "predicate"):
+        for field in (
+            "subject_item_id",
+            "subject_revision_id",
+            "object_item_id",
+            "object_revision_id",
+            "predicate",
+        ):
             if not isinstance(properties[field], str) or not properties[field]:
                 raise ValueError("Invalid relation properties")
 
@@ -344,10 +350,15 @@ def test_real_universal_relationship_projection_and_endpoint_integrity(real_engi
     with engine.driver.session() as session:
         record = session.run(
             "MATCH (a)<-[:SUBJECT]-(r:QH30Revision {slice_id:$id})-[:OBJECT]->(b) "
-            "RETURN count(r) AS n, collect(r.predicate) AS predicates",
+            "RETURN count(r) AS n, collect(r.predicate) AS predicates, collect(a.category+'->'+b.category) AS shapes",
             id=engine.slice_id,
         ).single()
         assert record["n"] == 3 and set(record["predicates"]) == {"associated_with"}
+        assert set(record["shapes"]) == {
+            "decision->entity",
+            "current_state->decision",
+            "relationship->preference",
+        }
     broken = deepcopy(snapshot)
     relation = next(
         r
@@ -366,3 +377,15 @@ def test_real_universal_relationship_projection_and_endpoint_integrity(real_engi
     endpoint["provenance"] = [snapshot["source_revisions"][1]["id"]]
     with pytest.raises(NativeContextError, match="endpoint"):
         engine.replace(foreign, generation="foreign")
+
+
+def test_real_stable_id_must_match_anchor(real_engine):
+    engine, snapshot, _ = real_engine
+    relation = next(
+        r
+        for r in snapshot["understanding_item_revisions"]
+        if r["category"] == "relationship"
+    )
+    relation["content"]["properties"]["subject_item_id"] = "wrong-logical-id"
+    with pytest.raises(NativeContextError, match="stable item"):
+        engine.replace(snapshot, generation="mismatched")

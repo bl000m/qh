@@ -11,7 +11,7 @@ from adapters.context.native import NativeContextEngine, NativeContextError
 from app.core.models import ContextQuery
 from tests.test_native_context import A, FIXTURE, loader, validate_content
 
-PROBE = "qh30-universal-restart-probe"
+PROBE = "qh30-general-endpoints-restart-probe"
 
 
 def main():

@@ -4,12 +4,13 @@ Reference: [QH-30](https://contextlab.atlassian.net/browse/QH-30), read in full
 through Atlassian MCP on 2026-10-15, including subsequent updates to QH-30,
 QH-8 and QH-10. QH-4 and QH-7 were read previously. The owner has already
 realigned QH-30/QH-8/QH-10 and their native-engine dependencies on Jira. [ADR 0003](adr/0003-native-context-engine.md)
-records the architecture direction. Everything labelled proposed below needs
-canonical-model review before migrations. This is not a Jira update.
+records the architecture direction. The owner approved the canonical principles
+and implementation/testing on a disposable PostgreSQL server only. Applying the
+migration to persistent QH remains unauthorized. This is not a Jira update.
 
 ## Baseline and preserved work
 
-New branch `feat/QH-30-native-context-engine`, worktree `/tmp/qh-30`, from main
+New branch `feat/QH-30-native-context-engine`, worktree `/home/ubuntu/qh-worktrees/qh-30` (moved from `/tmp/qh-30`), from main
 `b1769b6`. Graphiti branch remains at `77de43c`, Draft PR #1 is untouched and never
 merged; no prototype source/dependencies cherry-picked. SurrealDB worktree
 `/tmp/qh-surrealdb` and its uncommitted files remain intact. The interrupted spike
@@ -18,15 +19,15 @@ No QH database, volume or existing container is migrated, reset or replaced.
 
 ## Actual delta against QH-4
 
-| Requirement | Already implemented | Actual gap / proposed change |
+| Requirement | QH-4 baseline | QH-30 delta / remaining work |
 | --- | --- | --- |
 | Stable scope/ownership | users, context_spaces; child ownership derives from the space; OIDC mapping added by QH-5 | No new owner/auth tables or PolicyService |
 | Original evidence | sources/source_revisions: UUID, revision number, original text, origin JSONB, created_at; unique/composite FK and immutable rows | Source locator/acquisition metadata may use existing origin JSONB; no engine episode mapping needed |
-| Typed understanding | understanding_items identity; immutable understanding_item_revisions with 11 categories, including entity/relationship | Existing categories alone do not enforce typed entity endpoints in SQL |
+| Typed understanding | understanding_items identity; immutable understanding_item_revisions with 11 categories, including entity/relationship | Migration 0003 replaces the closed CHECK with a registered binding and shape guard |
 | Revision/validation | predecessor same item; proposed/confirmed/rejected plus actor/time checks; nullable current pointer accepts confirmed same-item revision only | Reuse; AI proposal cannot overwrite current; no global Context Space revision |
 | Provenance | item_revision_provenance, exact source revision and same-space FKs; immutable publication, advisory-lock assembly-before-revision | Reuse, including for entity/relation revisions; optional precise citation validation against source content remains application logic initially |
-| Semantic entities | entity-category revisions can already hold structured content | Proposed typed extension marking a revision as an entity; no separate owner, identity or validation copy |
-| Semantic relations | relationship-category content JSONB can encode a relation, but SQL cannot enforce JSON endpoint membership/type/scope | Proposed typed relation extension with stable entity IDs, exact revision anchors, same-space FKs and nullable supported event bounds |
+| Semantic entities | entity-category revisions can already hold structured content | No detail table: registered entity shape plus immutable publication suffices |
+| Semantic relations | relationship-category content JSONB can encode a relation, but SQL cannot enforce JSON endpoint membership/type/scope | Implemented universal item endpoints with stable IDs/revision anchors; temporal metadata is common to all revision bindings |
 | Projection/sync | No outbox, projector generation/version/progress tables | Fixture slice needs none; persistent processing needs an additive durable intent/progress design, reviewed before migration |
 | Rebuild without paid calls | Original content/revisions already independent of engine | Canonical entity/relation content plus retained versioned embedding artifacts/cache missing; do not call LLM during rebuild |
 
@@ -34,13 +35,13 @@ Evidence: `apps/api/adapters/postgres/migrations/versions/0001_qh_schema.py` and
 `0002_oidc_identities.py`, [schema notes](postgres-schema.md). No live inventory
 or migration rerun was needed to discover these code/schema gaps.
 
-## Final canonical recommendation — proposed, not applied
+## Canonical model — approved principles, isolated SQL implementation
 
-Review of 2026-10-15 supersedes the earlier two-level category/type recommendation
-and revision-only endpoints from commit `bb967e3`. The owner has approved the single type registry and stable identities with immutable
-revision anchors in principle. Generalized endpoints and universal temporal columns
-below are the final proposed clarification; migration execution is not authorized. No executable code,
-migration, public contract or fixture is changed by this review.
+The review superseded the earlier two-level category/type recommendation from
+`bb967e3`. Principles and isolated implementation were subsequently approved by
+the owner. Migration `0003_native_semantics` now implements **three** additive
+tables on top of unchanged QH-4/QH-5 migrations. Only dedicated disposable tests
+have applied it; no persistent QH database/public contract is migrated.
 
 ### The eleven QH-4 categories and concrete alternatives
 
@@ -84,10 +85,11 @@ and schema-management UI remain out of scope.
 ### Tables and necessary PostgreSQL constraints
 
 Reuse QH-4 item identities, immutable revisions, validation, provenance and
-confirmed-current pointers. Recommended additive design, replacing the earlier
-category-compatible registry proposal:
+confirmed-current pointers. Implemented additive design, replacing the earlier
+category-compatible/four-table proposal:
 
-1. `semantic_type_versions(type_id, version, structural_kind, property_schema)`:
+1. `semantic_type_versions(type_id, version, structural_kind, property_schema,
+   relation_rules, validator_version)`:
    composite PK; nonempty namespaced ID, positive version, supported structural
    shape and JSON object schema. Published records cannot be updated/deleted/
    truncated; shape cannot change across versions of the same type. Unknown
@@ -102,24 +104,19 @@ category-compatible registry proposal:
    publication on the item identity as well as the revision to prevent races.
    The nullable timestamptz columns hold universal fact/validity time for every
    revision, not just relations; semantics and constraints are specified below.
-3. `entity_revision_details(item_revision_id, item_id, context_space_id)`:
-   immutable entity marker with PK on revision; composite FK to the matching
-   canonical revision/item/space, backed by an added UNIQUE on that triple.
-   Its type binding must resolve to entity shape. This is only an entity-shaped
-   revision marker, not the universal endpoint target. Labels/aliases/properties remain in content;
-   there is no second entity identity hierarchy or separate entity-owner table.
-4. `relation_revision_details(item_revision_id, context_space_id,
+3. `relation_revision_details(item_revision_id, context_space_id,
    source_item_id, source_revision_id, target_item_id, target_revision_id,
    predicate)`: same-space parent revision FK, relation-shape guard and two
-   composite FKs **directly to understanding_item_revisions(id, item_id,
-   context_space_id)**, backed by UNIQUE on that triple. Stable IDs and anchors
-   are required, predicate nonempty. Any Understanding Item is a possible endpoint,
-   including another relation; no universal entity-to-entity constraint. Allowed
-   type pairs/predicates are validated by explicit versioned semantic rules on the
-   canonical write path, using the anchored revisions' registered types. Such rules
-   cannot bypass scope/integrity or silently rewrite old relations when updated.
-   No separate endpoint identity, hierarchy or domain-specific table is introduced.
-   Endpoint/predicate columns are authoritative, without conflicting JSON copies.
+   deferred composite FKs directly to
+   `understanding_item_revisions(id, item_id, context_space_id)`, backed by UNIQUE
+   on that triple. Stable IDs and anchors required; nonempty predicate. Any item
+   shape is a possible endpoint, including another relation. Endpoint/predicate
+   columns are authoritative for new writes, not conflicting copies in JSON.
+
+**No entity_revision_details table:** type/version already fixes entity shape;
+publication guards prevent an item switching shape, and universal endpoint FKs
+prove ID/revision/space agreement. A marker adds no remaining integrity guarantee.
+Entity descriptions remain ordinary immutable item revisions. Three tables suffice.
 
 No `category` compatibility FK or mandatory mapping to the old eleven survives.
 The binding table avoids adding/backfilling discriminator columns on immutable
@@ -132,22 +129,37 @@ Removing the physical legacy column can be a later, separately approved cleanup.
 Keep existing positive/unique revision numbers, same-item predecessor,
 confirmed-current guard, origin/actor/state checks, JSONB object checks and exact
 same-space source provenance. Add RESTRICT deletion for referenced registry,
-entity and relation records; freeze new detail/type rows with parent publication,
+item revision and relation records; freeze new detail/type rows with parent publication,
 using QH-4's deferred-FK + advisory-lock assembly-before-revision pattern. Index
 new FK lookup paths for endpoint/history queries; no ontology/name uniqueness or
 cross-space links, even between spaces with the same owner. Self-links need no
 blanket prohibition. No copied owner or validation state on detail tables.
 
-SQL FKs/guards prove type membership, shape, identity, scope and immutable assembly;
-**they do not validate arbitrary JSON Schema or prove textual entailment**. The
-canonical publication path must validate the exact versioned property schema,
-including schema dialect/support, before publication; reject unknown schema
-versions/unsupported keywords rather than silently ignore them. All write paths,
-including imports, must use this validation path with restricted DB write access.
-A full database JSON Schema extension is not required by this proposal. Validate
-source locators/grounded dates in the resolver; retain null for unknown event time,
-independently of technical acquisition/publication time. Model confidence, source
-reliability and human validation remain separate; inferred content is not confirmed.
+SQL FKs/guards prove type membership, shape, identity, scope and immutable assembly.
+This increment also validates payloads at deferred SQL publication against the
+pinned schema, without installing extensions or new dependencies. `qh-schema-1`
+is an explicitly **limited schema profile**, not full JSON Schema: type (object,
+string, integer, number, boolean, null, array), properties, required,
+additionalProperties (boolean), enum (exact equality), items and minLength.
+Unsupported keywords/references are rejected, never silently ignored or fetched.
+Historical version-1 schemas deliberately accept any QH-4 content object; they
+must not be presented as strict semantic validation of old interpretations.
+Future validator implementations need distinct versioned behavior and must retain
+old behavior; do not replace the meaning of qh-schema-1 in place.
+
+Relation rules are immutable `relation_rules` on the relation type/version, not a
+new ontology table or Domain Pack runtime. `allowlist` holds exact predicate,
+source type/version and target type/version entries. Validation reads **anchored**
+revision bindings, not current entity descriptions/latest schemas. A future rule
+change requires a new type version; old relations keep their original binding.
+The historical qh.relationship/v1 explicitly uses `any_registered`: any nonempty
+predicate/registered endpoint types, with universal FK/scope checks still enforced.
+Malformed/unknown rule fields are rejected. No inferred confirmation is possible.
+
+Grounding/source locators remain resolver/application work: neither schema nor
+SQL proves entailment. Unknown semantic time remains null, separately from source
+acquisition/publication. Confidence, source reliability and human validation are
+independent. No production canonical writer is activated in this increment.
 
 ### Universal endpoints: stable identity plus immutable anchor
 
@@ -205,10 +217,12 @@ exclude or label unknowns; `NULL` must not be blindly coalesced to +/-infinity.
 Historical reconstruction selects canonical revisions/anchors and then their temporal
 assertions. Technical 'known by' selection uses retained source/publication evidence
 with its stated precision; this is not a newly promised full bitemporal database.
-Projection retains these four values for every type and checks them against canonical
-metadata during hydration. Semantic time never changes proposal/validation state.
+The subsequent SQL-backed projection must retain these four values for every type
+and check them against canonical metadata during hydration; the existing graph
+fixture still uses its older internal temporal metadata. Semantic time never changes proposal/validation state.
 
-Concise SQL contract below is a proposal excerpt, **not an executable migration**;
+Concise SQL contract below excerpts implemented constraints; the full migration
+is 0003_native_semantics, and this snippet is **not independently executable**;
 existing parent publication/shape/immutability guards remain required:
 
 ```sql
@@ -239,41 +253,43 @@ and scope, so another endpoint FK/identity table is unnecessary. Versioned seman
 validation still checks allowed endpoint types; SQL universally enforces exact
 ID/revision agreement and same-space membership.
 
-### QH-4-compatible migration sequence — for approval, not execution
+### Implemented QH-4-compatible migration and remaining application gate
 
-1. Before implementation, inventory category counts/IDs and payload shapes on the
-   target database under authorized read access. This review inspected code/tests,
-   not live canonical data. Preserve migrations 0001/0002 and immutable triggers.
-2. In a new forward migration, create registry/bindings/detail tables, constraints
-   and required unique indexes. Seed eleven version-1 compatibility schemas/types
-   (`qh.objective`, etc.), retaining original meaning. Preserve concept as item
-   shape unless explicit evidence/model review requires a new revision. Legacy
-   schemas must honestly accept historical payloads; stricter future schema versions
-   apply to new revisions rather than falsely certifying old content.
-3. With writers quiesced and the change atomic, bind existing revisions by their
-   original category without updating their content/category/state/timestamps.
-   Controlled migration-only insertion of bindings onto published revisions must
-   be explicit and limited to this transaction; normal publication stays frozen.
-   Inspect any existing entity/relation payloads: do not fabricate endpoints,
-   anchors or times. If incompatible/incomplete, abort and request a remediation
-   decision; never skip them or claim a complete structural backfill. New temporal
-   columns remain null unless existing source-backed temporal assertions can be
-   mapped unambiguously; never backfill from created_at/acquired_at. If existing
-   temporal meaning is ambiguous, stop for review rather than silently discard it.
-4. Verify one binding per revision, exact scope/anchors and unchanged old row
-   hashes/counts/provenance/current pointers. Install final publication/immutability
-   guards, make legacy category nullable and drop only ck_item_category. New writes
-   use bindings and null category; no dual-write or automatic category coercion.
-   Deploy writer/projector changes together before resuming writes. No public DTO
-   is changed here; any legacy public category dependency requires separate approval.
-5. Before any application, test old-fixture upgrade, invalid type/version/properties,
-   wrong shape, mismatched ID/anchor, foreign scope, non-entity item endpoints,
-   temporal ordering/nulls/grounding, missing details, concurrency,
-   immutability, failed-transaction rollback and rebuild. These proposed-migration
-   checks are **NOT TESTED**. A downgrade after genuinely new types exist is not
-   losslessly representable by the old CHECK: refuse destructive rollback; use a
-   reviewed forward repair or restore procedure. Never disable immutable guards
-   globally or rewrite approved snapshots.
+Migration code: `apps/api/adapters/postgres/migrations/versions/0003_native_semantics.py`.
+It creates the three tables and validators, seeds eleven compatibility type versions,
+locks canonical publication, backfills bindings and recognized complete legacy
+relation details, then installs assembly/shape/schema/rule guards and removes the
+old CHECK while making category nullable. Existing revision payloads, metadata,
+provenance, current pointers and QH-5 identities are not rewritten.
+
+Recognized legacy relation content is `content.relation` with all five fields:
+source_item_id/source_revision_id/target_item_id/target_revision_id/predicate.
+Composite FKs validate the anchors. Incomplete relations, mixed structural shapes
+on one old item, or an explicit legacy `content.temporal` object abort the entire
+migration for review rather than fabricate mapping. Legacy raw JSON is preserved;
+other source-specific temporal text is not interpreted or indexed automatically.
+All backfilled temporal columns are null; never copied from acquisition/created_at.
+Before persistent application, inspect actual legacy payload shapes and approve
+any needed explicit mapping. Tests exercise success and full DDL/data rollback.
+
+New metadata/provenance/detail rows must precede parent revision publication in
+one transaction. Deferred guards require one binding, source provenance and exactly
+the detail appropriate to relation shape, and validate pinned content/rules. Item
+row locks and revision/type advisory locks serialize concurrent publication.
+**READ COMMITTED** is required for type registration and new revision publication;
+other isolation levels fail closed rather than risk stale-snapshot shape checks.
+
+The migration is forward-only: downgrade refuses before altering data because new
+types cannot be losslessly represented by the old CHECK. QH-4/5 writers supplying
+non-null category are intentionally rejected after upgrade; deploy the registered
+writer/projector path before resuming persistent ingestion. Public DTO changes,
+real canonical repository, outbox/cache and application deployment are not included.
+The historical QH-5 test is pinned to migration 0002 (not movable head), and its
+helper admits only the explicitly named disposable server for this run.
+
+**Persistent QH application is still gated.** No persistent database/volume is
+changed by tests. Runtime tests use a dedicated PostgreSQL 16.8 tmpfs container,
+with no published port, isolated network and separate credentials.
 
 ### Consequences for Neo4j, revisions and retrieval
 
@@ -296,13 +312,14 @@ registered validation/extraction instructions, not schema migrations or a second
 interpretation pass. No hybrid-search performance claim follows from this review.
 
 Outbox/progress and versioned embedding cache remain separate proposed operational
-persistence work, not silently covered by approval of these four semantic tables.
+persistence work, not silently covered by approval of these three semantic tables.
 The existing three-domain fixtures and 67-test results are retained as prior slice
-evidence; they have not exercised this proposed SQL model or stable-ID projection.
+evidence; the new tests below now exercise SQL plus generalized fixture endpoint projection,
+without claiming an integrated PostgreSQL-to-Neo4j production pipeline.
 
-## First increment and approval boundary
+## Fixture increment and current approval boundary
 
-Implement a narrow internal native Neo4j projector/retriever with a synthetic
+The completed fixture increment implements a narrow internal native Neo4j projector/retriever with a synthetic
 canonical fixture shaped as existing QH-4 item revisions and provenance. The
 fixture represents the canonical input; it is explicitly **not** new PostgreSQL
 storage. No unresolved entity extension is persisted or presented as approved.
@@ -314,10 +331,9 @@ restart of only a disposable test DB and isolation. No production startup bindin
 Do not build extraction/resolution/LLM/embedding adapters in this milestone. Full
 text/vector/traversal fusion, real canonical writer/outbox/cache, advanced entity
 matching/contradictions and readiness DTOs remain subsequent QH-30 increments.
-Public QH contracts and migrations are unchanged. Schema/model approval
-is requested for the single-registry model, four additive tables, stable endpoint
-IDs with immutable anchors, universal temporal columns and the legacy-category transition described above;
-actual migration application needs explicit authorization afterwards.
+Public QH contracts and historical migrations are unchanged. The canonical model
+is approved and migration 0003 is tested in isolation. Persistent application
+requires explicit authorization after this checkpoint.
 
 ## Jira alignment — observed updates and remaining proposals, not posted
 
@@ -342,10 +358,10 @@ Fixtures and version-keyed test validators: `apps/api/tests/test_native_context.
 and `tests/fixtures/qh30_canonical_snapshot.json`. Validators are injected internal
 composition, not a production Domain Pack registry or full JSON Schema engine.
 The adapter has no domain names or closed semantic-type list. Coarse relationship
-shape enforces available entity endpoints in the same space. Neo4j uses generic
+shape enforces available item endpoints and matching stable IDs in the same space. Neo4j uses generic
 SUBJECT/OBJECT edges and predicate/type/version data, with canonical fingerprints.
 
-PASS: targeted native tests plus architecture/public-contract regressions, 67 tests
+PASS: targeted native tests plus architecture/public-contract regressions, 68 tests
 on 2026-10-15; Ruff checks passed. Real queries execute against the dedicated
 `qh30-native-neo4j-test` container/network/volume, never the QH or spike databases.
 Coverage includes three domain cases, extra observation type, explicit/null event
@@ -363,8 +379,8 @@ Limits: canonical reads are a scoped bulk fixture callback, not a PostgreSQL
 repository; search is scoped substring retrieval, not vector/hybrid semantic
 ranking. Graph traversal is demonstrated for relation endpoints and evidence,
 not a completed product query API. No extraction/resolution, persistent outbox,
-production composition or SQL schema changes are claimed. QH-30 remains in progress.
-The next structural gate is approval of the proposed canonical delta above.
+production composition is claimed. SQL migration 0003 is separately verified below.
+QH-30 remains in progress; the next gate is persistent migration application.
 
 PASS: `prepare`, dedicated test-container restart, `check` and
 `rebuild-after-loss` executed with the universal fixture generation. The retained
@@ -375,16 +391,52 @@ production PostgreSQL writes, outbox/cache, LLM extraction and hybrid semantic
 retrieval are NOT TESTED/not implemented in this increment. This does not satisfy
 the full QH-30 end-to-end Definition of Done.
 
-## Final model-review evidence (documentation only)
+## Isolated SQL verification checkpoint
 
-Re-read QH-30 via Atlassian MCP and inspected `CATEGORIES`, FK/immutability/publication
-code in migration 0001, ADR 0002 and the existing native tests. `git diff --check`
-and targeted reference/category consistency checks passed for this revision.
-No executable code changed; the previously executed 67 tests were not repeated.
-No migration SQL or public contract was generated/applied. Model approval is the
-next gate; this proposal does not authorize migration execution.
+Tests: `apps/api/tests/test_native_semantics_sql.py`, reusing QH-4 database/revision
+helpers. Runs skip unless QH30_SQL_TEST=1, then refuse any host other than
+`qh30-sql-test`; regular CI cannot silently substitute production PostgreSQL.
+Container PostgreSQL 16.8-alpine3.21 uses tmpfs, no persistent volume/published port.
+Existing Neo4j tests use only `qh30-native-neo4j-test` and its synthetic volume.
+Credentials remain in mode-600 local env files; no QH/provider credentials loaded.
 
-Final clarification: four semantic tables remain sufficient. Endpoint FKs now target
-QH-4 item revisions, not entity details; common temporal columns move out of relation
-details into the mandatory per-revision binding. Only this plan and ADR 0003 changed;
-no executable changes, migration execution, public contract updates or repeated tests.
+| Criterion | Evidence / result |
+| --- | --- |
+| Three tables, no redundant entity marker | PASS: empty upgrade and table inventory |
+| Existing eleven categories, QH-4 through QH-5/head | PASS: immutable row snapshots unchanged; eleven pinned bindings; confirmed-current/provenance retained |
+| New type/version without migration | PASS: registry inserts, strict payload rejection and preserved original schemas |
+| Universal endpoints and stable/revision agreement | PASS: item→item, item→entity, relation→item; missing/mismatched/foreign anchors fail, including spaces with the same owner |
+| Immutable revisions, provenance and new metadata | PASS: update/delete/truncate and late assembly rejected |
+| Versioned semantic rules | PASS: v2 changes do not reinterpret v1; allowlist checks exact anchored versions |
+| Explicit/unknown temporal values | PASS: all structural kinds, ordering, nulls and temporal filtering |
+| Atomicity/concurrency | PASS: complete rollback, conflicting item/type publishers and late binding race checks |
+| Old schema incompatibilities | PASS: incomplete relation, explicit unmapped temporal object and mixed historical shapes abort atomically |
+| QH-4/QH-5 regressions | PASS: original migration tests on dedicated server; migrations 0001/0002 unchanged |
+| Persistent QH database | PASS: read-only before/after dump hash and container/mount comparison unchanged |
+| Production ingestion, outbox/cache/hybrid retrieval | NOT TESTED/not implemented in this increment |
+
+Reproduction, from apps/api in the locked backend image mounted at /workspace:
+`python -m pytest -q -p no:cacheprovider tests/test_native_semantics_sql.py
+ tests/test_migrations.py tests/test_identity_migration.py tests/test_native_context.py
+ tests/test_architecture.py tests/test_contracts.py`.
+Set POSTGRES_HOST=qh30-sql-test, POSTGRES_DB=qh30_admin, QH30_SQL_TEST=1 and the
+dedicated local env credentials; set QH30_TEST_NEO4J_URI to the dedicated graph.
+No production-compose startup/migration, paid call or Graphiti dependency is used.
+
+The fixture graph now covers decision→entity, observation→decision and
+relation→preference with explicit matching stable IDs. Existing internal fixture
+category fields are compatibility export metadata, not a second canonical type
+classification. A real registered-type SQL reader/composition and common temporal
+projection still belong to the subsequent persistent pipeline increment.
+
+Executed totals for this checkpoint: **74** dedicated SQL model tests (72-test suite
+plus the two QH-4-through-head/temporal retrieval checks), **33** historical migration
+regressions, and **68** native graph/architecture/contract tests. All passed.
+The QH-5 test originally stopped on its production-only hostname preflight; the
+helper now explicitly admits the dedicated test server and the historical test
+pins 0002 rather than head. The real test then passed; no production fallback was
+used. Earlier SQL parser/NULL-handling and statistics-observation failures were
+corrected and the affected real tests rerun successfully.
+
+No new runtime dependencies or manifest/lock changes. QH Core/public signatures,
+Compose QH, migrations 0001/0002 and the persistent QH data/volumes are unchanged.

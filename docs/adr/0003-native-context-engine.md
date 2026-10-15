@@ -4,8 +4,10 @@ Date: 2026-10-15
 Status: architecture direction authorized by the owner through
 [QH-30 / QH-7b](https://contextlab.atlassian.net/browse/QH-30).
 The owner has approved a single versioned type registry and stable identities with
-immutable revision references in principle. The final SQL details remain **proposed**;
-this ADR is not permission to apply migrations or change public contracts.
+immutable revision references, universal endpoints and temporal metadata. The owner
+authorized incremental implementation/testing on a dedicated disposable database.
+Migration 0003 is implemented with three tables; **persistent QH application and
+public contract changes remain unauthorized**.
 
 ## Context and supersession
 
@@ -36,7 +38,7 @@ compatibility map is inspectable with `git show 77de43c:docs/qh-7-graphiti.md`
 | Identity, Context Space ownership, policy/approval facts | QH users, OIDC mapping, space ownership and approved governance facts; PolicyService decides access | Context Space IDs for query filtering; no independent owner/authorization authority |
 | Sources and source revisions | Original immutable content, origin and exact revision identity | Source/revision identifiers and useful locators; no full source-copy requirement |
 | Understanding Items and revisions | Stable item ID, revision ID/number, registered type/version, structured content, origin, validation/actor/time, predecessor, confirmed-current pointer | Relevant revision text/properties, registered type/version/state and canonical references for retrieval |
-| Semantic entities and relations | Stable identities, immutable assertion/revision data, endpoint identity, grounded event times and provenance; detailed delta requires approval | Revision/identity nodes, typed edges, traversal shortcuts and selected denormalizations; never independent edits |
+| Semantic entities and relations | Stable identities, immutable assertion/revision data, endpoint identity, grounded event times and provenance; schema tested only in isolation | Revision/identity nodes, typed edges, traversal shortcuts and selected denormalizations; never independent edits |
 | Embeddings | Reusable, versioned derived artifact/cache keyed by canonical revision/content hash + provider/model/version/dimension/configuration | Vector and index configuration necessary for retrieval; can be repopulated from the cache |
 | Projection/sync metadata | Durable work intent, canonical version being projected and progress/error records (proposed additive schema) | Projector version/generation and applied canonical version, useful indexes |
 
@@ -70,7 +72,8 @@ Unknown type/version or invalid properties must fail validation, without coercin
 into a known type or silently selecting the latest schema. Retain older schemas
 for historical revisions. Stable scope/provenance/endpoint constraints remain
 relational constraints, not optional JSON conventions. The concrete additive SQL
-mapping is proposed in the QH-30 plan and still requires approval.
+mapping is implemented/tested in isolation as recorded in the QH-30 plan;
+persistent application remains a separate approval gate.
 
 Neo4j uses generic revision/entity/relation structures and type/predicate values as
 data; adding a vocabulary must not require dynamic Cypher labels, a new database
@@ -83,11 +86,12 @@ exclusive Context Space kinds, authorization systems or new services. No pack
 runtime, domain-specific Core module or domain workflow is implemented here.
 Conflicting pack schemas must not reinterpret an existing immutable type version.
 
-## Canonical model revision proposed for approval (2026-10-15)
+## Canonical model approved; isolated implementation (2026-10-15)
 
 This review supersedes the initial proposal of eleven fixed broad categories plus
 semantic subtypes, and revision-only relation endpoints. It does **not** amend the
-approved QH-4 schema or authorize a migration. See the concrete alternatives,
+historical QH-4 migration. The owner subsequently approved the model and isolated
+migration tests; persistent application remains gated. See the concrete alternatives,
 constraints and migration gates in [QH-30 plan](../qh-30-plan.md).
 
 Recommend a single immutable type/version registry and one binding per item revision;
@@ -109,14 +113,20 @@ canonical relation rewrite. A different referent requires a new relation revisio
 Deduplication must preserve old IDs/anchors and explicit scope, not silently merge
 history. Generic Neo4j projections preserve identity and assertion separately.
 
-The four proposed tables are semantic_type_versions, item_revision_types,
-entity_revision_details and relation_revision_details. Publication retains immutable
+The three implemented tables are semantic_type_versions, item_revision_types
+and relation_revision_details. No entity_revision_details marker is needed: the
+registered structural shape and publication guard already distinguish entity
+revisions, and endpoint FKs directly enforce item/revision/scope agreement. Publication retains immutable
 assembly, exact provenance, actor/state and confirmed-current checks. Property
-schemas are validated on the controlled canonical write path; SQL checks structural
-integrity, not arbitrary JSON Schema or textual entailment. Legacy compatibility
+schemas are validated by deferred SQL publication using the explicit limited
+qh-schema-1 profile (not full JSON Schema); unsupported keywords/references fail.
+SQL also checks structural integrity, never textual entailment. Immutable relation
+rules are pinned to the relation type/version, with exact predicate and anchored
+endpoint type/version allowlists, or explicit historical any_registered behavior. Legacy compatibility
 schemas/bindings must not rewrite old content, and incomplete legacy relations block
-migration until reviewed. Existing slice tests remain historical evidence, not
-verification of the proposed migration or future identity-based projection.
+migration until reviewed. Real SQL regressions now verify these constraints and the legacy backfill; the
+fixture graph is also verified with universal endpoints and stable-ID agreement.
+No production PostgreSQL-to-Neo4j repository/outbox is activated.
 
 ## One logical interpretation, separate transactions
 
@@ -275,11 +285,14 @@ The owner chooses PostgreSQL + native Neo4j now; no migration to another databas
 2. A first fixture-backed native projection/retrieval slice: real Neo4j tests for
    idempotence, reconstruction, restart, scope/provenance; no canonical migrations,
    no extraction and no live vectors. A fixture is not deployed PostgreSQL persistence.
-3. After canonical-model approval: additive migration, transactional persistence/
+3. Canonical model is approved and migration 0003 tested only in isolation. Next:
+   explicit persistent-application approval, transactional persistence/
    outbox/cache and recovery; then native extraction/resolution and advanced hybrid
    retrieval. QH-8 retains the three persistent typed Understanding Items demo.
 
-Stop before applying **any new canonical migration**, including isolated DBs until
-this model is approved, or changing public contracts. The detailed SQL model,
-embedding artifact storage, endpoint revision rules and lifecycle selection remain
-review points. This ADR does not mark QH-30 or QH-8 Done.
+Stop before applying migration 0003 to the **persistent QH database** or changing
+public contracts. Only the disposable QH-30 test database is authorized. The detailed SQL model,
+embedding artifact storage, outbox implementation and lifecycle selection remain
+subsequent review points. Registration/publication currently requires READ COMMITTED;
+other transaction isolation modes fail closed. This migration is forward-only and downgrade is refused; use a reviewed restore
+or forward repair because the old CHECK cannot represent arbitrary new types. This ADR does not mark QH-30 or QH-8 Done.

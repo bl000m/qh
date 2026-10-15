@@ -133,14 +133,18 @@ class NativeContextEngine:
                     for field in ("subject_revision_id", "object_revision_id")
                 ]
                 if any(
-                    e is None
-                    or e["category"] != "entity"
-                    or e["context_id"] != row["context_id"]
-                    for e in endpoints
+                    e is None or e["context_id"] != row["context_id"] for e in endpoints
                 ):
                     raise NativeContextError(
-                        "Missing, non-entity or foreign relation endpoint"
+                        "Missing, mismatched or foreign relation endpoint"
                     )
+                if any(
+                    endpoint["item_id"] != properties[field]
+                    for endpoint, field in zip(
+                        endpoints, ("subject_item_id", "object_item_id")
+                    )
+                ):
+                    raise NativeContextError("Mismatched stable item/revision endpoint")
                 relations.append({"revision": row["revision_id"], **properties})
         for row in rows:
             row["key"] = f"{self.slice_id}:{generation}:{row['revision_id']}"

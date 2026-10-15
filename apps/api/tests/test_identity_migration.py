@@ -28,14 +28,14 @@ def test_additive_identity_migration_preserves_canonical_data_and_mapping():
             with connect() as c:
                 return {t: c.execute('SELECT row_to_json(t) FROM "' + t + '" t ORDER BY row_to_json(t)::text').fetchall() for t in TABLES}
         before = snapshot()
-        command.upgrade(config, "head")
-        command.upgrade(config, "head")
+        command.upgrade(config, "0002_oidc_identities")
+        command.upgrade(config, "0002_oidc_identities")
         assert snapshot() == before
         with connect() as c:
             assert c.execute("SELECT version_num FROM alembic_version").fetchone() == ("0002_oidc_identities",)
         command.downgrade(config, "0001_qh_schema")
         assert snapshot() == before
-        command.upgrade(config, "head")
+        command.upgrade(config, "0002_oidc_identities")
         issuer = "http://localhost:8080/realms/qh"
         with connect() as c:
             provision_demo(c, issuer=issuer)

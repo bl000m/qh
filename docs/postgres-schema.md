@@ -108,3 +108,12 @@ single type/version registry and per-revision bindings (replacing the eleven-cat
 CHECK), plus stable entity endpoint IDs with exact revision anchors, are proposed
 in `qh-30-plan.md`. Historical category values would remain deprecated metadata.
 No domain-specific schema, registry migration or historical rewrite has been applied.
+
+QH-30 isolated implementation (2026-10-15): migration `0003_native_semantics` adds
+three tables: semantic_type_versions, item_revision_types, relation_revision_details.
+The entity marker proposal was removed as redundant. Universal endpoints reference
+QH-4 item/revision/space triples; temporal metadata belongs to every revision
+binding. Pinned schemas/rules and publication guards enforce immutable assembly.
+Migrations 0001/0002 are unchanged. Migration 0003 has been tested only on the
+qh30-sql-test disposable server; persistent QH remains on its original schema.
+See qh-30-plan.md for compatibility, validator profile, execution evidence and gates.
