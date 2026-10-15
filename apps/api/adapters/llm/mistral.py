@@ -182,6 +182,7 @@ class MistralProvider:
         return data
 
     async def generate(self, request):
+        self.last_request = request
         # UTF-8 bytes + 256/message is a conservative local bound, not a tokenizer.
         # Actual prompt usage is checked; no hidden-provider-token exactness claim.
         bound = sum(len(m.content.encode()) + 256 for m in request.messages)
