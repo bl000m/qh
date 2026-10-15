@@ -1,0 +1,21 @@
+{
+  "B_entities": [],
+  "B_relations": [],
+  "B_episodes": [
+    {
+      "content": "Bea founded Cedar Observatory.",
+      "source_description": "{\"qh_source_revision_v1\":{\"context_id\":\"qh7-b-8b-f09a3fdbad5e48ffa95edd27bb3e22ed\",\"source_id\":\"qh7-source-f09a3fdbad5e48ffa95edd27bb3e22ed\",\"revision_id\":\"revision-1\"}}",
+      "technical_reference_time": "2026-10-15T05:36:14.308370000+00:00"
+    }
+  ],
+  "cross_space_endpoints": [
+    {
+      "count": 0
+    }
+  ],
+  "A_facts": [
+    {
+      "fact": "Ada founded Cedar Observatory"
+    }
+  ]
+}

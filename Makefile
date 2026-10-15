@@ -77,3 +77,9 @@ test-oidc-application:
 	python3 scripts/verify_oidc.py --application
 seed-oidc-demo:
 	$(COMPOSE) exec -T backend python -m adapters.postgres.demo_identities
+
+# Explicit manual operation: never a prerequisite of test/verify/CI/startup.
+.PHONY: smoke-graphiti
+smoke-graphiti:
+	@test -t 0 || (echo "Interactive terminal required for per-request authorization"; exit 1)
+	$(COMPOSE) run --rm --no-deps backend python -m adapters.context.smoke
