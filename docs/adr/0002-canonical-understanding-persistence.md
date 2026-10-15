@@ -1,5 +1,11 @@
 # ADR 0002 — Canonical understanding and persistence
 
+Update 2026-10-15: [ADR 0003](0003-native-context-engine.md) / QH-30 refines the derived engine
+as native Neo4j and explicitly includes semantic entities/relations in PostgreSQL
+authority. QH-4 schema/history remains valid; its no-native-engine limit was
+ticket-scoped. Graphiti episode mapping is superseded by canonical revision IDs.
+The concrete additive schema is still proposed, not applied.
+
 Status: Accepted by the product owner for QH V0.1.
 Scope: QH-4; refines ADR 0001's domain semantics without changing dependency direction.
 Reference: [Product Contract](../product/QH_PRODUCT_CONTRACT.md).

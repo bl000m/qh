@@ -70,3 +70,36 @@ jobs:
       - name: Stop runner services without deleting volumes
         if: always()
         run: docker compose --env-file .env -f infra/docker/docker-compose.yml --profile oidc stop
+
+  native-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Generate disposable integration credentials
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import secrets
+          path = Path('/tmp/qh30-ci.env')
+          values = {name: secrets.token_hex(24) for name in ('QH30_SQL_PASSWORD', 'QH30_GRAPH_PASSWORD')}
+          fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(fd, 'w') as stream:
+              for name, value in values.items():
+                  print('::add-mask::' + value)
+                  stream.write(f'{name}={value}\n')
+          PY
+      - name: Real PostgreSQL to Neo4j integration without skipped tests
+        run: |
+          docker compose --env-file /tmp/qh30-ci.env -p qh30-ci -f infra/docker/qh30-integration.yml build integration
+          docker compose --env-file /tmp/qh30-ci.env -p qh30-ci -f infra/docker/qh30-integration.yml run --rm integration
+      - name: Remove only disposable integration project
+        if: always()
+        run: |
+          if test -f /tmp/qh30-ci.env; then
+            docker compose --env-file /tmp/qh30-ci.env -p qh30-ci -f infra/docker/qh30-integration.yml down
+            rm /tmp/qh30-ci.env
+          fi

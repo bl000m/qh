@@ -77,12 +77,15 @@ dai modelli che lo utilizzano. RAG, Graphiti, Neo4j, routing LLM e automazione
 sono strumenti possibili; non definiscono il prodotto.
 
 - QH Core è indipendente dai framework infrastrutturali.
-- Graphiti è un motore semantico sostituibile attraverso ContextEngine.
-- Neo4j è il database a grafo utilizzato inizialmente da Graphiti.
+- QH-30 autorizza un QH Context Engine nativo dietro ContextEngine; il prototipo
+  Graphiti resta conservato nella branch storica, non una dipendenza di runtime.
+- Neo4j è il Context Graph operativo derivato e ricostruibile, secondo
+  [ADR 0003](../adr/0003-native-context-engine.md).
 - PostgreSQL è canonico per fonti originali, comprensione persistita, revisioni,
-  proiezioni approvate e governance QH. Graphiti/Neo4j è un motore semantico derivato,
-  sostituibile per estrazione, relazioni semantiche e recupero; il suo stato deve
-  poter essere ricostruito senza dipendere da formati interni. La ricostruzione
+  entità e relazioni semantiche canoniche, proiezioni approvate e governance QH.
+  Neo4j contiene soltanto la proiezione operativa e gli indici utili al recupero;
+  deve poter essere ricostruito dai dati canonici e dagli embedding conservati,
+  senza ripetere interpretazione LLM o dipendere da formati Graphiti. La ricostruzione
   non modifica automaticamente decisioni umane approvate.
 - FastAPI espone le API applicative; MCP è un adapter esterno.
 - Le informazioni non autorizzate non devono essere trasmesse ai provider IA.
@@ -110,11 +113,21 @@ Snapshot e Share. Ogni fonte, elemento e proiezione appartiene a un solo Context
 Space; una proiezione produce più snapshot e uno snapshot può avere più share.
 L'owner delle entità figlie deriva dallo spazio, senza duplicazioni inutili.
 
-Gli Understanding Items hanno identità stabile, spazio, categoria, contenuto
-strutturato, origine, validazione e provenienza. Categorie iniziali: objective,
+Nel modello storico QH-4 gli Understanding Items hanno identità stabile, spazio, categoria, contenuto
+strutturato, origine, validazione e provenienza. Categorie storiche QH-4: objective,
 current_state, decision, hypothesis, open_question, constraint, preference,
 concept, entity, relationship, uncertainty. Classificazione epistemica e stato
 di validazione sono dimensioni differenti.
+
+Chiarimento approvato QH-30/QH-8/QH-10 (2026-10-15): il nucleo semantico è
+universale e queste categorie non chiudono la tassonomia. Tipi e proprietà sono
+estensibili tramite schemi versionati; uno spazio può mescolare domini.
+Provenienza, revisioni, temporalità, incertezza e validazione restano comuni,
+con governance indipendente dal dominio. I Domain Packs sono una possibilità
+futura componibile, non una funzionalità implementata. Il modello SQL QH-30 è approvato: registro unico tipo/versione, forme strutturali
+item/entity/relation, endpoint universali con identità e revisioni immutabili,
+temporalità comune. Le migrazioni 0003/0004 sono implementate e verificate soltanto
+in isolamento; applicazione persistente e cambi ai contratti pubblici restano non autorizzati.
 
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono
 event sourcing completo o revisioni globali del Context Space. Uno snapshot
@@ -132,7 +145,13 @@ prevalgono sulle decisioni approvate.
 QH-4 predispone schema e migrazioni; non implementa ingestione Graphiti, validazione,
 Projection Engine, link, chat o client React. Tabelle differibili senza perdere
 integrità sono introdotte nei relativi ticket. Non replicare il grafo Graphiti
-in PostgreSQL né implementare un Comprehension Graph proprietario.
+in PostgreSQL né implementare un Comprehension Graph proprietario durante QH-4.
+Aggiornamento autorizzato del 2026-10-15: QH-30 sostituisce la scelta Graphiti con
+un motore QH nativo (ADR 0003), senza riaprire le altre invarianti. Il modello SQL
+è approvato e verificato in isolamento; il database QH resta a 0002. Le categorie
+storiche non classificano le nuove revisioni: il registro versionato è la sola
+autorità semantica. Source Vault (QH-31) resta futuro: la rappresentazione inline
+non impone che i byte originali siano conservati in PostgreSQL.
 
 ## Ipotesi da validare ed evoluzioni del modello
 

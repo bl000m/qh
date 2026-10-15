@@ -1,0 +1,50 @@
+# Disposable integration project only; no published ports or persistent volumes.
+services:
+  qh30-sql-test:
+    image: postgres:16.8-alpine3.21
+    environment:
+      POSTGRES_USER: qh30_test
+      POSTGRES_DB: qh30_admin
+      POSTGRES_PASSWORD: ${QH30_SQL_PASSWORD:?Dedicated test password required}
+    tmpfs: [/var/lib/postgresql/data]
+    networks: [test]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U qh30_test -d qh30_admin']
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  qh30-native-neo4j-test:
+    image: neo4j:5.26.5-community
+    environment:
+      NEO4J_AUTH: neo4j/${QH30_GRAPH_PASSWORD:?Dedicated test password required}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 128m
+    tmpfs: [/data, /logs]
+    networks: [test]
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://localhost:7474/']
+      interval: 3s
+      timeout: 5s
+      retries: 60
+  integration:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile.dev
+    entrypoint: [python, /workspace/scripts/run_qh30_integration.py]
+    environment:
+      POSTGRES_HOST: qh30-sql-test
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: qh30_test
+      POSTGRES_DB: qh30_admin
+      POSTGRES_PASSWORD: ${QH30_SQL_PASSWORD:?Dedicated test password required}
+      QH30_SQL_TEST: "1"
+      QH30_TEST_NEO4J_URI: bolt://qh30-native-neo4j-test:7687
+      QH30_TEST_NEO4J_PASSWORD: ${QH30_GRAPH_PASSWORD:?Dedicated test password required}
+    depends_on:
+      qh30-sql-test: {condition: service_healthy}
+      qh30-native-neo4j-test: {condition: service_healthy}
+    networks: [test]
+networks:
+  test:
+    internal: true

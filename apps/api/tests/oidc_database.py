@@ -29,12 +29,17 @@ def application_snapshot(connection):
 @contextmanager
 def isolated_database():
     original = os.environ["POSTGRES_DB"]
-    assert os.environ["POSTGRES_HOST"] == "postgres", "Only local Compose PostgreSQL permitted"
-    assert original == "qh", "Unexpected application database: stop"
+    if os.environ.get("QH30_SQL_TEST") == "1":
+        assert os.environ["POSTGRES_HOST"] == "qh30-sql-test", "Dedicated QH-30 server required"
+        assert original == "qh30_admin", "Dedicated disposable admin DB required"
+    else:
+        assert os.environ["POSTGRES_HOST"] == "postgres", "Only local Compose PostgreSQL permitted"
+        assert original == "qh", "Unexpected application database: stop"
     name = "qh5_test_" + uuid4().hex
     with connect() as application:
         before = application_snapshot(application)
-        assert before[1] in (None, [("0001_qh_schema",)], [("0002_oidc_identities",)]), "Unexpected application revision: stop"
+        assert before[1] in (None, [("0001_qh_schema",)], [("0002_oidc_identities",)],
+                             [("0003_native_semantics",)], [("0004_projection_outbox",)]), "Unexpected application revision: stop"
         assert before[1] is not None or not before[0], "Unversioned nonempty schema: stop"
     with connect() as admin:
         admin.autocommit = True

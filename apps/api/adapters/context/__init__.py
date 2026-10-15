@@ -1,1 +1,1 @@
-"""Future ContextEngine implementations, including the Python Graphiti adapter."""
+"""Native QH ContextEngine implementations; no production startup binding."""

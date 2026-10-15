@@ -7,14 +7,14 @@ from app.api.security import SecurityBindings
 
 
 def create_app(*, services: ApplicationServices | None = None,
-               security: SecurityBindings | None = None) -> FastAPI:
+               security: SecurityBindings | None = None, lifespan=None) -> FastAPI:
     """Compose the HTTP adapter with explicitly supplied application services.
 
     Health runs without business services; unbound authentication fails closed. Future business
     routes must require explicit bindings rather than silently installing fake
     or concrete adapters. This factory does not create any outbound adapter.
     """
-    application = FastAPI(title="QH API", version="0.1.0")
+    application = FastAPI(title="QH API", version="0.1.0", lifespan=lifespan)
     application.state.services = services
     application.state.security = security
     application.include_router(health_router)

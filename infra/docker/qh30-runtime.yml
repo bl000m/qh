@@ -1,0 +1,4 @@
+# Explicit native backend image for an authorized cutover; base retains DB volumes.
+services:
+  backend:
+    image: ${QH_NATIVE_BACKEND_IMAGE:?Pin the reviewed native backend image}

@@ -30,15 +30,22 @@ def provision_demo(connection: psycopg.Connection, *, issuer: str) -> None:
                 raise ValueError("Existing external identity cannot be rebound")
 
 
+def require_identity_schema(connection) -> None:
+    revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
+    if revision not in (("0002_oidc_identities",), ("0003_native_semantics",), ("0004_projection_outbox",)):
+        raise ValueError("A supported QH identity schema must be applied before provisioning")
+
+
 def main() -> None:
     url = database_url()
     if url.host != "postgres" or url.database != "qh":
         raise SystemExit("Only the local QH development database may be provisioned.")
     with psycopg.connect(host=url.host, port=url.port, dbname=url.database,
                         user=url.username, password=url.password, connect_timeout=5) as connection:
-        revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
-        if revision != ("0002_oidc_identities",):
-            raise SystemExit("QH-5 migration must be approved and applied before provisioning.")
+        try:
+            require_identity_schema(connection)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
         provision_demo(connection, issuer=os.environ["OIDC_ISSUER"])
     print("Two local QH demo identities provisioned idempotently; no Context Spaces created.")
 

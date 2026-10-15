@@ -1,11 +1,24 @@
-# QH-4 PostgreSQL foundation
+# PostgreSQL schema: deployed foundation and isolated QH-30 extension
 
 Authority: [ADR 0002](adr/0002-canonical-understanding-persistence.md) and the
 [Product Contract](product/QH_PRODUCT_CONTRACT.md). The original uncommitted
 five-table draft is replaced by revision 0001_qh_schema; it was never applied
 to QH. Its old test results are historical, not evidence for the new schema.
 
-## Implemented tables
+## Current state and authority
+
+- **Persistent QH:** migrations 0001/0002 (QH-4/5). Last read-only inventory found
+  all canonical/identity tables empty; recheck before any authorized cutover.
+- **QH-30 branch:** approved migrations 0003/0004, repository, incremental worker
+  and retrieval verified only on dedicated disposable PostgreSQL/Neo4j servers.
+- **Not authorized:** applying 0003/0004 or activating the native runtime in QH.
+  No volume recreation is needed for the proposed empty-schema upgrade.
+
+The executable migration files define the SQL. [ADR 0003](adr/0003-native-context-engine.md)
+defines current architecture; [QH-30 plan](qh-30-plan.md) retains test evidence and
+cutover gates. The following QH-4 sections describe their historical baseline.
+
+## Historical QH-4 foundation (migration 0001)
 
 | Table | Data / cardinality |
 | --- | --- |
@@ -87,8 +100,31 @@ the exact test-created databases, without FORCE or volume/container cleanup.
 The upgrade/downgrade/reapply test verifies unrelated data survives rollback;
 normal tests never migrate or downgrade the QH application database.
 
-`make migrate` upgrades the QH application database and requires explicit user
+`make migrate` executes Alembic `upgrade head` against the configured QH database and requires explicit user
 authorization; API startup never migrates the schema. The user authorized the
 initial local upgrade after the isolated verification. See
 [implementation checks](verification-qh-4.md) and
 [local deployment](verification-qh-4-local-deployment.md) for actual results.
+
+## Superseded proposals and approved QH-30 model
+
+The earlier category-plus-subtype and entity-only endpoint proposals were superseded
+before implementation. ADR 0003 records the succession; no historical migration or
+immutable payload was rewritten. Graphiti episode mappings in the historical QH-8
+list above are superseded by canonical item/source revision IDs.
+
+QH-30 isolated implementation (2026-10-15): migration `0003_native_semantics` adds
+three tables: semantic_type_versions, item_revision_types, relation_revision_details.
+The entity marker proposal was removed as redundant. Universal endpoints reference
+QH-4 item/revision/space triples; temporal metadata belongs to every revision
+binding. Pinned schemas/rules and publication guards enforce immutable assembly.
+Migrations 0001/0002 are unchanged. Migration 0003 has been tested only on the
+qh30-sql-test disposable server; persistent QH remains on its original schema.
+See qh-30-plan.md for compatibility, validator profile, execution evidence and gates.
+
+QH-30 migration 0004 (isolated only): projection_outbox + context_projection_state
+are operational, not new canonical semantic entities. SQL publication/current-pointer
+triggers queue work atomically; per-scope counters, token leases and recovery epochs
+support incremental processing. Readiness uses these counters instead of full SQL
+snapshot scans. Rebuild still comes from canonical data. Persistent QH inventory is
+empty at revision 0002; no persistent migration/recreation has been performed.

@@ -5,14 +5,17 @@ about the domain or persistence. It is the functional reference; this document
 and ADRs describe technical boundaries. Conflicts require STOP AND ASK, not
 inference from existing code. [ADR 0002](adr/0002-canonical-understanding-persistence.md)
 records the approved V0.1 model: PostgreSQL holds canonical sources, understanding,
-revisions and governance; Graphiti/Neo4j is derived and replaceable. QH-4 supplies
+revisions and governance. [ADR 0003](adr/0003-native-context-engine.md), authorized
+by QH-30, makes semantic entities/relations canonical there and Neo4j a rebuildable
+operational Context Graph. Graphiti remains an archived prototype on its own branch. QH-4 supplies
 schema and minimal contract corrections, without graph duplication or feature
 workflows. Applying migrations to the QH application database still needs approval.
 
 The repository contains the working QH-1 scaffold, the five-service Compose
-environment from QH-3 and the QH-2 domain/application contracts. Concrete
-services and application features remain deferred except QH-5 identity and owner
-authorization. See
+environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
+implemented and tested in isolation under QH-30. Persistent QH remains at 0002;
+0003/0004 application and native runtime activation are not authorized. Production business routes remain deferred except QH-5
+identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
 ## Containers
@@ -22,7 +25,7 @@ authorization. See
 | frontend | Node 22.14.0; React, TypeScript, Vite | Serve frontend in development | app; loopback 5173 |
 | backend | Python 3.12.9; FastAPI | HTTP adapter; `/health`, OIDC `/auth/me`, Core owner policy | app + data; loopback 8000 |
 | mcp | Python 3.12.9; official MCP SDK 1.12.4 | Independent Streamable HTTP transport; `/mcp`, `/health`, `scaffold_ping` | app; loopback 3001 |
-| neo4j | Neo4j Community 5.26.5 | Future graph persistence | internal data only; no host ports |
+| neo4j | Neo4j Community 5.26.5 | Rebuildable operational Context Graph (QH-30) | internal data only; no host ports |
 | postgres | PostgreSQL 16.8 | Canonical QH persistence and external identity mapping | internal data only; no host ports |
 | keycloak (optional profile `oidc`) | Keycloak 26.4.7; OIDC | Local authentication and general roles/scopes; independent persistent IdP volume | app only; loopback 8080 |
 
@@ -94,10 +97,12 @@ not a currently implemented filtering engine.
 - API, MCP and outbound adapters depend on Core interfaces. Core must never
   import FastAPI, Graphiti, MCP, adapters or provider SDKs. Composition roots
   assemble implementations through dependency injection.
-- `apps/api/adapters/context` reserves ContextEngine implementations, including
-  the future Graphiti adapter. `apps/api/adapters/llm` reserves LLMProvider
-  implementations. Graphiti will be a backend Python library, never a sixth
-  container. Neither integration nor any production adapter is implemented yet.
+- `apps/api/adapters/context` owns the native Neo4j projector/retriever behind
+  ContextEngine (QH-30). PostgreSQL is authoritative; the graph is an operational
+  projection, never a second canonical repository. `adapters/llm` reserves replaceable
+  provider clients. Extractor/resolver/repository/projector/retriever responsibilities,
+  synchronization, rebuild and approval boundaries are in ADR 0003. No production
+  context binding, paid call, Graphiti runtime or new service is activated here.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
@@ -144,3 +149,25 @@ exercise fake adapters and explicit bindings. For an existing stack use
 `make verify-running` to avoid replacing containers. QH-2 results and commit
 history are recorded in `docs/verification-qh-2.md`; the approved baseline is
 recorded in `docs/initial-commit-review.md`.
+
+## Native Context Engine pivot (QH-30)
+
+Source revision → authorized interpretation → validated canonical proposal/ACID
+commit → idempotent operational graph projection → authorized retrieval and bulk
+canonical hydration. See [ADR 0003](adr/0003-native-context-engine.md). Versioned embedding artifact caching remains future work. Migration 0004 now implements transactional
+outbox/state with a backend-local incremental worker in isolation; full-snapshot
+reconciliation is explicit recovery, not an ordinary query prerequisite. No distributed transaction or automatic
+re-extraction during rebuild. [QH-4 delta](qh-30-plan.md) is implemented/tested only in isolated migrations 0003/0004
+and a real SQL-to-Neo4j slice; persistent application remains gated. Existing OIDC, PolicyService and public contracts remain unchanged.
+
+### Universal semantic model (QH-30)
+
+The native engine is independent of Context Space domain. Types and properties
+are extensible through immutable versioned schemas; one space can mix domains.
+Provenance, revisions, temporal meaning and validation belong to the universal
+nucleus; PolicyService remains independent of semantic type. Domain Packs are a
+future optional composition mechanism only. See ADR 0003 and the approved SQL model/evidence in [QH-30 plan](qh-30-plan.md).
+Only disposable test migration execution is authorized; persistent migration and
+public DTO changes remain gated. QH-31 Source Vault, Domain Packs, LLM extraction
+and advanced vector retrieval are not implemented. Ordinary native queries use
+per-scope sync state and candidate hydration; full reconciliation is explicit recovery.
