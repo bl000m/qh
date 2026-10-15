@@ -134,3 +134,61 @@ def test_runtime_disabled_keeps_existing_factory_behavior(monkeypatch):
     with TestClient(create_runtime_app()) as client:
         assert client.app.state.native_context is None
         assert client.get("/health").status_code == 200
+
+
+def test_0005_separate_backend_process_recovers_pending_intent(pipeline, monkeypatch):
+    """Actual Uvicorn process exit/restart; no in-memory runtime object is reused."""
+    from alembic.config import Config
+    from adapters.postgres.semantic_profiles import register_generic_profiles
+    from adapters.context.incremental import IncrementalContextEngine, IncrementalProjector
+    from adapters.context.native import AuthorizedNativeContextService
+
+    repo, _, graph, service, rows = pipeline
+    command.upgrade(Config("adapters/postgres/alembic.ini"), "0005_retire_legacy_category")
+    register_generic_profiles(repo)
+    namespace = "qh005-process-" + uuid4().hex
+    configure(monkeypatch, namespace)
+    processes = []
+
+    def start():
+        process = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "app.bootstrap:create_runtime_app", "--factory",
+             "--host", "127.0.0.1", "--port", "0"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        processes.append(process)
+        return process
+
+    def ready(process):
+        assert process.poll() is None, "Temporary backend process failed"
+        return repo.sync_status((A,))[0]["sync_state"] == "ready"
+
+    try:
+        first = start()
+        wait_until(lambda: ready(first))
+        first.terminate()
+        # Uvicorn may re-raise SIGTERM after graceful lifespan shutdown.
+        assert first.wait(timeout=30) in (0, -15)
+        proposal = deepcopy(rows[0])
+        proposal.update(id=str(uuid4()), item_id=str(uuid4()), revision_no=1,
+                        type_id="qh.generic.item", based_on_revision_id=None)
+        proposal["content"] = {"text": "Cedar pending process restart",
+                               "descriptors": [{"value": "reversible_pause", "certainty": "asserted"}]}
+        repo.save(revisions=[proposal])
+        assert repo.sync_status((A,))[0]["sync_state"] == "pending"
+        second = start()
+        assert first.pid != second.pid
+        wait_until(lambda: ready(second))
+        reader = AuthorizedNativeContextService(policy=service.policy,
+            engine=IncrementalContextEngine(repo, IncrementalProjector(graph.driver, namespace=namespace)))
+        result = asyncio.run(reader.select_descriptors(subject_id=SubjectId(repo.subject_id),
+            context_ids=(A,), values=["reversible_pause"]))
+        assert [str(h.item_revision.revision_id) for h in result.hits] == [proposal["id"]]
+        assert str(result.hits[0].provenance[0].revision_id) == proposal["provenance"][0]
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=30)
+        with graph.driver.session() as session:
+            session.run("MATCH (n) WHERE n.key STARTS WITH $prefix OR n.id STARTS WITH $prefix OR n.slice_id STARTS WITH $prefix DETACH DELETE n", prefix=namespace + ":").consume()
