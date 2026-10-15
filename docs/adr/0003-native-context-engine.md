@@ -36,7 +36,7 @@ compatibility map is inspectable with `git show 77de43c:docs/qh-7-graphiti.md`
 | Data | PostgreSQL canonical | Neo4j operational projection |
 | --- | --- | --- |
 | Identity, Context Space ownership, policy/approval facts | QH users, OIDC mapping, space ownership and approved governance facts; PolicyService decides access | Context Space IDs for query filtering; no independent owner/authorization authority |
-| Sources and source revisions | Original immutable content, origin and exact revision identity | Source/revision identifiers and useful locators; no full source-copy requirement |
+| Sources and source revisions | Immutable inline representation, origin/opaque original references and exact revision identity; future original-byte storage belongs to QH-31 | Source/revision identifiers and useful locators; no full source-copy requirement |
 | Understanding Items and revisions | Stable item ID, revision ID/number, registered type/version, structured content, origin, validation/actor/time, predecessor, confirmed-current pointer | Relevant revision text/properties, registered type/version/state and canonical references for retrieval |
 | Semantic entities and relations | Stable identities, immutable assertion/revision data, endpoint identity, grounded event times and provenance; schema tested only in isolation | Revision/identity nodes, typed edges, traversal shortcuts and selected denormalizations; never independent edits |
 | Embeddings | Reusable, versioned derived artifact/cache keyed by canonical revision/content hash + provider/model/version/dimension/configuration | Vector and index configuration necessary for retrieval; can be repopulated from the cache |
@@ -147,7 +147,9 @@ No production PostgreSQL-to-Neo4j repository/outbox is activated.
    and constructs canonical proposals. A match/dedup/contradiction decision must
    be explainable; it must not silently merge identities or confirm an AI claim.
 5. Canonical Repository commits the affected records/revisions/provenance and a
-   durable projection intent atomically in PostgreSQL. Preserve QH-4 provenance
+   durable projection intent atomically in PostgreSQL when incremental dispatch is
+   introduced. The current isolated full-reconciliation slice discovers all committed
+   revisions without an outbox; it does not claim a persistent worker. Preserve QH-4 provenance
    assembly-before-publication and immutable revisions. An optimistic expected
    revision/content fingerprint prevents publishing against silently changed input.
    Interpretation failures never become a fully successful ingestion.
@@ -284,8 +286,11 @@ The owner chooses PostgreSQL + native Neo4j now; no migration to another databas
 1. This ADR plus [QH-4 delta and Jira realignment proposal](../qh-30-plan.md).
 2. A first fixture-backed native projection/retrieval slice: real Neo4j tests for
    idempotence, reconstruction, restart, scope/provenance; no canonical migrations,
-   no extraction and no live vectors. A fixture is not deployed PostgreSQL persistence.
-3. Canonical model is approved and migration 0003 tested only in isolation. Next:
+   no extraction and no live vectors. A fixture is not deployed PostgreSQL persistence. The subsequent isolated increment
+   now uses the real CanonicalRepository for writes, snapshot reads and hydration.
+3. Canonical model and isolated SQL-to-Neo4j integration are verified. Explicit full
+   reconciliation, scope freshness checks and replay/rebuild use no extra table.
+   This O(n) milestone is not an incremental worker; outbox proposal needs approval. Next:
    explicit persistent-application approval, transactional persistence/
    outbox/cache and recovery; then native extraction/resolution and advanced hybrid
    retrieval. QH-8 retains the three persistent typed Understanding Items demo.
@@ -296,3 +301,9 @@ embedding artifact storage, outbox implementation and lifecycle selection remain
 subsequent review points. Registration/publication currently requires READ COMMITTED;
 other transaction isolation modes fail closed. This migration is forward-only and downgrade is refused; use a reviewed restore
 or forward repair because the old CHECK cannot represent arbitrary new types. This ADR does not mark QH-30 or QH-8 Done.
+
+QH-31 compatibility: no assumption that inline text is original file bytes. Origin
+metadata may refer opaquely to an external original; context retrieval never
+performs a download or grants original-byte access. No Vault backend/contract is
+implemented here. See the QH-30 plan for the real pipeline evidence, writer
+inventory and gated backup/restore/cutover procedure.

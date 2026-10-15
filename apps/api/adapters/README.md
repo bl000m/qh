@@ -4,10 +4,15 @@
 `app.core.ports.ContextEngine`, including the native Neo4j projection/retrieval increment under QH-30.
 `llm/` reserves implementations of `app.core.ports.LLMProvider`.
 `postgres/` owns environment-based connection settings and Alembic migrations.
-It is infrastructure outside Core, with no ORM domain models or repositories.
+It is infrastructure outside Core, with no ORM domain models. Its internal
+`canonical.py` repository owns explicit ACID registered-revision writes and scoped
+bulk snapshot reads. It is not a public ingestion contract.
 Run migrations explicitly; API startup never changes the database schema.
 
-`context/native.py` supplies the fixture-backed QH-30 Neo4j slice; `llm/` remains
+`context/native.py` supplies QH-30 Neo4j projection/retrieval with retained fixtures
+or real PostgreSQL snapshots. `reconcile` performs explicit full reconciliation;
+SQL-backed composition enables readiness/completeness checks before retrieval.
+No persistent worker/outbox, production route or startup binding is activated; `llm/` remains
 reserved. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.
