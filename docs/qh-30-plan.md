@@ -26,7 +26,7 @@ No QH database, volume or existing container is migrated, reset or replaced.
 | Revision/validation | predecessor same item; proposed/confirmed/rejected plus actor/time checks; nullable current pointer accepts confirmed same-item revision only | Reuse; AI proposal cannot overwrite current; no global Context Space revision |
 | Provenance | item_revision_provenance, exact source revision and same-space FKs; immutable publication, advisory-lock assembly-before-revision | Reuse, including for entity/relation revisions; optional precise citation validation against source content remains application logic initially |
 | Semantic entities | entity-category revisions can already hold structured content | Proposed typed extension marking a revision as an entity; no separate owner, identity or validation copy |
-| Semantic relations | relationship-category content JSONB can encode a relation, but SQL cannot enforce JSON endpoint membership/type/scope | Proposed typed relation extension with entity-revision FKs, predicate and nullable supported event bounds |
+| Semantic relations | relationship-category content JSONB can encode a relation, but SQL cannot enforce JSON endpoint membership/type/scope | Proposed typed relation extension with stable entity IDs, exact revision anchors, same-space FKs and nullable supported event bounds |
 | Projection/sync | No outbox, projector generation/version/progress tables | Fixture slice needs none; persistent processing needs an additive durable intent/progress design, reviewed before migration |
 | Rebuild without paid calls | Original content/revisions already independent of engine | Canonical entity/relation content plus retained versioned embedding artifacts/cache missing; do not call LLM during rebuild |
 
@@ -34,99 +34,191 @@ Evidence: `apps/api/adapters/postgres/migrations/versions/0001_qh_schema.py` and
 `0002_oidc_identities.py`, [schema notes](postgres-schema.md). No live inventory
 or migration rerun was needed to discover these code/schema gaps.
 
-## Minimum canonical schema proposal — not implemented
+## Final canonical recommendation — proposed, not applied
 
-Recommendation: extend existing entity/relationship **item revisions**, rather
-than add another parallel entity/relationship identity + revision system. Reuse
-all QH-4 origin, validation, provenance and current-pointer semantics.
+Review of 2026-10-15 supersedes the earlier two-level category/type recommendation
+and revision-only endpoints from commit `bb967e3`. The architecture direction is
+confirmed; the model below still awaits owner approval. No executable code,
+migration, public contract or fixture is changed by this review.
 
-1. `entity_revision_details(item_revision_id, context_space_id)`: typed marker with
-   PK on revision ID, same-space FK to understanding_item_revisions, and unique
-   pair for endpoint references. Category must be entity. Labels/aliases/structured
-   attributes stay in the existing versioned content JSONB, not a second copy.
-2. `relation_revision_details(item_revision_id, context_space_id,
-   source_entity_revision_id, target_entity_revision_id, predicate,
-   valid_from, valid_to)`: PK/FK to a relationship-category revision, endpoints
-   reference entity_revision_details with the same space; nonempty predicate,
-   nullable timestamptz event bounds and sensible ordering when both are present.
-   These typed columns are authoritative for endpoint/predicate/time; do not also
-   keep conflicting structured copies in content JSONB. Content can hold prose,
-   uncertainty or qualifiers. No ontology or fuzzy-name uniqueness in SQL.
+### The eleven QH-4 categories and concrete alternatives
 
-Recommended endpoint choice **for review**: exact immutable entity revision IDs.
-Stable entity item IDs can be obtained through those revisions, so historical
-endpoint meaning does not drift when names/resolution change. Alternative: stable
-entity item IDs only (less coupling, but historical label/resolution must be
-resolved separately). Do not silently choose the latter or rewrite old relations.
-Both proposed and confirmed entity revisions may be referenced with explicit state;
-referencing a proposal does not confirm it. No cross-space relation, even if both
-spaces have the same owner. Self-relations are not prohibited without a domain rule.
+Exact source: `0001_qh_schema.py`, `CATEGORIES` and `ck_item_category`.
 
-New detail rows must be frozen alongside their parent revision, not appended after
-publication. Follow QH-4's deferred FK + transaction-scoped advisory-lock assembly
-pattern: provenance and detail rows first, immutable revision publication last,
-with endpoint existence/type/scope checked by constraints/triggers. Extend the
-publication guard only after review; a normal immediate FK or an after-the-fact
-application-only check would not preserve the existing publication invariant.
-Deletion/update/truncate must not silently mutate old assertions.
+| Existing category | What it describes |
+| --- | --- |
+| objective | Semantic/functional classification: desired outcome |
+| current_state | Semantic/functional classification: described state |
+| decision | Semantic/functional classification: decision |
+| hypothesis | Epistemic classification: tentative interpretation |
+| open_question | Semantic/functional classification: unresolved question |
+| constraint | Semantic/functional classification: limiting condition |
+| preference | Semantic/functional classification: stated preference |
+| concept | Semantic classification: conceptual content; not a distinct SQL structure today |
+| entity | Structural shape: identifiable referent with descriptions/revisions |
+| relationship | Structural shape: assertion with typed, scoped endpoints |
+| uncertainty | Epistemic/semantic content; distinct from confidence or validation metadata |
 
-These two detail tables avoid two complete entity stores. The universal type
-registry proposal below is an additional, separately reviewed delta. Alternative
-with zero tables: store endpoints/predicate in JSONB and rely on application
-checks. It is suitable for fixtures but **not recommended** as the canonical
-production model because endpoint/type/scope integrity is not guaranteed by QH-4
-SQL today. A separate entity identity/revision hierarchy duplicates existing QH
-concepts and is not justified for this increment.
+All eleven are just category strings in today's SQL; entity/relationship are not
+yet structurally enforced. A concept can later have an entity-shaped type if it
+needs referential identity, but the migration must not guess this from its name.
+The grouping above is analysis, not a reclassification of historical records.
 
-Temporal evidence must be attributable to a cited source revision/locator; unknown
-bounds remain null. Existing created_at is technical publication metadata, not the
-fact date. Preserve original acquisition time in source origin when distinct.
-Precise locator/spans need application validation; no schema column is silently
-claimed to prove textual entailment.
+| Alternative | Integrity and evolution | Cost / recommendation |
+| --- | --- | --- |
+| Keep eleven-category CHECK + type/version registry | FK and exact schema possible, but every new type must fit an old category | Adds two classifications and compatibility mapping; forces observations/events/intentions into arbitrary buckets. Reject as the long-term model |
+| Single versioned type registry, without eleven-category CHECK | Controlled type/version FK; structural shape drives entity/endpoint constraints; new semantic types are registry data | Recommended: one semantic authority, no per-domain schema migration |
+| Free type strings + JSONB | New types easy, but unknown versions and invalid references can escape validation | Reject: insufficient integrity |
 
-Outbox/progress and embedding cache are additional **operational persistence**
-needs, not included in the two semantic tables: propose a transactional job/intent
-row referencing canonical revisions with state/attempt/cause/version, and retained
-embedding artifacts keyed by revision/content hash and model/config/dimension.
-They must be reviewed before persistent projector deployment. No generic event
-sourcing, broker, worker container, graph ID mapping or public repository port.
+**Recommendation:** one namespaced `type_id` + positive immutable `version`, with
+an immutable `property_schema` and a small structural discriminator
+`item | entity | relation`. This discriminator selects storage constraints only;
+it is not a domain taxonomy or a second semantic category. Decision, observation,
+event, intention and future types can all use item shape without being reduced
+to current_state. Adding a new storage shape may require a migration; adding a
+semantic category/domain does not. Type registration is controlled publication,
+not permission for an LLM to invent types or grant access. Domain Pack runtime
+and schema-management UI remain out of scope.
 
-## Universal types: smallest proposed addition to QH-4
+### Tables and necessary PostgreSQL constraints
 
-Actual constraint: QH-4 uses a CHECK over eleven category strings (not a PostgreSQL
-ENUM), and checks only that content JSONB is an object. It has no semantic schema
-registry or version validator. Consequently a new category `observation` cannot
-currently be inserted as-is. Do not claim arbitrary new categories already work.
+Reuse QH-4 item identities, immutable revisions, validation, provenance and
+confirmed-current pointers. Recommended additive design, replacing the earlier
+category-compatible registry proposal:
 
-Recommend preserving the existing broad categories initially, and adding an
-orthogonal namespaced semantic type + immutable positive schema version, with
-properties in the existing content JSONB. An observation can refine `current_state`;
-a specialized preference can refine `preference`. These broad categories are
-compatibility groupings, not the complete semantic taxonomy. The mapping is
-explicit per schema version, never inferred from a domain name.
+1. `semantic_type_versions(type_id, version, structural_kind, property_schema)`:
+   composite PK; nonempty namespaced ID, positive version, supported structural
+   shape and JSON object schema. Published records cannot be updated/deleted/
+   truncated; shape cannot change across versions of the same type. Unknown
+   type/version fails FK validation. Schemas are retained permanently while used.
+2. `item_revision_types(item_revision_id, context_space_id, type_id, type_version)`:
+   PK on revision; same-space FK to the existing revision, plus FK to the registry.
+   This is the **sole active semantic discriminator**, for old and new revisions.
+   A deferred publication guard requires exactly one binding for every revision
+   at commit and structural details appropriate to its type. It also checks that
+   an item identity does not switch between item/entity/relation shapes. Serialize
+   publication on the item identity as well as the revision to prevent races.
+3. `entity_revision_details(item_revision_id, item_id, context_space_id)`:
+   immutable entity marker with PK on revision; composite FK to the matching
+   canonical revision/item/space, backed by an added UNIQUE on that triple.
+   Its type binding must resolve to entity shape. UNIQUE on this same triple
+   supports exact endpoint-anchor FKs. Labels/aliases/properties remain in content;
+   there is no second entity identity hierarchy or separate entity-owner table.
+4. `relation_revision_details(item_revision_id, context_space_id,
+   source_entity_item_id, source_entity_revision_id,
+   target_entity_item_id, target_entity_revision_id,
+   predicate, valid_from, valid_to)`: same-space parent revision FK, relation-shape
+   guard and two composite FKs to entity_revision_details (anchor revision, stable
+   item ID, space). Predicate nonempty; event bounds nullable with ordered bounds
+   when both known. Anchors and identities are required. Columns are authoritative;
+   do not duplicate conflicting endpoints/predicate/time in content JSONB.
 
-Proposed additive registry: `semantic_type_versions(type_id, version, category,
-property_schema)` with composite primary key and immutable schema records. Proposed
-revision references: `semantic_type_id`, `semantic_schema_version`, tied by a
-composite FK (including the compatible category). The precise legacy/backfill
-publication strategy must be approved before migration; do not rewrite immutable
-historical content. Validate properties against the exact retained schema before
-publication; SQL continues enforcing scope, provenance, state and typed endpoints.
-Unknown versions and invalid properties fail closed. No automatic latest version,
-no domain-specific tables, and no new public DTO in this increment.
+No `category` compatibility FK or mandatory mapping to the old eleven survives.
+The binding table avoids adding/backfilling discriminator columns on immutable
+revision rows. Its one-to-one join is deliberate migration compatibility overhead,
+not a second classification. New revisions must use a null legacy category (enforced by the publication guard) after the
+column becomes nullable; old category values remain frozen historical metadata.
+The old CHECK is removed only together with replacement bindings/publication guards.
+Removing the physical legacy column can be a later, separately approved cleanup.
 
-Alternatives: extending the category CHECK per domain creates migration coupling;
-unrestricted strings/JSON alone lose validation and referential integrity. A full
-ontology/Domain Pack service is unnecessary. Registry schemas are data, not policy.
-The fixture slice demonstrates injected, version-keyed validators only: its content
-metadata is an internal export format, not the approved production SQL mapping.
+Keep existing positive/unique revision numbers, same-item predecessor,
+confirmed-current guard, origin/actor/state checks, JSONB object checks and exact
+same-space source provenance. Add RESTRICT deletion for referenced registry,
+entity and relation records; freeze new detail/type rows with parent publication,
+using QH-4's deferred-FK + advisory-lock assembly-before-revision pattern. Index
+new FK lookup paths for endpoint/history queries; no ontology/name uniqueness or
+cross-space links, even between spaces with the same owner. Self-links need no
+blanket prohibition. No copied owner or validation state on detail tables.
 
-Three named synthetic cases share the existing fixture file: professional,
-health and family. They exercise a new observation type, declared preference,
-entity/relation endpoints, nullable vs explicitly supported event times, acquisition
-metadata, exact source revisions and proposed validation. Multiple domains coexist
-in space A, while space B has a different owner. No diagnosis, inferred personality
-or automatic confirmation is generated. No Domain Pack runtime is developed.
+SQL FKs/guards prove type membership, shape, identity, scope and immutable assembly;
+**they do not validate arbitrary JSON Schema or prove textual entailment**. The
+canonical publication path must validate the exact versioned property schema,
+including schema dialect/support, before publication; reject unknown schema
+versions/unsupported keywords rather than silently ignore them. All write paths,
+including imports, must use this validation path with restricted DB write access.
+A full database JSON Schema extension is not required by this proposal. Validate
+source locators/grounded dates in the resolver; retain null for unknown event time,
+independently of technical acquisition/publication time. Model confidence, source
+reliability and human validation remain separate; inferred content is not confirmed.
+
+### Entity endpoints: stable identity plus immutable anchor
+
+| Endpoint option | History | Entity evolution / reconciliation |
+| --- | --- | --- |
+| Exact revision only (previous proposal) | Preserves exact interpretation | Stable ID is derivable, but operational identity is implicit; current-entity graph joins become less direct |
+| Stable item ID only | Identifies the referent | Loses the exact description used when the relation was asserted unless another historical selection rule is added |
+| Stable item ID + exact entity revision anchor | Explicit identity and exact original interpretation, FK checks agreement | Recommended: descriptions evolve independently; anchors remain historical evidence, not a demand to republish relations |
+
+The extra stable ID is controlled redundancy for direct identity joins, checked by
+the composite FK, not a second independently editable fact. Existing item IDs are
+the entity identities. For example, relation R1 points to entity E and anchors E1;
+adding description E2 leaves R1 unchanged. Historical views use E1; an explicitly
+selected current view may show E2 while retaining R1/E1 and their validation states.
+Never present an anchor as an automatically current/confirmed description.
+
+Changing who a relation refers to requires a new relation revision, not changing
+its anchor in place. Future dedup/reconciliation can record a scoped, explained
+resolution/equivalence decision while retaining old entity IDs and anchors; do not
+rewrite every old relation or automatically merge proposals. Storage/selection of
+such decisions is future reviewed work, not an implemented alias/merge framework.
+This model enables reconciliation; it does not claim to solve it already.
+
+### QH-4-compatible migration sequence — for approval, not execution
+
+1. Before implementation, inventory category counts/IDs and payload shapes on the
+   target database under authorized read access. This review inspected code/tests,
+   not live canonical data. Preserve migrations 0001/0002 and immutable triggers.
+2. In a new forward migration, create registry/bindings/detail tables, constraints
+   and required unique indexes. Seed eleven version-1 compatibility schemas/types
+   (`qh.objective`, etc.), retaining original meaning. Preserve concept as item
+   shape unless explicit evidence/model review requires a new revision. Legacy
+   schemas must honestly accept historical payloads; stricter future schema versions
+   apply to new revisions rather than falsely certifying old content.
+3. With writers quiesced and the change atomic, bind existing revisions by their
+   original category without updating their content/category/state/timestamps.
+   Controlled migration-only insertion of bindings onto published revisions must
+   be explicit and limited to this transaction; normal publication stays frozen.
+   Inspect any existing entity/relation payloads: do not fabricate endpoints,
+   anchors or times. If incompatible/incomplete, abort and request a remediation
+   decision; never skip them or claim a complete structural backfill.
+4. Verify one binding per revision, exact scope/anchors and unchanged old row
+   hashes/counts/provenance/current pointers. Install final publication/immutability
+   guards, make legacy category nullable and drop only ck_item_category. New writes
+   use bindings and null category; no dual-write or automatic category coercion.
+   Deploy writer/projector changes together before resuming writes. No public DTO
+   is changed here; any legacy public category dependency requires separate approval.
+5. Before any application, test old-fixture upgrade, invalid type/version/properties,
+   wrong shape, mismatched ID/anchor, foreign scope, missing details, concurrency,
+   immutability, failed-transaction rollback and rebuild. These proposed-migration
+   checks are **NOT TESTED**. A downgrade after genuinely new types exist is not
+   losslessly representable by the old CHECK: refuse destructive rollback; use a
+   reviewed forward repair or restore procedure. Never disable immutable guards
+   globally or rewrite approved snapshots.
+
+### Consequences for Neo4j, revisions and retrieval
+
+Project stable entity IDs as referents, immutable entity/relation revision IDs as
+assertions, and both endpoint anchors explicitly. Generic labels/edges and
+properties carry type_id/version/predicate; no per-domain graph/database. A change
+in description reprojects that entity's selected view and affected derived search
+documents, without creating new canonical relation revisions. If a denormalized
+relation embedding includes an entity label, invalidate only the dependent derived
+artifact; historical canonical content and its embeddings are not silently rewritten.
+
+Rebuild takes an explicit canonical revision set plus retained schemas/embedding
+artifacts and selection configuration, preserves original anchors/provenance, and
+makes no LLM call. Stable-ID equivalence never authorizes cross-space traversal.
+Retrieval still authorizes first, then bulk-hydrates exact canonical references;
+type filtering/ranking uses registry metadata, not the deprecated eleven-category
+CHECK. Query state/current selection remains explicit and unconfirmed proposals
+never acquire confirmation through traversal. New semantic types may need new
+registered validation/extraction instructions, not schema migrations or a second
+interpretation pass. No hybrid-search performance claim follows from this review.
+
+Outbox/progress and versioned embedding cache remain separate proposed operational
+persistence work, not silently covered by approval of these four semantic tables.
+The existing three-domain fixtures and 67-test results are retained as prior slice
+evidence; they have not exercised this proposed SQL model or stable-ID projection.
 
 ## First increment and approval boundary
 
@@ -143,8 +235,8 @@ Do not build extraction/resolution/LLM/embedding adapters in this milestone. Ful
 text/vector/traversal fusion, real canonical writer/outbox/cache, advanced entity
 matching/contradictions and readiness DTOs remain subsequent QH-30 increments.
 Public QH contracts and migrations are unchanged. Schema/model approval
-is requested for the two typed extension tables, endpoint choice and the versioned
-semantic-type mapping below;
+is requested for the single-registry model, four additive tables, stable endpoint
+IDs with immutable anchors, and the legacy-category transition described above;
 actual migration application needs explicit authorization afterwards.
 
 ## Jira alignment — observed updates and remaining proposals, not posted
@@ -202,3 +294,12 @@ Acceptance boundary: architecture/update and fixture projection/retrieval are PA
 production PostgreSQL writes, outbox/cache, LLM extraction and hybrid semantic
 retrieval are NOT TESTED/not implemented in this increment. This does not satisfy
 the full QH-30 end-to-end Definition of Done.
+
+## Final model-review evidence (documentation only)
+
+Re-read QH-30 via Atlassian MCP and inspected `CATEGORIES`, FK/immutability/publication
+code in migration 0001, ADR 0002 and the existing native tests. `git diff --check`
+and targeted reference/category consistency checks passed for this revision.
+No executable code changed; the previously executed 67 tests were not repeated.
+No migration SQL or public contract was generated/applied. Model approval is the
+next gate; this proposal does not authorize migration execution.

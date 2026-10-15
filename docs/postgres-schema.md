@@ -104,5 +104,7 @@ mapping in the historical deferred-features list is superseded by canonical IDs.
 
 QH-30 universal-type clarification: the eleven categories are enforced by a CHECK;
 JSONB object validation is not versioned semantic validation. The proposed additive
-type/version registry and revision references are documented in `qh-30-plan.md`.
+single type/version registry and per-revision bindings (replacing the eleven-category
+CHECK), plus stable entity endpoint IDs with exact revision anchors, are proposed
+in `qh-30-plan.md`. Historical category values would remain deprecated metadata.
 No domain-specific schema, registry migration or historical rewrite has been applied.

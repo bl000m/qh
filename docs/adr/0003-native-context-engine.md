@@ -82,6 +82,36 @@ exclusive Context Space kinds, authorization systems or new services. No pack
 runtime, domain-specific Core module or domain workflow is implemented here.
 Conflicting pack schemas must not reinterpret an existing immutable type version.
 
+## Canonical model revision proposed for approval (2026-10-15)
+
+This review supersedes the initial proposal of eleven fixed broad categories plus
+semantic subtypes, and revision-only relation endpoints. It does **not** amend the
+approved QH-4 schema or authorize a migration. See the concrete alternatives,
+constraints and migration gates in [QH-30 plan](../qh-30-plan.md).
+
+Recommend a single immutable type/version registry and one binding per item revision;
+replace the eleven-category CHECK rather than force new types into old buckets.
+A small item/entity/relation structural shape selects integrity constraints and is
+independent of domain/semantic classification. Historical category values remain
+unchanged as deprecated metadata; new revisions use only the registered type binding.
+No free-form unknown types, automatic latest schema or duplicated classification.
+
+Recommend relation endpoints as stable entity item IDs **and** required immutable
+entity revision anchors, with composite same-space FKs proving their agreement.
+Anchors preserve the interpretation at assertion time; later descriptions need no
+canonical relation rewrite. A different referent requires a new relation revision.
+Deduplication must preserve old IDs/anchors and explicit scope, not silently merge
+history. Generic Neo4j projections preserve identity and assertion separately.
+
+The four proposed tables are semantic_type_versions, item_revision_types,
+entity_revision_details and relation_revision_details. Publication retains immutable
+assembly, exact provenance, actor/state and confirmed-current checks. Property
+schemas are validated on the controlled canonical write path; SQL checks structural
+integrity, not arbitrary JSON Schema or textual entailment. Legacy compatibility
+schemas/bindings must not rewrite old content, and incomplete legacy relations block
+migration until reviewed. Existing slice tests remain historical evidence, not
+verification of the proposed migration or future identity-based projection.
+
 ## One logical interpretation, separate transactions
 
 1. Authenticate and apply the existing general permission gate plus PolicyService
@@ -118,8 +148,10 @@ Conflicting pack schemas must not reinterpret an existing immutable type version
 The same QH item can have proposed/rejected/confirmed immutable revisions. A new
 proposal does not move the confirmed-current pointer. Category and validation are
 independent; confirming a hypothesis does not certify it as a true fact. Historical
-relations and evidence refer to exact revisions. Endpoint re-resolution and changed
-validation create new revisions, not in-place mutation of old assertions.
+evidence refers to exact revisions. The revised proposal above records stable
+entity identities plus exact historical endpoint anchors; ordinary entity description
+updates do not require new relation revisions. A change of referent or validation
+creates a new revision, not an in-place mutation of an old assertion.
 
 Evidence resolves to source revision IDs in the same Context Space. Locators/spans
 are checked against original text when available; provenance and interpretation
