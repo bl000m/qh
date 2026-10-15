@@ -19,7 +19,7 @@ import httpx
 import jwt
 import pytest
 
-from adapters.postgres.demo_identities import DEMO_IDENTITIES, provision_demo
+from adapters.postgres.demo_identities import DEMO_IDENTITIES, provision_demo, require_identity_schema
 from app.api.security import require_context_owner
 from app.bootstrap import create_runtime_app
 from tests.oidc_database import connect, isolated_database
@@ -159,7 +159,7 @@ def test_live_application_identity():
     # Read-only: no migrations, provisioning or Context Spaces in application DB.
     assert os.environ["POSTGRES_HOST"] == "postgres" and os.environ["POSTGRES_DB"] == "qh"
     with connect() as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0002_oidc_identities",)
+        require_identity_schema(connection)
         for _, identity, subject in DEMO_IDENTITIES:
             assert connection.execute(
                 "SELECT u.id FROM user_identities i JOIN users u ON u.id=i.user_id "

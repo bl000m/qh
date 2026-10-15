@@ -6,9 +6,9 @@
 | --- | --- |
 | Approved | PostgreSQL canonical; native rebuildable Neo4j; versioned universal semantic model |
 | Completed in isolation | 0003 three canonical tables; real repository; multidomain SQL→Neo4j integration; 0004 two operational tables and incremental worker |
-| Verified | 101 distinct tests in the outbox checkpoint, Ruff; earlier milestone evidence retained below |
+| Verified | Latest runtime/strict CI checkpoint: 178 tests passed, Ruff/actionlint; previous 101-test outbox milestone retained below |
 | Persistent QH | Last read-only inventory: 0002, zero canonical/identity rows; no 0003/0004 application or native runtime activation |
-| Remaining | Reviewed cutover/runtime composition, explicit activation approval, integrated CI coverage; extraction, embeddings/cache and advanced retrieval remain future work |
+| Remaining | Explicit cutover/runtime activation approval and hosted CI execution; runtime composition and integrated CI job are now implemented below. Extraction, embeddings/cache and advanced retrieval remain future work |
 
 Historical sections below preserve what was true at each milestone. Earlier deferrals
 of the outbox are superseded by the final **Incremental outbox and backend worker**
@@ -17,7 +17,8 @@ section. Historical test counts are not additive totals or evidence of deploymen
 must recheck the inventory and explicitly target **0004_projection_outbox** from
 the reviewed native commit/image; do not apply it now.
 
-CI proposal before merge (not configured): add a required integration job with
+Historical CI proposal, now implemented by the `native-integration` job below
+(hosted execution/required-check configuration still pending): a required job with
 runner-local disposable PostgreSQL and Neo4j, no published database ports, dedicated
 credentials/network and the test servers' enforced names. Run the SQL model,
 canonical pipeline and outbox suites with their explicit opt-in variables; fail
@@ -753,3 +754,142 @@ Activation steps, **not executed**:
 
 Persistent 0003/0004 execution, destructive recreation, push/merge, Jira writes and
 paid APIs remain unauthorized and were not performed. QH-30 remains in progress.
+
+## Runtime composition and cutover preparation (isolated milestone)
+
+`app.bootstrap:create_runtime_app` now composes the native runtime through the
+FastAPI lifespan when `QH_NATIVE_CONTEXT_ENABLED=true`. Default is false. It
+requires an explicit `QH_NATIVE_GRAPH_NAMESPACE`, schema exactly 0004 and Neo4j
+connectivity; startup never migrates. `app.state.native_context.context_for(subject)`
+binds the existing authorized service to an owner-scoped repository. No new public
+HTTP/MCP ingestion or retrieval contract is introduced (QH-9 remains separate).
+
+`adapters/context/runtime.py:NativeRuntime` owns one backend-local polling thread.
+It discovers due queue/scope metadata, then uses owner-bound workers/repositories;
+new scopes and owners do not need a backend restart. Errors log only exception
+classes, with durable per-scope attempts/lag/failure in `sync_status`. SQL/graph
+outages are retried through the existing leases/backoff; shutdown signals and joins
+the thread before closing the driver. Runtime SQL calls have five-second statement/
+lock limits; graph connection/acquisition and transaction retries are bounded.
+A 30-second shutdown timeout fails explicitly rather than pretending the worker
+stopped. Unacknowledged work remains recoverable from its lease after restart.
+
+### Verification and CI
+
+The new `native-integration` job in `.github/workflows/quality.yml` builds the locked
+backend and uses `infra/docker/qh30-integration.yml`: separate internal network,
+PostgreSQL/Neo4j tmpfs data, no database ports or persistent volumes. The strict
+`scripts/run_qh30_integration.py` refuses missing/wrong dedicated configuration and
+fails on skipped tests or empty collection. It covers SQL semantics, outbox,
+canonical pipeline, application lifespan, graph and Core/identity regressions.
+GitHub execution and making this check required in branch protection remain pending
+remote authorization; adding a workflow does not itself configure branch protection.
+
+Runtime tests use the actual application factory/lifespan, not a fixture reader:
+source/revision save → SQL/outbox → automatically running worker → graph candidates
+→ PolicyService → exact SQL hydration. They cover both owners/spaces, revision and
+source provenance, pending reads, error diagnostics, shutdown/restart recovery,
+old-schema startup rejection and disabled-runtime compatibility. The post-cutover
+CLI probe below is also executed against the test application worker; the probe
+never starts its own worker. No LLM/embedding calls occur.
+
+PASS: final strict CI-project execution: **178 passed, zero skipped**, in 163.48s,
+using the freshly built image and separate tmpfs PostgreSQL/Neo4j. The post-cutover
+CLI smoke was exercised by the runtime test with the application worker. Targeted
+commit-error/runtime regression run: 4 passed. Ruff, actionlint 1.7.7, Compose config
+(base, pinned override and integration project), local links and diff checks passed.
+Negative checks passed: missing dedicated configuration fails; unavailable PostgreSQL
+fails; an intentionally skipped test makes the strict runner fail. No hosted CI or
+real Keycloak protocol rerun was performed. The sole warning is the existing
+Starlette TestClient/AnyIO deprecation; it did not affect test outcomes.
+
+Reproduce from the native worktree with an ignored mode-600 test env file defining
+QH30_SQL_PASSWORD/QH30_GRAPH_PASSWORD (fresh synthetic credentials):
+`docker compose --env-file <test-env> -p qh30-ci -f infra/docker/qh30-integration.yml build integration`,
+then the same Compose prefix with `run --rm integration`, and finally `down` for
+**that disposable project only**. Never use the production Compose for this suite.
+No database volumes are declared in this integration project.
+
+An initial strict run on the existing dedicated servers passed 178 tests. Fresh
+CI execution exposed a psycopg 3.2.9 behavior: its connection context manager does
+not close the connection when commit fails (including deferred SQL publication
+validation). This can retain sessions until garbage collection and block test DB
+cleanup. CanonicalRepository now closes in a finally block, preserving the original
+error. The regression keeps strong connection references and asserts closure after
+a real deferred commit failure. No force cleanup, session termination or destructive
+retry was introduced. The strict runner also dumps thread stacks after 60 seconds
+of an unexpectedly slow test; the hosted job has a 20-minute overall timeout.
+
+### Persistent inventory and writer compatibility
+
+Read-only inventory reconfirmed on 2026-10-15: `qh-postgres-1` at
+`0002_oidc_identities`, zero rows in users, user_identities, context_spaces, sources,
+source_revisions, understanding_items, understanding_item_revisions and
+item_revision_provenance. This is not permission to initialize or discard data.
+
+The **currently deployed backend is not the native runtime**: its mounts still
+point at `/home/ubuntu/qh`, and in-container read-only checks found neither the
+native runtime module nor migration 0004. Do not migrate underneath this deployment.
+Deploy the reviewed native worktree/image and settings as part of an authorized
+cutover. The native repository writes null legacy category plus registered bindings;
+identity provisioning accepts 0002/0003/0004. Historical category-writing test helpers
+remain pinned to historical schemas. The OIDC test helper/live read-only probe now
+accept known compatible revisions 0002/0003/0004 instead of requiring exactly 0002,
+so the existing OIDC CI job can migrate its disposable application DB to head.
+Real Keycloak protocol execution is not repeated by the native integration job.
+No new public source/item writer is installed.
+The development image already includes the locked Neo4j driver; no dependency or
+lock change is required for this image. A future production-only packaging profile
+must retain that driver explicitly.
+
+### Exact activation sequence — prepared, NOT executed
+
+Use the reviewed native worktree and a pinned image, keeping the original ignored
+VPS env file outside Git. `infra/docker/qh30-runtime.yml` requires an explicit image
+tag; the base Compose passes native runtime flags but defaults to disabled.
+Commands below are a proposal requiring authorization, **not an instruction to run now**.
+
+1. Recheck schema/counts read-only. Stop if any canonical/identity rows appeared;
+   review preservation/backup for actual data instead of assuming disposable data.
+   Quiesce all writers and stop only the existing backend when authorized. Preserve
+   its image ID/configuration and all Graphiti files, graph data, branch and PR.
+2. Build/pin the verified native image without changing database containers. Use
+   the native worktree Compose plus `qh30-runtime.yml`, project `qh`, and the existing
+   local credential env file. Set `QH_NATIVE_BACKEND_IMAGE` to that pinned image and
+   `QH_NATIVE_CONTEXT_ENABLED=false`. Resolve configuration quietly and verify mount
+   sources point to the native worktree; never print resolved credential settings.
+3. Run a one-off native backend container with `--rm --no-deps` and explicit command:
+   `alembic -c adapters/postgres/alembic.ini upgrade 0004_projection_outbox`.
+   This advances 0002 → 0003 → 0004 without recreating PostgreSQL/Neo4j or their
+   volumes. Do not use `make migrate`/`upgrade head`. Check exact Alembic revision,
+   three canonical plus two operational additions, triggers and unchanged empty
+   canonical counts. Any migration error must stop activation.
+4. Enable `QH_NATIVE_CONTEXT_ENABLED=true` and a deployment-specific namespace
+   `QH_NATIVE_GRAPH_NAMESPACE=qh-native` (distinct from historical Graphiti labels).
+   With the same reviewed image/env/Compose files, run `up -d --no-deps --no-build
+   backend` only. This replaces the backend, not databases or other services.
+   Check health and redacted `native_worker_started` diagnostics. Startup rejects
+   the wrong schema instead of running a migration. Native indexes/labels may now
+   be created in Neo4j; historical Graphiti records are retained.
+5. With separate authorization to retain synthetic smoke records, execute in the
+   running backend: `python /workspace/scripts/smoke_qh30_runtime.py --write-synthetic`.
+   It creates two synthetic user metadata records (no OIDC/login mappings), one
+   synthetic space/source/proposed decision, waits for the **application worker**,
+   validates exact item/source provenance and rejects the foreign subject.
+   It retains immutable evidence and prints its synthetic scope ID; no cleanup,
+   confirmation, provider call or migration occurs. A timeout/failure stops acceptance.
+6. Observe ready counters/queue lag, backend health and worker recovery after an
+   authorized backend restart. Only then resume canonical writers. No public QH
+   context endpoint or LLM extractor is implied by this internal-runtime acceptance.
+
+If initialization fails before writes, leave writers paused and diagnose; do not
+attempt a forward-only downgrade or delete volumes. Native runtime can be disabled
+while retaining schema/data for reviewed forward repair. Once smoke or other data
+exist, they are immutable data to preserve, not a reason to reset the database.
+The zero-row inventory avoids an elaborate historical-data backup procedure; a
+new nonempty inventory changes that assumption and requires a reviewed backup path.
+
+Required authorizations still outstanding: persistent 0003/0004 application; backend
+replacement/native graph activation; retained synthetic smoke/bootstrap writes and
+backend restart; remote push/CI execution and branch-protection changes. No such
+operations, Jira writes, merge or paid APIs were performed by this milestone.

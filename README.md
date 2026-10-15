@@ -12,7 +12,7 @@ A space can contain multiple domains without a separate schema for each.
 | --- | --- |
 | Foundation on `main` | Docker scaffold, Core/application contracts, QH-4 PostgreSQL foundation, QH-5 OIDC identity and owner PolicyService |
 | QH environment | PostgreSQL at 0002; last read-only inventory found zero canonical/identity rows. Historical deployment reports describe their own dated environments |
-| QH-30 branch | Native canonical repository, 0003 semantic model, 0004 transactional outbox, incremental worker and authorized graph retrieval implemented and tested on isolated real databases |
+| QH-30 branch | Native canonical repository, 0003 semantic model, 0004 outbox, backend lifespan/worker and authorized retrieval implemented and tested on isolated real databases |
 | Not activated in QH | Migrations 0003/0004 and native context runtime/worker; cutover requires explicit authorization |
 | Future | Source Vault (QH-31), Domain Packs, native Mistral extraction/resolution, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
@@ -123,7 +123,11 @@ API startup does not migrate. Preserve database volumes; never add volume deleti
 as routine cleanup. Do not point isolated tests at persistent QH. Dedicated QH-30
 server names, opt-in variables, executed results, reproduction commands and the
 proposed required integration CI job are in the [QH-30 checkpoint](docs/qh-30-plan.md).
-A green existing quality/OIDC CI gate can omit those integrated suites.
+The new `native-integration` job runs the strict disposable SQL/Neo4j suite and
+fails on skips; its hosted execution is pending push authorization. A green
+quality/OIDC gate alone does not establish integrated coverage. Native runtime is
+opt-in through `QH_NATIVE_CONTEXT_ENABLED`; startup requires 0004 and never migrates.
+The prepared activation/synthetic smoke procedure is in the QH-30 checkpoint.
 
 ## Modules and technical references
 
