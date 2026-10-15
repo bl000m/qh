@@ -265,6 +265,22 @@ class CanonicalRepository:
                     values["created_at"] = revision["created_at"]
                 self._immutable(c, "understanding_item_revisions", values)
 
+    def read_sources(self, context_ids, source_revision_ids):
+        """Exact authorized original revisions, including those with no understanding yet."""
+        refs = sorted(set(map(str, source_revision_ids)))
+        if not refs:
+            raise ValueError("Explicit source revision IDs required")
+        with self.connect() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            scopes = self._authorize(c, context_ids)
+            rows = c.execute(
+                "SELECT * FROM source_revisions WHERE context_space_id=ANY(%s::uuid[]) "
+                "AND id=ANY(%s::uuid[]) ORDER BY id", (scopes, refs),
+            ).fetchall()
+            if {str(r["id"]) for r in rows} != set(refs):
+                raise PermissionError("Source revision unavailable in authorized scope")
+            return json_values(rows)
+
     def descriptor_candidates(self, context_ids, values, *, include_tentative=False,
                               limit=20, after_revision_id=None):
         """Exact any-of descriptor selection, no text prerequisite or inferred aliases.

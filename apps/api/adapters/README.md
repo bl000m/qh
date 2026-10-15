@@ -2,7 +2,8 @@
 
 `context/` implements
 `app.core.ports.ContextEngine`, including the native Neo4j projection/retrieval increment under QH-30.
-`llm/` reserves implementations of `app.core.ports.LLMProvider`.
+`llm/offline.py` implements the existing LLMProvider for explicit QH-8 fixture
+and exact captured-response replay. These adapters have no network access or SDK.
 `postgres/` owns environment-based connection settings and Alembic migrations.
 It is infrastructure outside Core, with no ORM domain models. Its internal
 `canonical.py` repository owns explicit ACID registered-revision writes and scoped
@@ -19,7 +20,8 @@ The full-generation publisher remains required by `ProjectionWorker.rebuild`;
 recovery regressions exercise that actual maintenance path, including graph loss,
 lost acknowledgement, transaction failure and concurrent rebuilds. `context/runtime.py` binds
 the actual worker and authorized engine in the backend lifespan (VPS schema 0005,
-main c723d32). There is no public context route; `llm/` remains reserved.
+main c723d32). There is no public context route; QH-8 offline generation is
+explicit internal composition, not a startup binding.
 The consolidated runtime accepts 0004/0005 without startup migrations; deployed app images have no source mounts. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.
@@ -38,3 +40,13 @@ The internal authorized `select_descriptors` method selects exact canonical IDs
 without text search, checks their existing Neo4j projection, hydrates canonical
 evidence and rechecks sync state. It does not change public Core query/HTTP contracts.
 See the post-cutover foundation document for descriptor semantics and deployment gates.
+
+QH-8 `app/understanding/extractor.py` owns application validation/resolution; it
+receives an existing repository, PolicyService and LLMProvider. `read_sources`
+loads only exact immutable original revisions, including sources with no derived
+items yet. A conversation revision records original speaker/text plus per-turn
+Unicode locators in origin JSON. Checkpoints bind the input hash, scope, source
+revision and caller-owned extraction key; JSON round-trip/offline publication
+revalidates everything before a single canonical proposal batch. Same-key changed
+output fails immutable replay. A new key is a new proposal set, not semantic dedup.
+No source schema, public port, runtime route or migration was added.

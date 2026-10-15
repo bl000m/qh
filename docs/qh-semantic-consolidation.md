@@ -11,7 +11,8 @@ See [deployment register](deployments.md) for exact artifacts and current state.
 The permanent checkout is /home/ubuntu/qh on main. Sections below preserve the
 review, closure matrix and earlier candidate/runbook evidence; their former
 approval/worktree/deployment gates are superseded by this executed authorization.
-QH-8, paid extraction, embeddings and advanced retrieval remain future work.
+QH-8's offline feature implementation is recorded below; real-provider extraction,
+embeddings and advanced retrieval remain future work.
 
 ## Historical review and prepared-candidate record
 
@@ -265,7 +266,90 @@ requires 0004. Keep it on the current 0004 until this separate transition is app
 A failure stops writes for diagnosis/forward repair; no destructive downgrade/restore.
 `make migrate` now resolves to this candidate head and remains unauthorized on QH.
 
-## First QH-8 increment: proposed extraction contract
+## QH-8 offline implementation and acceptance
+
+Ticket [QH-8](https://contextlab.atlassian.net/browse/QH-8) read through Atlassian MCP
+on 2026-10-15 (updated description includes the approved open semantic contract).
+Branch `feat/QH-8-understanding-extractor` starts at consolidated/protected main
+`f049fec`. No persistent schema, source, runtime image or deployment is changed.
+The earlier proposal below is historical; the following implementation adds only
+its approved internal, explicitly authorized synthetic workflow.
+
+- `app/understanding/extractor.py`: source import, output/citation validation,
+  deterministic local identity/anchor resolution and atomic proposal publication.
+  Existing LLMProvider message signatures and public Core/API contracts unchanged.
+- `adapters/llm/offline.py`: a scripted fixture adapter and a separate exact-response
+  replay adapter. Both implement the same port; neither makes HTTP/paid calls or
+  claims to perform real language understanding. No adapter is auto-installed.
+- Input is one conversation revision with 3–100 uniquely identified turns. Exact
+  original text/speaker, technical acquisition time, metadata and code-point
+  locators are retained before interpretation. Failed generation retains the source.
+- Strict bounded JSON rejects duplicate fields/nonfinite numbers/unknown keys;
+  IDs, shapes, descriptors, quotes/spans, local relation endpoints and supported
+  time bounds are validated before the single repository proposal transaction.
+  Each citation stores its source revision, literal quote, `[start,end)` Unicode
+  offsets and resolved turn ID in canonical content, alongside exact provenance FKs.
+- New output uses only explicitly provisioned generic profiles. All items/entities/
+  relations have AI origin and proposed state; no validation actor/current pointer
+  is taken from model output. A quote match proves location, not entailment.
+- Timestamp support is deliberately conservative: an offset timestamp must occur
+  literally in an item's cited evidence. No relative/date-only normalization,
+  inferred occurrence or acquisition-to-event defaults. Unsupported time stays null.
+- Serializable version-1 checkpoints contain scope, exact source ID/hash, caller's
+  extraction key and provider-neutral output. `publish` needs no model and rechecks
+  canonical input and every output constraint. Same source/key/local ID yields
+  identical item/revision IDs; changed same-key output conflicts atomically. A new
+  key/source revision creates separate proposals; advanced matching is outside scope.
+- Authorize before reading/disclosing source content. The existing PolicyService
+  owner-read gate and repository active-owner/scope checks are reused. An internal
+  caller still requires explicit write/extraction authorization: READ_CONTEXT is
+  not promoted into a public write/provider grant. No public route is introduced.
+
+Reproduction: [README offline demonstration](../README.md#qh-8-offline-demonstration).
+The existing strict `scripts/run_qh30_integration.py` now requires both extractor
+suites, actual SQL/Neo4j, existing runtime and OIDC/owner regressions; missing
+infrastructure, skipped or empty collection fails. No new CI service is needed.
+
+| Acceptance | Actual verification |
+| --- | --- |
+| Conversation/evidence/three generic shapes | Three three-turn domain fixtures, same space plus combined nine-turn input; persisted originals, exact Unicode spans, endpoint IDs/anchors and source FKs |
+| Meaning and state | decision/hypothesis/open_question/reversible_pause, all generic item bindings; entity/relation fixtures; proposed/current-null; tentative and absent assignments handled separately |
+| Interchangeable extractor and replay | Independent fixture/capture providers return equal checkpoints; JSON-roundtrip publication is idempotent; conflicting replay fails without changing canonical history/outbox |
+| Invalid output and atomicity | Malformed JSON/schema, false quote/offset, missing/foreign evidence/endpoints, metadata injection and unsupported time rejected; source retained; deferred SQL failure rolls back whole proposal batch |
+| Authorized structured retrieval | Existing descriptor selector without text prerequisite; separate substring check; SQL hydration of structured content/evidence; independent two-owner/sibling-space import/read/denial |
+| Recovery | Actual backend lifespan and separate Uvicorn processes; failed durable intent recovered, stopped-backend publication stays pending, restart keeps IDs, explicit namespace loss/rebuild needs zero extractor calls |
+
+Executed local evidence (QH-8 only; not deployment):
+
+- `d39614e`: extractor/resolver, original-source reader, offline providers and
+  architecture checks; first targeted run **91 passed**.
+- `9ccf69b34edaad5249c6a38756addda9a8e99934`: integrated acceptance/recovery and
+  strict CI inclusion. Full strict run **318 passed, zero skips, 398.38 s**; one
+  additional literal-temporal-ordering unit case was added after its collection.
+  Final targeted unit/architecture/contracts run **98 passed**.
+- New image built from exact `git archive 9ccf69b`, OCI revision label matching that
+  SHA: `qh8-extractor:9ccf69b34edaad5249c6a38756addda9a8e99934`, inspected Docker ID
+  `sha256:8e4260de10b19f43ecccd0ada13047b0034ef4a8f81d429e17cbf2aa31b51a70`.
+  Without bind mounts, **108 passed, 87.57 s**: both extractor suites plus
+  architecture/contracts, including the additional unit case. The visible demo
+  also executed from that image on both schema variants (**2 passed**); synthetic
+  output includes structured records, source locators, exact IDs and readiness.
+- Ruff and Git whitespace/private-file guard passed; 44 active-document local links
+  and anchors resolved, Mermaid unchanged. Existing Starlette/AnyIO deprecation
+  warning is nonblocking. Hosted execution is recorded by the feature PR checks,
+  not inferred from these local runs. No migrations/Compose/dependency/public Core
+  change, persistent write, runtime replacement, Jira update or external LLM call.
+
+For a first real Mistral experiment: implement an outbound adapter for the same
+LLMProvider port, translating request/structured JSON and redacting provider errors.
+Keep this application validator/resolver, schema, states and native pipeline intact.
+Before any call, agree model/endpoint, synthetic unseen conversation, disclosure,
+maximum requests/input/output tokens and budget; no automatic retries or CI paid
+calls. Human assessment must evaluate meaning, quote support and omissions separately
+from syntactic/SQL acceptance. This offline ticket does not verify real extraction,
+model quality, entailment, synonyms/ranking, public ingestion or disclosure policy.
+
+## Historical first QH-8 increment: proposed extraction contract
 
 This supersedes the specialized-default proposal retained at the end of
 [QH-30 planning](qh-30-plan.md). Read QH-8, QH-10 and QH-30 via Atlassian MCP on

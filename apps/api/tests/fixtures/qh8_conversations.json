@@ -1,0 +1,464 @@
+[
+  {
+    "name": "project",
+    "conversation": {
+      "id": "synthetic-project",
+      "revision_no": 1,
+      "acquired_at": "2026-10-15T08:00:00Z",
+      "metadata": {
+        "synthetic": true,
+        "domain": "project"
+      },
+      "turns": [
+        {
+          "id": "project-t1",
+          "speaker": "Alex",
+          "text": "We choose a small pilot with Team Cedar 🌱."
+        },
+        {
+          "id": "project-t2",
+          "speaker": "Sam",
+          "text": "The pilot may reduce waiting. What will we measure?"
+        },
+        {
+          "id": "project-t3",
+          "speaker": "Alex",
+          "text": "We can take a reversible pause. Report timestamp 2026-10-01T12:00:00Z."
+        }
+      ]
+    },
+    "items": [
+      {
+        "local_id": "choice",
+        "shape": "item",
+        "text": "We choose a small pilot with Team Cedar 🌱.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t1",
+            "quote": "We choose a small pilot with Team Cedar 🌱."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "decision",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "possibility",
+        "shape": "item",
+        "text": "The pilot may reduce waiting.",
+        "properties": {
+          "basis": "tentative interpretation"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t2",
+            "quote": "The pilot may reduce waiting. What will we measure?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "hypothesis",
+            "certainty": "asserted"
+          },
+          {
+            "value": "expected_effect",
+            "certainty": "tentative"
+          }
+        ]
+      },
+      {
+        "local_id": "question",
+        "shape": "item",
+        "text": "What will we measure?",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t2",
+            "quote": "The pilot may reduce waiting. What will we measure?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "open_question",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "pause",
+        "shape": "item",
+        "text": "We can take a reversible pause.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t3",
+            "quote": "We can take a reversible pause. Report timestamp 2026-10-01T12:00:00Z."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "reversible_pause",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "participant",
+        "shape": "entity",
+        "text": "Alex",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t1",
+            "quote": "We choose a small pilot with Team Cedar 🌱."
+          }
+        ]
+      },
+      {
+        "local_id": "relation",
+        "shape": "relation",
+        "text": "The choice was stated by Alex.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "project-t1",
+            "quote": "We choose a small pilot with Team Cedar 🌱."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "stated_by",
+            "certainty": "asserted"
+          }
+        ],
+        "relation": {
+          "source": "choice",
+          "target": "participant",
+          "predicate": "stated_by"
+        }
+      }
+    ]
+  },
+  {
+    "name": "health",
+    "conversation": {
+      "id": "synthetic-health",
+      "revision_no": 1,
+      "acquired_at": "2026-10-15T08:00:00Z",
+      "metadata": {
+        "synthetic": true,
+        "domain": "health"
+      },
+      "turns": [
+        {
+          "id": "health-t1",
+          "speaker": "Alex",
+          "text": "We choose a gentle walk 🌿. I reported feeling tired afterward."
+        },
+        {
+          "id": "health-t2",
+          "speaker": "Sam",
+          "text": "A quiet evening might help me rest. What should I record?"
+        },
+        {
+          "id": "health-t3",
+          "speaker": "Alex",
+          "text": "I prefer a reversible pause in training. This is a report, not a diagnosis."
+        }
+      ]
+    },
+    "items": [
+      {
+        "local_id": "choice",
+        "shape": "item",
+        "text": "We choose a gentle walk.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t1",
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "decision",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "possibility",
+        "shape": "item",
+        "text": "A quiet evening might help me rest.",
+        "properties": {
+          "basis": "tentative interpretation"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t2",
+            "quote": "A quiet evening might help me rest. What should I record?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "hypothesis",
+            "certainty": "asserted"
+          },
+          {
+            "value": "expected_effect",
+            "certainty": "tentative"
+          }
+        ]
+      },
+      {
+        "local_id": "question",
+        "shape": "item",
+        "text": "What should I record?",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t2",
+            "quote": "A quiet evening might help me rest. What should I record?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "open_question",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "pause",
+        "shape": "item",
+        "text": "I prefer a reversible pause in training.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t3",
+            "quote": "I prefer a reversible pause in training. This is a report, not a diagnosis."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "reversible_pause",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "participant",
+        "shape": "entity",
+        "text": "Alex",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t1",
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
+          }
+        ]
+      },
+      {
+        "local_id": "relation",
+        "shape": "relation",
+        "text": "The choice was stated by Alex.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "health-t1",
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "stated_by",
+            "certainty": "asserted"
+          }
+        ],
+        "relation": {
+          "source": "choice",
+          "target": "participant",
+          "predicate": "stated_by"
+        }
+      }
+    ]
+  },
+  {
+    "name": "personal",
+    "conversation": {
+      "id": "synthetic-personal",
+      "revision_no": 1,
+      "acquired_at": "2026-10-15T08:00:00Z",
+      "metadata": {
+        "synthetic": true,
+        "domain": "personal"
+      },
+      "turns": [
+        {
+          "id": "personal-t1",
+          "speaker": "Alex",
+          "text": "We choose a quiet family dinner 🥣."
+        },
+        {
+          "id": "personal-t2",
+          "speaker": "Sam",
+          "text": "An earlier dinner might leave time to talk. Who can join?"
+        },
+        {
+          "id": "personal-t3",
+          "speaker": "Alex",
+          "text": "We can take a reversible pause in planning. This is a preference, not a personality trait."
+        }
+      ]
+    },
+    "items": [
+      {
+        "local_id": "choice",
+        "shape": "item",
+        "text": "We choose a quiet family dinner 🥣.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t1",
+            "quote": "We choose a quiet family dinner 🥣."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "decision",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "possibility",
+        "shape": "item",
+        "text": "An earlier dinner might leave time to talk.",
+        "properties": {
+          "basis": "tentative interpretation"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t2",
+            "quote": "An earlier dinner might leave time to talk. Who can join?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "hypothesis",
+            "certainty": "asserted"
+          },
+          {
+            "value": "expected_effect",
+            "certainty": "tentative"
+          }
+        ]
+      },
+      {
+        "local_id": "question",
+        "shape": "item",
+        "text": "Who can join?",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t2",
+            "quote": "An earlier dinner might leave time to talk. Who can join?"
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "open_question",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "pause",
+        "shape": "item",
+        "text": "We can take a reversible pause in planning.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t3",
+            "quote": "We can take a reversible pause in planning. This is a preference, not a personality trait."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "reversible_pause",
+            "certainty": "asserted"
+          }
+        ]
+      },
+      {
+        "local_id": "participant",
+        "shape": "entity",
+        "text": "Alex",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t1",
+            "quote": "We choose a quiet family dinner 🥣."
+          }
+        ]
+      },
+      {
+        "local_id": "relation",
+        "shape": "relation",
+        "text": "The choice was stated by Alex.",
+        "properties": {
+          "basis": "reported statement"
+        },
+        "evidence": [
+          {
+            "turn_id": "personal-t1",
+            "quote": "We choose a quiet family dinner 🥣."
+          }
+        ],
+        "descriptors": [
+          {
+            "value": "stated_by",
+            "certainty": "asserted"
+          }
+        ],
+        "relation": {
+          "source": "choice",
+          "target": "participant",
+          "predicate": "stated_by"
+        }
+      }
+    ]
+  }
+]

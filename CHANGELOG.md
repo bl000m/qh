@@ -9,6 +9,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-8 offline conversation import, interchangeable fixture/replay extractor,
+  exact Unicode citation validation and conservative relation resolution. Generic
+  proposed items commit through the existing canonical outbox; isolated owner,
+  structured retrieval, restart/pending/rebuild regressions. Not deployed; no real
+  LLM extraction, external calls or new public API.
+
 - Three explicitly provisioned generic profiles: item, entity, relation. Optional
   open value/certainty descriptors and authorized exact descriptor selection with
   canonical hydration; specialized immutable schemas/rules remain supported.

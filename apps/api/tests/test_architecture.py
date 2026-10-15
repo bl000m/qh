@@ -10,11 +10,12 @@ import pytest
 
 API_ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = API_ROOT / "app"
-STDLIB = {"__future__", "dataclasses", "enum", "typing"}
+STDLIB = {"__future__", "dataclasses", "enum", "typing", "copy", "datetime", "hashlib", "json", "uuid"}
 LAYERS = {
     "core": {"app.core"},
     "policy": {"app.core", "app.policy"},
     "projections": {"app.core", "app.projections"},
+    "understanding": {"app.core", "app.policy", "app.understanding"},
     "chat": {"app.core", "app.policy", "app.projections", "app.chat"},
 }
 

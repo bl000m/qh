@@ -40,7 +40,7 @@ Do not infer ticket completion from a deployment or this plan.
 | Logical checkpoint | Existing ticket scope | Evidence / exit boundary |
 | --- | --- | --- |
 | Native context infrastructure | QH-30 | QH-30/semantic foundation merged; hosted quality/OIDC/261 native tests passed. Native image-only runtime from main c723d32 active at 0005 with generic provisioning and persistent smoke/recovery; dated deployment register. Jira status is not changed by this evidence |
-| First complete understanding flow | QH-8 | Future conversational source → interchangeable extractor → proposed canonical understanding/exact evidence → native retrieval. No implementation started by this preparation |
+| First complete understanding flow | QH-8 | QH-8 feature branch implements the offline source → interchangeable fake/replay extractor → proposed canonical understanding/exact evidence → native retrieval slice. Hosted verification belongs to its PR; real-provider quality and deployment remain separate |
 | Product access/selection flows | QH-9, QH-10 | Follow their approved contracts and dependency gates; internal selectors do not establish new public write/disclosure contracts |
 | Original-source vault | QH-31 | Future original-byte storage/access/lifecycle. Outside the current foundation and not claimed complete |
 
