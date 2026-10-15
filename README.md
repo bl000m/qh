@@ -13,12 +13,15 @@ A space can contain multiple domains without a separate schema for each.
 | Foundation on `main` | Docker scaffold, Core/application contracts, QH-4 PostgreSQL foundation, QH-5 OIDC identity and owner PolicyService |
 | QH environment | Schema 0004; native backend/worker active at `fd50b1b`. Persistent synthetic smoke and controlled backend restart passed; Graphiti data retained |
 | QH-30 branch | Native canonical repository, 0003 semantic model, 0004 outbox, backend lifespan/worker and authorized retrieval implemented and tested on isolated real databases |
-| Separate cleanup branch | Generic-profile regressions and prepared 0005; not pushed, deployed or authorized for persistent application. [Proposal and debt inventory](docs/qh-semantic-consolidation.md) |
+| Separate cleanup branch | Controlled generic profiles, exact descriptor selection and prepared 0005; not pushed, deployed or authorized for persistent application. [Proposal and debt inventory](docs/qh-semantic-consolidation.md) |
 | Future | Source Vault (QH-31), Domain Packs, native Mistral extraction/resolution, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
 Graphiti is a preserved historical prototype, not a native-engine dependency.
 The independent MCP server currently provides transport scaffolding, not a QH context
-client. Current native text search uses scoped substring matching.
+client. Current deployed native text search uses scoped substring matching. This separate
+branch also implements an internal exact descriptor selector: authorize → canonical
+IDs from SQL → Neo4j verification → canonical hydration and freshness recheck.
+It is prepared for acceptance/deployment, without public DTO changes or semantic ranking.
 
 ## Architecture and data flow
 

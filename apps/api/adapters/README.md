@@ -26,3 +26,13 @@ The native QH Context Engine stays inside the backend; Graphiti is an archived
 prototype on its separate branch/PR. See ADR 0003; no new engine container. No Graphiti/provider dependency, dummy production adapter,
 policy rule or application behavior is installed by QH-2. FastAPI's inbound
 adapter lives in `app/api`; the independent MCP service owns its transport.
+
+
+`postgres/semantic_profiles.py` defines the three controlled generic profiles;
+`scripts/provision_qh_semantics.py --register-generic-profiles` explicitly provisions
+them idempotently on known 0004/0005. No startup/LLM registration occurs. Optional
+open descriptor assignments use value/certainty objects, independent of validation.
+The internal authorized `select_descriptors` method selects exact canonical IDs
+without text search, checks their existing Neo4j projection, hydrates canonical
+evidence and rechecks sync state. It does not change public Core query/HTTP contracts.
+See the post-cutover foundation document for descriptor semantics and deployment gates.

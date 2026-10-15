@@ -137,7 +137,12 @@ or volume recreation was performed.
 The [post-cutover proposal](qh-semantic-consolidation.md) distinguishes structural
 shape, open-ended content and optional specialization. New generic profiles do
 not require a schema migration: trusted provisioning can register them on 0004.
-They are tested candidates, not automatically registered runtime defaults.
+The three-profile direction is approved. Exact descriptor value/certainty objects
+and their pinned schema are proposed and tested; register them only through
+`python /workspace/scripts/provision_qh_semantics.py --register-generic-profiles`.
+Startup/model output never registers types. Internal authorized descriptor selection
+uses exact any-of membership, keyset pagination, Neo4j verification and canonical
+hydration, with tentative assignments excluded by default; it needs no text query.
 
 `0005_retire_legacy_category` removes the obsolete column and only its BEFORE INSERT
 publication check. It takes a table lock, refuses any non-null historical category,

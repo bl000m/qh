@@ -25,7 +25,9 @@ fd50b1ba67061ea95285a2ffce122939524ab93f. The QH-30 worktree supplies live
 backend bind mounts: implement changes in a separate worktree. No further
 persistent writes/migrations, deployment or cleanup are authorized by a planning task.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
-three-generic-profile proposal and prepared, undeployed 0005. Semantic meanings
+approved three-generic-profile direction, proposed descriptor contract and
+prepared, undeployed 0005. Controlled registration is explicit; never infer new
+SQL types or human validation from descriptors. Semantic meanings
 are open-ended content, not mandatory registry types or the eleven QH-4 categories.
 Optional specialized schemas/rules remain supported; never rewrite applied
 migrations or immutable historical bindings to force a new vocabulary.

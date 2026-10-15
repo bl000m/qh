@@ -3,8 +3,8 @@
 ## Current checkpoint — read this before historical milestones
 
 Post-cutover semantic review: [proposal, prioritized debt inventory and QH-8 plan](qh-semantic-consolidation.md).
-A separate branch/worktree based on preserved `42a20c7` tests generic structural
-profiles and prepares 0005. No persistent change/deployment is authorized. The
+A separate branch/worktree based on preserved `42a20c7` implements the approved generic structural
+profiles, controlled provisioning, exact descriptor selection and prepared 0005. No persistent change/deployment is authorized. The
 specialized-default QH-8 proposal at the end is historical; demonstration meanings
 need not each be registered SQL types. Deployed code remains pinned to fd50b1b.
 

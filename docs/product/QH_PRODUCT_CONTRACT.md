@@ -140,8 +140,9 @@ futura componibile, non una funzionalità implementata. Il modello SQL QH-30 è 
 item/entity/relation, endpoint universali con identità e revisioni immutabili,
 temporalità comune. Le migrazioni 0003/0004 e il worker sono stati verificati in isolamento e attivati
 con autorizzazione nel cutover del 2026-10-15 (immagine `fd50b1b`, evidenze QH-30).
-La [proposta post-cutover](../qh-semantic-consolidation.md) valuta tre profili generici
-iniziali; i loro nomi/schema predefiniti e la migrazione 0005 non sono ancora approvati
+La [proposta post-cutover](../qh-semantic-consolidation.md) attua la direzione approvata dei tre profili generici
+iniziali e propone un contratto per descrittori multipli e facoltativi con valore
+libero e certezza dell’assegnazione, distinta dalla validazione dell’elemento; i loro nomi/schema predefiniti e la migrazione 0005 non sono ancora approvati
 per il database persistente. Nessun nuovo contratto pubblico è implicito.
 
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono

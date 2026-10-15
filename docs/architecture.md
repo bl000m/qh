@@ -170,8 +170,9 @@ Provenance, revisions, temporal meaning and validation belong to the universal
 nucleus; PolicyService remains independent of semantic type. Domain Packs are a
 future optional composition mechanism only. See ADR 0003 and the approved SQL model/evidence in [QH-30 plan](qh-30-plan.md).
 Further persistent migrations, backend changes and public DTO changes remain gated.
-The [post-cutover proposal](qh-semantic-consolidation.md) evaluates three generic
-write profiles with optional specialized types. Meaning stays in extensible content;
+The [post-cutover foundation](qh-semantic-consolidation.md) implements the approved
+three-generic-profile direction, controlled provisioning and an internal authorized
+exact descriptor selector; descriptor schema/defaults are proposed for acceptance. Meaning stays in extensible content;
 shape selects storage constraints. Its prepared 0005 removes null legacy category
 metadata without rewriting historical types/bindings. This branch is not live: do
 not edit the QH-30 worktree mounted by the active backend. QH-31 Source Vault, Domain Packs, LLM extraction
