@@ -145,3 +145,26 @@ def test_live_harness_429_stops_without_retry_and_retains_artifacts(
         s["desired_version"] == s["applied_version"] == 0 for s in state["sync_status"]
     )
     assert not (folder / "evolving").exists()
+
+    # Explicit reviewed resumption reuses the ledger and makes exactly one POST.
+    resumed = tmp_path / "resumed"
+    before = ledger["calls"]
+    seen.clear()
+    with pytest.raises(MistralError, match="429"):
+        module.execute(
+            out=resumed, live=True, resume_from=folder,
+            reviewed_resumption=True, case_names=["work"],
+        )
+    after = json.loads((folder / "ledger.json").read_text())
+    assert seen == ["POST"] and len(after["calls"]) == 3 and after["blocked"]
+    assert after["calls"][:2] == before
+    assert after["calls"][2]["reserved_usd"] == "0.006"
+    assert after["reconciliations"][0]["calls_retained"] == 2
+    assert after["reconciliations"][0]["failed_reservations_retained_usd"] == "0.006"
+    assert json.loads((resumed / "ledger-before-reconciliation.json").read_text())["calls"] == before
+    assert not (resumed / "ledger.json").exists()
+    diagnostic = json.loads((resumed / "experiment-error.json").read_text())
+    assert diagnostic["provider_diagnostic"]["http_status"] == 429
+    state = json.loads((resumed / "failure-state.json").read_text())
+    assert state["source_revision_count"] == 1 and not state["understanding_item_revisions"]
+    assert not (resumed / "work/raw.json").exists() and not (resumed / "evolving").exists()
