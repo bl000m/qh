@@ -19,6 +19,7 @@ from adapters.postgres.config import database_url
 from adapters.postgres.security import PostgresSecurityReader
 from app.core.models import ContextQuery, ContextRequest, SubjectId
 from app.policy.owner import OwnerPolicyService
+from tests.test_canonical_graph_pipeline import drain
 from tests.test_migrations import (
     empty_database as empty_database,
     persisted as persisted,
@@ -34,15 +35,6 @@ from adapters.postgres.semantic_profiles import (
 )
 
 CLEANUP = "0005_retire_legacy_category"
-
-
-def drain(worker):
-    for _ in range(100):
-        event = worker.claim()
-        if event is None:
-            return
-        assert worker.process(event), repr(worker.last_error)
-    raise AssertionError("Queue did not drain")
 
 
 @pytest.fixture(params=["0004_projection_outbox", CLEANUP])

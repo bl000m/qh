@@ -122,7 +122,8 @@ def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, mon
             session.run("MATCH (n) WHERE n.key STARTS WITH $prefix OR n.id STARTS WITH $prefix OR n.slice_id STARTS WITH $prefix DETACH DELETE n", prefix=namespace + ":").consume()
 
 
-def test_native_start_refuses_old_schema_without_migration(pipeline, monkeypatch):
+def test_native_start_refuses_old_schema_without_migration(empty_database, real_engine, monkeypatch):
+    command.upgrade(empty_database, "0003_native_semantics")
     configure(monkeypatch, "qh30-runtime-old-" + uuid4().hex)
     with pytest.raises(RuntimeError, match="requires migration 0004"):
         with TestClient(create_runtime_app()):

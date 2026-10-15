@@ -97,56 +97,11 @@ def checked_rows(snapshot):
     return rows
 
 
-def scope_manifests(snapshot):
-    rows = checked_rows(snapshot)
-    scopes = set(snapshot.get("context_ids", [])) | {r["context_id"] for r in rows}
-    return {
-        scope: hashlib.sha256(
-            json.dumps(
-                sorted(r["fingerprint"] for r in rows if r["context_id"] == scope)
-            ).encode()
-        ).hexdigest()
-        for scope in scopes
-    }
-
-
-def reconcile(repository, engine, scopes, *, force_rebuild=False):
-    """Explicit full reconciliation; no high-water mark/outbox/LLM or lost work.
-
-    Scope/session locks serialize projectors. Failures leave canonical commits intact;
-    readiness checks detect lag, and an explicit next reconciliation recovers.
-    """
-    from uuid import uuid4
-
-    scopes = tuple(sorted(set(map(str, scopes))))
-    with repository.projection_lock(engine.slice_id, scopes):
-        snapshot = repository.read_snapshot(scopes)
-        expected = scope_manifests(snapshot)
-        with engine.driver.session() as session:
-            active = session.run(
-                "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS generation,s.scope_manifests_json AS manifest",
-                id=engine.slice_id,
-            ).single()
-        generation = (
-            active["generation"]
-            if active
-            and active["manifest"] == json.dumps(expected, sort_keys=True)
-            and not force_rebuild
-            else uuid4().hex
-        )
-        engine.replace(snapshot, generation=generation)
-        if scope_manifests(repository.read_snapshot(scopes)) != expected:
-            raise NativeContextError(
-                "Canonical state advanced during projection; reconcile again"
-            )
-        return generation
-
-
 class NativeContextEngine:
     """Existing ContextEngine search shape; caller authorizes before adapter access.
 
     read_snapshot returns registered repository-shaped rows. Fixture tests use
-    the same representation. Full readiness scans are explicit maintenance only.
+    the same representation. Readiness is enforced by the incremental engine.
     Generation replacement is intentionally one transaction for small datasets.
     """
 
@@ -156,12 +111,10 @@ class NativeContextEngine:
         *,
         slice_id,
         read_snapshot,
-        verify_readiness=False,
     ):
         self.driver = driver
         self.slice_id = slice_id
         self.read_snapshot = read_snapshot
-        self.verify_readiness = verify_readiness
 
     def initialize(self):
         with self.driver.session() as session:
@@ -286,12 +239,9 @@ class NativeContextEngine:
             ).consume()
             # A failed transaction never switches the active generation.
             tx.run(
-                "MERGE (s:QH30Slice {id:$id}) SET s.active_generation=$generation, s.scope_manifests_json=$manifest",
+                "MERGE (s:QH30Slice {id:$id}) SET s.active_generation=$generation",
                 id=self.slice_id,
                 generation=generation,
-                manifest=json.dumps(
-                    scope_manifests(snapshot), sort_keys=True
-                ),
             ).consume()
 
         with self.driver.session() as session:
@@ -303,7 +253,7 @@ class NativeContextEngine:
     async def select_revisions(self, *, context_ids, revision_ids):
         """Internal exact-ID graph lookup for canonically selected descriptors."""
         revision_ids = tuple(map(str, revision_ids))
-        if not 1 <= len(revision_ids) <= 100 or self.verify_readiness:
+        if not 1 <= len(revision_ids) <= 100:
             raise ValueError("Bounded incremental revision selection required")
         query = ContextQuery(text="", context_ids=tuple(context_ids), limit=len(revision_ids))
         return await self._search(query, revision_ids=revision_ids)
@@ -312,34 +262,17 @@ class NativeContextEngine:
         if (revision_ids is None and not query.text.strip()) or not 1 <= query.limit <= 100:
             raise ValueError("Nonempty query and bounded limit required")
 
-        prepared = []
-
         def read():
-            if self.verify_readiness:
-                try:
-                    prepared.append(self.read_snapshot(query.context_ids))
-                except Exception as exc:
-                    raise NativeContextError("Canonical read failed") from exc
             with self.driver.session() as session:
                 active = session.run(
-                    "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS generation"
-                    + (",s.scope_manifests_json AS manifest" if self.verify_readiness else ""),
+                    "MATCH (s:QH30Slice {id:$id}) RETURN s.active_generation AS generation",
                     id=self.slice_id,
                 ).single()
                 if not active:
                     raise NativeContextError("Projection not ready")
-                if self.verify_readiness:
-                    stored = json.loads(active["manifest"] or "{}")
-                    expected = scope_manifests(prepared[0])
-                    if any(
-                        stored.get(scope) != value for scope, value in expected.items()
-                    ):
-                        raise NativeContextError(
-                            "Projection pending: canonical scope differs"
-                        )
                 return session.run(
                     """MATCH (r:QH30Revision {slice_id:$slice_id, generation:$generation})
-                    WHERE r.context_id IN $scopes AND ($verify OR ($ids IS NOT NULL AND r.revision_id IN $ids)
+                    WHERE r.context_id IN $scopes AND (($ids IS NOT NULL AND r.revision_id IN $ids)
                          OR ($ids IS NULL AND toLower(r.text) CONTAINS toLower($text)))
                     OPTIONAL MATCH (r)-[:EVIDENCED_BY]->(e:QH30Source)
                     RETURN r AS revision, collect(properties(e)) AS evidence,
@@ -349,10 +282,7 @@ class NativeContextEngine:
                     scopes=[str(c) for c in query.context_ids],
                     text=query.text,
                     ids=revision_ids,
-                    limit=len(prepared[0]["understanding_item_revisions"]) + 1
-                    if prepared
-                    else query.limit,
-                    verify=self.verify_readiness,
+                    limit=query.limit,
                     generation=active["generation"],
                 ).data()
 
@@ -362,23 +292,14 @@ class NativeContextEngine:
         } != set(revision_ids):
             raise NativeContextError("Selected revisions missing from graph; rebuild required")
         # One canonical bulk load; canonical text/state/provenance wins over graph.
-        if prepared:
-            expected_ids = {
-                r["id"] for r in prepared[0]["understanding_item_revisions"]
-            }
-            actual_ids = {r["revision"]["revision_id"] for r in candidates}
-            if expected_ids != actual_ids or len(candidates) != len(expected_ids):
-                raise NativeContextError("Projection incomplete: reconcile required")
         if not candidates:
             return ContextResult(hits=())
-        snapshot = (
-            prepared[0]
-            if prepared
-            else self.read_snapshot(
-                query.context_ids,
-                tuple(c["revision"]["revision_id"] for c in candidates),
+        try:
+            snapshot = self.read_snapshot(
+                query.context_ids, tuple(c["revision"]["revision_id"] for c in candidates)
             )
-        )
+        except Exception as exc:
+            raise NativeContextError("Canonical read failed") from exc
         canonical = {
             row["revision_id"]: row
             for row in checked_rows(snapshot)

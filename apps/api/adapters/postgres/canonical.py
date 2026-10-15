@@ -360,23 +360,6 @@ class CanonicalRepository:
                 }
             )
 
-    @contextmanager
-    def projection_lock(self, slice_id, scopes):
-        # Session lock survives read transactions, but no SQL transaction spans Neo4j I/O.
-        with self.connect(autocommit=True) as c:
-            self._authorize(c, scopes)
-            c.execute(
-                "SELECT pg_advisory_lock(hashtextextended(%s,0))",
-                ("projection:" + slice_id,),
-            )
-            try:
-                yield
-            finally:
-                c.execute(
-                    "SELECT pg_advisory_unlock(hashtextextended(%s,0))",
-                    ("projection:" + slice_id,),
-                )
-
     def read_affected_snapshot(self, context_id, revision_id):
         """Only changed revision and transitive immutable anchors, using FK indexes."""
         with self.connect() as c:

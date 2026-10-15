@@ -339,10 +339,8 @@ class ProjectionWorker:
                     version=state["desired_version"],
                 ).consume()
 
-            original_fence = fence
-
             def complete_fence(tx):
-                original_fence(tx)
+                fence(tx)
                 tx.run(
                     """UNWIND $heads AS h MERGE (i:QH30Item {key:$prefix+h.item_id})
                     SET i.context_id=$scope,i.item_id=h.item_id,i.latest_revision_no=h.revision_no,
