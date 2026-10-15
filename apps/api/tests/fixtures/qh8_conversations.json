@@ -167,7 +167,7 @@
         {
           "id": "health-t1",
           "speaker": "Alex",
-          "text": "I reported feeling tired after the walk 🌿."
+          "text": "We choose a gentle walk 🌿. I reported feeling tired afterward."
         },
         {
           "id": "health-t2",
@@ -185,14 +185,14 @@
       {
         "local_id": "choice",
         "shape": "item",
-        "text": "I reported feeling tired after the walk 🌿.",
+        "text": "We choose a gentle walk.",
         "properties": {
           "basis": "reported statement"
         },
         "evidence": [
           {
             "turn_id": "health-t1",
-            "quote": "I reported feeling tired after the walk 🌿."
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
           }
         ],
         "descriptors": [
@@ -276,7 +276,7 @@
         "evidence": [
           {
             "turn_id": "health-t1",
-            "quote": "I reported feeling tired after the walk 🌿."
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
           }
         ]
       },
@@ -290,7 +290,7 @@
         "evidence": [
           {
             "turn_id": "health-t1",
-            "quote": "I reported feeling tired after the walk 🌿."
+            "quote": "We choose a gentle walk 🌿. I reported feeling tired afterward."
           }
         ],
         "descriptors": [

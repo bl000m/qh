@@ -279,3 +279,64 @@ def test_decoder_bounds_and_supported_literal_temporal_assertion():
     asyncio.run(extractor.publish(subject_id=owner, checkpoint=cp))
     assert repo.revisions[3]["fact_from"] == "2026-10-01T12:00:00Z"
     assert "fact_from" not in repo.revisions[0]  # Acquisition is not semantic time.
+
+
+def test_provider_failure_keeps_source_and_has_no_hidden_retry():
+    repo, _, provider, extractor, owner, scope, ref, _ = offline()
+    provider.generate = AsyncMock(side_effect=ConnectionError("synthetic failure"))
+    with pytest.raises(ConnectionError):
+        asyncio.run(
+            extractor.extract(
+                subject_id=owner,
+                context_id=scope,
+                source_revision_id=ref,
+                extraction_key="failure",
+            )
+        )
+    provider.generate.assert_awaited_once()
+    assert ref in repo.sources and not repo.revisions
+
+
+@pytest.mark.parametrize(
+    "mode", ["few_turns", "duplicate_turn", "bad_revision", "bad_time", "unknown_field"]
+)
+def test_invalid_import_never_stores_source(mode):
+    repo, _, _, extractor, owner, scope, _, _ = offline()
+    conversation = deepcopy(CASES[0]["conversation"])
+    if mode == "few_turns":
+        conversation["turns"] = conversation["turns"][:2]
+    elif mode == "duplicate_turn":
+        conversation["turns"][1]["id"] = conversation["turns"][0]["id"]
+    elif mode == "bad_revision":
+        conversation["revision_no"] = True
+    elif mode == "bad_time":
+        conversation["acquired_at"] = "2026-10-15"
+    else:
+        conversation["owner"] = "forbidden"
+    before = deepcopy(repo.sources)
+    with pytest.raises(ValueError):
+        asyncio.run(
+            extractor.import_conversation(
+                subject_id=owner, context_id=scope, conversation=conversation
+            )
+        )
+    assert repo.sources == before
+
+
+def test_temporal_ordering_with_two_actually_cited_bounds():
+    case = deepcopy(CASES[0])
+    original = case["conversation"]["turns"][2]["text"]
+    text = original + " Previous timestamp 2026-09-01T12:00:00Z."
+    case["conversation"]["turns"][2]["text"] = text
+    for item in case["items"]:
+        for e in item["evidence"]:
+            if e["quote"] == original:
+                e["quote"] = text
+    repo, _, _, extractor, owner, _, _, cp = offline(case)
+    cp["output"]["items"][3]["temporal"] = {
+        "fact_from": "2026-10-01T12:00:00Z",
+        "fact_to": "2026-09-01T12:00:00Z",
+    }
+    with pytest.raises(ValueError, match="time bounds"):
+        asyncio.run(extractor.publish(subject_id=owner, checkpoint=cp))
+    assert not repo.revisions
