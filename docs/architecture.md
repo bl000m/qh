@@ -172,9 +172,11 @@ future optional composition mechanism only. See ADR 0003 and the approved SQL mo
 Further persistent migrations, backend changes and public DTO changes remain gated.
 The [post-cutover foundation](qh-semantic-consolidation.md) implements the approved
 three-generic-profile direction, controlled provisioning and an internal authorized
-exact descriptor selector; descriptor schema/defaults are proposed for acceptance. Meaning stays in extensible content;
+exact descriptor selector. The owner approved the profiles and open descriptor contract; persistent activation remains gated. Meaning stays in extensible content;
 shape selects storage constraints. Its prepared 0005 removes null legacy category
 metadata without rewriting historical types/bindings. This branch is not live: do
 not edit the QH-30 worktree mounted by the active backend. QH-31 Source Vault, Domain Packs, LLM extraction
 and advanced vector retrieval are not implemented. Ordinary native queries use
-per-scope sync state and candidate hydration; full reconciliation is explicit recovery.
+per-scope sync state and candidate hydration; `ProjectionWorker.rebuild` is explicit recovery.
+The separate snapshot reconciler and full-scope query scans have been retired in this branch;
+its generation publisher remains necessary for rebuild.

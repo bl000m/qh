@@ -1,6 +1,7 @@
 # QH — semantic foundation after cutover
 
-2026-10-15. Three generic profiles approved by the owner; descriptor contract and deployment prepared in isolation; **not a deployed
+2026-10-15. Three generic profiles, open descriptors and authorized structured
+selection approved by the owner. Deployment prepared in isolation; **not a deployed
 model change**. Baseline `42a20c7`, preserved on QH-30 and inherited by
 `refactor/QH-30-semantic-foundation` in a separate worktree. The live backend still
 uses `fd50b1ba67061ea95285a2ffce122939524ab93f`, schema 0004 and the QH-30 mounts.
@@ -13,8 +14,8 @@ publication belong to this increment. Cutover evidence remains in
 Use three generic registered profiles for **new** understanding, retaining the
 versioned registry for optional justified extensions. The controlled default profiles are
 `qh.generic.item/1`, `qh.generic.entity/1`, `qh.generic.relation/1`. The owner approved
-the three-profile architecture; their descriptor contract below is proposed for
-acceptance before persistent provisioning/deployment. This is three initial write profiles,
+the three-profile architecture, open descriptor contract and structured authorized
+selection. Persistent provisioning/deployment still require separate authorization. This is three initial write profiles,
 not a registry limited to exactly three records. `qh.entity/1` already exists:
 reusing that immutable ID/version with a stricter schema conflicts and is rejected.
 
@@ -30,7 +31,7 @@ registry row. Generic relation rules use `any_registered`; predicate and endpoin
 remain authoritative relation columns, not copied JSON. Arbitrary extension-property
 details are not automatically validated by this deliberately small envelope.
 
-### Proposed descriptor contract (implemented and tested in isolation)
+### Approved descriptor contract (implemented and tested in isolation)
 
 ```json
 {
@@ -134,36 +135,89 @@ or differently spelled equivalent assertions do not match. The SQL JSON predicat
 can scan scoped rows; there is no indexed or advanced semantic performance claim.
 No GIN/vector infrastructure, ontology or new public query contract is introduced.
 
-## Prioritized debt inventory
+## Prioritized debt inventory — closure matrix
 
 Inspection covers tracked native code, instructions, manifests, scripts/workflows,
 fixtures and documentation. Historical checkouts/resources are read only. Paths
 below are relative to this worktree unless absolute.
 
-| Priority / disposition | Concrete paths | Finding and action |
-| --- | --- | --- |
-| P0 simplify — done locally | `AGENTS.md`, `README.md`, `docs/architecture.md`, `docs/postgres-schema.md`, `apps/api/adapters/README.md` | Present-tense “0002/empty/not authorized” contradicted successful cutover. Distinguish deployed 0004/fd50 from this unpushed candidate; prohibit edits through live mounts |
-| P0 simplify — done locally | `docs/product/QH_PRODUCT_CONTRACT.md`, `docs/adr/0003-native-context-engine.md` | Examples could imply mandatory semantic classes; clarify transverse dimensions and optional specialization. Dated status/amendment preserves earlier decisions |
-| P1 eliminate — done locally | `apps/api/adapters/context/native.py` | Second legacy category/content decoder and injected fixture validator existed in runtime. Use registered repository-shaped input only; fixture validation remains test-owned |
-| P1 simplify — done locally | `apps/api/tests/fixtures/qh30_canonical_snapshot.json`, `test_native_context.py`, `test_canonical_graph_pipeline.py`, `scripts/verify_qh30_native.py` | Category/type compatibility mapping and duplicate embedded endpoints/event timestamps. Fixtures now use canonical binding, temporal columns and relation detail; specialized examples remain extension regressions |
-| P1 eliminate — prepared only | `understanding_item_revisions.category`, `qh30_publish()`; new `0005_retire_legacy_category.py` | Null historical metadata is unused. Prepared forward-only migration removes only the null column and its publication check; preserve all other guards and locks. Non-null history blocks atomically |
-| P1 simplify — done locally | `adapters/postgres/canonical.py`, `context/runtime.py`, `postgres/demo_identities.py`, `scripts/smoke_qh30_runtime.py`, `tests/oidc_database.py` | Repository no longer writes/exports category; explicit schema compatibility includes 0004 and prepared 0005. No dynamic head acceptance; OIDC preflight now admits explicitly known 0005; deployed image remains unchanged |
-| P1 keep / historical | migrations `0001`–`0004`; `test_migrations.py`, `test_identity_migration.py`, `test_native_semantics_sql.py` | Applied immutable migration history, backfill/rollback/concurrency/shape/authorization regressions. Eleven seeds stay in 0003 for reproducibility; no retroactive edit or fixture rewrite of historical SQL tests |
-| P1 keep historical references | `semantic_type_versions` eleven seeded records, existing `item_revision_types` | Smoke rows reference `qh.decision/1`. Never rewrite bindings or delete registry records, even unused immutable ones. Stop treating them as recommended default vocabulary; keep readable schemas/rules permanently |
-| P1 keep functional | `context/native.py:NativeContextEngine.replace`, `incremental.py:ProjectionWorker.rebuild` | Full-generation publisher is used by actual incremental rebuild; deleting it breaks recovery. Keep bounded normal outbox path and explicit maintenance distinct |
-| P2 keep narrowly / historical API | `native.py:reconcile`, `verify_readiness`, `CanonicalRepository.projection_lock`, full-snapshot pipeline tests | Standalone historical reconciler is not bound by runtime; retains lost-ack/corruption/readiness/concurrency regression evidence. May remove this separate interface later after relocating its unique tests to incremental rebuild; do not remove the shared publisher |
-| P2 simplify later | Neo4j `category`, `semantic_type`, `schema_version`, `properties_json` graph fields | SQL-backed category value already means shape. Keep graph property aliases now: removing fingerprint inputs needs a projector/epoch rebuild transition. Unused full-snapshot manifest lookup is now omitted from incremental reads, avoiding its warning without changing fingerprints |
-| P2 keep functional | `demo_identities.py` known 0002/0003 preflight; `tests/oidc_database.py` | Required to reproduce QH-5/old-schema identity tests; no closed semantic classification. Keep until those supported workflows explicitly retire |
-| P2 keep functional | `pyproject.toml`, `requirements.lock`, `Dockerfile.dev` | No Graphiti, Surreal, Mistral/OpenAI SDK dependencies in native branch. Neo4j driver is under dev extra but current image installs that extra and runtime imports it; don't remove it. Moving it to runtime deps is packaging work if a lean image is introduced |
-| P2 keep scaffold | `app/chat`, `app/projections`, `adapters/llm`, `services/mcp-server`, `packages/shared` | Approved boundaries, not abandoned adapters. No extraction/provider implementation to remove; MCP only offers scaffold transport |
-| P2 keep / improve later | `.github/workflows/quality.yml`, `scripts/run_qh30_integration.py`, `qh30-integration.yml` | Disposable strict integration is useful; extended here with generic/migration regressions. Keep quality and real OIDC coverage distinct. Hosted run of this branch not authorized |
-| P2 keep functional | `infra/docker/qh30-runtime.yml`, base Compose mounts/networks | Current image pin and backend-only override. New worktree is not mounted. Shared QH PostgreSQL/Neo4j/volumes/network, frontend/MCP/IdP must remain intact |
-| P3 archive later | `/home/ubuntu/qh` Graphiti checkout/PR #1; old backend images, six historical Neo4j nodes | Not native dependencies; checkout still supplies other live mounts, shared Git and `.env`. Keep branch/PR/evidence; image cleanup needs separate approval. No native branch Graphiti adapter to delete |
-| P3 archive/stop later | `/tmp/qh-surrealdb/spike`, three `qh-surreal-spike-*` containers and dedicated network/volumes | Isolated interrupted experiment, absent from native manifests/locks. Existing archival/dependency plan remains valid; don't stop/delete. Shared image layers are not additive reclaimable space |
-| P3 historical evidence | `docs/verification-*`, QH-4 ADR/model review, older QH-30 sections and scripts | Preserve dated outcomes/commands; label supersession instead of changing old experiments into current evidence. No mass deletion of migration/security tests |
+The nineteen entries below are the existing audit, in the same order. This is a
+closure check against its findings, not a new audit. `46eda1f` completes the
+remaining standalone-reconciler removal; previous verified commits are retained.
+“Prepared / authorization pending” means no further safe code deletion is outstanding.
+
+| ID / priority | Existing element | Closure / commit | Reason or remaining boundary |
+| --- | --- | --- | --- |
+| A01 P0 | README, AGENTS, architecture, SQL notes, adapter notes | **Resolved** — `40832b6`, `8fd06bd`; documentation commit following `46eda1f` | Active environment is 0004/fd50 with native worker; separate 0005 branch is not deployed. No edits through live QH-30 mounts |
+| A02 P0 | Product Contract, ADR 0003 | **Resolved** — `40832b6`, `8fd06bd`; documentation commit following `46eda1f` | Generic profiles, open descriptors and authorized selection approved; deployment is separate. Dated amendment preserves earlier decisions |
+| A03 P1 | `context/native.py` legacy decoder / injected validator | **Resolved** — `f85b31c` | One registered PostgreSQL-shaped representation; no production category/content decoder or fixture validator |
+| A04 P1 | Canonical fixtures, compatibility mapping, duplicate time/endpoints, fixture probe | **Resolved** — `f85b31c`, `46eda1f` | Fixtures use actual bindings/time/details. Obsolete fixture-only `scripts/verify_qh30_native.py` removed; real runtime smoke/restart/rebuild tests replace it. Specialized fixtures still test optional extensions |
+| A05 P1 | Null legacy category and obsolete `qh30_publish` check | **Prepared; persistent authorization pending** — `5c8cd44` | 0005 removes only the null column/check. Non-null history aborts atomically; no canonical rewrite. VPS remains at 0004 |
+| A06 P1 | Repository/writer, runtime and identity compatibility | **Resolved** — `f85b31c`, `5c8cd44`, `16d350e` | No category write/export; explicit 0004/0005 support and compatible smoke/OIDC helper. No dynamic-head acceptance or hidden fallback |
+| A07 P1 | Migrations 0001–0004 and historical SQL/security tests | **Intentionally retained** — unchanged applied history | Required to reproduce upgrades, eleven historical seeds, rollback, immutable publication, shape, isolation and authorization. Not abandoned runtime code |
+| A08 P1 | Historical registry definitions and referenced bindings | **Intentionally retained** — `16d350e` provisions separate generic IDs | Existing qh.decision/1 revisions remain readable and immutable. No default eleven-category vocabulary, registry deletion or rebinding |
+| A09 P1 | `NativeContextEngine.replace`, full-generation publisher | **Intentionally retained** — recovery verified in `46eda1f` | Called by actual `ProjectionWorker.rebuild`; deleting it breaks reconstruction. Ordinary delivery remains affected-only |
+| A10 P2 | Standalone `reconcile`, `verify_readiness`, `projection_lock`, old snapshot pipeline | **Resolved** — `46eda1f` | Removed separate API, advisory lock, O(n) read checks and unused scope-manifest writes. Unique lost-ack/failure/corruption/concurrency regressions now exercise incremental rebuild and worker |
+| A11 P2 | Neo4j `category`/`semantic_type`/`schema_version`/`properties_json` aliases | **Intentionally retained** — `16d350e`, `46eda1f` remove unused manifest access | Active fingerprint inputs: category means structural shape, not the old eleven meanings. Removing aliases changes graph compatibility and needs a reviewed epoch/rebuild transition; no duplicate decoder remains |
+| A12 P2 | Known 0002/0003 identity preflight | **Intentionally retained** — historical tests pinned | Needed by QH-5 and pre-0004 identity workflows; unrelated to semantic categorization |
+| A13 P2 | Manifests, locks, Dockerfile dependencies | **Intentionally retained after verification** — no unnecessary dependency removal | Native branch has no Graphiti/Surreal/provider SDK dependency. Neo4j driver is used and installed by the current dev-extra image. A hypothetical lean-image packaging change is not audit debt |
+| A14 P2 | Chat/projections/LLM/MCP/shared scaffolding | **Intentionally retained** — approved module contracts | Reserved for planned tickets, not abandoned adapters. No provider extraction implementation or obsolete service to remove |
+| A15 P2 | Strict native integration CI, quality/OIDC checks | **Intentionally retained / extended** — `5c8cd44`, `16d350e`, `a1eba04`, `46eda1f` | Real disposable SQL/Neo4j and skip-failure guard remain; hosted execution requires publication authorization. Independent OIDC checks remain useful |
+| A16 P2 | Runtime Compose, current mounts/networks | **Intentionally retained** — unchanged | Live fd50 backend and shared PostgreSQL/Neo4j/network/volumes, frontend/MCP/IdP remain operational. New worktree is not mounted |
+| A17 P3 | Graphiti checkout, PR #1, images, six historical nodes | **Intentionally retained; resource retirement authorization pending** — existing cutover inventory | No native adapter dependency. Root checkout still supplies live shared mounts, Git and .env; preserve history/PR/nodes. Exclusive old images only eligible after separate approval |
+| A18 P3 | SurrealDB three containers, network/volumes and spike checkout | **Archival/stop prepared; authorization pending** — existing post-cutover inventory/plan | No active QH dependency; no native manifest reference. Preserve until separately authorized archive/restore rehearsal and stop. No fresh resource audit or shutdown; [existing archive/stop plan](qh-30-plan.md#surrealdb-archive-and-stop-plan--prepared-not-executed) |
+| A19 P3 | Dated reports, ADRs and old verification commands/scripts | **Intentionally retained; obsolete executable probe removed** — `40832b6`, `8fd06bd`, `46eda1f` | Keep historical evidence and migration/security reproducibility. Removed operational fixture probe survives in Git; dated commands below are historical evidence, not current instructions |
+
+There is no further safe deletion outstanding in this inventory. Residual actions
+are persistent 0005/provisioning/deployment, a graph-format transition only if the
+aliases are deliberately retired, publication/hosted CI and separately authorized
+historical-resource archival/stop/removal. None is executed here. The prior deferral
+of A10 is superseded by this closure; its original test results remain below.
 
 No application dependency or service removal is justified merely by a Graphiti or
-SurrealDB keyword in a historical report. No resource was stopped, deleted or pruned.
+SurrealDB keyword in a historical report. No QH or historical resource was stopped,
+deleted or pruned; execution used disposable test containers and test-owned data only.
+
+## Audit closure verification
+
+Code unit **46eda1f2788cddf6169f03471f702b6fa631ab2e**, local only: removes the
+standalone snapshot reconciler, its full-scope query scans, repository advisory
+projection lock, unused scope-manifest publication and fixture-only probe. One
+bounded test drain helper replaces duplicates; the SQL/graph pipeline now uses
+actual 0004 outbox delivery. Rebuild retains the shared atomic generation publisher.
+No applied migration, canonical model/public port, runtime Compose or dependency
+lock changed in this closure. No new compatibility layer was introduced.
+
+The relocated regressions verify rollback after failed graph publication, SQL ack
+loss after graph commit, concurrent rebuild serialization on scope state, partial
+graph loss, tampered positive hits, changes during delivery, empty pending results,
+exact replay, two-owner isolation and canonical SQL error causes. Older historical
+full-snapshot test results below remain dated evidence, not a supported alternate
+operational path. The independent pre-0004 startup rejection test remains explicit.
+
+| Check | Result |
+| --- | --- |
+| Targeted changed paths | PASS **97 tests**, 273.85 s: canonical pipeline, outbox, native projection, generic semantics and runtime |
+| Full strict integration entry point | PASS **261 tests, zero skips**, 323.00 s, via `scripts/run_qh30_integration.py` against dedicated PostgreSQL/Neo4j; includes migration/model, generic semantics, outbox/rebuild, runtime, Core contracts, OIDC crypto and owner-policy regressions |
+| Exact candidate image, no source mounts | PASS **6 tests**, 87.85 s: runtime on 0004/0005, retained-ID smoke/restart, separate Uvicorn process recovery on 0005 and empty install/provisioning |
+| Static/security | PASS Ruff, actionlint, Git whitespace and staged private-file/credential guard; 42 local Markdown links/anchors. Mermaid diagrams unchanged |
+| Hosted CI / persistent activation | NOT EXECUTED — no push, deployment or persistent migration authorized |
+
+Test counts above are separate runs, not additive totals.
+
+The new candidate is `qh-semantic-candidate:46eda1f2788cddf6169f03471f702b6fa631ab2e`,
+Docker-inspected image ID `sha256:74313b1c89d0440aa206d1aa7f80080e83edcce1ad84e2d7dd1cb019c6c2c4aa`,
+OCI revision `46eda1f2788cddf6169f03471f702b6fa631ab2e`. Built from that exact
+Git archive, without ignored files. It supersedes the earlier a1eba04 candidate;
+the runbook below now pins this image. No image was deployed. Reproduce packaged
+checks with the same command as the previous packaging record below, substituting
+this full image tag. Use the existing strict-suite command for complete local CI.
+
+The only observed test warning is the pre-existing Starlette/AnyIO deprecation;
+no dependency change is justified by this warning in the present closure.
+All nineteen audit entries are resolved, deliberately retained for the stated
+functional/history reason, or prepared behind the listed authorization boundary.
+QH-8 implementation is not started by closing this audit.
 
 ## Prepared migration and deployment boundary
 
@@ -186,7 +240,7 @@ accepts identical replay), and refuses conflicts. No model output triggers regis
 Exactly three registry rows on an already migrated database would require deleting
 history; that is neither necessary nor authorized.
 
-Before any future deployment: approve defaults/schema and 0005 separately; review
+Before any future deployment: authorize 0005/provisioning separately; review
 an immutable new image and its new worktree mounts, inventory actual 0004 content,
 pause writers, take the appropriate backup for the data then present, run explicit
 `alembic upgrade 0005_retire_legacy_category`, inspect guards/state/evidence, deploy
@@ -247,7 +301,7 @@ rebuild recover without extractor invocation; direct authorized SQL reads remain
 possible during graph outage. Limited qh-schema-1 profile is not full JSON Schema.
 
 Dependencies: native 0004 infra is already deployed and the three-profile direction
-is approved. Accept the descriptor contract and authorize controlled provisioning
+and the descriptor contract are approved. Authorize controlled provisioning
 in the target environment before QH-8 uses it. 0005 is independently
 gated **not a technical prerequisite**: generic profiles work on 0004. Public write/
 provider-disclosure policy is still unresolved; first demo must be explicitly
@@ -289,7 +343,8 @@ sudo -n docker run --rm --network qh30-native-test \
   -u /workspace/scripts/run_qh30_integration.py
 ```
 
-The fixture probe uses the same graph env/network/mount plus
+Historical reproduction only (the executable probe is removed by audit closure):
+the fixture probe used the same graph env/network/mount plus
 `PYTHONPATH=/workspace/apps/api`, running `scripts/verify_qh30_native.py --phase`
 with each of the three phases above. Its new registered-row probe namespace does
 not reuse the old category-fixture generation. Required CI configuration still
@@ -335,7 +390,7 @@ window (commands below are a runbook, not execution authorization):
 ```bash
 set -euo pipefail
 cd /home/ubuntu/qh-worktrees/qh-semantic-foundation
-QH_SEM_DEPLOY_COMMIT=a1eba04510bc6796d4799a71d267a981edf1a32e
+QH_SEM_DEPLOY_COMMIT=46eda1f2788cddf6169f03471f702b6fa631ab2e
 export QH_NATIVE_BACKEND_IMAGE="qh-semantic-candidate:${QH_SEM_DEPLOY_COMMIT}"
 export QH_NATIVE_GRAPH_NAMESPACE=qh-native
 export QH_NATIVE_CONTEXT_ENABLED=true
@@ -347,12 +402,12 @@ QH_SEM_COMPOSE=(sudo -n docker compose --env-file /home/ubuntu/qh/.env -p qh
   -f /home/ubuntu/qh-worktrees/qh-semantic-foundation/infra/docker/docker-compose.yml
   -f /home/ubuntu/qh-worktrees/qh-semantic-foundation/infra/docker/qh30-runtime.yml)
 "${QH_SEM_COMPOSE[@]}" config --quiet
-QH_SEM_IMAGE_ID=sha256:80feadad7d40ad34ef3cce259407380286ab0aba3d213d50fb1bba1c960b3445
+QH_SEM_IMAGE_ID=sha256:74313b1c89d0440aa206d1aa7f80080e83edcce1ad84e2d7dd1cb019c6c2c4aa
 test "$(sudo -n docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{.Id}}')" = "$QH_SEM_IMAGE_ID"
 test "$(sudo -n docker image inspect "$QH_NATIVE_BACKEND_IMAGE" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$QH_SEM_DEPLOY_COMMIT"
 ```
 
-The candidate was built from `git archive a1eba04510bc6796d4799a71d267a981edf1a32e`
+The candidate was built from `git archive 46eda1f2788cddf6169f03471f702b6fa631ab2e`
 piped to Docker build, with the revision label above; ignored files/credentials
 never entered its build context. Reuse that exact tested image. If it is missing
 or differs, stop and rebuild/retest/review a new image identity before activation;
@@ -446,7 +501,7 @@ part of this runbook. After transition, use only the reviewed new-worktree Compo
 approved management path. Health alone is insufficient; failed/pending state, missing
 IDs/evidence or image/mount drift blocks acceptance and reopening writers.
 
-## Completion evidence — descriptor/runtime/CI preparation
+## Previous completion evidence — descriptor/runtime/CI preparation
 
 Release/test unit: **a1eba04510bc6796d4799a71d267a981edf1a32e**, local only.
 Implementation unit `16d350e` supplies controlled profiles/selection and 0005/OIDC
@@ -479,16 +534,15 @@ Credentials stayed in mode-600 `/tmp/qh-foundation-oidc.env`, outside Git/logs.
 
 No persistent migration, profile provisioning, backend replacement, push or hosted
 workflow was performed in this task. The original 42a20c7, Draft PRs and historical
-resources remain preserved. Remaining acceptance is the proposed descriptor contract
-(value/certainty, exact any-of selection over historical revisions), then separate
-publication, 0005/provisioning and deployment authorization. The three-profile
-architecture itself is approved and is not reopened. Public latest/confirmed-only
+resources remain preserved. The owner subsequently approved the descriptor contract
+(value/certainty, exact any-of selection over historical revisions) and three profiles.
+Remaining gates are publication, 0005/provisioning and deployment authorization. Public latest/confirmed-only
 selection, synonyms/ranking and write/provider-disclosure policy remain future
 contract decisions; the first QH-8 proof uses expressly authorized internal work.
 No real provider integration, embeddings or advanced semantic search is implemented.
 
 
-Verified candidate image (built locally, **not deployed**):
+Previous verified candidate image (superseded by the audit-closure image above, **never deployed**):
 `qh-semantic-candidate:a1eba04510bc6796d4799a71d267a981edf1a32e`, image ID
 `sha256:80feadad7d40ad34ef3cce259407380286ab0aba3d213d50fb1bba1c960b3445`, OCI
 revision label `a1eba04510bc6796d4799a71d267a981edf1a32e`. Reproduction of packaging
@@ -504,8 +558,8 @@ sudo -n docker run --rm --network qh30-native-test \
 ```
 
 The three-profile direction is ready for QH-8 planning. Before its first persistent
-use, accept the exact descriptor contract and authorize the provisioning/deployment
-window separately. QH-8 implementation begins with fake/replay and verified exact
+use, authorize the provisioning/deployment window separately; the descriptor contract
+is approved. QH-8 implementation begins with fake/replay and verified exact
 citations; the current structured smoke is not an implemented extractor. A future
 provider can replace the fake without changing profile IDs/content/state/provenance.
 Only explicit human validation can create a confirmed revision through an authorized

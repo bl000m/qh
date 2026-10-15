@@ -10,12 +10,14 @@ bulk snapshot reads. It is not a public ingestion contract.
 Run migrations explicitly; API startup never changes the database schema.
 
 `context/native.py` supplies QH-30 Neo4j projection/retrieval with registered PostgreSQL-shaped rows;
-test fixtures use that same representation, without a production category decoder. `reconcile` performs explicit full reconciliation;
-SQL-backed composition enables readiness/completeness checks before retrieval.
+test fixtures use that same representation, without a production category decoder.
+The standalone snapshot reconciler and full-scope query checks have been removed;
+ordinary retrieval uses the incremental engine's per-scope readiness checks.
 `context/incremental.py` supplies the backend-local outbox worker, monotonic graph
 projector and ordinary bounded-hydration retrieval; 0004 owns operational SQL state.
-The full-generation publisher remains required by incremental rebuild; the standalone
-full reconciler retains historical recovery regressions. `context/runtime.py` binds
+The full-generation publisher remains required by `ProjectionWorker.rebuild`;
+recovery regressions exercise that actual maintenance path, including graph loss,
+lost acknowledgement, transaction failure and concurrent rebuilds. `context/runtime.py` binds
 the actual worker and authorized engine in the backend lifespan (VPS schema 0004,
 fd50b1b). There is no public context route; `llm/` remains reserved.
 The separate cleanup branch accepts 0004/prepared 0005, without startup migrations. Implementations accept clients/readers through explicit constructors and

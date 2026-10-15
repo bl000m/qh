@@ -21,10 +21,13 @@ The owner's subsequent review clarifies that item/entity/relation are structural
 shapes and semantic meanings need no fixed category list. The
 [post-cutover proposal](../qh-semantic-consolidation.md) compares three generic write
 profiles against specialized schemas/rules, documents selective-retrieval limits,
-and prepares 0005 without modifying 0001–0004 or historical bindings. The owner has now approved the three-generic-profile direction. The proposed
-value/certainty descriptor contract, persistent 0005 and a new image remain separately
-gated; controlled profile provisioning and exact descriptor selection are implemented
-and tested on temporary databases. No new public port/DTO or mandatory taxonomy follows. Existing
+and prepares 0005 without modifying 0001–0004 or historical bindings. The owner has
+approved the three generic profiles, open value/certainty descriptors and authorized
+structured selection. Persistent 0005, provisioning and a new backend remain separately
+gated; the implementation is tested on temporary databases. The audit-closure increment
+retires the standalone snapshot reconciler and full-scope query checks, moving their
+recovery regressions onto the actual incremental rebuild. The full-generation publisher
+remains required for that maintenance path; the deployed fd50 code is unchanged. No new public port/DTO or mandatory taxonomy follows. Existing
 registry/version behavior and optional specialization remain supported. This
 proposal is isolated from the mounted QH-30 checkout; no extraction/embedding or
 advanced semantic retrieval is claimed.
