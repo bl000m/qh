@@ -358,3 +358,27 @@ timestamp/scope, so it is not a controlled model-only reliability comparison.
 One sample cannot establish general model superiority or production reliability.
 QH-7 remains in progress; successful live semantic completion remains unproven.
 No push, merge, Jira update, CI execution or data/volume deletion occurred.
+
+## Offline observability correction — 2026-10-15
+
+See [failure path, diagnostics and minimal isolated repeat plan](qh-7-observability.md).
+PASS: structured parsing/schema, Graphiti internal, QH consistency and Neo4j
+categories, explicit cause preservation even across swallowed stage failures,
+synthetic-only pre-parse response capture, failed-ingestion status independent of
+HTTP success. No Core/public contract changes. PASS: offline candidate request
+preparation using the saved 8B entities and episode timestamp, with every HTTP
+send mocked and zero DB writes. NOT TESTED: exact reconstruction of the historical
+failure; response 4 and its original request hash are missing. Live semantic
+completion remains unproven and QH-7 remains in progress.
+
+No new Mistral requests, push, merge, Jira write, container recreation, database
+mutation or volume deletion in this correction. Source bind mounts expose the
+code without replacing containers. Existing semantic evidence remains intact.
+
+Executed final checks: **89 targeted pytest tests PASS** (same five files listed
+in the observability report), **Ruff PASS** for context adapter, changed tests and
+offline preparation script; one existing upstream Pydantic deprecation warning.
+Offline preparation **PASS**, candidate SHA256 and budget recorded in the report.
+Whitespace and staged credential/private-file guard **PASS**. No dependencies or
+container rebuild required. Local commit purpose: preserve structured causes and
+synthetic replay checkpoints, with regression coverage and isolated repeat plan.

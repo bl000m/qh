@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 
 from adapters.context.billing import Approval, ApprovedTransport, deny_call
 from adapters.context.quality import active_extraction
+from adapters.context.diagnostics import StageError, describe_failure, llm_phase
 
 
 async def create_graphiti_engine(*, approval: Approval = deny_call):
@@ -27,18 +28,33 @@ async def create_graphiti_engine(*, approval: Approval = deny_call):
             session = active_extraction.get()
             if session:
                 session.check()
+            phase = kwargs.get("prompt_name", "unknown")
+            token = llm_phase.set(phase)
             try:
                 answer = await super().generate_response(*args, **kwargs)
                 response_model = kwargs.get("response_model")
                 if response_model is not None:
                     response_model.model_validate(answer)
                 if session:
-                    session.validate(kwargs.get("prompt_name", ""), answer)
+                    session.validate(phase, answer)
                 return answer
-            except Exception:
-                if session and session.failure is None:
+            except Exception as exc:
+                diagnostic = describe_failure(exc, phase, llm=True)
+                category = diagnostic.category
+                if category == "graphiti_internal":
+                    # Unknown SDK/upstream failures are not labelled schema errors.
+                    category = "llm_internal"
+                if category == "qh_consistency":
+                    if session and session.cause is None:
+                        session.cause = exc
+                    raise
+                failure = StageError(category, phase)
+                if session and session.cause is None:
                     session.failure = "Extraction provider stage failed"
-                raise
+                    session.cause = failure
+                raise failure from exc
+            finally:
+                llm_phase.reset(token)
 
         async def _generate_response_with_retry(self, *args, **kwargs):
             return await self._generate_response(*args, **kwargs)
@@ -50,9 +66,10 @@ async def create_graphiti_engine(*, approval: Approval = deny_call):
                 session.check()
             try:
                 return await super().create(input_data)
-            except Exception:
+            except Exception as exc:
                 if session and session.failure is None:
                     session.failure = "Extraction embedding stage failed"
+                    session.cause = exc
                 raise
 
         async def create_batch(self, input_data_list):
@@ -82,9 +99,9 @@ async def create_graphiti_engine(*, approval: Approval = deny_call):
     try:
         driver = await asyncio.to_thread(Neo4jDriver, os.environ["NEO4J_URI"],
                                         os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"])
-    except Exception:
+    except Exception as exc:
         await sdk.close()
-        raise RuntimeError("Neo4j configuration failed") from None
+        raise StageError("neo4j_persistence", "driver_setup") from exc
     graphiti = Graphiti(graph_driver=driver,
         llm_client=NoRetryClient(config=config, client=sdk, max_tokens=4096),
         embedder=SingleInputEmbedder(config=OpenAIEmbedderConfig(

@@ -8,6 +8,7 @@ from graphiti_core.errors import NodeNotFoundError
 from graphiti_core.nodes import EpisodeType, EpisodicNode
 from graphiti_core.search.search_config_recipes import EDGE_HYBRID_SEARCH_RRF
 
+from adapters.context.diagnostics import describe_failure
 from adapters.context.quality import ExtractionSession, SourceEvidence, active_extraction
 
 from app.core.models import (
@@ -17,7 +18,9 @@ from app.core.models import (
 
 
 class ContextEngineError(RuntimeError):
-    pass
+    def __init__(self, message, *, diagnostic=None):
+        super().__init__(message)
+        self.diagnostic = diagnostic
 
 
 def group_id(context_id: ContextId) -> str:
@@ -82,8 +85,10 @@ class GraphitiContextEngine:
                 source=EpisodeType.text, group_id=scope, uuid=identifier,
                 previous_episode_uuids=[], update_communities=False)
             session.check()  # Optional Graphiti stages may catch validation exceptions.
-        except Exception:
-            raise ContextEngineError("Semantic ingestion failed") from None
+        except Exception as exc:
+            cause = session.cause or exc
+            raise ContextEngineError("Semantic ingestion failed",
+                diagnostic=describe_failure(cause, "ingest")) from cause
         finally:
             active_extraction.reset(token)
         return identifier
@@ -125,8 +130,9 @@ class GraphitiContextEngine:
                     context_id=scopes[edge.group_id], excerpt=edge.fact,
                     provenance=tuple(provenance)))
             return ContextResult(hits=tuple(hits))
-        except Exception:
-            raise ContextEngineError("Semantic retrieval failed") from None
+        except Exception as exc:
+            raise ContextEngineError("Semantic retrieval failed",
+                diagnostic=describe_failure(exc, "search")) from exc
 
     async def close(self) -> None:
         await self.client.close()

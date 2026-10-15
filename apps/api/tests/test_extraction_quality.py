@@ -192,7 +192,11 @@ def test_b_runner_failure_has_nonzero_exit_and_no_followup(monkeypatch,tmp_path)
                 await smoke_b.run(tmp_path/'experiment.json')
             assert error.value.code==1
             adapter.search.assert_not_awaited()
-            assert json.loads((tmp_path/'experiment.json').read_text())['requests']==[]
+            saved = json.loads((tmp_path/'experiment.json').read_text())
+            assert saved['requests']==[]
+            assert saved['metadata']['ingestion_status'] == 'failed'
+            assert saved['diagnostic']['category'] == 'graphiti_internal'
+            assert saved['stopped'] is True
         finally:
             await client._transport.inner.aclose()
     asyncio.run(scenario())

@@ -26,9 +26,11 @@ class ExtractionSession:
     entities: set[str] = field(default_factory=set)
     failure: str | None = None
 
+    cause: Exception | None = None
+
     def check(self):
         if self.failure:
-            raise ExtractionQualityError(self.failure)
+            raise ExtractionQualityError(self.failure) from self.cause
 
     def reject(self, reason):
         self.failure = reason
@@ -63,7 +65,10 @@ class ExtractionSession:
         except Exception as exc:
             if self.failure is None:
                 self.failure = "Extraction validation failed: " + type(exc).__name__
-            raise ExtractionQualityError(self.failure) from None
+            failure = ExtractionQualityError(self.failure)
+            failure.phase = phase
+            self.cause = failure
+            raise failure from exc
 
 
 active_extraction: ContextVar[ExtractionSession | None] = ContextVar("qh_extraction", default=None)

@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import httpx
+from adapters.context.diagnostics import describe_failure, llm_phase
 from adapters.context.factory import create_graphiti_engine
 from adapters.context.smoke_quality import SmokeFixture
 from app.core.models import ContextId, ContextQuery, SourceId, SourceRevisionId, SourceRevisionRef
@@ -30,7 +31,9 @@ class ExperimentStopped(BaseException):
 
 
 class ExperimentTransport(httpx.AsyncBaseTransport):
-    def __init__(self, ledger: Path, *, inner=None):
+    def __init__(self, ledger: Path, *, inner=None, capture_synthetic=False):
+        self.capture_synthetic = capture_synthetic
+        self.diagnostic = None
         self.ledger = ledger
         self.inner = inner if inner is not None else httpx.AsyncHTTPTransport(retries=0)
         self.records = []
@@ -43,7 +46,7 @@ class ExperimentTransport(httpx.AsyncBaseTransport):
 
     def save(self):
         self.ledger.write_text(json.dumps({"requests":self.records,"estimated_cost_usd":self.cost,
-                                         "stopped":self.failed,"failure_reason":self.failure_reason,"observations":self.observations,"metadata":self.metadata},indent=2))
+                                         "diagnostic":self.diagnostic,"stopped":self.failed,"failure_reason":self.failure_reason,"observations":self.observations,"metadata":self.metadata},indent=2))
 
     def stop(self, reason):
         self.failed = True
@@ -70,6 +73,10 @@ class ExperimentTransport(httpx.AsyncBaseTransport):
             self.stop("Request count or estimated budget exhausted")
         row={"number":len(self.records)+1,"model":body['model'],"endpoint":str(request.url),
              "pre_send_estimate_usd":reserve,"max_output_tokens":output_cap}
+        if chat and self.capture_synthetic:
+            row["phase"] = llm_phase.get()
+            row["synthetic_request"] = {key: body[key] for key in
+                ("model", "messages", "response_format", "temperature", "max_tokens") if key in body}
         self.records.append(row)
         self.save()  # A failed attempt is consumed, never restarted/retried.
         self.inflight = True
@@ -79,7 +86,19 @@ class ExperimentTransport(httpx.AsyncBaseTransport):
             if response.status_code!=200:
                 await response.aclose()
                 self.stop("Provider HTTP error")
-            data=json.loads(await response.aread())
+            raw = await response.aread()
+            if chat and self.capture_synthetic:
+                # Only the dedicated fixture runner opts in. No headers/SDK objects.
+                try:
+                    envelope = json.loads(raw)
+                    row['synthetic_response'] = {
+                        'choices': [{'message': {'content': c.get('message', {}).get('content')},
+                                     'finish_reason': c.get('finish_reason')}
+                                    for c in envelope.get('choices', [])]}
+                except (ValueError, AttributeError, TypeError):
+                    row['synthetic_response_body'] = raw.decode('utf-8', errors='replace')
+                self.save()  # Persist before SDK JSON parsing/schema/quality validation.
+            data=json.loads(raw)
             usage=data.get('usage') or {}
             if not isinstance(usage.get('prompt_tokens'),int) or not isinstance(usage.get('completion_tokens',0),int):
                 self.stop("Missing usage")
@@ -115,6 +134,7 @@ class ExperimentTransport(httpx.AsyncBaseTransport):
 
 async def run(ledger: Path):
     with ledger.open('x') as handle:
+        ledger.chmod(0o600)
         handle.write('{}')  # Refuse to restart an existing experiment.
     logging.disable(logging.CRITICAL)
     os.environ['MISTRAL_LLM_MODEL'] = MODEL  # Child process only, never edit VPS .env.
@@ -123,7 +143,7 @@ async def run(ledger: Path):
         return True  # Only reachable after explicit CLI experiment acknowledgement.
     adapter,sdk = await create_graphiti_engine(approval=authorized)
     await sdk._client._transport.inner.aclose()
-    guard=ExperimentTransport(ledger)
+    guard=ExperimentTransport(ledger, capture_synthetic=True)
     sdk._client._transport.inner=guard
     def observe(evidence, phase, answer):
         guard.observations.append({"phase":phase,"result":deepcopy(answer)})
@@ -133,13 +153,19 @@ async def run(ledger: Path):
     marker=uuid4().hex
     space=ContextId('qh7-b-8b-'+marker)
     source=SourceRevisionRef(source_id=SourceId('qh7-source-'+marker),revision_id=SourceRevisionId('revision-1'))
-    guard.metadata={"scope":str(space),"source_id":str(source.source_id),
+    reference_time = datetime.now(timezone.utc)
+    guard.metadata={"reference_time": reference_time.isoformat(), "stage": "initialize",
+                    "ingestion_status": "not_started", "scope":str(space),"source_id":str(source.source_id),
                     "source_revision":str(source.revision_id),"text":FIXTURE.text}
     guard.save()
     try:
         await adapter.initialize()
+        guard.metadata.update(stage="ingest", ingestion_status="started")
+        guard.save()
         await adapter.ingest_source(context_id=space,source=source,text=FIXTURE.text,
-                                    reference_time=datetime.now(timezone.utc))
+                                    reference_time=reference_time)
+        guard.metadata.update(stage="search", ingestion_status="succeeded")
+        guard.save()
         result=await adapter.search(ContextQuery(text='Who founded the observatory?',context_ids=(space,)))
         if not result.hits or any(h.context_id!=space or h.provenance!=(source,) or h.excerpt.strip().rstrip('.') not in FIXTURE.expected_facts for h in result.hits):
             guard.stop('Semantic retrieval/provenance failed')
@@ -147,6 +173,10 @@ async def run(ledger: Path):
         print('PASS: B-only extraction, grounded fact and scoped semantic retrieval')
     except BaseException as exc:
         guard.failed=True
+        if guard.metadata.get("ingestion_status") == "started":
+            guard.metadata["ingestion_status"] = "failed"
+        diagnostic = getattr(exc, 'diagnostic', None) or describe_failure(exc, 'smoke')
+        guard.diagnostic = diagnostic.as_dict()
         if guard.failure_reason is None:
             guard.failure_reason="Local/extraction validation failure: "+type(exc).__name__
         print('STOP: B-only smoke failed; no retry or further provider requests')
