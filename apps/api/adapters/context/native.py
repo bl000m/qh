@@ -1,6 +1,6 @@
-"""QH-30 native projection/retrieval. No production startup binding.
+"""Native projection/retrieval composed by the backend runtime.
 
-Input rows are a bulk canonical export/join shaped from QH-4, not a new Core DTO.
+Input rows are registered canonical repository exports, not a public ingest DTO.
 Neo4j stores only retrieval properties and references; hydration remains canonical.
 """
 
@@ -28,7 +28,7 @@ class NativeContextError(RuntimeError):
     pass
 
 
-def checked_rows(snapshot, validate_content=None):
+def checked_rows(snapshot):
     sources = {s["id"]: s for s in snapshot["source_revisions"]}
     if len(sources) != len(snapshot["source_revisions"]):
         raise NativeContextError("Duplicate canonical source revision")
@@ -37,66 +37,28 @@ def checked_rows(snapshot, validate_content=None):
         if raw["id"] in seen:
             raise NativeContextError("Duplicate canonical item revision")
         seen.add(raw["id"])
-        canonical = "type_id" in raw
         if (
             raw["validation_state"] not in {"proposed", "confirmed", "rejected"}
             or not raw["provenance"]
         ):
             raise NativeContextError("Invalid revision/state/evidence")
-        if canonical:
-            # Canonical SQL publication already enforced its pinned schema/rules.
-            # These rows are internal repository exports, never LLM/API input.
-            kind = raw["structural_kind"]
-            if (
-                kind not in {"item", "entity", "relation"}
-                or not raw["type_id"]
-                or raw["type_version"] < 1
-            ):
-                raise NativeContextError("Invalid registered semantic binding")
-            category, type_id, version = kind, raw["type_id"], raw["type_version"]
-            content = raw["content"]
-            text = content.get("text", json.dumps(content, sort_keys=True))
-            temporal = {
-                k: raw[k] for k in ("fact_from", "fact_to", "valid_from", "valid_to")
-            }
-            relation = raw["relation"]
-        else:
-            category = raw["category"]
-            if (
-                not isinstance(category, str)
-                or not category
-                or not raw["content"].get("text")
-                or validate_content is None
-            ):
-                raise NativeContextError("Invalid fixture revision/state/evidence")
-            try:
-                validate_content(category, raw["content"])
-            except (ValueError, KeyError, TypeError) as exc:
-                raise NativeContextError(
-                    "Invalid semantic type/version/properties"
-                ) from exc
-            kind = (
-                "relation"
-                if category == "relationship"
-                else "entity"
-                if category == "entity"
-                else "item"
-            )
-            content, text = raw["content"], raw["content"]["text"]
-            type_id, version = content["semantic_type"], content["schema_version"]
-            temporal = {
-                k: None for k in ("fact_from", "fact_to", "valid_from", "valid_to")
-            }
-            relation = None
-            if kind == "relation":
-                props = content["properties"]
-                relation = dict(
-                    source_item_id=props["subject_item_id"],
-                    source_revision_id=props["subject_revision_id"],
-                    target_item_id=props["object_item_id"],
-                    target_revision_id=props["object_revision_id"],
-                    predicate=props["predicate"],
-                )
+        # SQL publication enforces pinned schemas/rules. This is a repository
+        # export boundary, never an alternate validator for LLM/API input.
+        kind = raw.get("structural_kind")
+        if (
+            kind not in {"item", "entity", "relation"}
+            or not raw.get("type_id")
+            or not isinstance(raw.get("type_version"), int)
+            or raw["type_version"] < 1
+        ):
+            raise NativeContextError("Invalid registered semantic binding")
+        type_id, version = raw["type_id"], raw["type_version"]
+        content = raw["content"]
+        text = content.get("text", json.dumps(content, sort_keys=True))
+        temporal = {
+            k: raw[k] for k in ("fact_from", "fact_to", "valid_from", "valid_to")
+        }
+        relation = raw["relation"]
         if not isinstance(text, str) or not text:
             raise NativeContextError("Invalid retrieval text")
         evidence = []
@@ -111,7 +73,7 @@ def checked_rows(snapshot, validate_content=None):
             revision_id=raw["id"],
             item_id=raw["item_id"],
             context_id=raw["context_space_id"],
-            category=category,
+            category=kind,  # Retained graph property name; value is structural shape.
             structural_kind=kind,
             validation_state=raw["validation_state"],
             text=text,
@@ -130,12 +92,12 @@ def checked_rows(snapshot, validate_content=None):
         ).hexdigest()
         rows.append(row)
     if not rows and "context_ids" not in snapshot:
-        raise NativeContextError("Empty fixture generation")
+        raise NativeContextError("Empty unscoped generation")
     return rows
 
 
-def scope_manifests(snapshot, validate_content=None):
-    rows = checked_rows(snapshot, validate_content)
+def scope_manifests(snapshot):
+    rows = checked_rows(snapshot)
     scopes = set(snapshot.get("context_ids", [])) | {r["context_id"] for r in rows}
     return {
         scope: hashlib.sha256(
@@ -182,8 +144,8 @@ def reconcile(repository, engine, scopes, *, force_rebuild=False):
 class NativeContextEngine:
     """Existing ContextEngine search shape; caller authorizes before adapter access.
 
-    read_snapshot may be the scoped PostgreSQL repository or a retained test fixture.
-    SQL-backed composition enables verify_readiness; fixture-only tests opt out.
+    read_snapshot returns registered repository-shaped rows. Fixture tests use
+    the same representation. Full readiness scans are explicit maintenance only.
     Generation replacement is intentionally one transaction for small datasets.
     """
 
@@ -193,13 +155,11 @@ class NativeContextEngine:
         *,
         slice_id,
         read_snapshot,
-        validate_content=None,
         verify_readiness=False,
     ):
         self.driver = driver
         self.slice_id = slice_id
         self.read_snapshot = read_snapshot
-        self.validate_content = validate_content
         self.verify_readiness = verify_readiness
 
     def initialize(self):
@@ -222,9 +182,7 @@ class NativeContextEngine:
             ).consume()
 
     def replace(self, snapshot, *, generation, transaction_guard=None):
-        rows = checked_rows(
-            snapshot, self.validate_content
-        )  # Reject before opening a graph transaction.
+        rows = checked_rows(snapshot)  # Reject before opening a graph transaction.
         indexed = {row["revision_id"]: row for row in rows}
         relations = []
         for row in rows:
@@ -272,7 +230,7 @@ class NativeContextEngine:
                 or old["active"] != generation
             ):
                 raise NativeContextError(
-                    "Changed or retired fixture generation cannot be reapplied"
+                    "Changed or retired generation cannot be reapplied"
                 )
             tx.run(
                 "MERGE (g:QH30Generation {key:$key}) ON CREATE SET g.fingerprint=$fingerprint",
@@ -331,7 +289,7 @@ class NativeContextEngine:
                 id=self.slice_id,
                 generation=generation,
                 manifest=json.dumps(
-                    scope_manifests(snapshot, self.validate_content), sort_keys=True
+                    scope_manifests(snapshot), sort_keys=True
                 ),
             ).consume()
 
@@ -404,7 +362,7 @@ class NativeContextEngine:
         )
         canonical = {
             row["revision_id"]: row
-            for row in checked_rows(snapshot, self.validate_content)
+            for row in checked_rows(snapshot)
         }
         hits = []
         for result in candidates:

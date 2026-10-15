@@ -9,9 +9,9 @@ from neo4j import GraphDatabase
 
 from adapters.context.native import NativeContextEngine, NativeContextError
 from app.core.models import ContextQuery
-from tests.test_native_context import A, FIXTURE, loader, validate_content
+from tests.test_native_context import A, FIXTURE, loader, validate_fixture
 
-PROBE = "qh30-general-endpoints-restart-probe"
+PROBE = "qh30-registered-endpoints-restart-probe"
 
 
 def main():
@@ -23,6 +23,7 @@ def main():
     uri = os.environ["QH30_TEST_NEO4J_URI"]
     if uri != "bolt://qh30-native-neo4j-test:7687":
         raise SystemExit("Refusing a non-dedicated QH30 test database")
+    validate_fixture(FIXTURE)
     with GraphDatabase.driver(
         uri,
         auth=("neo4j", os.environ["QH30_TEST_NEO4J_PASSWORD"]),
@@ -32,7 +33,6 @@ def main():
             driver,
             slice_id=PROBE,
             read_snapshot=loader(FIXTURE, []),
-            validate_content=validate_content,
         )
         if args.phase == "prepare":
             engine.initialize()

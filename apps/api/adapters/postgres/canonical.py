@@ -257,7 +257,6 @@ class CanonicalRepository:
                     )
                 }
                 values.update(
-                    category=None,
                     validated_by=revision.get("validated_by"),
                     validated_at=revision.get("validated_at"),
                     based_on_revision_id=revision.get("based_on_revision_id"),
@@ -295,6 +294,7 @@ class CanonicalRepository:
                 ),
             ).fetchall()
             for row in rows:
+                row.pop("category", None)  # 0004 historical metadata is not a semantic binding.
                 row["relation"] = None
                 if row["structural_kind"] == "relation":
                     row["relation"] = {

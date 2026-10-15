@@ -33,26 +33,8 @@ def records(space):
         for r in FIXTURE["source_revisions"]
         if r["context_space_id"] == space
     ]
-    revisions = []
-    for original in FIXTURE["understanding_item_revisions"]:
-        if original["context_space_id"] != space:
-            continue
-        r = deepcopy(original)
-        category = r.pop("category")
-        r["type_id"] = r["content"].pop("semantic_type")
-        r["type_version"] = r["content"].pop("schema_version")
-        props = r["content"]["properties"]
-        event = props.pop("event_at")
-        r.update(fact_from=event, fact_to=event, valid_from=None, valid_to=None)
-        if category == "relationship":
-            r["relation"] = {
-                "source_item_id": props.pop("subject_item_id"),
-                "source_revision_id": props.pop("subject_revision_id"),
-                "target_item_id": props.pop("object_item_id"),
-                "target_revision_id": props.pop("object_revision_id"),
-                "predicate": props.pop("predicate"),
-            }
-        revisions.append(r)
+    revisions = [deepcopy(r) for r in FIXTURE["understanding_item_revisions"]
+                 if r["context_space_id"] == space]
     return sources, revisions
 
 
@@ -125,7 +107,7 @@ def test_real_multidomain_sql_to_graph_with_provenance_temporal_and_policy(pipel
     first = reconcile(repo, engine, (A,))
     assert len(retrieve(pipeline).hits) == 3
     snapshot = repo.read_snapshot((A,))
-    assert all(r["category"] is None for r in snapshot["understanding_item_revisions"])
+    assert all("category" not in r for r in snapshot["understanding_item_revisions"])
     assert {r["type_id"] for r in snapshot["understanding_item_revisions"]} >= {
         "qh.observation",
         "qh.preference",
