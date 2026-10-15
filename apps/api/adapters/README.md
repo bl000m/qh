@@ -50,3 +50,11 @@ revision and caller-owned extraction key; JSON round-trip/offline publication
 revalidates everything before a single canonical proposal batch. Same-key changed
 output fails immutable replay. A new key is a new proposal set, not semantic dedup.
 No source schema, public port, runtime route or migration was added.
+
+`llm/mistral.py` adds an explicitly supplied, pinned official-API LLMProvider for
+bounded experiments. It is never bound by startup, transport or CI. Existing httpx
+supplies timeout/TLS/no-retry behavior; no SDK or manifest change. The manual
+`scripts/evaluate_qh8_mistral.py` enforces dedicated test hosts, captures original
+responses separately from validation, and keeps a durable fail-closed call/cost
+ledger. See the [first experiment](../../../docs/qh8-mistral-evaluation.md): metadata
+succeeded, chat returned 429, so no real semantic output/pipeline success exists.

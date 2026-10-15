@@ -9,6 +9,11 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-8 optional official Mistral Small 4 adapter, strict request/token/cost ledger,
+  four independent synthetic inputs and frozen pre-call reference, isolated manual
+  evaluation and mock HTTP/native-pipeline CI regressions. Actual first inference
+  returned HTTP 429; real-model comprehension quality remains unmeasured.
+
 - QH-8 offline conversation import, interchangeable fixture/replay extractor,
   exact Unicode citation validation and conservative relation resolution. Generic
   proposed items commit through the existing canonical outbox; isolated owner,
