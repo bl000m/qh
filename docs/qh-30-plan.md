@@ -37,8 +37,9 @@ or migration rerun was needed to discover these code/schema gaps.
 ## Final canonical recommendation — proposed, not applied
 
 Review of 2026-10-15 supersedes the earlier two-level category/type recommendation
-and revision-only endpoints from commit `bb967e3`. The architecture direction is
-confirmed; the model below still awaits owner approval. No executable code,
+and revision-only endpoints from commit `bb967e3`. The owner has approved the single type registry and stable identities with immutable
+revision anchors in principle. Generalized endpoints and universal temporal columns
+below are the final proposed clarification; migration execution is not authorized. No executable code,
 migration, public contract or fixture is changed by this review.
 
 ### The eleven QH-4 categories and concrete alternatives
@@ -91,27 +92,34 @@ category-compatible registry proposal:
    shape and JSON object schema. Published records cannot be updated/deleted/
    truncated; shape cannot change across versions of the same type. Unknown
    type/version fails FK validation. Schemas are retained permanently while used.
-2. `item_revision_types(item_revision_id, context_space_id, type_id, type_version)`:
+2. `item_revision_types(item_revision_id, context_space_id, type_id, type_version,
+   fact_from, fact_to, valid_from, valid_to)`:
    PK on revision; same-space FK to the existing revision, plus FK to the registry.
    This is the **sole active semantic discriminator**, for old and new revisions.
    A deferred publication guard requires exactly one binding for every revision
    at commit and structural details appropriate to its type. It also checks that
    an item identity does not switch between item/entity/relation shapes. Serialize
    publication on the item identity as well as the revision to prevent races.
+   The nullable timestamptz columns hold universal fact/validity time for every
+   revision, not just relations; semantics and constraints are specified below.
 3. `entity_revision_details(item_revision_id, item_id, context_space_id)`:
    immutable entity marker with PK on revision; composite FK to the matching
    canonical revision/item/space, backed by an added UNIQUE on that triple.
-   Its type binding must resolve to entity shape. UNIQUE on this same triple
-   supports exact endpoint-anchor FKs. Labels/aliases/properties remain in content;
+   Its type binding must resolve to entity shape. This is only an entity-shaped
+   revision marker, not the universal endpoint target. Labels/aliases/properties remain in content;
    there is no second entity identity hierarchy or separate entity-owner table.
 4. `relation_revision_details(item_revision_id, context_space_id,
-   source_entity_item_id, source_entity_revision_id,
-   target_entity_item_id, target_entity_revision_id,
-   predicate, valid_from, valid_to)`: same-space parent revision FK, relation-shape
-   guard and two composite FKs to entity_revision_details (anchor revision, stable
-   item ID, space). Predicate nonempty; event bounds nullable with ordered bounds
-   when both known. Anchors and identities are required. Columns are authoritative;
-   do not duplicate conflicting endpoints/predicate/time in content JSONB.
+   source_item_id, source_revision_id, target_item_id, target_revision_id,
+   predicate)`: same-space parent revision FK, relation-shape guard and two
+   composite FKs **directly to understanding_item_revisions(id, item_id,
+   context_space_id)**, backed by UNIQUE on that triple. Stable IDs and anchors
+   are required, predicate nonempty. Any Understanding Item is a possible endpoint,
+   including another relation; no universal entity-to-entity constraint. Allowed
+   type pairs/predicates are validated by explicit versioned semantic rules on the
+   canonical write path, using the anchored revisions' registered types. Such rules
+   cannot bypass scope/integrity or silently rewrite old relations when updated.
+   No separate endpoint identity, hierarchy or domain-specific table is introduced.
+   Endpoint/predicate columns are authoritative, without conflicting JSON copies.
 
 No `category` compatibility FK or mandatory mapping to the old eleven survives.
 The binding table avoids adding/backfilling discriminator columns on immutable
@@ -141,17 +149,17 @@ source locators/grounded dates in the resolver; retain null for unknown event ti
 independently of technical acquisition/publication time. Model confidence, source
 reliability and human validation remain separate; inferred content is not confirmed.
 
-### Entity endpoints: stable identity plus immutable anchor
+### Universal endpoints: stable identity plus immutable anchor
 
-| Endpoint option | History | Entity evolution / reconciliation |
+| Endpoint option | History | Item evolution / reconciliation |
 | --- | --- | --- |
 | Exact revision only (previous proposal) | Preserves exact interpretation | Stable ID is derivable, but operational identity is implicit; current-entity graph joins become less direct |
 | Stable item ID only | Identifies the referent | Loses the exact description used when the relation was asserted unless another historical selection rule is added |
-| Stable item ID + exact entity revision anchor | Explicit identity and exact original interpretation, FK checks agreement | Recommended: descriptions evolve independently; anchors remain historical evidence, not a demand to republish relations |
+| Stable item ID + exact item revision anchor | Explicit identity and exact original interpretation, FK checks agreement | Recommended: descriptions evolve independently; anchors remain historical evidence, not a demand to republish relations |
 
 The extra stable ID is controlled redundancy for direct identity joins, checked by
 the composite FK, not a second independently editable fact. Existing item IDs are
-the entity identities. For example, relation R1 points to entity E and anchors E1;
+also the entity identities when the item is entity-shaped. For example, relation R1 points to item E and anchors E1;
 adding description E2 leaves R1 unchanged. Historical views use E1; an explicitly
 selected current view may show E2 while retaining R1/E1 and their validation states.
 Never present an anchor as an automatically current/confirmed description.
@@ -162,6 +170,74 @@ resolution/equivalence decision while retaining old entity IDs and anchors; do n
 rewrite every old relation or automatically merge proposals. Storage/selection of
 such decisions is future reviewed work, not an implemented alias/merge framework.
 This model enables reconciliation; it does not claim to solve it already.
+
+### Universal temporal columns: no additional table
+
+Put temporal assertions in the already required one-to-one `item_revision_types`
+row, frozen with the revision. Its role is now registered type binding **and common
+revision metadata**; no new temporal table or duplicate JSON time fields are needed.
+
+- `fact_from`, `fact_to`: nullable timestamptz occurrence bounds. A known instant
+  uses equal bounds; a known interval uses ordered bounds. An unknown bound is null.
+  Do not turn a date-only statement into an invented midnight instant: its exact
+  granularity/calendar/timezone evidence remains in schema-validated content; use
+  timestamp bounds only when the source supports their interpretation.
+- `valid_from`, `valid_to`: nullable timestamptz applicability boundaries, independent
+  of occurrence. When both known, use a nonempty half-open interval `[from,to)`.
+  Null means unknown/unspecified, not automatically infinite or valid at query time.
+  An explicitly open-ended assertion needs explicit schema-validated evidence;
+  absence of an end alone does not establish permanence. Do not copy fact bounds
+  into validity bounds or derive either from acquisition time.
+- Acquisition remains `source_revisions.origin.acquired_at` with original precision/
+  offset; `source_revisions.created_at` and item revision `created_at` are technical
+  persistence metadata. They are not event dates, applicability or a guaranteed
+  database commit timestamp. No new acquisition column/table or automatic default
+  for semantic time is introduced.
+
+Examples: a dated event can have occurrence with unknown validity; an observation
+can have observation time; a state can have applicability; an undated preference
+has all four columns null. Supported temporal changes create new immutable
+revisions. Exact source revision provenance and locator checks justify the temporal
+assertions; a SQL ordering check alone cannot prove grounding.
+
+Retrieval can filter occurrence and applicability separately and explicitly include,
+exclude or label unknowns; `NULL` must not be blindly coalesced to +/-infinity.
+Historical reconstruction selects canonical revisions/anchors and then their temporal
+assertions. Technical 'known by' selection uses retained source/publication evidence
+with its stated precision; this is not a newly promised full bitemporal database.
+Projection retains these four values for every type and checks them against canonical
+metadata during hydration. Semantic time never changes proposal/validation state.
+
+Concise SQL contract below is a proposal excerpt, **not an executable migration**;
+existing parent publication/shape/immutability guards remain required:
+
+```sql
+-- In item_revision_types (all four nullable, no acquisition-time default):
+fact_from timestamptz,
+fact_to   timestamptz,
+valid_from timestamptz,
+valid_to   timestamptz,
+CHECK (fact_from IS NULL OR fact_to IS NULL OR fact_from <= fact_to),
+CHECK (valid_from IS NULL OR valid_to IS NULL OR valid_from < valid_to)
+
+-- On understanding_item_revisions, for anchored endpoints:
+UNIQUE (id, item_id, context_space_id)
+
+-- In relation_revision_details (all endpoint columns NOT NULL):
+FOREIGN KEY (source_revision_id, source_item_id, context_space_id)
+  REFERENCES understanding_item_revisions (id, item_id, context_space_id)
+  ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+FOREIGN KEY (target_revision_id, target_item_id, context_space_id)
+  REFERENCES understanding_item_revisions (id, item_id, context_space_id)
+  ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+```
+
+Deferred endpoint checks permit one atomic batch of interrelated proposals without
+insertion-order requirements; final FK and publication checks must hold at commit.
+The existing item/space FK on the anchored revision establishes stable item existence
+and scope, so another endpoint FK/identity table is unnecessary. Versioned semantic
+validation still checks allowed endpoint types; SQL universally enforces exact
+ID/revision agreement and same-space membership.
 
 ### QH-4-compatible migration sequence — for approval, not execution
 
@@ -180,7 +256,10 @@ This model enables reconciliation; it does not claim to solve it already.
    be explicit and limited to this transaction; normal publication stays frozen.
    Inspect any existing entity/relation payloads: do not fabricate endpoints,
    anchors or times. If incompatible/incomplete, abort and request a remediation
-   decision; never skip them or claim a complete structural backfill.
+   decision; never skip them or claim a complete structural backfill. New temporal
+   columns remain null unless existing source-backed temporal assertions can be
+   mapped unambiguously; never backfill from created_at/acquired_at. If existing
+   temporal meaning is ambiguous, stop for review rather than silently discard it.
 4. Verify one binding per revision, exact scope/anchors and unchanged old row
    hashes/counts/provenance/current pointers. Install final publication/immutability
    guards, make legacy category nullable and drop only ck_item_category. New writes
@@ -188,7 +267,8 @@ This model enables reconciliation; it does not claim to solve it already.
    Deploy writer/projector changes together before resuming writes. No public DTO
    is changed here; any legacy public category dependency requires separate approval.
 5. Before any application, test old-fixture upgrade, invalid type/version/properties,
-   wrong shape, mismatched ID/anchor, foreign scope, missing details, concurrency,
+   wrong shape, mismatched ID/anchor, foreign scope, non-entity item endpoints,
+   temporal ordering/nulls/grounding, missing details, concurrency,
    immutability, failed-transaction rollback and rebuild. These proposed-migration
    checks are **NOT TESTED**. A downgrade after genuinely new types exist is not
    losslessly representable by the old CHECK: refuse destructive rollback; use a
@@ -197,7 +277,7 @@ This model enables reconciliation; it does not claim to solve it already.
 
 ### Consequences for Neo4j, revisions and retrieval
 
-Project stable entity IDs as referents, immutable entity/relation revision IDs as
+Project stable Understanding Item IDs as referents, immutable item/relation revision IDs as
 assertions, and both endpoint anchors explicitly. Generic labels/edges and
 properties carry type_id/version/predicate; no per-domain graph/database. A change
 in description reprojects that entity's selected view and affected derived search
@@ -236,7 +316,7 @@ text/vector/traversal fusion, real canonical writer/outbox/cache, advanced entit
 matching/contradictions and readiness DTOs remain subsequent QH-30 increments.
 Public QH contracts and migrations are unchanged. Schema/model approval
 is requested for the single-registry model, four additive tables, stable endpoint
-IDs with immutable anchors, and the legacy-category transition described above;
+IDs with immutable anchors, universal temporal columns and the legacy-category transition described above;
 actual migration application needs explicit authorization afterwards.
 
 ## Jira alignment — observed updates and remaining proposals, not posted
@@ -303,3 +383,8 @@ and targeted reference/category consistency checks passed for this revision.
 No executable code changed; the previously executed 67 tests were not repeated.
 No migration SQL or public contract was generated/applied. Model approval is the
 next gate; this proposal does not authorize migration execution.
+
+Final clarification: four semantic tables remain sufficient. Endpoint FKs now target
+QH-4 item revisions, not entity details; common temporal columns move out of relation
+details into the mandatory per-revision binding. Only this plan and ADR 0003 changed;
+no executable changes, migration execution, public contract updates or repeated tests.

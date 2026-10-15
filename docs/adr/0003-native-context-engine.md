@@ -3,7 +3,8 @@
 Date: 2026-10-15
 Status: architecture direction authorized by the owner through
 [QH-30 / QH-7b](https://contextlab.atlassian.net/browse/QH-30).
-The concrete canonical schema extension remains **proposed**, pending owner review;
+The owner has approved a single versioned type registry and stable identities with
+immutable revision references in principle. The final SQL details remain **proposed**;
 this ADR is not permission to apply migrations or change public contracts.
 
 ## Context and supersession
@@ -34,7 +35,7 @@ compatibility map is inspectable with `git show 77de43c:docs/qh-7-graphiti.md`
 | --- | --- | --- |
 | Identity, Context Space ownership, policy/approval facts | QH users, OIDC mapping, space ownership and approved governance facts; PolicyService decides access | Context Space IDs for query filtering; no independent owner/authorization authority |
 | Sources and source revisions | Original immutable content, origin and exact revision identity | Source/revision identifiers and useful locators; no full source-copy requirement |
-| Understanding Items and revisions | Stable item ID, revision ID/number, category, structured content, origin, validation/actor/time, predecessor, confirmed-current pointer | Relevant revision text/properties, category/state and canonical references for retrieval |
+| Understanding Items and revisions | Stable item ID, revision ID/number, registered type/version, structured content, origin, validation/actor/time, predecessor, confirmed-current pointer | Relevant revision text/properties, registered type/version/state and canonical references for retrieval |
 | Semantic entities and relations | Stable identities, immutable assertion/revision data, endpoint identity, grounded event times and provenance; detailed delta requires approval | Revision/identity nodes, typed edges, traversal shortcuts and selected denormalizations; never independent edits |
 | Embeddings | Reusable, versioned derived artifact/cache keyed by canonical revision/content hash + provider/model/version/dimension/configuration | Vector and index configuration necessary for retrieval; can be repopulated from the cache |
 | Projection/sync metadata | Durable work intent, canonical version being projected and progress/error records (proposed additive schema) | Projector version/generation and applied canonical version, useful indexes |
@@ -96,8 +97,13 @@ independent of domain/semantic classification. Historical category values remain
 unchanged as deprecated metadata; new revisions use only the registered type binding.
 No free-form unknown types, automatic latest schema or duplicated classification.
 
-Recommend relation endpoints as stable entity item IDs **and** required immutable
-entity revision anchors, with composite same-space FKs proving their agreement.
+Recommend relation endpoints as stable Understanding Item IDs **and** required
+immutable item revision anchors. Composite same-space FKs target QH-4
+understanding_item_revisions directly and prove ID/revision/scope agreement.
+Endpoints can be decisions, constraints, observations, entities, events, states,
+preferences, intentions or other registered types; they are not universally
+entity-to-entity. Versioned semantic rules constrain allowed pairs/predicates on
+the canonical write path, independently of universal SQL referential integrity.
 Anchors preserve the interpretation at assertion time; later descriptions need no
 canonical relation rewrite. A different referent requires a new relation revision.
 Deduplication must preserve old IDs/anchors and explicit scope, not silently merge
@@ -146,10 +152,10 @@ verification of the proposed migration or future identity-based projection.
 ## Revision, provenance and time semantics
 
 The same QH item can have proposed/rejected/confirmed immutable revisions. A new
-proposal does not move the confirmed-current pointer. Category and validation are
+proposal does not move the confirmed-current pointer. Semantic type and validation are
 independent; confirming a hypothesis does not certify it as a true fact. Historical
 evidence refers to exact revisions. The revised proposal above records stable
-entity identities plus exact historical endpoint anchors; ordinary entity description
+item identities plus exact historical endpoint anchors; ordinary item description
 updates do not require new relation revisions. A change of referent or validation
 creates a new revision, not an in-place mutation of an old assertion.
 
@@ -162,6 +168,23 @@ Keep technical acquisition/processing times distinct from event/validity times.
 Unknown event time stays null. Explicit or genuinely relative source time can be
 resolved with documented evidence; present tense alone is not proof of event
 start at ingestion. Never strip a supported semantic date to make a test pass.
+
+Universal temporal assertions live in the already mandatory `item_revision_types`
+row: nullable timestamptz `fact_from/fact_to` for occurrence and `valid_from/valid_to`
+for applicability, on **all** item revisions. Relations no longer own special time
+columns. Occurrence allows equal bounds for an instant; known validity bounds form
+a nonempty half-open interval. Null is unknown/unspecified, never an automatic
+unbounded validity assertion. Date-only precision must not become an invented
+midnight instant; preserve source granularity in validated content. Acquisition
+remains source origin metadata, and created_at remains technical persistence time.
+No semantic defaults derive from either, and no new temporal table is needed.
+
+Temporal changes require new revisions and source-backed grounding. Neo4j carries
+these common fields for scoped temporal retrieval; historical reconstruction uses
+selected canonical revisions and exact endpoint anchors. Query handling of unknown
+times must be explicit. This does not promise full bitemporal storage or treat
+created_at as an exact database commit time. The SQL checks and migration handling
+are specified once in the QH-30 plan.
 
 Which proposal revisions are retrieved is an explicit query/application policy,
 not “all are current” or “everything is confirmed”. The initial fixture slice
