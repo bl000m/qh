@@ -20,13 +20,16 @@ reference. Never infer the functional model solely from table names, existing co
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
-QH-30 is active on the VPS at schema 0004 with image/source commit
-fd50b1ba67061ea95285a2ffce122939524ab93f. The QH-30 worktree supplies live
-backend bind mounts: implement changes in a separate worktree. No further
-persistent writes/migrations, deployment or cleanup are authorized by a planning task.
+QH-30 and semantic foundation are consolidated in main. Persistent schema is 0005;
+backend/frontend/MCP run images from c723d32c5d0825f9232ece560e7e666e69dceb27
+without source bind mounts. The permanent checkout is /home/ubuntu/qh on main;
+future feature worktrees may be temporary. Runtime management uses the frozen
+/home/ubuntu/qh-runtime/current bundle and private .env, not development make up.
+Keep the readonly root Keycloak realm import file unchanged. Future planning does
+not authorize further persistent writes/deployment/retirement.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
 approved three generic profiles, open descriptor contract, authorized structured selection and
-prepared, undeployed 0005. Controlled registration is explicit; never infer new
+applied 0005 and executed deployment evidence. Controlled registration is explicit; never infer new
 SQL types or human validation from descriptors. Semantic meanings
 are open-ended content, not mandatory registry types or the eleven QH-4 categories.
 Optional specialized schemas/rules remain supported; never rewrite applied
@@ -117,9 +120,10 @@ Keep provider secrets exclusively in ignored local configuration, never logs or 
 ## Versioning and verification
 
 Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
-runtime-source changes. Root still supplies frontend/MCP and readonly IdP mounts;
-never switch its branch or remove mounted worktrees until authorized detachment.
-Use separate owner approval for each merge; preserve published native ancestry.
+runtime-source changes. Source mounts have been removed from all app services;
+root retains only the readonly IdP configuration bind. Preserve it and private .env.
+Authorization may explicitly cover a whole consolidation sequence; do not request
+it again for already authorized steps. Preserve published native ancestry.
 
 Follow [versioning and logical milestones](docs/versioning.md), maintain
 [CHANGELOG](CHANGELOG.md) and the [deployment register](docs/deployments.md).

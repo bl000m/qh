@@ -2,6 +2,13 @@
 
 ## Current checkpoint — read this before historical milestones
 
+Final consolidation executed: PR #2/#3 merged, main c723d32 deployed at 0005 with
+three generic profiles, no application source mounts, successful smoke/restart/
+pending recovery. See the [deployment register](deployments.md). The detailed
+0004 checkpoint and worktree instructions below retain their historical context.
+
+## Historical 0004 checkpoint — superseded by final consolidation
+
 Post-cutover semantic foundation: [approved model, audit closure and QH-8 plan](qh-semantic-consolidation.md).
 A separate branch/worktree based on preserved `42a20c7` implements the approved generic structural
 profiles, controlled provisioning, exact descriptor selection and prepared 0005. No persistent change/deployment is authorized. The

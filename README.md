@@ -10,18 +10,18 @@ A space can contain multiple domains without a separate schema for each.
 
 | Layer | State |
 | --- | --- |
-| Foundation on `main` | Docker scaffold, Core/application contracts, QH-4 PostgreSQL foundation, QH-5 OIDC identity and owner PolicyService |
-| QH environment | Schema 0004; native backend/worker active at `fd50b1b`. Persistent synthetic smoke and controlled backend restart passed; Graphiti data retained |
-| QH-30 branch | Native canonical repository, 0003 semantic model, 0004 outbox, backend lifespan/worker and authorized retrieval implemented and tested on isolated real databases |
-| Separate cleanup branch | Controlled generic profiles, exact descriptor selection and prepared 0005; not pushed, deployed or authorized for persistent application. [Foundation and audit closure](docs/qh-semantic-consolidation.md) |
+| Consolidated `main` | QH-30 and semantic foundation merged through PR #2/#3; 261 native hosted tests plus quality/OIDC passed |
+| QH environment | Schema 0005; native backend/worker, frontend and MCP run versioned images from `c723d32` without application source mounts. Smoke, exact evidence, isolation, restart and pending-intent recovery passed |
+| Semantic foundation | Three generic profiles provisioned; authorized exact descriptor selection active. Historical type bindings, canonical revisions and six Graphiti nodes preserved. [Deployment record](docs/deployments.md) |
 | Future | Source Vault (QH-31), Domain Packs, native Mistral extraction/resolution, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
 Graphiti is a preserved historical prototype, not a native-engine dependency.
 The independent MCP server currently provides transport scaffolding, not a QH context
-client. Current deployed native text search uses scoped substring matching. This separate
-branch also implements an internal exact descriptor selector: authorize → canonical
-IDs from SQL → Neo4j verification → canonical hydration and freshness recheck.
-Its design is approved; persistent provisioning/deployment remain gated. No public DTO changes or semantic ranking are implied.
+client. Deployed retrieval offers scoped substring search and an internal exact
+descriptor selector: authorize → canonical IDs from SQL → Neo4j verification →
+canonical hydration and freshness recheck. No public context DTO/API or semantic
+ranking is implied. The permanent checkout is `/home/ubuntu/qh` on `main`; runtime
+images and the frozen Compose bundle are independent of development worktrees.
 
 ## Architecture and data flow
 
@@ -53,10 +53,10 @@ failed or mismatched projection state blocks retrieval, including empty results.
 Queries do not require full reconciliation. Explicit rebuild/audit remains available;
 normal readiness checks do not certify arbitrary manual graph corruption.
 
-## PostgreSQL model through 0004
+## PostgreSQL model through 0005
 
-This simplified ERD describes schema **0004**, also deployed on the VPS. The
-prepared 0005 cleanup is separate and does not add tables. Composite foreign keys enforce matching space and stable-ID/revision
+This simplified ERD describes deployed schema **0005**. It preserves all 0004
+tables; 0005 removes only the unused null legacy category column/check. Composite foreign keys enforce matching space and stable-ID/revision
 anchors. Revisions, provenance, type schemas and semantic rules are immutable;
 unknown fact/validity times stay null and are separate from acquisition metadata.
 
@@ -129,14 +129,16 @@ server names, opt-in variables, executed results, reproduction commands and the
 strict integration CI job are in the [QH-30 checkpoint](docs/qh-30-plan.md).
 The new `native-integration` job runs the strict disposable SQL/Neo4j suite and
 fails on skips. Hosted run [38736085229](https://github.com/bl000m/qh/actions/runs/38736085229)
-passed 178 native tests at `eeadeef`; this cleanup branch needs a separately authorized
-push and new hosted execution. A green
+retains the earlier 178-test result. The consolidated main run
+[38774841579](https://github.com/bl000m/qh/actions/runs/38774841579) passed all three
+jobs and 261 native cases without skips. A green
 quality/OIDC gate alone does not establish integrated coverage. Native runtime is
-opt-in through `QH_NATIVE_CONTEXT_ENABLED`; the deployed image requires 0004. This
-branch also accepts prepared 0005; startup never migrates.
-The QH-30 checkpoint retains the executed 0004 cutover. The separate
-[0005 activation runbook](docs/qh-semantic-consolidation.md#deployment-0004--0005--prepared-not-authorizedexecuted)
-requires new authorization.
+opt-in through `QH_NATIVE_CONTEXT_ENABLED`; the historical fd50 image requires 0004.
+The consolidated runtime accepts 0004/0005; startup never migrates. The VPS is at 0005;
+never restart its incompatible historical fd50 image. The
+[deployment register](docs/deployments.md) records executed activation and recovery.
+For VPS management use the frozen `/home/ubuntu/qh-runtime/current` Compose bundle
+with its image pins and existing private .env, not default development `make up`.
 
 ## Modules and technical references
 

@@ -1,4 +1,4 @@
-# PostgreSQL schema: deployed 0004 and prepared cleanup
+# PostgreSQL schema: deployed 0005
 
 Authority: [ADR 0002](adr/0002-canonical-understanding-persistence.md) and the
 [Product Contract](product/QH_PRODUCT_CONTRACT.md). The original uncommitted
@@ -7,14 +7,15 @@ to QH. Its old test results are historical, not evidence for the new schema.
 
 ## Current state and authority
 
-- **Persistent QH:** schema `0004_projection_outbox`, native backend/worker at
-  `fd50b1ba67061ea95285a2ffce122939524ab93f`. The authorized cutover retained two
-  synthetic proposed item revisions with `qh.decision/1` bindings and exact source
-  evidence; the database is no longer empty. See dated QH-30 execution evidence.
-- **This separate cleanup branch:** generic-profile regressions work on 0004;
-  prepared `0005_retire_legacy_category` is tested only on disposable databases.
-- **Not authorized:** further persistent writes/migrations/deployment. Do not use
-  `make migrate` (moving head) against QH or edit its mounted QH-30 source.
+- **Persistent QH:** `0005_retire_legacy_category`, image-only native runtime from
+  `c723d32c5d0825f9232ece560e7e666e69dceb27`. The authorized 0004→0005 upgrade
+  preserved every existing row, constraint and trigger; only null legacy category
+  metadata was retired. Eleven historical types remain alongside three generic types.
+- **Verified data:** seven proposed item revisions (two historical, five generic),
+  exact source provenance, seven ready outbox intents; no automatic confirmation.
+  See [executed deployment](deployments.md).
+- **Operational rule:** no startup migrations; `make migrate` is moving head and
+  never grants persistent authorization. fd50 is incompatible with 0005.
 
 The executable migration files define the SQL. [ADR 0003](adr/0003-native-context-engine.md)
 defines current architecture; [QH-30 plan](qh-30-plan.md) retains test evidence and

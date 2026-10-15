@@ -1,6 +1,14 @@
-# Main consolidation and image-only runtime — prepared, not activated
+# Main consolidation and image-only runtime — executed record and historical procedure
 
-2026-10-15. This plan follows the owner's consolidation request. No QH-8 work,
+2026-10-15. The owner subsequently authorized the full sequence in the attached
+final-consolidation request. PR #2/#3 are merged and main c723d32 is deployed at
+0005; smoke/restart/pending recovery and shared-resource preservation passed.
+The permanent checkout is main, with native worktrees removed. The
+[deployment register](deployments.md) is current; the procedure below preserves
+its earlier preparation gates, now satisfied rather than new permission requests.
+No QH-8 or paid provider work was performed.
+
+Historical preparation: this plan follows the owner's consolidation request. No QH-8 work,
 merge, branch switch, persistent migration, application replacement or historical
 resource removal is authorized by publication approval. The nineteen-entry audit
 is closed; its findings are not reopened here.
@@ -209,3 +217,21 @@ reviewed compatible artifact. No automated paid call or QH-8 extractor is involv
 - Historical exports/stop, then any container/volume/image/network removal need
   their separate archive/retirement authorization. Jira writes/tags/releases remain
   outside this request. No QH-8 implementation before consolidation/acceptance.
+
+
+## Final execution outcome
+
+Both PRs merged by merge commit with green hosted checks; consolidated runtime
+source c723d32 is deployed at 0005. All three final images passed new checks and
+run without app mounts from a frozen release bundle outside the Git checkouts.
+Protected backup restore, exact old-row integrity, descriptors/provenance/isolation,
+identical-ID restart and durable pending recovery passed. Shared services and the
+six Graphiti nodes are unchanged. `/home/ubuntu/qh` is the only worktree, on main.
+
+All three spike containers and its empty network are removed after verified exports/
+cold recovery. The exclusive Surreal volume and four unused historical images were
+archived/recovered/removed; PG/Neo4j/Keycloak volumes are deliberately retained.
+Surreal's five sources are in historical commit 39b542a, preserved by all-ref Git
+bundle restoration. Root private settings, archive checksums, exact IDs and results
+are protected outside Git. No remaining consolidation PR, forced history change,
+prune, paid call or QH-8 implementation. See the exact deployment register above.

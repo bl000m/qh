@@ -8,6 +8,18 @@ immutable revision references, universal endpoints and temporal metadata. The ow
 authorized incremental implementation/testing on a dedicated disposable database.
 Migration 0003 has three canonical tables and 0004 adds operational outbox/state.
 
+## Dated amendment — final consolidation executed (2026-10-15)
+
+PR #2 and #3 merged with merge commits, preserving 42a20c7 and the foundation.
+Main code c723d32 is deployed as versioned backend/frontend/MCP images without
+application source mounts. Persistent 0005 and controlled generic provisioning
+succeeded after a restored/verified backup; canonical data, 71 constraints, 24
+triggers, old bindings and six Graphiti nodes remain intact. Synthetic descriptor/
+provenance/isolation, identical-ID restart and pending-intent recovery passed.
+The root checkout is main; prior prepared checkpoints below remain historical.
+See [deployment register](../deployments.md). No extraction/embedding/vector or
+new public query/write contract is implemented by this activation.
+
 ## Dated amendment — post-cutover and isolated cleanup proposal
 
 2026-10-15: owner-authorized persistent cutover succeeded at schema 0004, backend

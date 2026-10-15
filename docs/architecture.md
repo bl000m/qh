@@ -13,9 +13,11 @@ workflows. Further persistent migrations/deployment still need separate approval
 
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
-implemented, tested in isolation and active on the VPS at schema 0004 with commit
-`fd50b1ba67061ea95285a2ffce122939524ab93f`. Persistent synthetic smoke and controlled
-backend restart passed; see the dated QH-30 cutover evidence. Production business routes remain deferred except QH-5
+consolidated in main and active on the VPS at schema 0005 using images from
+`c723d32c5d0825f9232ece560e7e666e69dceb27`. Backend/frontend/MCP have no source
+mounts; the frozen Compose bundle is independent of Git worktrees. Persistent
+synthetic smoke, exact-ID restart and pending-intent recovery passed; see
+[deployment evidence](deployments.md). Production business routes remain deferred except QH-5
 identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
@@ -172,11 +174,12 @@ future optional composition mechanism only. See ADR 0003 and the approved SQL mo
 Further persistent migrations, backend changes and public DTO changes remain gated.
 The [post-cutover foundation](qh-semantic-consolidation.md) implements the approved
 three-generic-profile direction, controlled provisioning and an internal authorized
-exact descriptor selector. The owner approved the profiles and open descriptor contract; persistent activation remains gated. Meaning stays in extensible content;
-shape selects storage constraints. Its prepared 0005 removes null legacy category
-metadata without rewriting historical types/bindings. This branch is not live: do
-not edit the QH-30 worktree mounted by the active backend. QH-31 Source Vault, Domain Packs, LLM extraction
+exact descriptor selector. The owner approved the profiles and open descriptor contract; persistent activation succeeded through the owner-authorized final consolidation. Meaning stays in extensible content;
+shape selects storage constraints. Applied 0005 removes null legacy category
+metadata without rewriting historical types/bindings. The generic profiles and
+internal selector are active; source changes in the permanent main checkout do
+not change deployed application images. QH-31 Source Vault, Domain Packs, LLM extraction
 and advanced vector retrieval are not implemented. Ordinary native queries use
 per-scope sync state and candidate hydration; `ProjectionWorker.rebuild` is explicit recovery.
-The separate snapshot reconciler and full-scope query scans have been retired in this branch;
+The separate snapshot reconciler and full-scope query scans have been retired from the active implementation;
 its generation publisher remains necessary for rebuild.

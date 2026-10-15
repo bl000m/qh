@@ -18,9 +18,9 @@ projector and ordinary bounded-hydration retrieval; 0004 owns operational SQL st
 The full-generation publisher remains required by `ProjectionWorker.rebuild`;
 recovery regressions exercise that actual maintenance path, including graph loss,
 lost acknowledgement, transaction failure and concurrent rebuilds. `context/runtime.py` binds
-the actual worker and authorized engine in the backend lifespan (VPS schema 0004,
-fd50b1b). There is no public context route; `llm/` remains reserved.
-The separate cleanup branch accepts 0004/prepared 0005, without startup migrations. Implementations accept clients/readers through explicit constructors and
+the actual worker and authorized engine in the backend lifespan (VPS schema 0005,
+main c723d32). There is no public context route; `llm/` remains reserved.
+The consolidated runtime accepts 0004/0005 without startup migrations; deployed app images have no source mounts. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.
 

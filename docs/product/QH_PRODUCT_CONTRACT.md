@@ -143,9 +143,11 @@ con autorizzazione nel cutover del 2026-10-15 (immagine `fd50b1b`, evidenze QH-3
 La [semantic foundation post-cutover](../qh-semantic-consolidation.md) attua i tre profili generici
 iniziali, i descrittori multipli facoltativi con valore libero e certezza dell’assegnazione
 (distinta dalla validazione dell’elemento) e la selezione strutturata autorizzata.
-Queste scelte sono approvate dal proprietario; provisioning, migrazione 0005 e nuovo
-backend richiedono ancora autorizzazione per l’ambiente persistente. Il VPS resta a
-0004/fd50b1b. Nessun nuovo contratto pubblico è implicito.
+Queste scelte sono approvate dal proprietario e attivate con autorizzazione nella
+consolidazione finale: PostgreSQL 0005, tre profili generici e selezione interna
+operativa, immagini da main `c723d32` senza mount dei sorgenti applicativi.
+Il [registro deployment](../deployments.md) conserva evidenze e storia 0004/fd50.
+Nessun nuovo contratto pubblico, estrazione LLM o ricerca vettoriale è implicito.
 
 Le revisioni dei singoli elementi persistenti sono immutabili; non si introducono
 event sourcing completo o revisioni globali del Context Space. Uno snapshot

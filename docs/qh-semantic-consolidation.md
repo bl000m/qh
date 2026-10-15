@@ -1,5 +1,20 @@
 # QH — semantic foundation after cutover
 
+## Current execution checkpoint — consolidation complete
+
+Owner-authorized final consolidation merged PR #2/#3, deployed main code c723d32
+as three image-only app services and applied 0005 with explicit generic provisioning.
+The protected PostgreSQL backup was actually restored on a disposable server;
+preexisting hashes, constraints/triggers, old bindings and Graphiti graph remained
+intact. Smoke, exact-ID restart and stopped-worker pending recovery passed.
+See [deployment register](deployments.md) for exact artifacts and current state.
+The permanent checkout is /home/ubuntu/qh on main. Sections below preserve the
+review, closure matrix and earlier candidate/runbook evidence; their former
+approval/worktree/deployment gates are superseded by this executed authorization.
+QH-8, paid extraction, embeddings and advanced retrieval remain future work.
+
+## Historical review and prepared-candidate record
+
 2026-10-15. Three generic profiles, open descriptors and authorized structured
 selection approved by the owner. Deployment prepared in isolation; **not a deployed
 model change**. Baseline `42a20c7`, preserved on QH-30 and inherited by

@@ -29,13 +29,27 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Migration boundary
 
-- Prepared forward-only `0005_retire_legacy_category` removes only a null legacy
+- Applied forward-only `0005_retire_legacy_category` removes only a null legacy
   column/check, aborting on non-null history. Applied 0001–0004 and historical
   type bindings remain unchanged. Provisioning is separate from migration/startup.
-- **Not deployed.** fd50 must not run against 0005; activation requires a reviewed
-  compatible image/mounts, backup, explicit migration target and owner authorization.
+- **Deployed to the VPS on 2026-10-15 with owner authorization.** The tested final-main
+  images have no application source mounts; the backup was restored before migration.
+  fd50 must never run against 0005.
 - Extraction, embedding/cache, vector/hybrid search, Source Vault and Domain Packs
   remain future work. No public ingestion or descriptor-query API is introduced.
+
+## 2026-10-15 — consolidated foundation, unversioned deployment
+
+- PR #2/#3 merged with merge commits; main runtime source c723d32. Hosted quality,
+  OIDC and 261 real native tests passed; final backend image packaging 6 tests passed.
+- PostgreSQL advanced from 0004 to 0005 after protected backup/actual restore. Three
+  generic profiles registered alongside eleven historical versions; existing data,
+  71 constraints, 24 triggers and six Graphiti nodes preserved.
+- Backend/frontend/MCP deployed as versioned images without source mounts. Exact-ID
+  restart, descriptor/provenance/isolation smoke and stopped-worker intent recovery
+  passed. Main is the permanent root checkout; technical history remains preserved.
+- Historical resource/archive outcomes are recorded in [deployments](docs/deployments.md).
+  This environment activation is not a public product release; no tag was created.
 
 ## 2026-10-15 — native cutover, unversioned deployment (QH-30)
 
