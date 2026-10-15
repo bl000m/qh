@@ -105,8 +105,9 @@ not a currently implemented filtering engine.
   projection, never a second canonical repository. `adapters/llm` reserves replaceable
   provider clients. Extractor/resolver/repository/projector/retriever responsibilities,
   synchronization, rebuild and approval boundaries are in ADR 0003. Native runtime
-  and incremental worker are bound by the backend lifespan; extraction/provider
-  calls and public context routes remain future work.
+  and incremental worker are bound by the backend lifespan; real-provider
+  calls and public context routes remain future work. QH-8 offline extraction is
+  explicit internal composition on its feature branch (see below).
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.

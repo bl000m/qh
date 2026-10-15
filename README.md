@@ -13,7 +13,8 @@ A space can contain multiple domains without a separate schema for each.
 | Consolidated `main` | QH-30 and semantic foundation merged through PR #2/#3; 261 native hosted tests plus quality/OIDC passed |
 | QH environment | Schema 0005; native backend/worker, frontend and MCP run versioned images from `c723d32` without application source mounts. Smoke, exact evidence, isolation, restart and pending-intent recovery passed |
 | Semantic foundation | Three generic profiles provisioned; authorized exact descriptor selection active. Historical type bindings, canonical revisions and six Graphiti nodes preserved. [Deployment record](docs/deployments.md) |
-| Future | Source Vault (QH-31), Domain Packs, native Mistral extraction/resolution, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
+| QH-8 feature branch | Offline conversation import/extractor/resolver, two interchangeable fake/replay providers, exact citations and generic proposed understanding. Isolated SQL/Neo4j verification; not deployed, no real LLM extraction |
+| Future | Source Vault (QH-31), Domain Packs, real-provider Mistral extraction, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
 Graphiti is a preserved historical prototype, not a native-engine dependency.
 The independent MCP server currently provides transport scaffolding, not a QH context
@@ -157,5 +158,41 @@ with its image pins and existing private .env, not default development `make up`
 
 Earlier `docs/verification-*` reports retain dated evidence, not current deployment
 inventories. [Cutover evidence](docs/qh-30-plan.md#persistent-cutover-execution-and-read-only-historical-inventory)
-records the active image, synthetic IDs and Graphiti integrity. Extraction, embedding
-and advanced semantic retrieval remain future work; no further deployment is implicit.
+records the active image, synthetic IDs and Graphiti integrity. Real-provider extraction,
+embedding and advanced semantic retrieval remain future work; no further deployment is implicit.
+
+## QH-8 offline demonstration
+
+[QH-8 implementation and acceptance](docs/qh-semantic-consolidation.md#qh-8-offline-implementation-and-acceptance)
+uses three synthetic three-turn conversations (project, health report, family) in
+one space: conversation → interchangeable extractor → exact citation/endpoint
+validation → generic proposed items → PostgreSQL/outbox → existing worker → Neo4j
+→ authorized descriptor selection and canonical hydration. No external call occurs.
+
+Run on **disposable infrastructure only**, from the feature checkout:
+
+```bash
+python3 - <<'PYENV'
+import os, secrets
+with os.fdopen(os.open('/tmp/qh8-test.env', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as f:
+    for key in ('QH30_SQL_PASSWORD', 'QH30_GRAPH_PASSWORD'):
+        f.write(key + '=' + secrets.token_hex(24) + '\n')
+PYENV
+docker compose --env-file /tmp/qh8-test.env -p qh8-ci \
+  -f infra/docker/qh30-integration.yml build integration
+docker compose --env-file /tmp/qh8-test.env -p qh8-ci \
+  -f infra/docker/qh30-integration.yml run --rm integration
+# Optional visible demo; this creates/deletes only its unique test databases.
+docker compose --env-file /tmp/qh8-test.env -p qh8-ci \
+  -f infra/docker/qh30-integration.yml run --rm --entrypoint python integration \
+  -m pytest -q -s -p no:cacheprovider \
+  tests/test_understanding_pipeline.py::test_three_domains_two_providers_atomic_outbox_and_structured_retrieval
+# Remove only this disposable project, never the VPS qh project.
+docker compose --env-file /tmp/qh8-test.env -p qh8-ci \
+  -f infra/docker/qh30-integration.yml down
+```
+
+The demo prints synthetic scope/source/revision IDs and readiness. Tests verify
+exact IDs/evidence across process restart and graph rebuild before their own
+cleanup. The full strict entry point fails on unavailable infrastructure or skips.
+A successful fake/replay demonstration does not establish real-model quality.
