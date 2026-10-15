@@ -1135,3 +1135,137 @@ finally consider unused old backend images and individually identified temporary
 artifacts. Keep shared services/volumes/base images/common Git checkout intact.
 No retirement operation, branch/worktree deletion, Jira write, merge or paid API
 was performed. Persistent cutover acceptance and this inventory stop here for owner review.
+
+## Post-cutover consolidation and QH-8 proposal (planning only)
+
+The owner authorized publication of documentation-only `eeadeef` on QH-30.
+Draft PR #2 now targets that commit. Hosted [run 38736085229](https://github.com/bl000m/qh/actions/runs/38736085229)
+passed quality, oidc and native-integration; the native job executed 178 tests
+with zero skips (99.31s), and both selected live OIDC tests passed. Runtime files and the deployed image remain
+`fd50b1ba67061ea95285a2ffce122939524ab93f`. The cutover result, synthetic IDs and
+technical evidence above are retained. Extraction, embeddings/cache and advanced
+semantic/vector search remain unimplemented. No further persistent DB writes,
+service stop, archival export or retirement operation is authorized by this plan.
+
+### SurrealDB archive and stop plan — prepared, not executed
+
+Fresh read-only checks found no active QH dependency: the six QH services use
+qh_app/qh_data; the three spike services use only qh-surreal-spike_default. Their
+volumes are disjoint, no QH bind mount points into the spike worktree, and native
+code/configuration and effective QH endpoint settings contain no spike references.
+No established TCP connection was observed on the spike's loopback ports 18080
+and 17474 at inspection. This is a snapshot, not proof that another host client
+will never use them; recheck and quiesce experimental writers before an authorized stop.
+PostgreSQL and Neo4j base images remain shared with production/native tests and
+must not be removed as part of spike retirement.
+
+| Future step | Activity and acceptance gate |
+| --- | --- |
+| 1. Preserve experiment | Record container/image IDs, volume owners, version pins, namespace/database names and uncommitted spike/ files in /tmp/qh-surrealdb. Check local free space for archives and disposable restore copies; copy code/schema/seed/results plus a manifest/checksums into a protected local archive outside Git. Keep credentials separate and restricted; do not copy an unfiltered environment into logs/repository or send archives externally |
+| 2. Logical exports | Once separately authorized, stop experimental writers, export each actual Surreal namespace/database and make a custom-format pg_dump of the dedicated spike PostgreSQL database. Inspect the installed export flags; the running v3.3.0 CLI supports namespace/database-scoped SurrealQL export. Exports may contain authentication metadata and require private handling. Do not run exports now |
+| 3. Cold Neo4j archive | The installed Neo4j dump command cannot dump a database mounted by a running server. In an approved maintenance window, stop only qh-surreal-spike-neo4j-1 gracefully, then archive its dedicated data/log volumes cold (or run the pinned admin dump offline). Never use live tar as a claim of a consistent graph backup; never point the admin tool at qh_neo4j_data |
+| 4. Validate restore | Check archive hashes and restore exports/cold copies into fresh disposable resources with the same version pins and no QH network/volume attachment. Compare schema/record counts/identifiers. A failed validation blocks deletion and preserves the original spike volumes |
+| 5. Stop, retain | After archive acceptance and fresh dependency checks, gracefully stop exactly qh-surreal-spike-surreal-1, qh-surreal-spike-postgres-1 and qh-surreal-spike-neo4j-1; retain containers, volumes, network, images and worktree. Recheck native backend/DB health, existing scoped reads and outbox state read-only; no extra production smoke writes |
+| 6. Later retirement | Only with separate deletion authorization remove proven exclusive spike resources. Preserve Graphiti branch/PR #1, common Git checkout, QH data/networks/base images, and required architectural/experimental evidence |
+
+Initial archival/export and stopping are themselves pending approval, not merely
+volume deletion. No stop/export/restore has been performed. Potential resource
+benefit after a future stop: approximately 606 MiB RAM across three spike services.
+Future deletion could release approximately 667 MB allocated spike volumes and the
+481 MB exclusive SurrealDB image, plus container writable layers; image/cache
+sharing prevents treating these as an exact additive disk total.
+Dependency-check evidence remains private/local at
+`/home/ubuntu/qh-cutover-evidence/surreal-dependencies-postcutover.json`.
+
+### QH-8: one conversational source, three identified excerpts, one complete flow
+
+Read [QH-8](https://contextlab.atlassian.net/browse/QH-8) in full through Atlassian
+MCP on 2026-10-15. It has no comments. Ticket dependencies are QH-4 and QH-30;
+QH-8 blocks QH-10. No Jira field/status/link was changed. The original 1.5 h is
+explicitly marked for recalibration; this proposal does not promise that estimate.
+
+Recommend one synthetic conversation represented by one immutable source revision,
+with three explicit excerpt/turn IDs and original character intervals recorded in
+origin metadata. These are three imported episodes/excerpts in the same Context
+Space, not three revisions of different content pretending to be source history.
+No episode table or Source Vault implementation is needed. Exact source revision
+and locators are retained; inline text is a representation and does not preclude
+future original-byte storage outside PostgreSQL in QH-31.
+
+Use the excerpts to cover professional, health and family contexts in one space.
+For example, an explicit pilot decision, an observation plus a tentative explanation
+(no diagnosis), and an unresolved household question. Expected fixture outputs are
+at least decision, hypothesis and open_question; add one observation to exercise a
+new registered type without a new schema migration. Expectations belong in tests,
+not domain names or fixture-specific correction rules in the production extractor.
+The Jira word category maps to registered type_id/version; do not restore the old
+category CHECK or a closed project-domain enum.
+
+| Unit | Minimum implementation / reused dependency |
+| --- | --- |
+| 1. Controlled import + fixtures | Manual internal development command, explicit authorized owner/space, stable source/revision IDs, original transcript and three deterministic excerpt locators. Reuse CanonicalRepository source save; fixture B tests denial and cross-space isolation |
+| 2. Replaceable extractor | Small application extractor using existing LLMProvider.generate with SDK-free messages; provider adapter configured for structured JSON output, with provider-specific schema/HTTP decoding confined to adapters/llm. Fake/replay provider first. No new Core port or public HTTP/MCP contract is needed for this increment |
+| 3. Validate and publish | Validate pinned type/schema versions, payload shape, excerpt IDs and literal citations against the exact stored source revision. Unknown references, malformed output and unsupported dates fail without auto-repair. Register explicit trusted type versions if stricter content schemas are needed; retain old versions and the limited qh-schema-1 profile. Use nullable temporal fields and proposed state; do not move confirmed-current pointers |
+| 4. Native persistence/retrieval | Persist all accepted item revisions and exact provenance in one CanonicalRepository transaction; 0004 triggers enqueue intents atomically. Existing application worker projects them. Wait for ready, use authorized ContextEngine retrieval, then bulk-hydrate selected canonical revisions to show type/version, structured content, proposed state and exact source evidence |
+| 5. Persistence and failure proof | Real isolated PostgreSQL/Neo4j tests, actual application lifecycle, replay/idempotence and rejected output rollback. After restart, read canonical understanding without another LLM call. Demonstrate direct canonical reads with graph unavailable; normal graph retrieval must report unavailable/pending rather than invent a fresh result |
+| 6. Bounded real demonstration | Only after offline success and separate approval: one planned logical extraction for the three excerpts/four small proposals, preferably one HTTP request, zero embedding calls, no automatic retry/parallelism. Present the exact provider/model/endpoint/prompt/output cap, request count and cost estimate before seeking experiment authorization |
+
+The source is committed before LLM work; no DB transaction stays open during the
+request. Failed extraction preserves its source and publishes no successful batch
+of understanding/outbox intents. Stable IDs and a private synthetic checkpoint
+(input hash, exact source revision, pinned schemas, sanitized response and ID mapping)
+allow offline replay and exact repository replays without another paid request.
+This is an explicit bounded demonstration, not a new persistent LLM job scheduler.
+Citations matching text establish a locator, not automatic proof that a model's
+interpretation is true; semantic assertions are checked against controlled fixtures
+and remain proposals. Acquisition timestamps never supply missing fact dates.
+
+Authorization boundary: existing PolicyService READ_CONTEXT precedes protected reads
+and retrieval; it does not grant a public ingest/write action or permission to
+send content to an LLM. The first command is an explicitly authorized internal
+operation, using the same owner/scope SQL guards as QH-30. Writes and external
+provider disclosure must be covered by the owner's separate authorization. Public
+write/disclosure actions and routes would require contract/policy approval and are
+not silently added here. CI/startup must never call the real provider.
+
+The existing ContextResult carries hits/revision/provenance references, not the
+complete structured item DTO. The internal demonstrator bulk-hydrates those IDs
+with the canonical repository and displays the typed canonical rows and source
+locators. That proves persisted understanding rather than only text chunks without
+changing public response contracts. Natural-language reasoning/QH-10 and a public
+CRUD/import UI/QH-9 are not prerequisites for this internal proof.
+
+### Proposed QH-8 acceptance (not yet implemented or executed)
+
+- Three identifiable conversational excerpts in one authorized space, retaining
+  original source revision, turn IDs and exact source intervals.
+- At least decision, hypothesis and open_question persisted as separate typed QH
+  item revisions, plus an observation fixture for extensibility/multidomain coverage.
+- Every proposal cites an existing same-space source revision with locators checked
+  against original text; unknown time stays null, no automatic confirmation or
+  mutation of approved history. No invented missing entities/relations are needed.
+- Authorized retrieval returns the expected item IDs and exact evidence; canonical
+  hydration exposes type/version, content and proposed state. Cross-owner and mixed
+  scopes fail before disclosure. No claim of vector/hybrid search: current native
+  candidate matching remains substring-based.
+- Restart preserves canonical items and evidence; a fake provider that fails on
+  unexpected invocation proves no re-extraction on read/rebuild/replay. Duplicate
+  publication does not create extra revisions/intents; malformed output does not
+  produce a partially successful item batch. Graph outage does not erase SQL data.
+- Source-driven fixtures cover project, health and personal/family contexts without
+  clinical/personality confirmation; changing the fake provider keeps QH output
+  and persistence behavior independent of SDK/provider formats.
+- Docker tests and dependency/public-contract guards pass; real API smoke remains
+  separate, blocked pending a scoped cost authorization. No current persistent QH
+  writes, new migrations, Domain Packs, advanced resolution, human approval UI,
+  sharing or embedding/vector implementation is included in this planning task.
+
+Git/runtime safety for implementation: QH-30 remains unmerged. After approval, use
+a separate QH-8 branch/worktree based on the reviewed native code (or main after
+an independently authorized merge). Do not implement in the live QH-30 worktree:
+its application directories are bind-mounted into the running VPS backend. Keep
+QH-8 code/tests/providers isolated until a separately approved deployment.
+
+This is a proposed first QH-8 increment, not a completed extraction capability or
+permission to execute the experiment. QH-4/QH-30 infrastructure is technically
+available; owner acceptance/merge/ticket completion remain separate decisions.
