@@ -7,8 +7,8 @@
 It is infrastructure outside Core, with no ORM domain models or repositories.
 Run migrations explicitly; API startup never changes the database schema.
 
-Both namespaces are deliberately empty of concrete adapters. Their future
-implementations accept configuration/clients through explicit constructors and
+`context/native.py` supplies the fixture-backed QH-30 Neo4j slice; `llm/` remains
+reserved. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.
 

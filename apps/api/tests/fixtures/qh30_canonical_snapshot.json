@@ -1,0 +1,560 @@
+{
+  "source_revisions": [
+    {
+      "id": "69446fe7-199c-551b-a3c0-170c0c8e445b",
+      "source_id": "bf188960-6286-5340-bbbd-ecd8c56f1c00",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "content": "Synthetic a conversation.",
+      "origin": {
+        "locator": "synthetic://a",
+        "acquired_at": "2026-10-15T08:00:00Z"
+      },
+      "created_at": "2026-10-15T08:00:01Z"
+    },
+    {
+      "id": "e657f228-078d-51df-90f0-ab27ad37b8e8",
+      "source_id": "a835e961-0d41-55a3-b6f6-cf74728e905e",
+      "context_space_id": "2ce69069-e646-5bac-96be-a2a88d9263d4",
+      "revision_no": 1,
+      "content": "Synthetic b conversation.",
+      "origin": {
+        "locator": "synthetic://b",
+        "acquired_at": "2026-10-15T08:00:00Z"
+      },
+      "created_at": "2026-10-15T08:00:01Z"
+    },
+    {
+      "id": "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01",
+      "source_id": "f8f2efc4-cbcb-5781-a113-f12efcb76593",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "content": "Synthetic team chooses the pilot on 2026-10-01. Synthetic professional subject relates to setting.",
+      "origin": {
+        "locator": "synthetic://a",
+        "acquired_at": "2026-10-15T08:00:00Z"
+      },
+      "created_at": "2026-10-15T08:00:01Z"
+    },
+    {
+      "id": "c381b684-7f72-5d4d-84da-0ef7ec5d0cde",
+      "source_id": "854cdc8f-9816-5b0d-a5d7-41518aa3854d",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "content": "Fictional participant reports tiredness; no diagnosis or event date is asserted. Synthetic health subject relates to setting.",
+      "origin": {
+        "locator": "synthetic://a",
+        "acquired_at": "2026-10-15T08:00:00Z"
+      },
+      "created_at": "2026-10-15T08:00:01Z"
+    },
+    {
+      "id": "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5",
+      "source_id": "6b216b4b-94ed-50fb-b240-2ad8d4082330",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "content": "Fictional household declares a preference for quiet dinners; no personality inference. Synthetic family subject relates to setting.",
+      "origin": {
+        "locator": "synthetic://a",
+        "acquired_at": "2026-10-15T08:00:00Z"
+      },
+      "created_at": "2026-10-15T08:00:01Z"
+    }
+  ],
+  "understanding_item_revisions": [
+    {
+      "id": "b927e661-4024-591e-98e7-647c6d9fd6ee",
+      "item_id": "2891b51a-6e9e-5219-b637-277719982f1b",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "decision",
+      "content": {
+        "text": "Choose Cedar storage",
+        "semantic_type": "qh.decision",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "69446fe7-199c-551b-a3c0-170c0c8e445b"
+      ]
+    },
+    {
+      "id": "1d3af95e-8ef3-5dd0-a3a8-182db0efb737",
+      "item_id": "aaf6d3d0-fa4f-5f48-a4d6-cd3b117f478e",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "hypothesis",
+      "content": {
+        "text": "Cedar may reduce latency",
+        "semantic_type": "qh.hypothesis",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "69446fe7-199c-551b-a3c0-170c0c8e445b"
+      ]
+    },
+    {
+      "id": "8df448cf-21ab-51ce-9ff1-5f8857f39fe7",
+      "item_id": "cf1d399d-a9ae-5703-820a-b4cb9996bbbc",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "open_question",
+      "content": {
+        "text": "How will Cedar scale?",
+        "semantic_type": "qh.open_question",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "69446fe7-199c-551b-a3c0-170c0c8e445b"
+      ]
+    },
+    {
+      "id": "d427e62e-5ac1-5816-9bb1-d75e88eeac9f",
+      "item_id": "1332c9e6-0285-58ff-afbb-f726918b0e65",
+      "context_space_id": "2ce69069-e646-5bac-96be-a2a88d9263d4",
+      "revision_no": 1,
+      "category": "decision",
+      "content": {
+        "text": "Choose Birch storage",
+        "semantic_type": "qh.decision",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e657f228-078d-51df-90f0-ab27ad37b8e8"
+      ]
+    },
+    {
+      "id": "123981e2-2bc2-50c4-b6d8-d76a70e90603",
+      "item_id": "e6689c6a-63b7-5185-b27b-9ef4deb7a5d1",
+      "context_space_id": "2ce69069-e646-5bac-96be-a2a88d9263d4",
+      "revision_no": 1,
+      "category": "hypothesis",
+      "content": {
+        "text": "Birch may reduce latency",
+        "semantic_type": "qh.hypothesis",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e657f228-078d-51df-90f0-ab27ad37b8e8"
+      ]
+    },
+    {
+      "id": "c3523134-ea20-5ae0-9973-58dbfe74251d",
+      "item_id": "b97782b3-8867-558d-86a8-9358afc275bd",
+      "context_space_id": "2ce69069-e646-5bac-96be-a2a88d9263d4",
+      "revision_no": 1,
+      "category": "open_question",
+      "content": {
+        "text": "How will Birch scale?",
+        "semantic_type": "qh.open_question",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e657f228-078d-51df-90f0-ab27ad37b8e8"
+      ]
+    },
+    {
+      "id": "274a4383-e775-5aab-8df1-ccb969723b93",
+      "item_id": "8d18c07d-925c-5705-bfdb-d067624882ad",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic professional subject",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01"
+      ]
+    },
+    {
+      "id": "1224264b-2d18-5ab4-a7b9-05b1d0abb4f3",
+      "item_id": "f4ca3674-3554-5dc7-8c43-07480fb011ae",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic professional setting",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01"
+      ]
+    },
+    {
+      "id": "54494a8b-88ba-534d-81ec-30e61e73fa31",
+      "item_id": "66bd7f35-8f0e-5a51-aa17-1befab05f1fc",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "decision",
+      "content": {
+        "text": "Synthetic team chooses the pilot on 2026-10-01.",
+        "semantic_type": "qh.decision",
+        "schema_version": 1,
+        "properties": {
+          "event_at": "2026-10-01T00:00:00Z",
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01"
+      ]
+    },
+    {
+      "id": "b6cbee22-6a16-5c25-a02e-ed21e757c571",
+      "item_id": "b0844fbf-7a93-5b40-a2ed-f615ac868f31",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "relationship",
+      "content": {
+        "text": "Synthetic professional subject relates to setting",
+        "semantic_type": "qh.relationship",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed",
+          "subject_revision_id": "274a4383-e775-5aab-8df1-ccb969723b93",
+          "object_revision_id": "1224264b-2d18-5ab4-a7b9-05b1d0abb4f3",
+          "predicate": "associated_with"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01"
+      ]
+    },
+    {
+      "id": "1ffa57b9-1bdb-500f-9195-d7b1264e6553",
+      "item_id": "48205f17-9e40-52fe-a7c9-4b42c71e8835",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic health subject",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "c381b684-7f72-5d4d-84da-0ef7ec5d0cde"
+      ]
+    },
+    {
+      "id": "1683d8e6-3f9e-5843-b286-5655accdf9eb",
+      "item_id": "86373d8c-0e2b-5d82-a150-f1fe713fbc18",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic health setting",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "c381b684-7f72-5d4d-84da-0ef7ec5d0cde"
+      ]
+    },
+    {
+      "id": "677367e8-e9ca-52c9-9fd1-ef94ba3eed0c",
+      "item_id": "a2e251c5-d2f8-5b4b-b70f-dc129d6b884f",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "current_state",
+      "content": {
+        "text": "Fictional participant reports tiredness; no diagnosis or event date is asserted.",
+        "semantic_type": "qh.observation",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "c381b684-7f72-5d4d-84da-0ef7ec5d0cde"
+      ]
+    },
+    {
+      "id": "3ae707ca-c9e6-5a19-9754-581a3f165cc1",
+      "item_id": "b029a738-de6c-5696-b415-9291144f47ea",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "relationship",
+      "content": {
+        "text": "Synthetic health subject relates to setting",
+        "semantic_type": "qh.relationship",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed",
+          "subject_revision_id": "1ffa57b9-1bdb-500f-9195-d7b1264e6553",
+          "object_revision_id": "1683d8e6-3f9e-5843-b286-5655accdf9eb",
+          "predicate": "associated_with"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "c381b684-7f72-5d4d-84da-0ef7ec5d0cde"
+      ]
+    },
+    {
+      "id": "df4233f8-0215-50fd-b0e9-84cfcafb4213",
+      "item_id": "4ffeb250-436f-5378-9d93-211c840806d7",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic family subject",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5"
+      ]
+    },
+    {
+      "id": "6aaa0f44-7425-501f-8cf1-8aab0630e623",
+      "item_id": "7d953b57-94d4-5c94-b7a0-8dbce86b37e8",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "entity",
+      "content": {
+        "text": "Synthetic family setting",
+        "semantic_type": "qh.entity",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5"
+      ]
+    },
+    {
+      "id": "c724c33e-f189-5c2a-8153-8d35f3d6530e",
+      "item_id": "2c7f9036-485c-5d51-8a3a-333beea0c874",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "preference",
+      "content": {
+        "text": "Fictional household declares a preference for quiet dinners; no personality inference.",
+        "semantic_type": "qh.preference",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5"
+      ]
+    },
+    {
+      "id": "226410b6-c992-56ac-bdd3-5f6367b28e6f",
+      "item_id": "6d037ec4-3ebf-5d82-a5c2-69790b4b0872",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_no": 1,
+      "category": "relationship",
+      "content": {
+        "text": "Synthetic family subject relates to setting",
+        "semantic_type": "qh.relationship",
+        "schema_version": 1,
+        "properties": {
+          "event_at": null,
+          "uncertainty": "unassessed",
+          "subject_revision_id": "df4233f8-0215-50fd-b0e9-84cfcafb4213",
+          "object_revision_id": "6aaa0f44-7425-501f-8cf1-8aab0630e623",
+          "predicate": "associated_with"
+        }
+      },
+      "origin_kind": "ai",
+      "validation_state": "proposed",
+      "validated_by": null,
+      "validated_at": null,
+      "based_on_revision_id": null,
+      "created_at": "2026-10-15T08:00:02Z",
+      "provenance": [
+        "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "domain": "professional",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_ids": [
+        "274a4383-e775-5aab-8df1-ccb969723b93",
+        "1224264b-2d18-5ab4-a7b9-05b1d0abb4f3",
+        "54494a8b-88ba-534d-81ec-30e61e73fa31",
+        "b6cbee22-6a16-5c25-a02e-ed21e757c571"
+      ],
+      "source_revision_id": "a3f49596-7bfa-5f9e-8afd-e6d780b5cc01"
+    },
+    {
+      "domain": "health",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_ids": [
+        "1ffa57b9-1bdb-500f-9195-d7b1264e6553",
+        "1683d8e6-3f9e-5843-b286-5655accdf9eb",
+        "677367e8-e9ca-52c9-9fd1-ef94ba3eed0c",
+        "3ae707ca-c9e6-5a19-9754-581a3f165cc1"
+      ],
+      "source_revision_id": "c381b684-7f72-5d4d-84da-0ef7ec5d0cde"
+    },
+    {
+      "domain": "family",
+      "context_space_id": "c792b4f7-e1e8-5160-b181-9e14f9319d47",
+      "revision_ids": [
+        "df4233f8-0215-50fd-b0e9-84cfcafb4213",
+        "6aaa0f44-7425-501f-8cf1-8aab0630e623",
+        "c724c33e-f189-5c2a-8153-8d35f3d6530e",
+        "226410b6-c992-56ac-bdd3-5f6367b28e6f"
+      ],
+      "source_revision_id": "e619138c-d7a5-5fd7-bc91-e52cdb4c76a5"
+    }
+  ]
+}
