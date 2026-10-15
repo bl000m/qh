@@ -281,14 +281,25 @@ def test_rebuild_is_explicit_and_fences_old_worker(inc):
     assert len(query(inc).hits) == 3
 
 
-def test_deferred_validation_rolls_back_intent_and_counter(inc):
+def test_deferred_validation_rolls_back_intent_and_counter(inc, monkeypatch):
     before = inc["repo"].sync_status((A,))[0]["desired_version"]
+    # Keep strong references: otherwise GC can conceal commit-error session leaks.
+    connections = []
+    original_connect = psycopg.connect
+
+    def capture(*args, **kwargs):
+        connection = original_connect(*args, **kwargs)
+        connections.append(connection)
+        return connection
+
+    monkeypatch.setattr(psycopg, "connect", capture)
     row = deepcopy(next(r for r in inc["rows"] if r["type_id"] == "qh.observation"))
     row.update(id=str(uuid4()), revision_no=2)
     row["content"] = {"text": 99}
     with pytest.raises(psycopg.errors.CheckViolation):
         inc["repo"].save(revisions=[row])
     assert inc["repo"].sync_status((A,))[0]["desired_version"] == before
+    assert connections and all(c.closed for c in connections)
     with inc["repo"].connect() as c:
         assert not c.execute(
             "SELECT id FROM projection_outbox WHERE revision_id=%s", (row["id"],)

@@ -30,11 +30,15 @@ def json_values(value):
 
 
 class CanonicalRepository:
-    def __init__(self, *, url, subject_id):
+    def __init__(self, *, url, subject_id, connection_options=None):
         self.url, self.subject_id = url, str(subject_id)
+        self.connection_options = connection_options
 
+    @contextmanager
     def connect(self, **kwargs):
-        return psycopg.connect(
+        if self.connection_options is not None:
+            kwargs.setdefault("options", self.connection_options)
+        connection = psycopg.connect(
             host=self.url.host,
             port=self.url.port,
             dbname=self.url.database,
@@ -44,6 +48,13 @@ class CanonicalRepository:
             row_factory=dict_row,
             **kwargs,
         )
+        try:
+            with connection:
+                yield connection
+        finally:
+            # psycopg 3.2.9 does not close if its context-manager commit raises.
+            # Deferred publication errors must never leak sessions/transactions.
+            connection.close()
 
     def _authorize(self, c, scopes, *, lock=False):
         scopes = sorted(set(map(str, scopes)))
