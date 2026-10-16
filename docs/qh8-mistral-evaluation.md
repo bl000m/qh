@@ -7,6 +7,24 @@ quote repair, retry or model fallback. No merge, deployment, Jira change or
 persistent QH write occurred. Only harness-owned temporary SQL databases and Neo4j
 namespaces were written and removed. Captures remain available for review.
 
+## Persistent storage after worktree relocation
+
+2026-10-16 lifecycle maintenance moved this checkout to
+`/home/ubuntu/qh8-mistral-evaluation` using `git worktree move`; HEAD, branch,
+tracked/untracked/ignored contents and file hashes/modes were verified unchanged
+before this documentation-only path update. The four committed captures remain
+in `docs/evidence/qh8-mistral-20261016/` with their original manifest hashes.
+
+Original private evidence now lives at
+`/home/ubuntu/qh-finalization-evidence/worktree-lifecycle-20261016/mistral-evidence/`.
+The old `/tmp/qh8-mistral-evidence` is only a compatibility symlink to those same
+files, including the one original ledger, not a copied/restarted experiment.
+Historical commands, frozen manifests and original captures retain historical
+paths. Do not use archived helpers to resume paid calls without fresh authorization.
+No API call, experiment retry, publication push, merge or deployment occurred as
+part of relocation. The two review-ready experiment commits remain local pending
+separate publication; this path note adds no policy to experimental PR #5.
+
 ## Inputs, authorization and billing evidence
 
 The four synthetic conversations and provisional reference remain byte-identical
@@ -41,7 +59,8 @@ which earlier account setting caused the historical rejections.
 Preflight found **3/8 attempts / USD 0.012 uncertain hold**, newer than the requested
 2/8 checkpoint. The original metadata request and both failed inference records
 were retained unchanged. The authoritative path remains
-`/tmp/qh8-mistral-evidence/live-initial/ledger.json`; no replacement ledger or reset.
+`/home/ubuntu/qh-finalization-evidence/worktree-lifecycle-20261016/mistral-evidence/live-initial/ledger.json`
+following the verified storage relocation below; no replacement ledger or reset.
 A locked reviewed reconciliation appended UTC time, actual retained count/hold,
 reason and previous-state hash before permitting the new first reservation.
 [Before](evidence/qh8-mistral-20261016/ledger-before.json) and
