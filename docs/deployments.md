@@ -5,6 +5,28 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## Offline personal-review package — QH-33 v2, 2026-10-16 (not deployed)
+
+Executable/OCI revision `f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, image
+`qh33-v2-review:f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, immutable ID
+`sha256:684d040c124af536ba6ed13f9e6fc738e0278354f9c5c60eb4259ba04ab969d0`.
+Built from Git archive; 19 v1/v2 accounting/review tests pass without network,
+provider key or source bind. D1–D5 are approved rubric/POC decisions, not personal
+review attestations. All 74 unit decisions remain pending. No migration, deployment,
+canonical publication or inference. V1 artifacts, outputs and ledger remain sealed.
+[Personal review matrix](evidence/qh33-v2-20261016/review-matrix.it.md).
+
+## Offline evaluation artifact — QH-33, 2026-10-16 (not deployed)
+
+Executable/OCI revision `16c280f373e9842c311188d147bb33abedba900e`, image
+`qh33-semantics:16c280f373e9842c311188d147bb33abedba900e`, immutable ID
+`sha256:757883a007c92c4ce134e6640e3858e04f156d1558d7f4e974621d1debbfeb62`.
+Built from Git archive for offline benchmark/probe and disposable integration tests.
+No runtime replacement, persistent migration, new provider request or local model.
+Semantic labels remain provisional pending independent owner review. The separate
+candidate prompt is prepared only, with no live/default instruction change.
+[QH-33 report](qh33-semantic-evaluation.md).
+
 ## Offline follow-up artifact — QH-8 citations, 2026-10-16 (not deployed)
 
 The owner authorized only frozen-capture offline resolution and an architectural

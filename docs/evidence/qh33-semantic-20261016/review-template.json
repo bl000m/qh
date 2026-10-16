@@ -1,0 +1,1046 @@
+{
+  "benchmark_sha256": "f29a68907a8d6471d35c4e0386626ed531cbf04ced7f88fc4d50e9e0715933e6",
+  "reviewer": null,
+  "reviewed_at": null,
+  "independent_of_assistant_author": null,
+  "reference_completeness_checked": false,
+  "candidate_payloads_checked": false,
+  "units": [
+    {
+      "id": "work.objective",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.crm_unchanged",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.pilot",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.panel_actor",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.hypothesis",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.no_measurements",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.budget",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.no_export",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.deadline",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.authorizer_unknown",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.security_unselected",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "work.relation_encoding",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.original_proposal",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.proposal_only",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.adopted_trial",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.trial_duration",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.withdrawn",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.never_adopted",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.suspension",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.absence_reason",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.current_suspended",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.no_return",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.restart_unknown",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.counter_proposal",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.personal_rejection",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.personal_suspension",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.unlinked_time_1",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.unlinked_time_2",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "evolving.unlinked_time_3",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.quiet_preference",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.temporary_avoidance",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.past_train",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.not_tomorrow",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.future_intent",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.not_completed",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.weather_condition",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.attendance_possible",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.attendance_unconfirmed",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.ask_intent",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "personal.route_open",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.net",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.initial_tax_uncertainty",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.ceiling",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.initial_fit_hypothesis",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.gross",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.tax_bases",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.excess",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.no_order_approved",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.discount_condition",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.order_possible",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.not_decided",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.unassigned",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.delivery_unknown",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "multilingual.discount_applied",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.conditional_es.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.conditional_es.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.negation_en.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.negation_en.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.actual_discount_fr.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.actual_discount_fr.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.collective_it.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.collective_it.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.individual_en.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.individual_en.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.lifecycle_de.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.lifecycle_de.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.future_intent_en.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.future_intent_en.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.past_completed_it.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.past_completed_it.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.uncertain_fr.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.uncertain_fr.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.provenance_unicode.good",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    },
+    {
+      "id": "control.provenance_unicode.mutated",
+      "decision": "pending",
+      "ratings": {
+        "coverage": null,
+        "semantic": null,
+        "attribution": null,
+        "negation": null,
+        "temporality": null,
+        "uncertainty": null,
+        "provenance": null
+      },
+      "notes": ""
+    }
+  ]
+}

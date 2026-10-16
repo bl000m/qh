@@ -8,6 +8,8 @@ RUN uv pip install --system --require-hashes --only-binary :all: --no-deps -r re
 COPY apps/api ./
 COPY tests /workspace/tests
 COPY docs/evidence/qh8-mistral-20261016 /workspace/docs/evidence/qh8-mistral-20261016
+COPY docs/evidence/qh33-semantic-20261016/prompt-candidate.txt /workspace/docs/evidence/qh33-semantic-20261016/prompt-candidate.txt
+COPY docs/reviews/qh33-reassessment-proposal-20261016.json /workspace/docs/reviews/qh33-reassessment-proposal-20261016.json
 COPY scripts /workspace/scripts
 COPY ruff.toml /workspace/ruff.toml
 EXPOSE 8000

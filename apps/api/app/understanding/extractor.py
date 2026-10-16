@@ -11,6 +11,7 @@ from copy import deepcopy
 from datetime import datetime
 import hashlib
 import json
+import re
 from uuid import UUID, uuid5
 
 from app.core.models import GenerationRequest, Message, MessageRole
@@ -100,6 +101,14 @@ def timestamp(value):
         return parsed
     except ValueError as exc:
         raise ValueError("Explicit offset timestamp required") from exc
+
+
+def literal_timestamp(value, quote):
+    """A complete literal token; no timestamp-prefix or semantic entailment claim."""
+    return (
+        re.search(r"(?<![\w+-])" + re.escape(value) + r"(?![\w:+-]|[.,]\d)", quote)
+        is not None
+    )
 
 
 class UnderstandingExtractor:
@@ -417,7 +426,7 @@ class UnderstandingExtractor:
             for field, value in temporal.items():
                 if value is not None:
                     timestamp(value)
-                    if not any(value in e["quote"] for e in evidence):
+                    if not any(literal_timestamp(value, e["quote"]) for e in evidence):
                         raise ValueError(
                             "Temporal bounds require literal timestamp evidence"
                         )

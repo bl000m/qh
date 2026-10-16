@@ -1,0 +1,732 @@
+{
+  "benchmark_version": 2,
+  "benchmark_sha256": "6d38efb001f686cde07cb0b6e823309f84f2da20f55104563fe31a96c857e101",
+  "rubric_sha256": "910641868705b233921ef5bb755097c6f57b37994432782399029f40ac4b6e11",
+  "status": "D1-D5 approved; proposed unit judgments pending personal verification",
+  "inventory": {
+    "review_units": 74,
+    "original_source_propositions": 46,
+    "active_source_propositions": 44,
+    "historical_reconstructible": [
+      "multilingual.initial_tax_uncertainty",
+      "multilingual.initial_fit_hypothesis"
+    ]
+  },
+  "provisional_assistant_metrics": {
+    "control": {
+      "units": 20,
+      "dimensions": {
+        "active_coverage": {
+          "pass": 10,
+          "partial": 2,
+          "fail": 8,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 20,
+          "pass_fraction": 0.5
+        },
+        "semantic_support": {
+          "pass": 11,
+          "partial": 0,
+          "fail": 9,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 20,
+          "pass_fraction": 0.55
+        },
+        "attribution": {
+          "pass": 4,
+          "partial": 0,
+          "fail": 2,
+          "n/a": 14,
+          "pending": 0,
+          "assessed_denominator": 6,
+          "pass_fraction": 0.6666666666666666
+        },
+        "negation": {
+          "pass": 8,
+          "partial": 0,
+          "fail": 9,
+          "n/a": 3,
+          "pending": 0,
+          "assessed_denominator": 17,
+          "pass_fraction": 0.47058823529411764
+        },
+        "temporality": {
+          "pass": 8,
+          "partial": 3,
+          "fail": 6,
+          "n/a": 3,
+          "pending": 0,
+          "assessed_denominator": 17,
+          "pass_fraction": 0.47058823529411764
+        },
+        "uncertainty": {
+          "pass": 3,
+          "partial": 0,
+          "fail": 3,
+          "n/a": 14,
+          "pending": 0,
+          "assessed_denominator": 6,
+          "pass_fraction": 0.5
+        },
+        "citation_traceability": {
+          "pass": 19,
+          "partial": 0,
+          "fail": 1,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 20,
+          "pass_fraction": 0.95
+        }
+      }
+    },
+    "extra_claim": {
+      "units": 3,
+      "dimensions": {
+        "active_coverage": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 3,
+          "pending": 0,
+          "assessed_denominator": 0,
+          "pass_fraction": null
+        },
+        "semantic_support": {
+          "pass": 0,
+          "partial": 1,
+          "fail": 2,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 3,
+          "pass_fraction": 0.0
+        },
+        "attribution": {
+          "pass": 0,
+          "partial": 1,
+          "fail": 1,
+          "n/a": 1,
+          "pending": 0,
+          "assessed_denominator": 2,
+          "pass_fraction": 0.0
+        },
+        "negation": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 3,
+          "pending": 0,
+          "assessed_denominator": 0,
+          "pass_fraction": null
+        },
+        "temporality": {
+          "pass": 1,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 2,
+          "pending": 0,
+          "assessed_denominator": 1,
+          "pass_fraction": 1.0
+        },
+        "uncertainty": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 1,
+          "n/a": 2,
+          "pending": 0,
+          "assessed_denominator": 1,
+          "pass_fraction": 0.0
+        },
+        "citation_traceability": {
+          "pass": 3,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 3,
+          "pass_fraction": 1.0
+        }
+      }
+    },
+    "output_annotation": {
+      "units": 5,
+      "dimensions": {
+        "active_coverage": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 5,
+          "pending": 0,
+          "assessed_denominator": 0,
+          "pass_fraction": null
+        },
+        "semantic_support": {
+          "pass": 3,
+          "partial": 2,
+          "fail": 0,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 5,
+          "pass_fraction": 0.6
+        },
+        "attribution": {
+          "pass": 0,
+          "partial": 1,
+          "fail": 0,
+          "n/a": 4,
+          "pending": 0,
+          "assessed_denominator": 1,
+          "pass_fraction": 0.0
+        },
+        "negation": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 5,
+          "pending": 0,
+          "assessed_denominator": 0,
+          "pass_fraction": null
+        },
+        "temporality": {
+          "pass": 0,
+          "partial": 4,
+          "fail": 0,
+          "n/a": 1,
+          "pending": 0,
+          "assessed_denominator": 4,
+          "pass_fraction": 0.0
+        },
+        "uncertainty": {
+          "pass": 0,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 5,
+          "pending": 0,
+          "assessed_denominator": 0,
+          "pass_fraction": null
+        },
+        "citation_traceability": {
+          "pass": 5,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 0,
+          "pending": 0,
+          "assessed_denominator": 5,
+          "pass_fraction": 1.0
+        }
+      }
+    },
+    "source_proposition": {
+      "units": 46,
+      "dimensions": {
+        "active_coverage": {
+          "pass": 41,
+          "partial": 1,
+          "fail": 2,
+          "n/a": 2,
+          "pending": 0,
+          "assessed_denominator": 44,
+          "pass_fraction": 0.9318181818181818
+        },
+        "semantic_support": {
+          "pass": 39,
+          "partial": 3,
+          "fail": 0,
+          "n/a": 4,
+          "pending": 0,
+          "assessed_denominator": 42,
+          "pass_fraction": 0.9285714285714286
+        },
+        "attribution": {
+          "pass": 15,
+          "partial": 0,
+          "fail": 0,
+          "n/a": 31,
+          "pending": 0,
+          "assessed_denominator": 15,
+          "pass_fraction": 1.0
+        },
+        "negation": {
+          "pass": 12,
+          "partial": 0,
+          "fail": 2,
+          "n/a": 32,
+          "pending": 0,
+          "assessed_denominator": 14,
+          "pass_fraction": 0.8571428571428571
+        },
+        "temporality": {
+          "pass": 24,
+          "partial": 1,
+          "fail": 0,
+          "n/a": 21,
+          "pending": 0,
+          "assessed_denominator": 25,
+          "pass_fraction": 0.96
+        },
+        "uncertainty": {
+          "pass": 18,
+          "partial": 0,
+          "fail": 1,
+          "n/a": 27,
+          "pending": 0,
+          "assessed_denominator": 19,
+          "pass_fraction": 0.9473684210526315
+        },
+        "citation_traceability": {
+          "pass": 39,
+          "partial": 1,
+          "fail": 2,
+          "n/a": 4,
+          "pending": 0,
+          "assessed_denominator": 42,
+          "pass_fraction": 0.9285714285714286
+        }
+      }
+    }
+  },
+  "human_review": {
+    "status": "pending_or_changes_requested",
+    "identity_verified_by_tool": false,
+    "metrics": null,
+    "accepted_units": 0,
+    "required_units": 74
+  },
+  "original_locator_metrics_unchanged": {
+    "candidates": 37,
+    "supplied_citations": 34,
+    "exact_spans": 23,
+    "candidates_missing_evidence": 3
+  },
+  "citation_resolution_diagnostics": {
+    "work": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "work-1",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "work-2",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "work-3",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "work-4",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "work-5",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "relation-1",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "relation-2",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "relation-3",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "relation-4",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "evolving": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "evolving-1",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "evolving-2",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "evolving-3",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "evolving-4",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "evolving-5",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "proposal-1",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "proposal-2",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "status-1",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "relation-1",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "relation-2",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "relation-3",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "temporal-1",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "temporal-2",
+          "traceable": true,
+          "corrected_spans": 1
+        },
+        {
+          "local_id": "temporal-3",
+          "traceable": true,
+          "corrected_spans": 1
+        }
+      ]
+    },
+    "personal": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "personal-1",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "personal-2",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "personal-3",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "personal-4",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "personal-5",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "multilingual": {
+      "batch": "rejected_whole_batch",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "item-1",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "item-2",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "item-3",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "item-4",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "item-5",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "item-6",
+          "traceable": true,
+          "corrected_spans": 0
+        },
+        {
+          "local_id": "relation-1",
+          "traceable": false,
+          "issues": [
+            {
+              "item_index": 0,
+              "code": "missing_or_invalid_evidence"
+            }
+          ]
+        },
+        {
+          "local_id": "relation-2",
+          "traceable": false,
+          "issues": [
+            {
+              "item_index": 0,
+              "code": "missing_or_invalid_evidence"
+            }
+          ]
+        },
+        {
+          "local_id": "relation-3",
+          "traceable": false,
+          "issues": [
+            {
+              "item_index": 0,
+              "code": "missing_or_invalid_evidence"
+            }
+          ]
+        }
+      ]
+    },
+    "control.conditional_es.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.conditional_es.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.negation_en.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.negation_en.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.actual_discount_fr.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.actual_discount_fr.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.collective_it.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.collective_it.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.individual_en.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.individual_en.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.lifecycle_de.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.lifecycle_de.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.future_intent_en.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.future_intent_en.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.past_completed_it.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.past_completed_it.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.uncertain_fr.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.uncertain_fr.mutated": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.provenance_unicode.good": {
+      "batch": "citation_derivation_accepted_not_semantic_approval",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": true,
+          "corrected_spans": 0
+        }
+      ]
+    },
+    "control.provenance_unicode.mutated": {
+      "batch": "rejected_whole_batch",
+      "candidate_diagnostics_not_publication": [
+        {
+          "local_id": "claim",
+          "traceable": false,
+          "issues": [
+            {
+              "item_index": 0,
+              "evidence_index": 0,
+              "code": "quote_not_in_original_turns"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "new_inference_requests": 0,
+  "comparison_limit": "V1/v2 rubric, applicability and annotations changed; outputs unchanged. No model-quality gain, composite score or independent semantic accuracy inferred."
+}

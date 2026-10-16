@@ -211,3 +211,31 @@ The demo prints synthetic scope/source/revision IDs and readiness. Tests verify
 exact IDs/evidence across process restart and graph rebuild before their own
 cleanup. The full strict entry point fails on unavailable infrastructure or skips.
 A successful fake/replay demonstration does not establish real-model quality.
+
+## QH-33 offline semantic evaluation
+
+[QH-33 benchmark and review limits](docs/qh33-semantic-evaluation.md) separates
+source-proposition coverage, semantic support, agency, negation, time, uncertainty
+and provenance. All semantic labels are assistant proposals pending independent
+human review. Frozen Mistral/QH-32 artifacts remain unchanged; new paired authored
+controls are not model outputs. Tests and valid citations never establish truth.
+
+```bash
+# Stdlib-only: no key, HTTP, database, provider or canonical writes.
+python3 scripts/evaluate_qh33.py --out /tmp/qh33-review --prepare-protocol
+```
+
+The output directory must be new. Source-first material, blank human-review grid
+and separate draft metrics are reproducible; durable copies are committed under
+`docs/evidence/qh33-semantic-20261016/`. Prepared requests are a proposal only;
+no live execution mode is provided. The [current scope proposal](docs/qh33-closure-scope.it.md)
+defers complete human validation to QH-38; QH-33's Jira description still needs
+formal scope alignment before closure. Reviewed merge and Jira closure remain
+pending. No subsequent task starts automatically.
+
+
+QH-33 v2 applies owner-approved D1–D5 while keeping the original benchmark sealed.
+Use the [74-unit personal-review matrix](docs/evidence/qh33-v2-20261016/review-matrix.it.md)
+and [package instructions](docs/evidence/qh33-v2-20261016/README.md). Owner approval
+of the rubric does not attest personal review; all human judgments remain pending.
+Reproduce with `python3 scripts/evaluate_qh33_v2.py --out /tmp/qh33-v2-review`.
