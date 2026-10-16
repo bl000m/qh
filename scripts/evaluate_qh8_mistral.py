@@ -91,7 +91,7 @@ def collect_pipeline(runtime, repo, owner, scope, ids):
             )
         )
     )
-    assert ids[0] in {str(h.item_revision.revision_id) for h in result.hits}
+    assert rows[0]["id"] in {str(h.item_revision.revision_id) for h in result.hits}
     try:
         asyncio.run(
             runtime.context_for(owner).select_descriptors(

@@ -31,6 +31,10 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Changed
 
+- QH-8 evaluation harness checks the revision matching its retrieval query rather
+  than assuming PostgreSQL snapshot order matches publication order. No extraction
+  instructions, reference, provider, or application behavior changed.
+
 - One registered canonical representation throughout native projection/retrieval;
   fixture category mapping and duplicate temporal/endpoint decoding retired.
 - Standalone snapshot reconciliation/full-scope query checks retired. Incremental

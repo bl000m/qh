@@ -168,3 +168,31 @@ def test_live_harness_429_stops_without_retry_and_retains_artifacts(
     state = json.loads((resumed / "failure-state.json").read_text())
     assert state["source_revision_count"] == 1 and not state["understanding_item_revisions"]
     assert not (resumed / "work/raw.json").exists() and not (resumed / "evolving").exists()
+
+
+def test_harness_text_lookup_matches_snapshot_row_when_publish_order_differs():
+    from types import SimpleNamespace
+
+    path = Path(__file__).resolve().parents[3] / "scripts/evaluate_qh8_mistral.py"
+    spec = importlib.util.spec_from_file_location("evaluation_order_harness", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    rows = [
+        dict(id=identity, content={"text": text}, validation_state="proposed", current_revision_id=None)
+        for identity, text in [("revision-b", "second distinct assertion"), ("revision-a", "first distinct assertion")]
+    ]
+
+    async def retrieve(request):
+        matches = [r for r in rows if r["content"]["text"] == request.query.text]
+        return SimpleNamespace(hits=[SimpleNamespace(item_revision=SimpleNamespace(revision_id=r["id"])) for r in matches])
+
+    async def deny(**kwargs):
+        raise PermissionError("Foreign subject")
+
+    repo = SimpleNamespace(
+        sync_status=lambda scopes: [{"sync_state": "ready"}],
+        read_snapshot=lambda scopes, ids: {"understanding_item_revisions": rows},
+    )
+    runtime = SimpleNamespace(context_for=lambda owner: SimpleNamespace(retrieve=retrieve, select_descriptors=deny))
+    result = module.collect_pipeline(runtime, repo, "owner", "scope", ["revision-a", "revision-b"])
+    assert result["status"] == "PASS" and result["foreign_subject_denied"]
