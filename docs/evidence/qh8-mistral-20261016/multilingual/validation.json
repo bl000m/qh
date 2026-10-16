@@ -1,0 +1,13 @@
+{
+  "case": "multilingual",
+  "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+  "scope": "6343da81-d66a-45d8-9f02-199fbc533ec4",
+  "raw_validation": "FAIL",
+  "validation_error": {
+    "type": "ValueError",
+    "message": "Invalid extraction object fields"
+  },
+  "pipeline": "NOT PUBLISHED",
+  "items": 0,
+  "source_retained": true
+}

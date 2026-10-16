@@ -1,0 +1,51 @@
+{
+  "dataset_sha256": "b3092510b443d0651ed4006d5a0164135da140f9ddad1edd171d5f1b8c1edf9a",
+  "reference_sha256": "9290b477832ad8041119acf08b39ab36a44207fb2f590381d0ede86a7f4077e6",
+  "reference_status": "provisional, assistant-authored, no independent human validation",
+  "workspace_billing": "owner confirmed console verification after the last historical 429; no independent Admin API verification",
+  "initial_three_image": {
+    "source": "e2fde579b1bef86b8bfbf9fb0c12b476f998849a",
+    "id": "sha256:48c8c806107876c866cc6b5d1fd4da6ef2cd209493c426132cf3a6adaf913432"
+  },
+  "fourth_and_replay_image": {
+    "source": "1ee72f18f1b6cfef7755f2ae5b34a3c09a393dd8",
+    "id": "sha256:e3528ebc399e3a6391a5e742bf502e8b6b8c4b0fc9f40e85d77ab73d4a8b3aba"
+  },
+  "files_sha256": {
+    "README.md": "7ff7152e6233bea38836be02348916cf43e7ca302376a66df0ab647614e461de",
+    "audit.py": "3790605d93668c6e5d2095bf31d92599f8ddfac7c0a6e0f437ab4943e06ca782",
+    "evolving/citations.json": "43167cba50c82fa97c7852dc05107debfc340ffaa503e29b90b38ee4c3f33e35",
+    "evolving/output.json": "08e942d608578d90374673b1b635ab87a217b518c9faaa512ebc61d3c07d5e97",
+    "evolving/raw.json": "4368963739e09acc304791770fb09dc4147a102d12d4aaf5849b971b53ec418e",
+    "evolving/source.json": "2730441a4b403ab7029f20296d7e7596de1b9246b28100a9fc544e5ec3713610",
+    "evolving/understanding-candidates.json": "6795a9e91bbc536715c1b92b235a3e3a92dcff51b6a9d9604327a42682335824",
+    "evolving/validation.json": "2d682364e27f6a8362602667063d266ebd157e621cc16414b01929f7ffc8fbf1",
+    "four-case-replay-results.json": "491043de030b198c2705822bbc1d53104fa047efcfbead2a835da88dd9f059da",
+    "ledger-after.json": "7e96894fdc5eae86fd57716c73d129919e2d0410295ed61167609e138399036e",
+    "ledger-before.json": "0c501de16a43fbb0e3b57ade5391c82c256f896b9c7d181badb667fcd2a6447e",
+    "live-failure-state.json": "129d37ab4f83423507eb19191d6778fd7f1cddf69df5922759a8cb97303f681e",
+    "live-harness-error.json": "3632a67d3e026f3fafa0f277398d9e6445b380665f0aa59b499ed8fe7d96a138",
+    "metrics.json": "bbd1d19338d2ce6c3fe507141f657db396ac65354d10a613d68a719e8ccd9a1a",
+    "multilingual/citations.json": "2690585184c2d8e6f59ba06fa821b27a648653465f814bf98ac61378d12c226b",
+    "multilingual/output.json": "52035c2dfd865c69d3047dd5dcfeee65fd6ac9ee2f827c631b3da3ee3915ab5c",
+    "multilingual/raw.json": "6210b9662d17d587ed06d9bbd606a61d860ab01cf38c37bb87f50390b0be7397",
+    "multilingual/source.json": "a24b98b4d482e105e71ddcc71c151d9d63211f6ab1fa0ee10fbfed592ed0e89c",
+    "multilingual/understanding-candidates.json": "7ea4411b44d658f6347f4038d8c170ccf965791702e74a1d9e5901358a278ea4",
+    "multilingual/validation.json": "044d705df2c7eba4c606110ab60bb909d789c0f3ff146e4f2492d180f0c24a2a",
+    "personal/citations.json": "2cc3772ff743fe3c2bb38e2c72719c290a36a70e4015e19a4649e4f4abf545ba",
+    "personal/output.json": "e8ae8788d13dc7143d331b6d3bb5af21d686ecad470c45c0750e82f5ca7290b9",
+    "personal/raw.json": "e95df5041e2c5940d8b5e95801e8e3a1e3f61a7fbfb607b869afe6db62dff6ac",
+    "personal/replay-canonical.json": "97ca19710e81b2facc064e524d55576c4ba839f26f9be4b266004c906657098d",
+    "personal/replay-checkpoint.json": "c2361398d6e2e4080857ffbba7b6519e4e0ff9625b9f55f24c86a8de61499455",
+    "personal/replay-validation.json": "53d41887322993ee09300b067a43085967ae7f70ec3cb044697c3d550ff2026c",
+    "personal/source.json": "61d6de0c7347e8dbd4aca1f85272c5b41b4d5f74344a47b3810d59dbb8ff6b3d",
+    "personal/understanding-candidates.json": "c2ff3393580ff387f7052ddc22d363c9845d3a66c5937486e79652139456b54d",
+    "semantic-assessment.json": "949f9ce9e8c9d39f463660135b03d7ff87ab64eab533b396d051611135d7b1c5",
+    "work/citations.json": "ca757ad751d228c105a84e30ea25ebee2271b0474e30f4df721a72c745ebce18",
+    "work/output.json": "eba1c20e0ce4a45af6bf67a08cc15f4d3c271b125d8f2f7c83d256d9d84897bf",
+    "work/raw.json": "9f769a772505ccc14652f0ff37a069374c0e2d06cbc94ac87d97e30985ef559d",
+    "work/source.json": "c5fa6db067a6f50209e6d7b27385ba160be29b3f21923d5693489f7aa09cb9f7",
+    "work/understanding-candidates.json": "f7f9a7d5167452802dc76626568cb85b1ec1d6dd150f5867bbab9b200a473c4a",
+    "work/validation.json": "86ccf8cabb98f9361a52fba1299dac50609b49a9b3e8d7731e01e5b158c27d95"
+  }
+}

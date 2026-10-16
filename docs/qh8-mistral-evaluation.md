@@ -1,274 +1,242 @@
-# QH-8 — real Mistral evaluation: resumed, still rate-limited
+# QH-8 — four real full-conversation Mistral extractions
 
-2026-10-15. Baseline `f1e0ae6` (QH-8 merged). Branch
-`feat/QH-8-mistral-evaluation`; no merge, deployment, persistent QH writes or Jira
-changes. This is an **attempted real experiment**, not evidence of real-model
-understanding quality. Ordinary CI never calls Mistral.
+2026-10-16. PR #5, branch `feat/QH-8-mistral-evaluation`, baseline `f1e0ae6`.
+**Four HTTP 200 generations, one accepted QH batch out of four.** The experiment
+measures the unchanged full extraction, with no incremental delta, optimization,
+quote repair, retry or model fallback. No merge, deployment, Jira change or
+persistent QH write occurred. Only harness-owned temporary SQL databases and Neo4j
+namespaces were written and removed. Captures remain available for review.
 
-## Frozen inputs and reference
+## Inputs, authorization and billing evidence
 
-Four new synthetic conversations and their expected evidence were committed in
-`a0f85c07a0e2a8f792fde60f90318fe2d5903832` **before all API requests**:
-[inputs](../apps/api/tests/fixtures/mistral_unseen_conversations.json),
-[reference](../apps/api/tests/fixtures/mistral_evaluation_reference.json).
-The input/reference files are separate. Only the source revision text, exact turn
-locators and the existing QH-8 instructions are included in model requests; labels,
-expected assertions and forbidden inferences are not sent. The reference is
-hand-curated by the implementing assistant for human review, **not independently
-validated by a person**. It must not be presented as independent human ground truth.
-Reference SHA-256: `9290b477832ad8041119acf08b39ab36a44207fb2f590381d0ede86a7f4077e6`.
+The four synthetic conversations and provisional reference remain byte-identical
+to their pre-call commit `a0f85c07a0e2a8f792fde60f90318fe2d5903832`:
 
-## Execution limits and original attempt
+- [Inputs](../apps/api/tests/fixtures/mistral_unseen_conversations.json): SHA-256
+  `b3092510b443d0651ed4006d5a0164135da140f9ddad1edd171d5f1b8c1edf9a`.
+- [Reference](../apps/api/tests/fixtures/mistral_evaluation_reference.json): SHA-256
+  `9290b477832ad8041119acf08b39ab36a44207fb2f590381d0ede86a7f4077e6`.
 
-The official [model card](https://docs.mistral.ai/models/mistral-small-4-0-26-03)
-identifies Small 4 as **mistral-small-2603**, input **USD 0.15/M tokens**, output
-**USD 0.60/M tokens**, verified on the experiment date. The official
-[chat API](https://docs.mistral.ai/api/endpoint/chat) is
-`https://api.mistral.ai/v1/chat/completions`; adapter uses JSON mode, temperature 0,
-seed 42, one non-streaming completion, no tools or automatic retries.
+The reference was prepared by the implementing assistant, frozen before requests,
+and **not independently human-validated**. Assessments below are by that same
+assistant. Expected labels/claims were never included in inference requests.
 
-User-authorized ceiling: **8 total requests / USD 0.20**. The implementation counts
-metadata/error requests too. Per completion: at most 6,000 output tokens and a
-16,000 input-token conservative bound (UTF-8 bytes plus 256/message, not an exact
-local tokenizer; actual reported usage is checked). Worst-case reservation is
-USD 0.006/completion. Four planned completions reserve at most USD 0.024.
+The owner explicitly authorized one first extraction followed by the other three
+on successful inference, with **8 cumulative requests / USD 0.20**, no automatic
+retry, model `mistral-small-2603`. The owner subsequently confirmed checking the
+local key's workspace, active billing and available inference quota in the console
+after the last historical 429. This is **owner-confirmed**, not independently
+verified using admin credentials. Only the standard inference key is configured.
+[Mistral key scope](https://docs.mistral.ai/admin/identity-access/api-keys) associates
+the key with a workspace and organization plan; the
+[Admin API](https://docs.mistral.ai/admin/admin-api/overview) requires separate
+access. No speculative account/admin request or billing change was made.
 
-Observed requests from exact image/source `f01374bc002df6521c2c20952f6e704d9bccf374`:
+All four authorized inference requests returned 200; the previous 429 therefore
+did not recur in this sample. This does not establish unlimited quota or prove
+which earlier account setting caused the historical rejections.
 
-1. `GET /v1/models/mistral-small-2603`: **200**, exact ID and chat capability verified.
-2. `POST /v1/chat/completions` for work conversation: **429**, experiment stopped.
+## Preserved ledger and request accounting
 
-**2/8 total attempts, 1 failed inference request, 0 completed generations.**
-No retry, model fallback, second conversation request or citation repair occurred.
-At this original checkpoint, the durable ledger was blocked and preserved the consumed attempts and USD 0.006
-worst-case reservation. The provider returned no token usage for the failed call;
-**actual tokens and invoiced cost are unavailable**, not asserted to be zero.
-Six request slots remained unused at that checkpoint. The reviewed resumption below retains both original attempts.
+Preflight found **3/8 attempts / USD 0.012 uncertain hold**, newer than the requested
+2/8 checkpoint. The original metadata request and both failed inference records
+were retained unchanged. The authoritative path remains
+`/tmp/qh8-mistral-evidence/live-initial/ledger.json`; no replacement ledger or reset.
+A locked reviewed reconciliation appended UTC time, actual retained count/hold,
+reason and previous-state hash before permitting the new first reservation.
+[Before](evidence/qh8-mistral-20261016/ledger-before.json) and
+[after](evidence/qh8-mistral-20261016/ledger-after.json) snapshots preserve the trail.
 
-[Mistral documents 429 as a rate-limit error](https://docs.mistral.ai/resources/error-glossary).
-This observation does not distinguish request-rate, token-rate, organization quota
-or a temporary provider condition. Initial code retained status only, so no
-Retry-After/provider error code exists for this failed real attempt. The later bounded diagnostics were exercised in the resumption below. No account settings, billing or quota were changed by QH.
+Final state: **7/8 cumulative attempts**, including one historical metadata GET,
+two historical 429s and four new POST completions. One unused request slot remains;
+no additional request is part of this completed experiment. Each new completion
+reserved at most USD 0.006 before HTTP and settled against reported usage.
+Historical uncertain holds remain **USD 0.012**. Accounted budget exposure is
+**USD 0.01595415** (holds + calculated new usage), below USD 0.20. The holds are not
+observed charges. Historical errors supplied no usage, so their actual tokens and
+invoiced cost remain unknown.
 
-Private evidence remains under `/tmp/qh8-mistral-evidence/live-initial`: ledger,
-model availability, input/reference hashes, first original source and error class.
-No raw completion JSON exists because generation never succeeded. No raw model
-JSON, Understanding Item or citation example can honestly be supplied from this run.
-The uniquely created SQL database and graph namespace were cleaned by the harness;
-source export/evidence remain. Persistent QH services/data were never targets.
+## Observed usage and latency
 
-## Authorized resumption after reported billing activation
+Official endpoint: `https://api.mistral.ai/v1/chat/completions`, JSON mode,
+temperature 0, seed 42, non-streaming, no tools; unchanged 16,000 input bound and
+6,000 output cap. The local input bound uses UTF-8 bytes plus per-message allowance,
+not an exact tokenizer. Actual values below come from provider `usage`.
+The [official pricing](https://docs.mistral.ai/inference/pricing), rechecked
+2026-10-16, lists USD 0.15/M input, USD 0.015/M cached input and USD 0.60/M output.
+The personal response reports **232 cached input tokens**, already included in its
+653 input total; other responses report zero. No output reasoning tokens are reported.
 
-The owner reported PAYG enabled, EUR 10 credit and automatic top-up disabled, and
-explicitly authorized one first extraction followed by the remaining three only
-if inference worked. The available secret is a **standard inference API key**.
-No Admin API key or explicit workspace/organization ID is configured. The
-[official key documentation](https://docs.mistral.ai/admin/identity-access/api-keys)
-states that keys belong to a fixed workspace and use organization billing/quota;
-[administrative access](https://docs.mistral.ai/admin/admin-api/overview) requires
-separate privileges. QH therefore **could not independently verify the workspace
-identity, its billing activation, balance or invoice**. The owner's statement is
-separate from the operational inference test. No speculative admin requests were
-made and no extra metadata request consumed the remaining request allowance.
+| Conversation | HTTP | Input tokens | Output tokens | Cache-aware calculated USD | Observed HTTP latency |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Work project | 200 | 650 | 1,552 | 0.00102870 | 6.766313 s |
+| Evolving project | 200 | 667 | 2,180 | 0.00140805 | 8.746279 s |
+| Personal context | 200 | 653 | 951 | 0.00063723 | 3.854056 s |
+| Italian/French/English | 200 | 703 | 1,239 | 0.00084885 | 5.402201 s |
+| **Total** | **4 successes** | **2,673** | **5,922** | **0.00392283** | **24.768849 s summed** |
 
-Exact resumption code/image: `e2fde579b1bef86b8bfbf9fb0c12b476f998849a`,
-`qh8-mistral:e2fde579b1bef86b8bfbf9fb0c12b476f998849a`, inspected image ID
-`sha256:48c8c806107876c866cc6b5d1fd4da6ef2cd209493c426132cf3a6adaf913432`.
-Built from that exact Git archive, without local credentials in its context.
-Model, prompt, token caps, four conversations and frozen provisional reference
-were unchanged. Dataset SHA-256 remains
-`b3092510b443d0651ed4006d5a0164135da140f9ddad1edd171d5f1b8c1edf9a`.
+Latency is client elapsed HTTP time, including connection setup, excluding
+validation/publication. Prices multiplied by observed tokens give a **calculated
+API charge**, not an independently observed invoice, balance delta or tax-inclusive
+amount. The existing ledger conservatively prices all prompt tokens at the
+uncached rate: **USD 0.00395415**, overstating cache-aware list-price usage by
+USD 0.00003132. Those settled ledger records are preserved, not rewritten for a
+discount; budget exposure above deliberately uses the conservative value. No currency conversion was performed. Provider/model and finish reason
+checks passed. No new 429, transport error or retry occurred. The final request
+used the harness correction below; model, prompt, data and reference were unchanged.
 
-The original `/tmp/qh8-mistral-evidence/live-initial/ledger.json` remains
-**authoritative**. Its blocked state was reconciled once under a lock: retained
-both original calls byte-for-byte as records, retained USD 0.006 uncertain reserve,
-recorded UTC time/reason/previous-state hash, then allowed one new reservation.
-A private before-reconciliation snapshot was saved. No reset, replacement ledger,
-refunded slot or erased failed reservation was used.
+## Raw outputs, candidates and exact provenance
 
-At approximately **2026-10-15 20:20 UTC**, the single new work-conversation request
-returned:
+[Evidence index](evidence/qh8-mistral-20261016/README.md),
+[deterministic metrics](evidence/qh8-mistral-20261016/metrics.json),
+[manual element assessments](evidence/qh8-mistral-20261016/semantic-assessment.json).
+Each case contains the parsed original API envelope/request, exact returned JSON
+content string, unchanged candidate array, source revision/turns and audited
+citations. Raw content was never repaired. Captures are synthetic; no key or
+production data is included. A parsed response capture is not a raw HTTP byte log.
 
-```json
-{
-  "http_status": 429,
-  "code": "1300",
-  "type": "rate_limited",
-  "message": "Rate limit exceeded",
-  "latency_seconds": 0.45021407600142993,
-  "headers": {}
-}
-```
+| Case and original JSON | Candidates | Exact spans / returned citations | Quotes present literally | Missing evidence | QH batch |
+| --- | ---: | ---: | ---: | ---: | --- |
+| [Work](evidence/qh8-mistral-20261016/work/output.json) | 9 | 4/9 | 9/9 | 0 | Rejected: mismatched span |
+| [Evolving](evidence/qh8-mistral-20261016/evolving/output.json) | 14 | 8/14 | 14/14 | 0 | Rejected: mismatched span |
+| [Personal](evidence/qh8-mistral-20261016/personal/output.json) | 5 | 5/5 | 5/5 | 0 | 5 proposed revisions; offline replay pipeline PASS |
+| [Multilingual](evidence/qh8-mistral-20261016/multilingual/output.json) | 9 | 6/6 | 6/6 | 3 relations | Rejected: required evidence field absent |
+| **Total** | **37** | **23/34 (67.65%)** | **34/34** | **3/37 candidates** | **1/4 accepted batches (25%)** |
 
-Latency is observed client-side elapsed HTTP time, including connection setup;
-there was no completion. Neither `Retry-After` nor any allowlisted request-ID/
-request-rate/token-rate header was supplied. Only bounded, sanitized diagnostic
-fields were retained; the API key and complete error headers/body were not logged.
-**Stopped immediately: no retry and no requests for the other three conversations.**
-The original ledger is blocked again with **3/8 attempts**, two rejected inference
-requests, **0 successful generations** and **USD 0.012 total uncertain reservation**.
-Five request slots remain unused, but are gated until a separately reviewed
-resumption. The USD 0.012 is a conservative budget hold, **not an observed charge**.
+All 34 supplied citations name the correct synthetic source revision. All returned
+spans lie inside identified turns, but **11 spans do not equal their quote**.
+Three relation candidates provide no evidence at all. Literal quote presence and
+valid JSON (4/4) therefore do not establish usable provenance or batch validity.
+For example, work-1 returns `[6,70)` for a 109-code-point quote actually occupying
+`[6,115)`. The original offset is retained; no resolver or second API request was
+used. A single invalid citation rejects the whole batch, including valid siblings.
+The multilingual batch fails the required-fields check before citation validation;
+the six exact spans in that batch are measured separately by the offline audit.
 
-| Request | HTTP | Input tokens | Output tokens | Invoiced API cost | Observed latency | Budget reserve retained |
-| --- | --- | --- | --- | --- | --- | --- |
-| Original model metadata | 200 | N/A | N/A | Not independently queried | Not instrumented | USD 0 |
-| Original work inference | 429 | Not reported | Not reported | Unknown | Not instrumented | USD 0.006 |
-| Resumed work inference | 429, code 1300 | Not reported | Not reported | Unknown | 0.450214 s | USD 0.006 |
+Only the five personal candidates became canonical proposed revisions in a
+disposable database, with immutable IDs/provenance, `current_revision_id=null` and
+no human validator. Work, evolving and multilingual published zero revisions.
+All experiment databases/namespaces were then removed by their owning harness;
+exports and original model candidates remain in the evidence directory.
 
-No token-based charge can be calculated for either rejected inference: usage was
-not returned. Do not replace missing token/cost values with zero. No EUR/USD
-conversion or independent balance/account verification was performed.
+## Separate semantic assessment
 
-The response establishes an active **rate/quota rejection**, not its exact cause.
-Organization/workspace limits, a token/request quota or billing activation not yet
-reflected for this key are possible explanations, **not findings**. Positive credit
-alone does not prove this key has usable inference quota. Next operational check
-is in the Mistral console: match the key's workspace and billed organization, inspect
-its effective Limits/Usage and activation status; use the sanitized UTC/code when
-contacting support if necessary. QH does not change account settings or keep probing.
+Coverage counts **reference propositions retained in candidate text/properties**,
+not assertions present only inside a quote. One candidate may cover several
+reference elements. This measures textual retention, not semantic precision or
+successful canonical retrieval. Errors in descriptors, properties and added
+relations are assessed separately even when the source text was copied correctly.
 
-Private evidence: `/tmp/qh8-mistral-evidence/resumed-work` contains manifest,
-resumption metadata, original source, ledger snapshot, sanitized error and failure
-state. The source committed on the disposable SQL database before inference;
-inspection found **1 source revision, 0 Understanding Item revisions and all four
-scope counters at desired=applied=0**. No publication, outbox intent or partial item
-batch followed the failure. The harness removed only its own disposable database
-and graph namespace, retaining these evidence files; persistent QH was not targeted.
-There are **no four model JSON outputs, Understanding Items or generated citations**
-to save: no generation succeeded. The unreturned conversations were not evaluated.
+| Case | Reference elements | Retained textually | Partial/inconsistent | Omitted from claims |
+| --- | ---: | ---: | ---: | ---: |
+| Work | 8 | 8 | 0 | 0 |
+| Evolving | 7 | 7 | 0 | 0 |
+| Personal | 7 | 7 | 0 | 0 |
+| Multilingual | 9 | 7 | 1 | 1 |
+| **Total** | **31** | **29** | **1** | **1** |
 
-## Evaluation matrix — no semantic measurements fabricated
+- **Correctness:** work preserves the 20% goal, two-week pilot, EUR 300 cap, CRM
+  restrictions and unanswered access/security ownership. Personal preserves the
+  canceled train and the planned walk as separate events. Multilingual preserves
+  net 300, gross 360 and ceiling 350, and the 10 EUR excess; the tax-basis explanation
+  is retained in relation-2, whose missing evidence still makes it unusable by QH.
+- **Omissions:** the multilingual statement that no order is approved appears only
+  in item-4's quote, absent from its text/properties and the other claims. It does
+  not count as an extracted understanding proposition. This is one omitted reference
+  element; no claim of exhaustive omission detection beyond the reference is made.
+- **Invented/overstated information:** multilingual item-5 emits
+  `discount_applied=true`, although the source only discusses a possible discount.
+  This is one definite unsupported property. Evolving relation-1 says “Jo rejects
+  Mina's proposal”; the cited collective choice of another trial is weaker than an
+  explicit personal rejection. That is an overinterpretation requiring review,
+  reported separately from the definite unsupported property.
+- **Semantic classification:** evolving-2 copies the decision literally but labels
+  it `counter-proposal`. This underrepresents an adopted trial as another proposal.
+  Open descriptor vocabulary is permitted: absence of a specific English keyword
+  alone is not a failure. The issue is the meaning of this particular descriptor.
+- **Temporality:** work retains a date-only deadline without inventing a timestamp.
+  Personal uses the two literal timestamps and preserves past cancellation versus
+  future conditional intention. Evolving retains proposal, withdrawal, suspension
+  and no-return-to-weekly history in text, but attaches its three temporal fields
+  to standalone timestamp entities rather than the affected assertions; temporal
+  lifecycle is therefore much less structured than the text suggests. No restart
+  date is invented. The fixture's acquisition time precedes some narrated future
+  dates; evaluation concerns internal narrative order, not real-world chronology.
+- **Uncertainty:** personal preserves temporary crowd avoidance, weather dependence
+  and unconfirmed attendance without a diagnosis or enduring personality inference.
+  Multilingual preserves unassigned discount work and unknown delivery date, but
+  its conditional order claim is internally weakened by `discount_applied=true` and
+  omission of the explicit non-decision. Descriptor `certainty=asserted` concerns
+  the assignment, not confirmation that an uncertain event happened.
+- **Provenance quality:** exact offsets, literal quotes, source IDs and entailment
+  are distinct checks. The 34 literal quotes do not excuse 11 bad offsets, three
+  absent relation citations, or the unsupported discount property. Work relation-1
+  connects a pilot-statement item to a goal item for a team/panel management claim;
+  universal item endpoints allow that structurally, but entity/relationship quality
+  needs review. No structural domain change follows from this finding.
 
-| Conversation | Expected reference elements | Correct | Omitted | Unsupported | Actual outcome |
-| --- | ---: | --- | --- | --- | --- |
-| Work project | 8 | N/A | N/A | N/A | Original and resumed inference both HTTP 429 |
-| Evolving project | 7 | N/A | N/A | N/A | Not requested after stop |
-| Personal context | 7 | N/A | N/A | N/A | Not requested after stop |
-| Italian/French/English | 9 | N/A | N/A | N/A | Not requested after stop |
+No aggregate hallucination/precision percentage is asserted: candidates mix
+multiple propositions, repeated text, properties and relations, and the small
+manual reference is not an exhaustive, independent claim annotation.
 
-N/A means **unmeasured**, not zero omissions/hallucinations. Coverage, semantic
-precision, entailment/grounding, hallucination rate, temporal interpretation,
-uncertainty and apparent-contradiction handling cannot be assessed. Offsets were
-not produced, so there is no measured offset failure and no justification to add
-an automatic quote resolver now. Once outputs exist, evaluate quote text equality
-and source support separately; an exact quote never proves entailment.
+## Harness interruption and offline correction
 
-| Layer | Finding |
+The live personal batch validated and published five proposed revisions; worker
+sync reached desired=applied=5. Its subsequent retrieval check raised
+`AssertionError`: the harness queried `rows[0].content.text` but expected `ids[0]`,
+assuming snapshot ordering equaled publication ordering. The failure was in the
+measurement code, not HTTP or extraction validation. Original failure/sync exports
+are retained separately. No further API request was made while diagnosing it.
+
+Local commit `1ee72f18f1b6cfef7755f2ae5b34a3c09a393dd8` checks the revision belonging
+to the queried snapshot row. A regression uses different snapshot/publication
+orders. This changes no Core, prompt, provider, reference or public contract.
+An exact image built from Git archive, without source mounts, replayed the already
+captured personal output **offline, without a provider key**: 5 proposed items,
+exact citations, worker, descriptor retrieval, text retrieval and foreign-owner
+denial **PASS**. Replay is not a second live extraction. Only then was the remaining
+multilingual conversation requested once using the corrected harness image.
+
+| Artifact | Source / immutable image ID |
 | --- | --- |
-| Provider availability | Original metadata succeeds; the single authorized resumed inference still returns 429/1300 |
-| JSON/format/citation interpretation | Not reached in the real run |
-| QH canonical publication | Not invoked for the failed real extraction |
-| Offline safety/pipeline | Mock HTTP + real disposable SQL/outbox/worker/Neo4j tests pass: proposed state, exact source provenance, descriptor hydration and replay; simulated 429 retains source, publishes zero items/intents and stops |
-| Real-model canonical/retrieval success | NOT TESTED; cannot be inferred from mock pipeline success |
+| First three live completions | `e2fde579b1bef86b8bfbf9fb0c12b476f998849a`; `sha256:48c8c806107876c866cc6b5d1fd4da6ef2cd209493c426132cf3a6adaf913432` |
+| Offline replay and fourth completion | `1ee72f18f1b6cfef7755f2ae5b34a3c09a393dd8`; `sha256:e3528ebc399e3a6391a5e742bf502e8b6b8c4b0fc9f40e85d77ab73d4a8b3aba` |
 
-## Adapter, harness and reproduction
+## Verification and limits
 
-`adapters/llm/mistral.py` implements existing LLMProvider with httpx already locked
-in the repository; Core signatures/schema are unchanged. API key only from private
-`MISTRAL_API_KEY` environment. Clients use official HTTPS, no redirects, no retries,
-60-second timeout (10-second connect), explicit caps and redacted failures. A
-mode-600 fail-closed ledger reserves before HTTP, accounts observed usage at list
-prices, and blocks after uncertain errors/crash. Synthetic raw successful API JSON
-and QH validation results are saved to separate files; provider errors are never
-silently converted into successful understanding.
+| Criterion | Verdict and execution evidence |
+| --- | --- |
+| Workspace billing | Owner-confirmed console check; independent admin verification NOT TESTED |
+| 429 operationally resolved | PASS for this sample: four POSTs, all HTTP 200, no retry |
+| Frozen model/data/reference | PASS: exact hashes and source comparisons; unchanged prompt/adapter |
+| Preserve ledger and caps | PASS: audit verifies first three records unchanged; 7/8 calls, USD 0.01595415 exposure |
+| Save four outputs/candidates/citations | PASS: evidence directory, untouched content strings and source exports |
+| Semantic quality | MIXED: manual coverage/omission/unsupported/temporal/uncertainty assessment above; no human validation |
+| QH batch contract | FAIL in 3/4 cases; personal PASS with five proposed revisions |
+| End-to-end retrieval | Personal live harness FAIL after publication; corrected offline replay PASS. Other rejected batches NOT TESTED downstream |
+| Targeted regression suite | PASS: Docker `python -m pytest -q -p no:cacheprovider tests/test_mistral.py tests/test_mistral_pipeline.py`: **20 passed, 9.62 s** on reviewed source and **20 passed, 10.15 s** on the exact final image without source mounts; real disposable SQL/Neo4j, mock HTTP only, no key |
+| Lint | PASS: Docker `ruff check --no-cache scripts/evaluate_qh8_mistral.py apps/api/tests/test_mistral_pipeline.py` |
+| Four-case offline replay | PASS: exact final image, no key; reproduces three rejected batches and the five-item personal pipeline |
+| Deterministic capture audit | PASS: `python3 docs/evidence/qh8-mistral-20261016/audit.py`; actual usage, preserved ledger prefix, exact content/candidate comparisons |
+| Artifact integrity/privacy | PASS: raw captures byte-compared to private originals, frozen fixtures byte-compared to a0f85c0, manifest hashes, local file links, configured-secret guard and Git whitespace check |
+| Hosted CI for new commits | NOT TESTED; local commits have not been pushed |
 
-`scripts/evaluate_qh8_mistral.py` creates its own disposable database and graph
-namespace on enforced `qh30-sql-test`/`qh30-native-neo4j-test` hosts. It provisions
-existing generic profiles, uses unchanged QH-8 validation/resolution, native worker
-and policy, then checks descriptor/text retrieval, canonical hydration and denial.
-It never reads reference labels into a provider request. Sources commit first;
-only accepted output is published. The live mode is prohibited when CI is set.
-The offline replay mode uses captured provider content only, not new API calls.
+Previous mock/native verification is reused; it does not establish live-model
+quality. Four short synthetic examples, one completion each, one model/seed and an
+assistant-authored reference do not measure run-to-run variance, real sensitive
+data, production reliability or broad multilingual ability. Raw preservation and
+an accepted personal batch are evidence, not independent human validation.
+Full extraction shows adequate textual retention in several cases but unreliable
+contract compliance and a concrete unsupported conditional property. Measure these
+baseline failures before deciding whether any optimization is warranted.
 
-Offline verification with the existing dedicated test credentials:
+## Historical 429 evidence retained
 
-```bash
-# From this feature checkout; only disposable infrastructure, no provider key.
-sudo -n docker run --rm --network qh30-native-test \
-  --env-file /tmp/qh30-postgres-test.env --env-file /tmp/qh30-native-test.env \
-  --mount type=bind,src="$PWD",dst=/workspace,readonly \
-  -w /workspace/apps/api --entrypoint python \
-  qh8-extractor:9ccf69b34edaad5249c6a38756addda9a8e99934 \
-  -u /workspace/scripts/run_qh30_integration.py
-```
-
-Manual interface, **not permission to restart this now-blocked experiment**:
-
-```text
-# The command actually used for the single authorized resumption:
-python /workspace/scripts/evaluate_qh8_mistral.py --live --resume-from /evidence/live-initial --reviewed-resumption --case work --out /evidence/resumed-work
-# Never rerun with another output directory to bypass the now-blocked ledger.
-python /workspace/scripts/evaluate_qh8_mistral.py --replay-from /evidence/completed-run --out /evidence/replay-run
-```
-
-Run only inside a reviewed backend image with dedicated SQL/graph variables and a
-private artifact mount. Pass only MISTRAL_API_KEY from a mode-600 temporary env file
-for the live mode, never the complete production .env. No published database ports.
-The exact original live image was built from git archive f01374b; this experiment's
-ledger path must remain authoritative during any reviewed resumption. The current
-blocked run has **no completion capture to replay**. CI mocks are explicitly labeled
-mock responses, not invented Mistral outputs or semantic regression evidence.
-
-## Critical conclusion and next priorities
-
-QH's deterministic integrity and offline provider substitution remain tested.
-**Real Understanding Extractor reliability is not yet measurable.** A valid key and
-an advertised model do not establish usable inference access; this run demonstrates
-that operational gap, not good or bad Mistral comprehension.
-
-1. Resolve the actual workspace/organization inference quota in the console before
-   another explicitly reviewed resumption. Preserve all **3 attempts and USD 0.012**
-   uncertain reservations. Diagnostics are now observed on the real rejection; no
-   automatic backoff/retry or model substitution is introduced.
-2. Obtain all four successful, untouched outputs and score each reference element,
-   every additional unsupported assertion, temporal lifecycle and descriptor certainty.
-   Measure citation text/span failures before considering a deterministic uniqueness-
-   checked locator step; never repair semantic claims to make acceptance pass.
-3. Have a person independently review the provisional reference and assessments,
-   including implicit multilingual contradictions and historical versus current facts,
-   before exposing any real conversations. Four synthetic samples alone would still
-   not establish production reliability or authorize real-data disclosure.
-
-## Executed code verification
-
-- First adapter/dataset + extractor/Core checks: **111 passed**, no external HTTP.
-- Final adapter and real SQL/Neo4j mock-HTTP suites: **17 passed**, including
-  retained source/zero publications/zero desired-version increments after 429.
-- Exact final code image `qh8-mistral:db2c3715a2f57d9478e605e9082f205f1c383102`,
-  inspected ID `sha256:158a576bdec5e4b0397994e689205bfa2b19b88f49ad553473fa50beb2cee783`:
-  **17 passed, 8.93 s without any bind mount**. No provider key supplied to tests.
-- Ruff, whitespace/index guard and staged comparison with private root configuration
-  passed without revealing values. 25 local documentation links/anchors resolved.
-- Both Mistral test modules are required by the existing strict native CI entry
-  point (missing infrastructure or skips fail). Hosted status is reported by this
-  feature PR's checks; successful mocks never replace the blocked real evaluation.
-
-Local commits: `a0f85c0` adapter + frozen dataset/reference;
-`f01374b` manual isolated live/replay harness (the actual attempted live image);
-`db2c371` real SQL/Neo4j mock pipeline and sanitized 429 failure diagnostics.
-Subsequent publication documentation does not change these executable artifacts.
-Original live image ID:
-`sha256:34b63e0b4592445fa72c287114ff5fb75241e88a52d57438f4310342e677340e`.
-
-## Resumption regression evidence
-
-`e2fde57` adds only reviewed ledger reconciliation, case-scoped resumption and
-bounded latency/error diagnostics. A subsequent mock-only integration regression
-exercises the same original-ledger resumption on real disposable PostgreSQL/Neo4j:
-exactly one POST (no metadata GET), old records/reservation unchanged, third failure
-reblocks, source retained, no raw completion/partial item batch or next-case request.
-These are integrity regressions, **not successful real-model outputs**. Model
-quality remains unmeasured and the reference remains provisional, not independently
-validated. No incremental extraction, quote repair, optimization or schema change.
-
-Executed after the resumption: **19 targeted tests passed, 9.81 s**, including the
-extended one-POST resumption integration case; exact resumption image with **no
-source bind mount: 19 tests passed, 8.04 s**. Both runs use real dedicated SQL/Neo4j
-and mock HTTP, no real API key. Ruff (without cache on the read-only mount) and Git
-whitespace checks passed. Frozen dataset/reference have no diff from a0f85c0.
-Private evidence was checked against configured secret values without printing them.
-A final read-only comparison confirms all 13 persistent canonical/operational table
-counts and hashes, production container IDs/images/mounts/networks and the six
-historical Graphiti nodes/relations unchanged; schema remains 0005, zero non-ready
-intents. This does not assert a successful real extraction.
+Original run: metadata GET 200, first work POST 429; two requests, USD 0.006 hold.
+First reviewed resumption on 2026-10-15 at about 22:20 Europe/Paris: work POST 429,
+code `1300`, type `rate_limited`, sanitized message `Rate limit exceeded`, observed
+HTTP latency 0.450214 s. No `Retry-After` or allowlisted request/quota diagnostic
+headers were supplied. It stopped immediately, leaving three attempts and
+USD 0.012 uncertain hold. The exact limiting quota was not established.
+Private historical artifacts remain in `live-initial` and `resumed-work` under
+`/tmp/qh8-mistral-evidence`; the new experiment has not erased or reinterpreted them.

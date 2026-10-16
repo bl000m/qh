@@ -1,0 +1,5 @@
+{
+  "type": "AssertionError",
+  "provider_diagnostic": null,
+  "message": "Experiment stopped; inspect protected artifacts"
+}

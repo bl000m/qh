@@ -14,7 +14,7 @@ A space can contain multiple domains without a separate schema for each.
 | QH environment | Schema 0005; native backend/worker, frontend and MCP run versioned images from `c723d32` without application source mounts. Smoke, exact evidence, isolation, restart and pending-intent recovery passed |
 | Semantic foundation | Three generic profiles provisioned; authorized exact descriptor selection active. Historical type bindings, canonical revisions and six Graphiti nodes preserved. [Deployment record](docs/deployments.md) |
 | QH-8 feature branch | Offline conversation import/extractor/resolver, two interchangeable fake/replay providers, exact citations and generic proposed understanding. Isolated SQL/Neo4j verification; not deployed, no real LLM extraction |
-| Mistral experiment branch | Official Small 4 adapter and bounded manual evaluator; model metadata verified, original and billing-resumption inference both blocked by HTTP 429 (3/8 requests). No real-model quality claim. [Report](docs/qh8-mistral-evaluation.md) |
+| Mistral experiment branch | Four full synthetic Small 4 generations; 7/8 cumulative requests, 2,673 input / 5,922 output tokens, USD 0.00392283 cache-aware calculated usage charge. One of four QH batches accepted; 23/34 citation spans exact. Provisional reference, no independent validation. [Report](docs/qh8-mistral-evaluation.md) |
 | Future | Source Vault (QH-31), Domain Packs, verified real-provider extraction quality, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
 Graphiti is a preserved historical prototype, not a native-engine dependency.

@@ -11,10 +11,13 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 - QH-8 optional official Mistral Small 4 adapter, strict request/token/cost ledger,
   four independent synthetic inputs and frozen pre-call reference, isolated manual
-  evaluation and mock HTTP/native-pipeline CI regressions. Actual first inference
-  and one explicitly authorized billing-resumption inference both returned HTTP 429;
-  ledger retains 3/8 requests and USD 0.012 uncertain reserve. Real-model
-  comprehension quality remains unmeasured.
+  evaluation and mock HTTP/native-pipeline CI regressions. After two historical HTTP 429s, four authorized full-conversation
+  extractions returned HTTP 200 on 2026-10-16; 7/8 cumulative requests retain
+  USD 0.012 uncertain historical holds plus USD 0.00395415 conservative ledger
+  accounting (USD 0.00392283 cache-aware calculated new usage).
+  Captured 37 candidates: 23/34 citation spans exact, three relations lack evidence,
+  one of four batches accepted. Frozen reference remains provisionally assessed
+  by the implementing assistant, without independent human validation.
 
 - QH-8 offline conversation import, interchangeable fixture/replay extractor,
   exact Unicode citation validation and conservative relation resolution. Generic

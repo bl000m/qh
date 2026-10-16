@@ -1,0 +1,375 @@
+{
+  "method": "Manual assessment by implementing assistant against frozen provisional reference. No independent human validation. Coverage in claims excludes evidence-only retention; classifications and additional claims assessed separately. No aggregate precision/hallucination rate inferred from item counts.",
+  "reference_elements": 31,
+  "retained_textual_elements": 29,
+  "partial_inconsistent_elements": 1,
+  "omitted_claim_elements": 1,
+  "reference_assessments": [
+    {
+      "case": "work",
+      "reference_id": "goal",
+      "expected_assertion": "Ridurre del 20% il tempo richiesta-assegnazione.",
+      "candidate_ids": [
+        "work-1"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "pilot",
+      "expected_assertion": "Pilota di due settimane con team Aster.",
+      "candidate_ids": [
+        "work-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "panel",
+      "expected_assertion": "Team Aster gestisce il pannello delle assegnazioni.",
+      "candidate_ids": [
+        "work-2",
+        "relation-1"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "effect",
+      "expected_assertion": "Un pannello condiviso potrebbe ridurre duplicazioni; manca evidenza misurata.",
+      "candidate_ids": [
+        "work-3",
+        "relation-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "budget",
+      "expected_assertion": "Budget massimo 300 EUR.",
+      "candidate_ids": [
+        "work-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "crm",
+      "expected_assertion": "Nessuna esportazione dal CRM e nessun cambio CRM.",
+      "candidate_ids": [
+        "work-1",
+        "work-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "deadline",
+      "expected_assertion": "Scadenza 2026-11-20, data soltanto; nessuna ora inventata.",
+      "candidate_ids": [
+        "work-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "work",
+      "reference_id": "access",
+      "expected_assertion": "Autorizzatore accesso/responsabile sicurezza non deciso.",
+      "candidate_ids": [
+        "work-5",
+        "relation-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "original",
+      "expected_assertion": "Riunione settimanale originariamente proposta, mai adottata.",
+      "candidate_ids": [
+        "evolving-1",
+        "evolving-3"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Original and never-adopted status require reading evolving-1 with evolving-3; no merged current-state model is claimed."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "trial",
+      "expected_assertion": "Prova giornaliera di dieci minuti scelta il 3 novembre.",
+      "candidate_ids": [
+        "evolving-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Decision retained literally in text; descriptor counter-proposal misclassifies the adopted trial. Counted as textual coverage, not full semantic correctness."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "withdrawn",
+      "expected_assertion": "Proposta settimanale ritirata, non stato attuale.",
+      "candidate_ids": [
+        "evolving-3"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "suspended",
+      "expected_assertion": "Prova giornaliera sospesa il 4 novembre.",
+      "candidate_ids": [
+        "evolving-4",
+        "evolving-5"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "reason",
+      "expected_assertion": "Due assenti motivano la sospensione.",
+      "candidate_ids": [
+        "evolving-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "no_return",
+      "expected_assertion": "Nessun ritorno implicito alle riunioni settimanali.",
+      "candidate_ids": [
+        "evolving-5"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "evolving",
+      "reference_id": "restart",
+      "expected_assertion": "Data di ripresa non decisa.",
+      "candidate_ids": [
+        "evolving-5"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "quiet",
+      "expected_assertion": "Preferenza per bar tranquillo.",
+      "candidate_ids": [
+        "personal-1"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "crowds",
+      "expected_assertion": "Evitare folla per oggi, non tratto personale permanente.",
+      "candidate_ids": [
+        "personal-1"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "train",
+      "expected_assertion": "Cancellazione treno passata il 9 ottobre alle 17:30Z.",
+      "candidate_ids": [
+        "personal-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "walk",
+      "expected_assertion": "Passeggiata futura il 17 ottobre alle 09:00Z, condizionata dal meteo.",
+      "candidate_ids": [
+        "personal-3"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "attendance",
+      "expected_assertion": "Presenza Casey solo possibile, non confermata.",
+      "candidate_ids": [
+        "personal-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "ask",
+      "expected_assertion": "Intenzione di chiedere a Lee un percorso coperto.",
+      "candidate_ids": [
+        "personal-5"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "personal",
+      "reference_id": "route",
+      "expected_assertion": "Percorso non scelto.",
+      "candidate_ids": [
+        "personal-5"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "net",
+      "expected_assertion": "Preventivo netto 300 EUR, imposta esclusa.",
+      "candidate_ids": [
+        "item-1"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "ceiling",
+      "expected_assertion": "Tetto 350 EUR imposta inclusa.",
+      "candidate_ids": [
+        "item-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "gross",
+      "expected_assertion": "Totale finale 360 EUR imposta inclusa.",
+      "candidate_ids": [
+        "item-3"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "bases",
+      "expected_assertion": "300/360 differenza di base fiscale, non contraddizione del prezzo netto.",
+      "candidate_ids": [
+        "relation-2"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "over",
+      "expected_assertion": "Totale eccede tetto di 10 EUR.",
+      "candidate_ids": [
+        "item-4"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "approval",
+      "expected_assertion": "Nessun ordine approvato al momento.",
+      "candidate_ids": [],
+      "coverage": "omitted_from_claims",
+      "note": "No-order-approved appears only inside an evidence quote; absent from item text/properties and relation claims."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "conditional",
+      "expected_assertion": "Ordine soltanto possibile se scontato a 350, non deciso.",
+      "candidate_ids": [
+        "item-5",
+        "relation-3"
+      ],
+      "coverage": "partial_and_inconsistent",
+      "note": "Relation-3 retains potremmo ordinare, but item-5 asserts discount_applied=true, omits Non è una decisione presa, and relation-3 has no evidence."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "assignee",
+      "expected_assertion": "Responsabile richiesta sconto non assegnato.",
+      "candidate_ids": [
+        "item-6"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    },
+    {
+      "case": "multilingual",
+      "reference_id": "delivery",
+      "expected_assertion": "Data consegna ignota.",
+      "candidate_ids": [
+        "item-6"
+      ],
+      "coverage": "retained_in_claim_text_or_properties",
+      "note": "Textual coverage only; does not certify descriptors, evidence offsets, relation semantics or canonical acceptance."
+    }
+  ],
+  "separate_findings": [
+    {
+      "case": "multilingual",
+      "candidate": "item-5",
+      "dimension": "unsupported_information",
+      "severity": "definite",
+      "finding": "discount_applied=true asserts an applied discount; the source only proposes a conditional target."
+    },
+    {
+      "case": "evolving",
+      "candidate": "relation-1",
+      "dimension": "semantic_overinterpretation",
+      "severity": "review_required",
+      "finding": "Jo rejects Mina's proposal is stronger than the cited collective choice of an alternative; not an explicit rejection by Jo."
+    },
+    {
+      "case": "evolving",
+      "candidate": "evolving-2",
+      "dimension": "semantic_classification",
+      "severity": "inconsistent",
+      "finding": "counter-proposal descriptor conflicts with scegliamo, which states a decision."
+    },
+    {
+      "case": "evolving",
+      "candidate": "temporal-1,temporal-2,temporal-3",
+      "dimension": "temporality",
+      "severity": "limited_structure",
+      "finding": "Literal timestamps are attached to standalone timestamp entities; proposal/decision/suspension items themselves have no temporal fields."
+    },
+    {
+      "case": "work",
+      "candidate": "relation-1",
+      "dimension": "relation_structure",
+      "severity": "review_required",
+      "finding": "Managing-team/panel claim uses a pilot-statement item and objective item as endpoints; it does not explicitly identify Aster and panel entity endpoints. Universal endpoints permit this structurally; usefulness requires review."
+    },
+    {
+      "case": "multilingual",
+      "candidate": "item-6",
+      "dimension": "correct_uncertainty",
+      "severity": "positive",
+      "finding": "discount_assigned=false and delivery_date_known=false preserve the unknown assignment/date."
+    },
+    {
+      "case": "personal",
+      "candidate": "personal-1,personal-3,personal-4",
+      "dimension": "correct_uncertainty",
+      "severity": "positive",
+      "finding": "Temporary crowd avoidance, weather-dependent future intention and unconfirmed attendance are retained without diagnosis/personality inference."
+    }
+  ]
+}
