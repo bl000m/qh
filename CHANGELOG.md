@@ -47,6 +47,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   than assuming PostgreSQL snapshot order matches publication order. No extraction
   instructions, reference, provider, or application behavior changed.
 
+- Single-checkout development in `/home/ubuntu/qh`, one task branch/ticket/PR
+  at a time; legacy worktree bootstrap disabled. Explicit technical readiness
+  versus reviewed/merged/Jira-updated DONE. Existing experiment worktrees and
+  frozen evidence retained under safe transition/retirement checks. Runtime
+  resources and persistent QH data are unchanged.
+
 - One registered canonical representation throughout native projection/retrieval;
   fixture category mapping and duplicate temporal/endpoint decoding retired.
 - Standalone snapshot reconciliation/full-scope query checks retired. Incremental

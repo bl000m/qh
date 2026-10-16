@@ -15,9 +15,16 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
    Distinguish approved principles, V0.1 choices, open hypotheses and future work.
    ADR 0003 supersedes the Graphiti runtime choice; read the current QH-30
    deployment register and post-cutover record before treating old ticket
-   category names as mandatory registered types. The permanent checkout is main; deployed apps use immutable images, with no
-   source mounts. Preserve the readonly IdP configuration and private .env.
-4. Identify the delta against previous verification reports under AGENTS.md;
+   category names as mandatory registered types. The single development checkout
+   is `/home/ubuntu/qh` on one task branch; deployed apps use immutable images,
+   with no source mounts. Preserve the readonly IdP configuration and private .env.
+4. Develop only in `/home/ubuntu/qh`, following its Single Checkout Development
+   Policy: one active branch/ticket/PR, previous task closed unless explicitly
+   excepted, clean/saved files and safe processes/mounts, then fast-forward `main`
+   before creating/selecting the task branch. The legacy worktree bootstrap is
+   disabled. Preserve PR #5/#7 worktrees as paused transition exceptions; never
+   bypass an attached-branch refusal or change runtime implicitly.
+   Identify the delta against previous verification reports under AGENTS.md;
    inspect only relevant code, Git/baseline and Docker availability, with preflight
    proportional to risk. Repeat completed work only if changes invalidate it,
    regressions emerge or evidence is insufficient. Identify missing decisions,
@@ -49,8 +56,15 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
 8. Compare executed checks with every Done criterion: PASS (executed/satisfied),
    FAIL (executed/failed or definitely missing), NOT TESTED (not executed).
    Record commands and evidence; distinguish static, build, runtime, protocol and
-   persistence results. Never claim an unexecuted test passed or a tested draft
-   model was approved.
+   persistence results. Classify each criterion as implemented/tested,
+   implemented/unverified, not implemented or out of scope. Never claim an
+   unexecuted test passed or a tested draft model was approved. Correct safe
+   in-scope technical failures autonomously with relevant regressions; report
+   out-of-scope issues with priority and proposed solutions instead of adding scope.
+   Use IN PROGRESS while implementing, READY FOR REVIEW for verified technical
+   criteria and a published unmerged PR, and DONE only after every Jira acceptance
+   criterion is verified, reviewed merge is confirmed and Jira is updated with
+   explicit authorization. Never start the next task automatically.
 9. Summarize modifications, repeatable commands, residual decisions/blockers and
    each local commit's hash, message, purpose and checks. Prepare a Jira-ready
    summary if useful, but do not post it automatically. No remote push, force

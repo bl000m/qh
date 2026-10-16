@@ -234,3 +234,18 @@ python /workspace/scripts/evaluate_qh8_mistral.py --replay-from /evidence/frozen
 [metrics](evidence/qh8-citation-resolution-20261016/metrics.json),
 [original capture manifest](evidence/qh8-mistral-20261016/manifest.json).
 These are executed offline results, not independently validated semantic improvements.
+
+## Operational integration amendment — 2026-10-16
+
+This follow-up is tracked by [QH-32](https://contextlab.atlassian.net/browse/QH-32),
+not a second implementation of QH-8. Under the owner's later explicit operational
+authorization, PR #6 and baseline PR #5 were integrated first. Existing PR #7 was
+retargeted to main and its branch migrated normally to `/home/ubuntu/qh`, preserving
+`f62bd8e` and all frozen/derived evidence. The old directory is retained detached
+until verified retirement. An ordinary merge incorporates the reviewed workflow
+and the baseline's dated publication note; no executable extraction behavior or
+original reference/output is changed. Exact final-head CI, technical review and
+merge/closure evidence are recorded in PR #7 and QH-32. This supersedes the earlier
+no-merge execution boundary only for this authorized integration, not for deployment
+or inference. QH-33 remains open; no semantic work or independent reference
+validation is claimed. No new provider call or persistent QH write occurred.
