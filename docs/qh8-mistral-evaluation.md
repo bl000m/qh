@@ -238,7 +238,7 @@ multilingual conversation requested once using the corrected harness image.
 | Four-case offline replay | PASS: exact final image, no key; reproduces three rejected batches and the five-item personal pipeline |
 | Deterministic capture audit | PASS: `python3 docs/evidence/qh8-mistral-20261016/audit.py`; actual usage, preserved ledger prefix, exact content/candidate comparisons |
 | Artifact integrity/privacy | PASS: raw captures byte-compared to private originals, frozen fixtures byte-compared to a0f85c0, manifest hashes, local file links, configured-secret guard and Git whitespace check |
-| Hosted CI for new commits | NOT TESTED; local commits have not been pushed |
+| Hosted CI at the original capture checkpoint | NOT TESTED at that checkpoint; subsequent exact-head publication/CI is recorded in PR #5 |
 
 Previous mock/native verification is reused; it does not establish live-model
 quality. Four short synthetic examples, one completion each, one model/seed and an
@@ -259,3 +259,14 @@ headers were supplied. It stopped immediately, leaving three attempts and
 USD 0.012 uncertain hold. The exact limiting quota was not established.
 Private historical artifacts remain in `live-initial` and `resumed-work` under
 `/tmp/qh8-mistral-evidence`; the new experiment has not erased or reinterpreted them.
+
+## Operational integration amendment — 2026-10-16
+
+The owner authorized review, publication and integration after the original capture
+checkpoint. The three baseline commits `1ee72f1`, `a167aaf`, `5a604f6` are now
+published unchanged on PR #5, followed by an ordinary merge of the reviewed
+single-checkout policy from main. Only overlapping changelog entries needed
+resolution; both were retained. No original evidence/reference/output or ledger
+was modified and no provider call was made. Later exact-head CI/review/merge
+evidence is recorded in PR #5 and its retrospective Jira record; the historical
+measurement above is not represented as a new inference or independent validation.

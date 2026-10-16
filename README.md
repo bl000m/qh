@@ -22,8 +22,8 @@ The independent MCP server currently provides transport scaffolding, not a QH co
 client. Deployed retrieval offers scoped substring search and an internal exact
 descriptor selector: authorize → canonical IDs from SQL → Neo4j verification →
 canonical hydration and freshness recheck. No public context DTO/API or semantic
-ranking is implied. The permanent checkout is `/home/ubuntu/qh` on `main`; runtime
-images and the frozen Compose bundle are independent of development worktrees.
+ranking is implied. The sole development checkout is `/home/ubuntu/qh`, using one
+task branch at a time. Deployed images and the frozen Compose bundle are independent of that branch.
 
 ## Architecture and data flow
 
@@ -114,10 +114,23 @@ Original-byte storage and access policy belong to future QH-31, not this graph.
 
 ## Development and verification
 
+Develop only in `/home/ubuntu/qh`, with one active task branch, Jira ticket and
+PR at a time. Before each task, check clean/saved state and runtime/process safety,
+fast-forward `main` from `origin/main`, then create or select the task branch.
+Do not switch with unsaved changes or incompatible processes. Follow the
+[single-checkout workflow and legacy transition](docs/worktree-lifecycle.md).
+The old worktree bootstrap is disabled; existing PR #5/#7 directories remain
+preserved transition exceptions. No branch switch authorizes runtime changes.
+
+Tests passing is technical evidence. Report **IN PROGRESS**, **READY FOR REVIEW**
+(verified technical criteria, published PR, unmerged), or **DONE** only when every
+Jira acceptance criterion is verified, the PR reviewed/merged and Jira updated.
+Never start the next task automatically; Jira writes and merge need authorization.
+
 Use Docker Engine and Compose v2; dependencies install from committed lockfiles
 inside images. Keep credentials in ignored local `.env`, never in Git or logs.
 For a new local checkout, generate configuration with `python3 scripts/init_env.py`;
-inspect the selected worktree/configuration before starting services.
+inspect the checkout/configuration before starting any separately authorized services.
 
 - `make config`: validate Compose without printing credentials.
 - `make up`: build/start the development stack; use only when container changes are authorized.
