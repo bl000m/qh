@@ -23,8 +23,10 @@ jobs:
           persist-credentials: false
       - name: Single-checkout legacy bootstrap regressions
         run: python3 -m unittest discover -s tests -p test_worktree_bootstrap.py -v
-      - name: QH-33 benchmark lineage and review gates
-        run: python3 -m unittest discover -s tests -p test_qh33_evaluation.py -v
+      - name: QH-33 v1/v2 lineage and review gates
+        run: |
+          python3 -m unittest discover -s tests -p 'test_qh33*.py' -v
+          python3 docs/evidence/qh33-v2-20261016/audit.py
       - name: Generate runner-only credentials
         run: |
           python3 scripts/init_env.py

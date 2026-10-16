@@ -230,3 +230,10 @@ and separate draft metrics are reproducible; durable copies are committed under
 `docs/evidence/qh33-semantic-20261016/`. Prepared requests are a proposal only;
 no live execution mode is provided. QH-33 is not DONE without its remaining human
 review, reviewed merge and Jira closure. No subsequent task starts automatically.
+
+
+QH-33 v2 applies owner-approved D1–D5 while keeping the original benchmark sealed.
+Use the [74-unit personal-review matrix](docs/evidence/qh33-v2-20261016/review-matrix.it.md)
+and [package instructions](docs/evidence/qh33-v2-20261016/README.md). Owner approval
+of the rubric does not attest personal review; all human judgments remain pending.
+Reproduce with `python3 scripts/evaluate_qh33_v2.py --out /tmp/qh33-v2-review`.

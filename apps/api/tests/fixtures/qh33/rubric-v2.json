@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "status": "D1-D5_approved_personal_review_pending",
+  "dimensions": {
+    "active_coverage": {
+      "label_it": "Copertura attiva",
+      "definition_it": "Presenza della proposizione rilevante nello stato di comprensione evolutivo, non soltanto nella citazione. Non richiede trascrivere ogni dubbio storico superato. La precisione temporale è giudicata distintamente in temporality."
+    },
+    "semantic_support": {
+      "label_it": "Sostegno semantico",
+      "definition_it": "Fedeltà del significato alla fonte, considerando testo, proprietà, descrittori e relazione nel loro contesto; una citazione autentica non dimostra che il claim sia sostenuto."
+    },
+    "attribution": {
+      "label_it": "Attori",
+      "definition_it": "Distinzione fra chi parla, chi decide, attore individuale o collettivo; non inferire atti personali dalla sola selezione di un’alternativa."
+    },
+    "negation": {
+      "label_it": "Negazioni e non-eventi",
+      "definition_it": "Preservare negazioni materiali e stati espliciti di mancata approvazione o non-occorrenza; non assenza di parole ma conservazione del significato."
+    },
+    "temporality": {
+      "label_it": "Temporalità",
+      "definition_it": "Stato corrente, ordine, passato/futuro/intenzione, durata prevista contro effettiva, precisione e collegamento del tempo alla proposizione. Distinguere incompleto da temporalmente falso."
+    },
+    "uncertainty": {
+      "label_it": "Incertezza",
+      "definition_it": "Ipotesi, desiderio, intenzione, condizioni e possibilità non diventano fatti acquisiti; certainty del descrittore non è verità né conferma umana."
+    },
+    "citation_traceability": {
+      "label_it": "Tracciabilità della citazione",
+      "definition_it": "Citazione propria della proposizione, con fonte corretta e span letterale già esatto o derivabile univocamente dal Citation Resolver. Semantica e qualità degli offset originali sono misure separate."
+    }
+  },
+  "ratings": {
+    "pass": "Requisito soddisfatto per il focus dell’unità.",
+    "partial": "Informazione parziale, campo discordante o struttura/precisione incompleta.",
+    "fail": "Proposizione materiale assente, capovolta/non sostenuta, oppure citazione assente/inventata per la dimensione pertinente.",
+    "n/a": "Dimensione non applicabile al focus; mai convertire in pass."
+  },
+  "grouping": "source_proposition, extra_claim, output_annotation, control stay separate; no overall score",
+  "active_coverage_exclusions": [
+    "multilingual.initial_tax_uncertainty",
+    "multilingual.initial_fit_hypothesis"
+  ],
+  "personal_review": "All 74 IDs and applicable dimensions, reviewer identity/time, explicit independence/completeness/full-payload attestations; D1-D5 approval alone attests none of them."
+}

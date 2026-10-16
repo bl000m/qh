@@ -12,17 +12,85 @@ Per la revisione del proprietario: [guida sintetica in italiano con fonti, JSON 
 impatti da valutare](qh33-semantic-review.it.md). È materiale preparatorio; non
 registra alcuna validazione indipendente.
 
-## Pending owner validation — evolutionary understanding criterion
+## V2 — approved decisions, personal verification pending
 
-The owner has specified an evolving understanding state rather than transcription.
-The [Italian decision summary](qh33-owner-decisions.it.md) and
-[complete 74-unit reassessment](reviews/qh33-unit-review-20261016.it.md) propose its
-application directly against original sources/full payloads, without treating v1
-assistant ratings as ground truth. These are new assistant proposals, not human
-validation. Historical v1 metrics below remain unchanged and do not incorporate
-the proposed active-coverage exclusions or revised provenance rubric. Approval,
-versioned benchmark changes and independent-review attestations are still pending.
-No model/prompt improvement is inferred from a proposed rubric change.
+The owner explicitly approved D1–D5, including reconstructible historical context,
+the distinction between certain/partial defects, positive-control limitations,
+citation versus meaning, and the documented POC limits. This approval **does not
+attest independence, completeness or personal verification of the 74 units**.
+
+Start with the [compact navigable v2 matrix](evidence/qh33-v2-20261016/review-matrix.it.md).
+Every ID links to source, complete output and per-dimension reasons. Stars mark
+critical/partial units and reference changes; unstarred units still require review.
+[Package instructions](evidence/qh33-v2-20261016/README.md),
+[v2 rubric](evidence/qh33-v2-20261016/rubric.it.md),
+[provisional metrics](evidence/qh33-v2-20261016/metrics.json) and
+[blank personal-review template](evidence/qh33-v2-20261016/review-template.json).
+
+The separate `benchmark-v2.json` retains all 74 IDs and every original source/output
+identity. There are 46 source propositions, of which 44 have active coverage:
+two resolved historical uncertainties remain reconstructible, with N/A rather than
+pass ratings. Planned duration, conditional avoidance and wishing to ask Lee have
+precise reference wording. The context is evolutionary understanding, not the last
+message alone. V1 benchmark, evaluator, sealed archive, raw outputs and ledger are
+unchanged. V2 reuses the existing personal-review gates through a naming adapter.
+
+### Provisional assistant counts — not independently verified
+
+| Source-proposition dimension | Pass | Partial | Fail | N/A | Assessed denominator |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `active_coverage` | 41 | 1 | 2 | 2 | 44 |
+| `semantic_support` | 39 | 3 | 0 | 4 | 42 |
+| `attribution` | 15 | 0 | 0 | 31 | 15 |
+| `negation` | 12 | 0 | 2 | 32 | 14 |
+| `temporality` | 24 | 1 | 0 | 21 | 25 |
+| `uncertainty` | 18 | 0 | 1 | 27 | 19 |
+| `citation_traceability` | 39 | 1 | 2 | 4 | 42 |
+
+These rows do not describe every generated claim. The **separate extra-claim
+group** contains two semantic failures and one partial interpretation, despite all
+three having traceable quotes. The five annotation units retain partial
+classification/relation/time-linkage judgments. Among 20 authored controls, semantic
+support is 11 pass / 9 fail, while citation traceability is 19 pass / 1 fail:
+genuine evidence can accompany an incorrect interpretation and vice versa.
+All seven dimensions for all four groups remain explicit in the metrics JSON;
+there is no overall score or exhaustive claim-precision estimate.
+
+The original 23/34 exact spans, 11 uniquely repairable offsets and three evidence-free
+relations are unchanged. Candidate-level resolver diagnostics do not publish valid
+siblings: multilingual still fails whole-batch derivation. The model's outputs,
+token consumption and quality have not improved merely because rubric/annotations
+changed. V1/v2 figures are not a before/after model-quality comparison.
+
+**Personal review:** null metrics, 0/74 accepted judgments; reviewer, review date and
+independence are null, completeness/payload attestations false, every decision
+pending. D1–D5 approval does not fill these fields. Corrections during personal
+review must be recorded faithfully and hash-bound to this version/rubric.
+
+### Current scope and remaining step
+
+Implemented here: versioned offline benchmark/rubric/accounting and a reproducible
+review package only. Application/Core/provider/SQL/runtime behavior is unchanged.
+The supported POC limits are accepted for QH-33 reporting, **not certified as fixed**:
+the hypothetical applied-discount flag, missing non-approval/non-decision, personal
+rejection inference and weak labels/relations/time linkage remain visible.
+The candidate prompt experiment remains prepared and unexecuted.
+
+Run `python3 scripts/evaluate_qh33_v2.py --out /tmp/qh33-v2-review` and
+`python3 docs/evidence/qh33-v2-20261016/audit.py` without a key, network or QH.
+The 19 v1/v2 accounting/review regressions and sealed-v1 reproduction cover technical
+integrity, not semantic truth. CI also verifies the v2 artifact audit.
+Executable-image and final CI evidence for this increment are recorded on PR #8.
+
+**Stop for the owner's personal verification.** This is preparation, not a final
+QH-33 Done verdict. After actual confirmation, finalize the report and verify Jira's
+real DoD; merge, Jira DONE and further inference require separate authorization.
+
+## Historical v1 record (preserved)
+
+The sections below retain the earlier v1 method, counts and executed evidence.
+Their contextual-provenance rubric and 46-unit active denominator are historical;
+they do not supersede the approved v2 rubric or imply a completed personal review.
 
 ## Responsibilities and method
 

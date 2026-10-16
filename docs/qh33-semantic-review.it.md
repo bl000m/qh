@@ -1,5 +1,9 @@
 # QH-33 — guida alla revisione semantica
 
+**D1–D5 ora approvate; verifica personale non attestata.** Questa guida conserva
+gli esempi precedenti. Per la review corrente usa la [matrice v2](evidence/qh33-v2-20261016/review-matrix.it.md)
+e il [pacchetto con rubriche e istruzioni](evidence/qh33-v2-20261016/README.md).
+
 Aggiornamento: il proprietario ha definito il criterio di **comprensione evolutiva**.
 La scelta generale “storia completa o stato finale?” sotto non è più aperta;
 consulta la [sintesi decisionale aggiornata](qh33-owner-decisions.it.md) e il
@@ -289,8 +293,8 @@ ma chiede verifica. Drew chiarisce poi che il totale è 360 EUR IVA inclusa.
 
 **Differenza / impatto — omissione discutibile.** Restano gli importi, non i
 dubbi iniziali: si perde parte dell’evoluzione della comprensione. Per un riepilogo
-finale potrebbe essere ragionevole. **Da decidere prima dei punteggi:** tutta la
-storia o stato finale? Le annotazioni precedenti non risolvono questa scelta.
+finale potrebbe essere ragionevole. **D1 approvata:** questi due dubbi risolti non restano nel coverage attivo,
+ma devono essere ricostruibili; non si eliminano le evoluzioni significative.
 
 ### Relazioni prive di citazione propria
 
@@ -357,7 +361,7 @@ potrebbe non coprire tutte le omissioni o aggiunte.
 | Scelta | Risposta del proprietario |
 | --- | --- |
 | Le letture delle quattro conversazioni rispettano le fonti, comprese le ambiguità segnalate? | Da compilare |
-| Conservare anche dubbi e proposte poi superati, oppure valutare soprattutto lo stato finale? | Da compilare |
+| Applicare D1 alle due incertezze storiche, conservando fonti ed evoluzioni significative? | Criterio approvato; unità da verificare personalmente |
 | Le omissioni, le attribuzioni e le etichette contestabili sono distinte dagli errori espliciti? | Da compilare |
 | I dieci controlli hanno davvero significato coerente/alterato come proposto? Ne mancano di importanti? | Da compilare |
 | Vanno aggiunte, separate o riformulate proposizioni prima di usare le metriche? | Da compilare |
