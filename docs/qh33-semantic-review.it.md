@@ -1,5 +1,11 @@
 # QH-33 — guida alla revisione semantica
 
+Aggiornamento: il proprietario ha definito il criterio di **comprensione evolutiva**.
+La scelta generale “storia completa o stato finale?” sotto non è più aperta;
+consulta la [sintesi decisionale aggiornata](qh33-owner-decisions.it.md) e il
+[riesame di tutte le 74 unità](reviews/qh33-unit-review-20261016.it.md). Restano
+da validare i giudizi concreti; fonti e JSON di questa guida sono invariati.
+
 16 ottobre 2026 · [PR #8](https://github.com/bl000m/qh/pull/8), aperta.
 **Review indipendente da svolgere.** Questa guida è preparata con assistenza IA:
 “significato da preservare” è una lettura da verificare, non una risposta validata.

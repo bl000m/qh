@@ -12,6 +12,18 @@ Per la revisione del proprietario: [guida sintetica in italiano con fonti, JSON 
 impatti da valutare](qh33-semantic-review.it.md). È materiale preparatorio; non
 registra alcuna validazione indipendente.
 
+## Pending owner validation — evolutionary understanding criterion
+
+The owner has specified an evolving understanding state rather than transcription.
+The [Italian decision summary](qh33-owner-decisions.it.md) and
+[complete 74-unit reassessment](reviews/qh33-unit-review-20261016.it.md) propose its
+application directly against original sources/full payloads, without treating v1
+assistant ratings as ground truth. These are new assistant proposals, not human
+validation. Historical v1 metrics below remain unchanged and do not incorporate
+the proposed active-coverage exclusions or revised provenance rubric. Approval,
+versioned benchmark changes and independent-review attestations are still pending.
+No model/prompt improvement is inferred from a proposed rubric change.
+
 ## Responsibilities and method
 
 `scripts/evaluate_qh33.py` owns offline benchmark integrity, review packets and
