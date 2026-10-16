@@ -8,6 +8,10 @@ reference is still pending. No new inference, persistent write/migration, deploy
 or Jira status change. QH-8 originals/reference, QH-32 derivations and the original
 7/8 ledger remain unchanged. No model comprehension improvement has been measured.
 
+Per la revisione del proprietario: [guida sintetica in italiano con fonti, JSON e
+impatti da valutare](qh33-semantic-review.it.md). È materiale preparatorio; non
+registra alcuna validazione indipendente.
+
 ## Responsibilities and method
 
 `scripts/evaluate_qh33.py` owns offline benchmark integrity, review packets and
