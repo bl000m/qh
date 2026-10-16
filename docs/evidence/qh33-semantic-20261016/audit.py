@@ -20,7 +20,10 @@ with tempfile.TemporaryDirectory() as temp:
                     '--out', str(out), '--prepare-protocol'], check=True)
     for name in ['metrics.json', 'review-template.json', 'review-packet.md',
                  'source-only.md', 'future-protocol.json']:
-        if (out / name).read_bytes() != (HERE / name).read_bytes():
+        actual = (out / name).read_bytes()
+        if name.endswith('.md'):
+            actual = actual.rstrip() + b'\n'
+        if actual != (HERE / name).read_bytes():
             raise SystemExit('Reproduction mismatch: ' + name)
 before, after = [json.loads((HERE / name).read_text()) for name in
                  ['before-engine-probes.json', 'after-engine-probes.json']]

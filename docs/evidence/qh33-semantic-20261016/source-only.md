@@ -164,4 +164,3 @@ Recorder: End of this synthetic record.
 ```
 
 Your proposition inventory / missing information / notes: __________________
-

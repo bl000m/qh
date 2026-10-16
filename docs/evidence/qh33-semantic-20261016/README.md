@@ -32,4 +32,6 @@ python3 scripts/evaluate_qh33.py --out /tmp/qh33-review --prepare-protocol
 ```
 
 No key, network, third-party package or QH service is used by these two commands.
-The manifest pins files and source identities; it does not authenticate judgments.
+Archived Markdown removes trailing blank lines; the audit repeats that packaging
+normalization. JSON results are copied unchanged. The manifest pins files and source
+identities; it does not authenticate judgments.

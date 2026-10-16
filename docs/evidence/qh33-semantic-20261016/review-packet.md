@@ -1632,4 +1632,3 @@ Original/authored output:
 
 - **control.provenance_unicode.mutated** (control): The café reopening is announced, not completed.
   Source turn: `focus`; claim pointers: /items/0/text. Human decision/ratings: **pending**.
-
