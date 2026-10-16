@@ -117,6 +117,98 @@ Keep provider secrets exclusively in ignored local configuration, never logs or 
 - Never automatically change Jira status. Any Jira write requires explicit
   user authorization; status changes require user approval.
 
+## Task Execution & Definition of Done Policy
+
+This policy is mandatory for development and maintenance tasks. Explicit user
+instructions and already granted, precisely scoped authorizations take precedence;
+record any exception instead of treating it as permission for later work.
+
+### One active ticket at a time
+
+- Before implementation, read the Jira ticket, objective, acceptance criteria,
+  dependencies and relevant comments through Atlassian MCP. Identify the associated
+  PR, branch and absolute worktree path; inspect local/remote Git state and prior
+  evidence. If Jira is unavailable, report the blocker; never invent requirements.
+- If there is no verifiable Definition of Done, propose one before implementing:
+  observable outcomes, checks/evidence, exclusions and unresolved decisions. Obtain
+  approval for missing structural decisions under STOP AND ASK. For explicitly
+  requested non-ticket maintenance, report Jira as not assigned and use the user's
+  approved objective and verifiable criteria; do not create a ticket automatically.
+- Do not start a new development task or open another development PR until the
+  active task has been reviewed and closed, unless the user explicitly authorizes
+  an exception. Green CI, a local completion report or a published PR does not
+  constitute review or closure. A reviewed cancellation/closure must be explicit;
+  do not infer permission to discard its work or merge it.
+- Historical archived PRs are a documented exception, not active development.
+  Record their archival reason, retained refs/evidence and superseding decision.
+  Graphiti Draft PR #1 is retained under
+  [ADR 0003](docs/adr/0003-native-context-engine.md), including local `77de43c`;
+  its still-open GitHub state is not a dependency on reviving that prototype.
+  Never silently archive a current PR to bypass the one-task rule.
+
+### Autonomous corrections within the approved scope
+
+- For an in-scope bug or technical failure, identify the cause, communicate the
+  smallest safe solution, implement it autonomously and add appropriate regression
+  tests. Run the relevant checks and verify the actual outcome. Do not stop at an
+  error report or repeatedly rerun tests when a safe in-scope correction is possible.
+- Obtain prior explicit approval for substantial architectural changes, persistent
+  schema/database changes, public contracts, authorization/security changes,
+  deployment, paid external API calls or functional scope expansion, unless that
+  exact action is already authorized. Preserve the existing STOP AND ASK, paid-call
+  limits and persistent-data protections; a technical failure grants no new scope.
+- Do not implement unrelated problems silently. Report each residual/out-of-scope
+  issue with priority, impact, a minimal proposed solution and a suggested existing
+  Jira ticket or proposed ticket title. Do not invent keys or write to Jira.
+
+### Mandatory criterion-by-criterion Definition of Done
+
+Before declaring implementation complete, map every acceptance/Done criterion to
+an observable result and evidence (command, test, artifact or functional check).
+Classify each criterion explicitly:
+
+| Classification | Required interpretation |
+| --- | --- |
+| Implemented and tested | Relevant executed checks demonstrate the claimed outcome; cite evidence and limits |
+| Implemented but unverified | Work exists, but the required check was not run or does not establish the outcome |
+| Not implemented | Required behavior is missing, or a known failure leaves the criterion unmet |
+| Out of scope | Excluded by the approved task boundary; explain why, never relabel a required criterion silently |
+
+Keep execution verdicts PASS / FAIL / NOT TESTED alongside these classifications.
+A failed required check remains unmet until corrected and verified. Distinguish
+static review, build, unit, integration, runtime, protocol and persistence evidence.
+Green tests do not automatically establish task completion, functional correctness,
+semantic quality or human acceptance. Report missing criteria and blockers plainly;
+implementation completion, PR review/merge and Jira closure are separate states.
+
+### One PR, one objective
+
+- Prefer new branches from verified, updated `main`, after the active task closes.
+  Avoid stacked PRs or dependence on unintegrated branches without explicit user
+  authorization. Record any authorized dependency and its review/integration order.
+- Correct the current PR in its existing branch/worktree; do not create another
+  branch or PR for an ordinary correction. Reuse existing implementations and
+  evidence rather than duplicating work under another ticket or PR.
+- Never merge automatically. After an explicitly authorized merge, verify the PR's
+  actual merge and preservation of its work, safely synchronize the permanent
+  `main` checkout, then apply every check in Git Worktree Lifecycle Policy before
+  removal. A closed-but-unmerged PR never authorizes worktree cleanup.
+
+### Required concise outcome report
+
+At the end of every task, always report:
+
+- Jira ticket (or explicitly not assigned), objective and verifiable Definition of Done.
+- Code/files actually changed and relevant local commits, hashes and purpose.
+- Checks executed, observed results and what they demonstrate, including limits.
+- Each Done criterion satisfied/missing using the classifications above.
+- Problems corrected autonomously, with cause and verified resolution (or none).
+- Residual issues and proposed solutions, with priority and suggested Jira follow-up.
+- Associated PR, branch, absolute worktree, HEAD and Git status; publication,
+  review/closure and remote/local synchronization state.
+- The next recommended action on the current task. Do not automatically propose
+  starting the next ticket while the current one remains open.
+
 ## Versioning and verification
 
 Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
