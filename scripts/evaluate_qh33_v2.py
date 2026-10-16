@@ -267,9 +267,20 @@ def render(b, cases, rubric):
         key = v1.digest(case["source"])
         if key not in source_keys:
             source_keys[key] = "source-" + slug(name)
+            source_asset = (
+                "../qh8-mistral-20261016/" + name + "/source.json"
+                if case["kind"] == "frozen_mistral"
+                else "../../../apps/api/tests/fixtures/qh33/benchmark-v2.json"
+            )
             sources += [
                 '<a id="' + source_keys[key] + '"></a>',
                 "## Fonte " + name,
+                "",
+                "[Identità, turni e metadati originali]("
+                + source_asset
+                + ") · source revision `"
+                + case["source"]["id"]
+                + "`. Il tempo di acquisizione non sostituisce quello del fatto.",
                 "",
                 "```text\n" + case["source"]["content"].rstrip() + "\n```",
                 "",
@@ -373,7 +384,9 @@ def render(b, cases, rubric):
             "",
             "**Ambito:** " + u["coverage_scope"] + ". Verifica personale: pending.",
             "",
-            "**Evidenza originale:** turno `"
+            "**Evidenza originale:** source revision `"
+            + cases[u["case"]]["source"]["id"]
+            + "`, turno `"
             + evidence["turn_id"]
             + "`, Unicode `["
             + str(evidence["start"])

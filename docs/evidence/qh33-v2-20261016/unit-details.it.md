@@ -11,7 +11,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-1`, Unicode `[6,115)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-1`, Unicode `[6,115)`.
 
 > L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.
 
@@ -47,7 +47,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-1`, Unicode `[6,115)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-1`, Unicode `[6,115)`.
 
 > L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.
 
@@ -83,7 +83,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-2`, Unicode `[121,230)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-2`, Unicode `[121,230)`.
 
 > Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.
 
@@ -119,7 +119,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-2`, Unicode `[121,230)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-2`, Unicode `[121,230)`.
 
 > Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.
 
@@ -159,7 +159,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-3`, Unicode `[237,332)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-3`, Unicode `[237,332)`.
 
 > Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.
 
@@ -199,7 +199,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-3`, Unicode `[237,332)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-3`, Unicode `[237,332)`.
 
 > Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.
 
@@ -235,7 +235,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-4`, Unicode `[338,438)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-4`, Unicode `[338,438)`.
 
 > Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.
 
@@ -275,7 +275,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-4`, Unicode `[338,438)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-4`, Unicode `[338,438)`.
 
 > Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.
 
@@ -311,7 +311,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-4`, Unicode `[338,438)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-4`, Unicode `[338,438)`.
 
 > Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.
 
@@ -347,7 +347,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-5`, Unicode `[445,549)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-5`, Unicode `[445,549)`.
 
 > Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.
 
@@ -387,7 +387,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-5`, Unicode `[445,549)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-5`, Unicode `[445,549)`.
 
 > Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.
 
@@ -423,7 +423,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** output_annotation. Verifica personale: pending.
 
-**Evidenza originale:** turno `work-2`, Unicode `[121,230)`.
+**Evidenza originale:** source revision `2ec42859-b01c-534c-b7ca-22428aad5895`, turno `work-2`, Unicode `[121,230)`.
 
 > Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.
 
@@ -463,7 +463,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-1`, Unicode `[6,91)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-1`, Unicode `[6,91)`.
 
 > Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.
 
@@ -503,7 +503,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-1`, Unicode `[6,91)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-1`, Unicode `[6,91)`.
 
 > Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.
 
@@ -539,7 +539,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-2`, Unicode `[96,206)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-2`, Unicode `[96,206)`.
 
 > Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.
 
@@ -579,7 +579,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-2`, Unicode `[96,206)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-2`, Unicode `[96,206)`.
 
 > Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.
 
@@ -615,7 +615,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-3`, Unicode `[213,285)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-3`, Unicode `[213,285)`.
 
 > Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.
 
@@ -655,7 +655,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-3`, Unicode `[213,285)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-3`, Unicode `[213,285)`.
 
 > Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.
 
@@ -691,7 +691,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-4`, Unicode `[290,384)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-4`, Unicode `[290,384)`.
 
 > Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.
 
@@ -727,7 +727,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-4`, Unicode `[290,384)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-4`, Unicode `[290,384)`.
 
 > Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.
 
@@ -763,7 +763,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-5`, Unicode `[391,507)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-5`, Unicode `[391,507)`.
 
 > La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.
 
@@ -803,7 +803,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-5`, Unicode `[391,507)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-5`, Unicode `[391,507)`.
 
 > La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.
 
@@ -839,7 +839,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-5`, Unicode `[391,507)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-5`, Unicode `[391,507)`.
 
 > La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.
 
@@ -875,7 +875,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** output_annotation. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-2`, Unicode `[96,206)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-2`, Unicode `[96,206)`.
 
 > Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.
 
@@ -916,7 +916,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** extra_claim. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-2`, Unicode `[96,206)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-2`, Unicode `[96,206)`.
 
 > Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.
 
@@ -952,7 +952,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** extra_claim. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-4`, Unicode `[290,384)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-4`, Unicode `[290,384)`.
 
 > Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.
 
@@ -988,7 +988,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** output_annotation. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-1`, Unicode `[6,91)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-1`, Unicode `[6,91)`.
 
 > Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.
 
@@ -1026,7 +1026,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** output_annotation. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-2`, Unicode `[96,206)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-2`, Unicode `[96,206)`.
 
 > Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.
 
@@ -1064,7 +1064,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** output_annotation. Verifica personale: pending.
 
-**Evidenza originale:** turno `evolving-4`, Unicode `[290,384)`.
+**Evidenza originale:** source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`, turno `evolving-4`, Unicode `[290,384)`.
 
 > Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.
 
@@ -1102,7 +1102,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-1`, Unicode `[7,121)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-1`, Unicode `[7,121)`.
 
 > Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.
 
@@ -1138,7 +1138,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-1`, Unicode `[7,121)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-1`, Unicode `[7,121)`.
 
 > Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.
 
@@ -1174,7 +1174,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-2`, Unicode `[129,239)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-2`, Unicode `[129,239)`.
 
 > Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.
 
@@ -1210,7 +1210,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-2`, Unicode `[129,239)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-2`, Unicode `[129,239)`.
 
 > Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.
 
@@ -1246,7 +1246,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-3`, Unicode `[247,361)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-3`, Unicode `[247,361)`.
 
 > Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.
 
@@ -1282,7 +1282,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-3`, Unicode `[247,361)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-3`, Unicode `[247,361)`.
 
 > Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.
 
@@ -1318,7 +1318,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-3`, Unicode `[247,361)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-3`, Unicode `[247,361)`.
 
 > Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.
 
@@ -1354,7 +1354,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-4`, Unicode `[369,436)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-4`, Unicode `[369,436)`.
 
 > Forse verrò alla passeggiata, ma non ho confermato la mia presenza.
 
@@ -1390,7 +1390,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-4`, Unicode `[369,436)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-4`, Unicode `[369,436)`.
 
 > Forse verrò alla passeggiata, ma non ho confermato la mia presenza.
 
@@ -1426,7 +1426,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-5`, Unicode `[444,537)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-5`, Unicode `[444,537)`.
 
 > Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.
 
@@ -1462,7 +1462,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `personal-5`, Unicode `[444,537)`.
+**Evidenza originale:** source revision `83253202-fb5d-5073-a27a-ab83e117f09c`, turno `personal-5`, Unicode `[444,537)`.
 
 > Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.
 
@@ -1498,7 +1498,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-1`, Unicode `[9,98)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-1`, Unicode `[9,98)`.
 
 > Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA.
 
@@ -1534,7 +1534,7 @@ Proposte dell’assistente. Nessuna firma, attestazione o decisione personale pr
 
 **Ambito:** historical_reconstructible. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-1`, Unicode `[9,98)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-1`, Unicode `[9,98)`.
 
 > Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA.
 
@@ -1563,7 +1563,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-2`, Unicode `[105,197)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-2`, Unicode `[105,197)`.
 
 > Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo.
 
@@ -1599,7 +1599,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** historical_reconstructible. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-2`, Unicode `[105,197)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-2`, Unicode `[105,197)`.
 
 > Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo.
 
@@ -1628,7 +1628,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-3`, Unicode `[204,330)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-3`, Unicode `[204,330)`.
 
 > The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases.
 
@@ -1664,7 +1664,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-3`, Unicode `[204,330)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-3`, Unicode `[204,330)`.
 
 > The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases.
 
@@ -1700,7 +1700,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-4`, Unicode `[340,431)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-4`, Unicode `[340,431)`.
 
 > Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment.
 
@@ -1740,7 +1740,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-4`, Unicode `[340,431)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-4`, Unicode `[340,431)`.
 
 > Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment.
 
@@ -1769,7 +1769,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-5`, Unicode `[438,530)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-5`, Unicode `[438,530)`.
 
 > Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.
 
@@ -1805,7 +1805,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-5`, Unicode `[438,530)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-5`, Unicode `[438,530)`.
 
 > Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.
 
@@ -1841,7 +1841,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-5`, Unicode `[438,530)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-5`, Unicode `[438,530)`.
 
 > Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.
 
@@ -1870,7 +1870,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-6`, Unicode `[537,635)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-6`, Unicode `[537,635)`.
 
 > Who will ask for the discount? We have not assigned that task. The delivery date is still unknown.
 
@@ -1906,7 +1906,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** active. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-6`, Unicode `[537,635)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-6`, Unicode `[537,635)`.
 
 > Who will ask for the discount? We have not assigned that task. The delivery date is still unknown.
 
@@ -1942,7 +1942,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** extra_claim. Verifica personale: pending.
 
-**Evidenza originale:** turno `multilingual-5`, Unicode `[438,530)`.
+**Evidenza originale:** source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`, turno `multilingual-5`, Unicode `[438,530)`.
 
 > Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.
 
@@ -1978,7 +1978,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,86)`.
+**Evidenza originale:** source revision `6e319b5e-21bc-51cd-9555-ff78e02919b6`, turno `focus`, Unicode `[10,86)`.
 
 > Si se concede el permiso, el envío podría salir; todavía no se ha concedido.
 
@@ -2014,7 +2014,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,86)`.
+**Evidenza originale:** source revision `6e319b5e-21bc-51cd-9555-ff78e02919b6`, turno `focus`, Unicode `[10,86)`.
 
 > Si se concede el permiso, el envío podría salir; todavía no se ha concedido.
 
@@ -2050,7 +2050,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,61)`.
+**Evidenza originale:** source revision `673e78e3-2f6f-5377-a249-d77c8be9d577`, turno `focus`, Unicode `[10,61)`.
 
 > No booking was approved; approval is still pending.
 
@@ -2086,7 +2086,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,61)`.
+**Evidenza originale:** source revision `673e78e3-2f6f-5377-a249-d77c8be9d577`, turno `focus`, Unicode `[10,61)`.
 
 > No booking was approved; approval is still pending.
 
@@ -2122,7 +2122,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,71)`.
+**Evidenza originale:** source revision `c804a55c-ace0-5fa1-9358-640e1fab2ff6`, turno `focus`, Unicode `[10,71)`.
 
 > La remise de 8 % a été appliquée. Le montant payé est 92 EUR.
 
@@ -2158,7 +2158,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,71)`.
+**Evidenza originale:** source revision `c804a55c-ace0-5fa1-9358-640e1fab2ff6`, turno `focus`, Unicode `[10,71)`.
 
 > La remise de 8 % a été appliquée. Le montant payé est 92 EUR.
 
@@ -2194,7 +2194,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,84)`.
+**Evidenza originale:** source revision `7900861d-59c9-5ceb-957d-1133b6da7fb1`, turno `focus`, Unicode `[10,84)`.
 
 > Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato.
 
@@ -2230,7 +2230,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,84)`.
+**Evidenza originale:** source revision `7900861d-59c9-5ceb-957d-1133b6da7fb1`, turno `focus`, Unicode `[10,84)`.
 
 > Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato.
 
@@ -2266,7 +2266,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,69)`.
+**Evidenza originale:** source revision `ec2590a9-f153-59e1-ab0c-473150e41907`, turno `focus`, Unicode `[10,69)`.
 
 > I, Ren, authorized the release; the committee did not vote.
 
@@ -2302,7 +2302,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,69)`.
+**Evidenza originale:** source revision `ec2590a9-f153-59e1-ab0c-473150e41907`, turno `focus`, Unicode `[10,69)`.
 
 > I, Ren, authorized the release; the committee did not vote.
 
@@ -2338,7 +2338,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,142)`.
+**Evidenza originale:** source revision `133d0391-44d2-5960-98a7-a8abd28b3ff6`, turno `focus`, Unicode `[10,142)`.
 
 > Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen.
 
@@ -2374,7 +2374,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,142)`.
+**Evidenza originale:** source revision `133d0391-44d2-5960-98a7-a8abd28b3ff6`, turno `focus`, Unicode `[10,142)`.
 
 > Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen.
 
@@ -2410,7 +2410,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,84)`.
+**Evidenza originale:** source revision `fad3d229-eff0-5bd0-a97b-756c5351c1e9`, turno `focus`, Unicode `[10,84)`.
 
 > I intend to cycle next Friday if it is dry. I have not done that ride yet.
 
@@ -2446,7 +2446,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,84)`.
+**Evidenza originale:** source revision `fad3d229-eff0-5bd0-a97b-756c5351c1e9`, turno `focus`, Unicode `[10,84)`.
 
 > I intend to cycle next Friday if it is dry. I have not done that ride yet.
 
@@ -2482,7 +2482,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,74)`.
+**Evidenza originale:** source revision `55d5dc90-6939-592d-af04-dd2aeb53c3ce`, turno `focus`, Unicode `[10,74)`.
 
 > La visita è avvenuta ieri. Non è una semplice intenzione futura.
 
@@ -2518,7 +2518,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,74)`.
+**Evidenza originale:** source revision `55d5dc90-6939-592d-af04-dd2aeb53c3ce`, turno `focus`, Unicode `[10,74)`.
 
 > La visita è avvenuta ieri. Non è una semplice intenzione futura.
 
@@ -2554,7 +2554,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,73)`.
+**Evidenza originale:** source revision `3b209587-d463-5f03-90c5-25374ecd5ca6`, turno `focus`, Unicode `[10,73)`.
 
 > Peut-être que Sam participera; sa présence n’est pas confirmée.
 
@@ -2590,7 +2590,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,73)`.
+**Evidenza originale:** source revision `3b209587-d463-5f03-90c5-25374ecd5ca6`, turno `focus`, Unicode `[10,73)`.
 
 > Peut-être que Sam participera; sa présence n’est pas confirmée.
 
@@ -2626,7 +2626,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,87)`.
+**Evidenza originale:** source revision `b884e38c-0852-505e-8257-036b7a99f56a`, turno `focus`, Unicode `[10,87)`.
 
 > The café reopening was announced, not completed: é, é and 🙂 remain distinct.
 
@@ -2662,7 +2662,7 @@ Nessun claim estratto: verificare l’assenza nel payload completo.
 
 **Ambito:** control. Verifica personale: pending.
 
-**Evidenza originale:** turno `focus`, Unicode `[10,87)`.
+**Evidenza originale:** source revision `b884e38c-0852-505e-8257-036b7a99f56a`, turno `focus`, Unicode `[10,87)`.
 
 > The café reopening was announced, not completed: é, é and 🙂 remain distinct.
 

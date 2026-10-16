@@ -244,6 +244,10 @@ class V2Tests(unittest.TestCase):
         self.assertEqual(
             len(re.findall(r"^## Fonte ", docs["case-payloads.it.md"], re.M)), 14
         )
+        self.assertEqual(
+            docs["case-payloads.it.md"].count("Identità, turni e metadati originali"),
+            14,
+        )
 
     def test_cli_new_directory_and_invalid_review_never_emit_human_metrics(self):
         with tempfile.TemporaryDirectory() as temp:

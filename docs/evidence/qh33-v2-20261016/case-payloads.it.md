@@ -5,6 +5,8 @@
 <a id="source-work"></a>
 ## Fonte work
 
+[Identità, turni e metadati originali](../qh8-mistral-20261016/work/source.json) · source revision `2ec42859-b01c-534c-b7ca-22428aad5895`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Nora: L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.
 Eli: Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.
@@ -15,6 +17,8 @@ Nora: Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora 
 
 <a id="source-evolving"></a>
 ## Fonte evolving
+
+[Identità, turni e metadati originali](../qh8-mistral-20261016/evolving/source.json) · source revision `3f2a8b04-ebe5-5f75-9173-f4cb4f45172b`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Mina: Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.
@@ -27,6 +31,8 @@ Mina: La situazione attuale è prova sospesa, non ritorno alle riunioni settiman
 <a id="source-personal"></a>
 ## Fonte personal
 
+[Identità, turni e metadati originali](../qh8-mistral-20261016/personal/source.json) · source revision `83253202-fb5d-5073-a27a-ab83e117f09c`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Robin: Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.
 Casey: Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.
@@ -37,6 +43,8 @@ Robin: Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del perco
 
 <a id="source-multilingual"></a>
 ## Fonte multilingual
+
+[Identità, turni e metadati originali](../qh8-mistral-20261016/multilingual/source.json) · source revision `192dbd71-0831-55d5-8cea-b2fa67c499a8`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Camille: Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA.
@@ -50,6 +58,8 @@ Drew: Who will ask for the discount? We have not assigned that task. The deliver
 <a id="source-control-conditional-es-good"></a>
 ## Fonte control.conditional_es.good
 
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `6e319b5e-21bc-51cd-9555-ff78e02919b6`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Reporter: Si se concede el permiso, el envío podría salir; todavía no se ha concedido.
 Recorder: No additional event is stated.
@@ -58,6 +68,8 @@ Recorder: End of this synthetic record.
 
 <a id="source-control-negation-en-good"></a>
 ## Fonte control.negation_en.good
+
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `673e78e3-2f6f-5377-a249-d77c8be9d577`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Reporter: No booking was approved; approval is still pending.
@@ -68,6 +80,8 @@ Recorder: End of this synthetic record.
 <a id="source-control-actual-discount-fr-good"></a>
 ## Fonte control.actual_discount_fr.good
 
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `c804a55c-ace0-5fa1-9358-640e1fab2ff6`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Reporter: La remise de 8 % a été appliquée. Le montant payé est 92 EUR.
 Recorder: No additional event is stated.
@@ -76,6 +90,8 @@ Recorder: End of this synthetic record.
 
 <a id="source-control-collective-it-good"></a>
 ## Fonte control.collective_it.good
+
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `7900861d-59c9-5ceb-957d-1133b6da7fb1`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Reporter: Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato.
@@ -86,6 +102,8 @@ Recorder: End of this synthetic record.
 <a id="source-control-individual-en-good"></a>
 ## Fonte control.individual_en.good
 
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `ec2590a9-f153-59e1-ab0c-473150e41907`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Reporter: I, Ren, authorized the release; the committee did not vote.
 Recorder: No additional event is stated.
@@ -94,6 +112,8 @@ Recorder: End of this synthetic record.
 
 <a id="source-control-lifecycle-de-good"></a>
 ## Fonte control.lifecycle_de.good
+
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `133d0391-44d2-5960-98a7-a8abd28b3ff6`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Reporter: Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen.
@@ -104,6 +124,8 @@ Recorder: End of this synthetic record.
 <a id="source-control-future-intent-en-good"></a>
 ## Fonte control.future_intent_en.good
 
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `fad3d229-eff0-5bd0-a97b-756c5351c1e9`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Reporter: I intend to cycle next Friday if it is dry. I have not done that ride yet.
 Recorder: No additional event is stated.
@@ -112,6 +134,8 @@ Recorder: End of this synthetic record.
 
 <a id="source-control-past-completed-it-good"></a>
 ## Fonte control.past_completed_it.good
+
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `55d5dc90-6939-592d-af04-dd2aeb53c3ce`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Reporter: La visita è avvenuta ieri. Non è una semplice intenzione futura.
@@ -122,6 +146,8 @@ Recorder: End of this synthetic record.
 <a id="source-control-uncertain-fr-good"></a>
 ## Fonte control.uncertain_fr.good
 
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `3b209587-d463-5f03-90c5-25374ecd5ca6`. Il tempo di acquisizione non sostituisce quello del fatto.
+
 ```text
 Reporter: Peut-être que Sam participera; sa présence n’est pas confirmée.
 Recorder: No additional event is stated.
@@ -130,6 +156,8 @@ Recorder: End of this synthetic record.
 
 <a id="source-control-provenance-unicode-good"></a>
 ## Fonte control.provenance_unicode.good
+
+[Identità, turni e metadati originali](../../../apps/api/tests/fixtures/qh33/benchmark-v2.json) · source revision `b884e38c-0852-505e-8257-036b7a99f56a`. Il tempo di acquisizione non sostituisce quello del fatto.
 
 ```text
 Reporter: The café reopening was announced, not completed: é, é and 🙂 remain distinct.

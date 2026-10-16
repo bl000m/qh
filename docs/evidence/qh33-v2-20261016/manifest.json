@@ -26,12 +26,12 @@
     "docs/evidence/qh33-semantic-20261016/source-only.md": "2897f72673133d4874a4bfe4ca214d310c8c87df8932d6e0ce4f8a10d773076c",
     "docs/evidence/qh33-v2-20261016/README.md": "c33e117bf3156ac713690a43bd9f12b1dda3450a834847bb8b7028611f41d661",
     "docs/evidence/qh33-v2-20261016/audit.py": "d5291255263616b42d6b15e72d07603d8d47f518bf5389c660bba2528f56c485",
-    "docs/evidence/qh33-v2-20261016/case-payloads.it.md": "4b8d141c1e5acbcaf1c0a55a52e12149c037c2b8e0e550687939bca31fe07727",
+    "docs/evidence/qh33-v2-20261016/case-payloads.it.md": "c1f76448250073629f0e06cb7046845cbed62981db2c93d7b84cc5f811496f20",
     "docs/evidence/qh33-v2-20261016/metrics.json": "ec9c14b9cdf4c757eded85e9b65730dacbe4121063dce68b103020f3f6d6aa7f",
     "docs/evidence/qh33-v2-20261016/review-matrix.it.md": "6f3698dd2aef0f77ff57edbb5d38e21bd9c549b9062337b8eb48be7f4160e2e6",
     "docs/evidence/qh33-v2-20261016/review-template.json": "e4f4a98939747aed413c66a29262c8d491e9cd0fe080b3de0106b6c242181411",
     "docs/evidence/qh33-v2-20261016/rubric.it.md": "d19d2a4008e1edc5bf10c8f4632bacefd2b9ef4bd1fe067d97c5d6f17113665d",
-    "docs/evidence/qh33-v2-20261016/unit-details.it.md": "1760a2c08f30abead23c7dbfdb3098fd0963a42a4ed8fd78c3e1103965937c1f",
+    "docs/evidence/qh33-v2-20261016/unit-details.it.md": "d585d1f4bd15d2e72f5d0bdbf4ee592608e35f893729dc0ff288c43cfcedfe84",
     "docs/evidence/qh8-citation-resolution-20261016/README.md": "2ffacca649469d40cbaa4cf743ae973903a766e8c05e1e297b33ecbdf485ad6d",
     "docs/evidence/qh8-citation-resolution-20261016/after-results.json": "b4b267b19ab50cc4a06a0f66b7ef19064be6417499ee8fa2b66166b69f0e823c",
     "docs/evidence/qh8-citation-resolution-20261016/audit.py": "7ce8a2067bbaf9e7a39db24a8bba4949415730bfd0f9000d2d47aedff698a27c",
@@ -98,7 +98,7 @@
     "docs/evidence/qh8-mistral-20261016/work/validation.json": "86ccf8cabb98f9361a52fba1299dac50609b49a9b3e8d7731e01e5b158c27d95",
     "docs/reviews/qh33-reassessment-proposal-20261016.json": "6a9c7f09c0281e615f7e7010cfecba5eeca637a5221e0b4cdd703ca390ce6be3",
     "scripts/evaluate_qh33.py": "60dbc0797c8f95daac0be5d2c030c3c4cb0a73e9e8f91a464decb584ccd149eb",
-    "scripts/evaluate_qh33_v2.py": "b233d5ef9a24a6661f05e267886185627d41fc65d44a4b2b3196b72298db976a",
-    "tests/test_qh33_v2.py": "8f5cc5e419c955b085f8e2c4474692c45ad0f506f68a7a7c05d41664eb4f5b27"
+    "scripts/evaluate_qh33_v2.py": "539611c9a00ae48a57143be07b083c153397f916ed3c99a2b0435cca01027118",
+    "tests/test_qh33_v2.py": "4c0ca2b277c3c5762053a3526f61dfb77f075f12ed0aaa7ec393dcbd49ad70ec"
   }
 }
