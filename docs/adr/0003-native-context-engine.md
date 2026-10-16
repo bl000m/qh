@@ -8,6 +8,16 @@ immutable revision references, universal endpoints and temporal metadata. The ow
 authorized incremental implementation/testing on a dedicated disposable database.
 Migration 0003 has three canonical tables and 0004 adds operational outbox/state.
 
+## Dated amendment — unified understanding inputs (2026-10-16)
+
+The owner's QH-8 follow-up approves one provider-agnostic Understanding Engine with
+QH-owned-source extraction and future authorized external structured proposals via
+MCP. [ADR 0004](0004-unified-understanding-engine.md) records the two inputs, distinct
+source-verifiable versus externally declared provenance, and the offline citation
+resolver scope. Existing PostgreSQL/Neo4j responsibilities, ports, identity,
+immutable revisions and human governance below are preserved. External submission
+is documented only: no new service, public API, migration or authorization grant.
+
 ## Dated amendment — final consolidation executed (2026-10-15)
 
 PR #2 and #3 merged with merge commits, preserving 42a20c7 and the foundation.
