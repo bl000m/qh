@@ -1,45 +1,154 @@
-# Task worktrees and lifecycle audit
+# Single-checkout development and preserved worktree history
 
-The mandatory rules live in [AGENTS.md](../AGENTS.md#git-worktree-lifecycle-policy).
-This document records the bootstrap procedure and the 2026-10-16 maintenance.
-The policy is proposed separately from experimental PR #5. Because `main` is
-protected, it becomes the committed primary-checkout policy only after the owner
-reviews/merges its dedicated PR and the primary checkout is safely fast-forwarded.
-This maintenance does not merge it or update deployed images.
+The mandatory rules live in [AGENTS.md](../AGENTS.md#single-checkout-development-policy)
+and its [task/Done policy](../AGENTS.md#task-execution--definition-of-done-policy).
+The owner's later 2026-10-16 single-checkout decision supersedes sibling-worktree
+creation. All new development uses `/home/ubuntu/qh`, one task branch, Jira ticket
+and PR at a time. Existing #5/#7 directories are paused transition exceptions.
+Historical records below preserve earlier actions; they are not current commands
+or instructions to create worktrees. This change does not merge any PR or deploy.
 
-## Bootstrap from the primary checkout
+## Safe manual bootstrap in the single checkout
 
-Read `/home/ubuntu/qh/AGENTS.md` and task-specific instructions before creating any
-branch/worktree. After the policy PR is integrated and the primary `main` checkout
-is updated, use its bootstrap script (Python standard library + existing Git only):
+1. Read `/home/ubuntu/qh/AGENTS.md`, relevant skill, Jira objective/acceptance,
+   dependencies/comments and the existing PR. Propose a verifiable DoD if missing.
+   Confirm the previous task is closed, or record the owner's explicit exception.
+2. Inspect `git status --short --branch`, staged/unstaged diffs, untracked and
+   ignored files, and editor buffers. Save/commit approved work; preserve private
+   configuration and evidence. Never hide changes with an automatic stash/reset.
+3. Inspect active sessions, build/test/reload processes, open files and container
+   bind mounts. Confirm no process depends on the current source tree. Check the
+   target branch retains the exact readonly realm import bytes/path and does not
+   overwrite private files. Stop if any safety fact is unknown or incompatible.
+4. Fetch `origin/main`, select `main` only when safe, then fast-forward only and
+   verify equality with fetched `origin/main`. Stop on divergence; no reset/rebase.
+   Create the one authorized task branch from there, or select its existing branch
+   after reviewing base/local commits/PR. An attached legacy branch blocks ordinary
+   switching until its separately verified migration; never use force flags.
+5. Work, test and commit only in `/home/ubuntu/qh`. Publish to the existing task PR
+   as authorized. Corrections stay in that branch; no replacement PR or new task.
 
-```bash
-python3 /home/ubuntu/qh/scripts/start_task_worktree.py feat/QH-9-context-graph
-```
+The steps are review gates, not an unconditional shell script. Do not switch during
+an active editor save/build/test or while another coding session owns the tree.
+The old `scripts/start_task_worktree.py` is disabled: no arguments, old plan mode,
+`--create`, old hashes and directory options all fail without mutation; `--help`
+only explains the change. No automatic replacement performs hidden switches,
+fetches, runtime actions or task creation.
 
-The default is a read-only plan: it prints the committed primary instructions,
-branch/destination, Git command and policy SHA-256. Read the instructions and
-satisfy their task-specific requirements. Then pass the returned digest:
+Development `make up`/generic Compose must not manage the persistent stack. Keep
+production on the frozen `/home/ubuntu/qh-runtime/current` bundle. Switching Git
+is not migration/deployment or permission to use production credentials in tests.
 
-```bash
-python3 /home/ubuntu/qh/scripts/start_task_worktree.py feat/QH-9-context-graph \
-  --create --policy-sha256 <digest-returned-by-plan>
-```
+## Readiness, closure and reporting
 
-The script re-reads committed primary instructions before mutation. If the policy
-has changed, run the plan and review again; do not substitute a digest without
-reading the instructions. It refuses unintegrated/modified instructions, primary
-checkout off `main`, an attached branch, occupied destination (including dangling
-symlinks), invalid Git branch or a non-sibling directory name. Existing unattached
-branches are checked out without recreation. It never fetches, switches `main`,
-publishes, removes a worktree or touches runtime resources.
+- **IN PROGRESS:** implementation is underway or technical criteria remain unmet.
+- **READY FOR REVIEW:** technical acceptance verified, PR published and unmerged.
+- **DONE:** every Jira acceptance verified, PR reviewed and merged, Jira updated.
 
-An explicit `--name qh9-descriptive-name` can select another direct sibling.
-All safety/approval requirements in AGENTS/task instructions still apply; a
-successful path preflight is not approval for unspecified product decisions.
-For cleanup, perform the mandatory merged-PR/archive/session checks in AGENTS,
-then use ordinary `git worktree remove`, reviewed `prune` and safe `branch -d`.
-No automatic cleanup hook is installed.
+Green tests alone are insufficient. Report every criterion with evidence and
+implemented/tested, implemented/unverified, not implemented or out-of-scope status.
+Correct safe in-scope failures with regression tests; propose prioritized solutions
+for unrelated issues. Jira writes and merge require explicit approval. If merge
+succeeds but Jira closure is pending, say so and do not report DONE. Never start
+the next task automatically. For this non-ticket policy maintenance, Jira is not
+assigned: do not fabricate a key or claim an issue update.
+
+## Executed non-destructive transition of PR #6 — 2026-10-16
+
+Before switching, a read-only inventory found backend/frontend/MCP with no mounts,
+using the frozen c723d32 release bundle. Database volumes were independent of Git.
+The sole checkout bind was `infra/keycloak/qh-realm.json`, readonly and identical
+between `main/f1e0ae6` and `b76b567`. Privileged process/open-file inspection found
+shell/editor activity, no source-dependent app/test/reload process and no unreadable
+processes. No branch change modified Compose, the realm, credentials or runtime.
+These observations permit this transition, not arbitrary future branch switches.
+
+Both checkouts were clean and fetched `main` equaled `origin/main/f1e0ae6`.
+The existing #6 checkout `/home/ubuntu/qh-worktree-lifecycle-policy` was detached
+normally at preserved `b76b567`; then the same `docs/worktree-lifecycle-policy`
+branch was selected normally in `/home/ubuntu/qh`. No force, directory move or
+removal occurred. `b76b567` remains an ancestor of the updated PR. The old directory
+is a retained detached snapshot, not an active development checkout.
+
+The #5 and #7 worktrees/HEADs remain unchanged at `5a604f6` and `f62bd8e`.
+Their tracked/ignored contents, frozen capture/reference, authoritative ledger,
+private configuration, runtime bundle and container identities are checked against
+protected before/after inventories in
+`/home/ubuntu/qh-finalization-evidence/single-checkout-20261016/`.
+No private inventory or credential is committed. Historical PR #1 is untouched.
+
+## Proposed integration order — one review/merge at a time
+
+This is a procedure requiring the appropriate later approvals, not authorization
+to push other branches, merge, change Jira, remove directories or start QH-33.
+
+1. **PR #6:** review the published single-checkout delta and exact-head CI. After
+   explicit merge approval, preserve ancestry with a merge commit, verify GitHub's
+   result, then safely switch the clean primary checkout to `main` and fast-forward
+   to fetched `origin/main`. Confirm `b76b567` and its successor are reachable.
+   Record review/merge and the non-ticket Jira mapping; do not call CI success DONE.
+2. **PR #5:** after closing #6, reconcile its description with its actual head.
+   The local head `5a604f6` contains `1ee72f1`, `a167aaf`, `5a604f6` beyond remote
+   `2acf84e`; these exact commits are already on remote #7. Do not cherry-pick,
+   regenerate captures or discard them as duplicates. Before editing #5, inspect
+   the whole legacy directory (including ignored files), sessions and mounts; make
+   verified durable copies of important evidence/private configuration. Release
+   the clean legacy checkout by ordinary detach at retained `5a604f6`, then select
+   its existing branch in `/home/ubuntu/qh`; compare HEAD/tree and original files.
+   Read the integrated policy with `git show origin/main:AGENTS.md` before selecting
+   an older branch, and incorporate updated `main` into that branch by a reviewed
+   ordinary merge if needed to retain the new instructions. No force/rebase.
+   After authorization, publish the preserved baseline commits on #5, resolve only
+   actual documentation conflicts, rerun relevant/hosted checks and review that
+   exact head. Integrate #5 only after review/merge approval; then synchronize main.
+   QH-8's completed offline acceptance stays closed; the separate experiment's
+   mixed semantic findings and provisional reference must remain explicit.
+3. **PR #7 / QH-32:** only after #5 integration, retarget the existing #7 to `main`
+   and verify its diff contains the intended follow-up, not duplicated baseline.
+   Migrate its legacy branch to the primary checkout using the same saved-state,
+   evidence/process/mount and ordinary-detach checks; retain `f62bd8e` and every
+   original artifact. Incorporate integrated main if required; no history rewrite.
+   Resolve real README/changelog conflicts without changing frozen evidence.
+   Link the existing QH-32 instead of implementing it again; confirm each criterion
+   and CI on the final head, obtain review/merge approval, then update Jira only
+   when authorized. No QH-33 work starts automatically; its independently reviewed
+   semantic reference is still a prerequisite, not supplied by locator tests.
+
+Keep each legacy directory until its actual integration or a verified safe
+migration. Subsequent removal requires the separate legacy retirement checks in
+AGENTS: all commits preserved, ignored files/evidence recoverable, no sessions or
+mount/path dependencies, ordinary `git worktree remove` without force. An open,
+unmigrated worktree must stay. Do not delete the primary checkout or historical
+PR #1 refs. Shared README/changelog paths may need normal conflict resolution;
+no conflict is assumed or bypassed in advance.
+
+## Verification scope
+
+Legacy-bootstrap tests exercise old API/CLI entry points, old creation flags and
+help in synthetic checkout directories, checking unchanged HEAD/ref sentinels,
+local files and absence of created checkout paths. No Git executable is required
+by the disabled entry point or these focused regressions. A network-disabled Docker run plus lint,
+link/whitespace checks and configured-secret guard provide the focused local gate.
+Hosted quality/OIDC/native checks apply only to their exact tested head; record
+actual results in PR #6. No persistent database tests, paid inference, application
+replacement, cleanup or new product functionality is part of this workflow change.
+
+Focused local execution passed: three legacy-bootstrap tests in a network-disabled,
+readonly Docker container (temporary test directory only), Ruff lint/format,
+actionlint, Git whitespace, 30 local file/anchor links, exact DONE wording and
+verbatim preservation of the historical audit. Before/after inventories confirmed
+all existing container IDs/images/start times/mounts/networks, private configuration,
+runtime/realm/ledger and complete #5/#7 checkout contents/HEADs unchanged. No test
+credentials or persistent database connection were used. The initial Git-dependent
+test fixture was replaced with file/ref sentinels because the backend image lacks
+Git and the disabled bootstrap must no longer need it. Hosted results are recorded
+in the PR after publication, never inferred from earlier green heads.
+
+## Historical worktree policy execution — superseded, retained evidence
+
+The following is the earlier dated audit verbatim. Its sibling-worktree bootstrap,
+primary-on-main assumptions and test results describe that earlier policy only;
+current development must follow the single-checkout sections above and AGENTS.
 
 ## Actual directory audit — 2026-10-16
 

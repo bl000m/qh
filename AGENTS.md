@@ -22,8 +22,9 @@ understanding, revisions and governance; Neo4j is replaceable derived operationa
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
 QH-30 and semantic foundation are consolidated in main. Persistent schema is 0005;
 backend/frontend/MCP run images from c723d32c5d0825f9232ece560e7e666e69dceb27
-without source bind mounts. The permanent checkout is /home/ubuntu/qh on main;
-development worktrees follow the Git Worktree Lifecycle Policy below. Runtime management uses the frozen
+without source bind mounts. The sole development checkout is /home/ubuntu/qh;
+use one active task branch there under the Single Checkout Development Policy
+below. Runtime management uses the frozen
 /home/ubuntu/qh-runtime/current bundle and private .env, not development make up.
 Keep the readonly root Keycloak realm import file unchanged. Future planning does
 not authorize further persistent writes/deployment/retirement.
@@ -127,8 +128,8 @@ record any exception instead of treating it as permission for later work.
 
 - Before implementation, read the Jira ticket, objective, acceptance criteria,
   dependencies and relevant comments through Atlassian MCP. Identify the associated
-  PR, branch and absolute worktree path; inspect local/remote Git state and prior
-  evidence. If Jira is unavailable, report the blocker; never invent requirements.
+  PR, branch and checkout path (`/home/ubuntu/qh`); inspect local/remote Git state
+  and prior evidence. If Jira is unavailable, report the blocker; never invent requirements.
 - If there is no verifiable Definition of Done, propose one before implementing:
   observable outcomes, checks/evidence, exclusions and unresolved decisions. Obtain
   approval for missing structural decisions under STOP AND ASK. For explicitly
@@ -163,7 +164,21 @@ record any exception instead of treating it as permission for later work.
 
 ### Mandatory criterion-by-criterion Definition of Done
 
-Before declaring implementation complete, map every acceptance/Done criterion to
+A task is not DONE because tests pass. It is DONE when every Jira acceptance criterion has been verified, the PR has been reviewed and merged, and Jira has been updated accordingly. Never start the next task automatically.
+
+| Workflow state | Meaning |
+| --- | --- |
+| IN PROGRESS | Implementation is in progress; required technical criteria remain unverified or unmet |
+| READY FOR REVIEW | Technical acceptance criteria are verified and the PR is published, but it is not merged |
+| DONE | Every Jira acceptance criterion is verified, the PR is reviewed and merged, and Jira is updated accordingly |
+
+A merged PR with Jira closure still pending is not DONE; report that outstanding
+closure explicitly. Jira writes still require explicit authorization. Do not infer
+permission to transition Jira from this definition. For non-ticket maintenance,
+report Jira as not assigned and the missing/owner-approved closure mapping rather
+than inventing a key, claiming a Jira update or declaring DONE automatically.
+
+Before reporting technical readiness, map every acceptance/Done criterion to
 an observable result and evidence (command, test, artifact or functional check).
 Classify each criterion explicitly:
 
@@ -186,13 +201,14 @@ implementation completion, PR review/merge and Jira closure are separate states.
 - Prefer new branches from verified, updated `main`, after the active task closes.
   Avoid stacked PRs or dependence on unintegrated branches without explicit user
   authorization. Record any authorized dependency and its review/integration order.
-- Correct the current PR in its existing branch/worktree; do not create another
+- Correct the current PR in its existing branch and checkout; do not create another
   branch or PR for an ordinary correction. Reuse existing implementations and
   evidence rather than duplicating work under another ticket or PR.
 - Never merge automatically. After an explicitly authorized merge, verify the PR's
-  actual merge and preservation of its work, safely synchronize the permanent
-  `main` checkout, then apply every check in Git Worktree Lifecycle Policy before
-  removal. A closed-but-unmerged PR never authorizes worktree cleanup.
+  actual merge and preservation of its work, safely synchronize `main` in the
+  single checkout and report Jira closure separately. Legacy worktree retirement
+  follows the transition safeguards below; a closed-but-unmerged PR never
+  authorizes removal. Do not start another task automatically after closure.
 
 ### Required concise outcome report
 
@@ -204,7 +220,7 @@ At the end of every task, always report:
 - Each Done criterion satisfied/missing using the classifications above.
 - Problems corrected autonomously, with cause and verified resolution (or none).
 - Residual issues and proposed solutions, with priority and suggested Jira follow-up.
-- Associated PR, branch, absolute worktree, HEAD and Git status; publication,
+- Associated PR, branch, checkout path, HEAD and Git status; publication,
   review/closure and remote/local synchronization state.
 - The next recommended action on the current task. Do not automatically propose
   starting the next ticket while the current one remains open.
@@ -213,7 +229,10 @@ At the end of every task, always report:
 
 Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
 runtime-source changes. Source mounts have been removed from all app services;
-root retains only the readonly IdP configuration bind. Preserve it and private .env.
+root retains only the readonly IdP configuration bind. The primary checkout may
+be on the single authorized task branch; older instructions that require it to
+remain on main are historical and superseded by this policy. Preserve the readonly
+bind and private .env.
 Authorization may explicitly cover a whole consolidation sequence; do not request
 it again for already authorized steps. Preserve published native ancestry.
 
@@ -232,7 +251,7 @@ Tags, GitHub Releases and Jira milestone/version writes require explicit approva
 - Before each commit, run relevant checks and review git status, working/staged
   diffs and exclusions. Stage explicit files/hunks; keep unrelated or user-owned
   changes out unless approved. Never include secrets or local data.
-- Routine task-branch publication follows the Git Worktree Lifecycle Policy below.
+- Routine task-branch publication follows the Single Checkout Development Policy below.
   Other remote pushes, all force pushes and destructive resets require explicit
   approval. The Jira authorization rules above also apply.
 - At ticket completion, list each commit's hash, message, purpose and checks.
@@ -240,91 +259,86 @@ Tags, GitHub Releases and Jira milestone/version writes require explicit approva
   or complex problems. Use targeted checks per unit and full verification at
   integration or when changes/failures justify it, not after every small edit.
 
-## Git Worktree Lifecycle Policy
+## Single Checkout Development Policy
 
-### Bootstrap and creation
+### One development directory and one active task
 
-- Keep the primary repository at `/home/ubuntu/qh`, normally on `main`. Before
-  creating a task branch or worktree, read that checkout's `AGENTS.md`, relevant
-  skills and task instructions, then inspect `git worktree list --porcelain` and
-  Git status. Do not rely only on instructions copied into an older feature branch.
-- Every new development task requiring an isolated branch must use a dedicated
-  worktree, directly under `/home/ubuntu/` as a sibling of the primary repository.
-  Never create worktrees in `/tmp`, inside the primary repository or in another
-  temporary directory. Do not develop new functionality directly on `main`.
-- Use clear ticket/branch names: `feat/QH-8-mistral-evaluation` maps to
-  `/home/ubuntu/qh8-mistral-evaluation`; `feat/QH-9-context-graph` maps to
-  `/home/ubuntu/qh9-context-graph`. Non-ticket maintenance may use a descriptive
-  name such as `/home/ubuntu/qh-worktree-lifecycle-policy`.
-- Use `git worktree add`. Inspect existing registrations first; never recreate a
-  branch already associated with a worktree. Reuse that task worktree only when
-  authorized and idle; leave other active Codex sessions' worktrees untouched.
-- Once integrated on `main`, use `scripts/start_task_worktree.py` from the primary
-  checkout for task bootstrap. First run its read-only plan, read the printed
-  primary-checkout instructions and resolve their requirements, then create using
-  the returned policy SHA-256. The script re-reads committed `main` instructions
-  before creation, rejects stale policy, occupied destinations and attached
-  branches, and creates only a direct sibling through `git worktree add`.
-- Always report the absolute worktree path, associated branch, HEAD and Git status.
-  A moved checkout retains its branch's committed instructions; bootstrap must
-  still consult the primary checkout to pick up policy updates after integration.
+- All new development takes place directly in `/home/ubuntu/qh`, switching Git
+  branches in that same directory. Keep one active local development branch,
+  one Jira ticket and one development PR in the ordinary workflow. Do not create
+  additional development worktrees or alternate working copies for new tasks.
+- Read this checkout's `AGENTS.md`, relevant skills, ticket/comments and task
+  instructions first. Confirm the previous task is DONE before starting the next,
+  unless the user explicitly authorizes an exception. Existing #5/#7 worktrees
+  are paused transition exceptions, not permission for parallel development.
+- Before each task, verify no unsaved editor changes, tracked modifications,
+  staged changes or untracked files at risk. Preserve ignored files and secrets;
+  a clean ordinary Git status alone does not establish switch safety. Commit
+  authorized work first; never silently stash, discard or overwrite local work.
+- Inspect processes, open files, source/config bind mounts and runtime path
+  dependencies before switching. Stop on incompatible activity, another active
+  coding session or uncertain ownership; preserve the current branch and report
+  the specific blocker. Never switch while a build/test/reload process depends
+  on the current tree. Do not kill services or sessions implicitly.
+- Fetch `origin/main`, safely select `main` and synchronize it by fast-forward
+  only. Verify local `main` equals fetched `origin/main`; stop on divergence.
+  Then create the task branch from that baseline or select the existing task
+  branch after checking its base, local commits and associated PR. Never force
+  a branch switch, reset/rebase published history or bypass an attached-worktree
+  refusal. Do not create a new branch for a correction to the current PR.
+- Code changes must be visible immediately in `/home/ubuntu/qh`. Always report
+  that path, the active branch, HEAD and Git status. After a reviewed, authorized
+  merge, return safely to updated `main`; closure never starts the next task.
+- `scripts/start_task_worktree.py` is disabled, including its old plan/create
+  modes. It must not create directories, branches or worktrees. Use the reviewed
+  manual single-checkout preflight in [the workflow guide](docs/worktree-lifecycle.md).
 
-### Development and publication
+### Runtime and publication boundary
 
-- Keep each task isolated; run its tests and commits in the corresponding worktree.
-  Preserve unrelated changes, local/untracked/ignored files and other sessions.
-- Publish verified, review-ready task commits to the task PR unless the user gives
-  contrary instructions. This policy authorizes routine publication of that task
-  branch, not unrelated branches, force pushes, tags/releases, Jira writes, merges
-  or deployment. Relocation or cleanup alone never triggers a push or publication
-  of another task's pending commits. Explicit task restrictions take precedence.
-- Keep important reports, test results, experimental outputs and evidence in the
-  repository or a documented persistent destination. Never leave their only copies
-  in `/tmp`. Secrets belong only in protected ignored configuration/private archives,
-  never published artifacts. Preserve frozen evidence and historical path strings.
-- Before relocation, check destination absence, active processes/sessions, open
-  files, container mounts and absolute-path dependencies. Use `git worktree move`,
-  preserving branch, commits and all local/untracked/ignored contents. Compare
-  file hashes, relevant metadata and Git state before/after. Update operational
-  configuration/scripts that use the old path; do not rewrite historical evidence.
-  If another session is active or a dependency is unresolved, retain the worktree
-  and explain the blocker. Never infer permission to replace runtime services.
+- Deployed backend/frontend/MCP use immutable images and the frozen bundle under
+  `/home/ubuntu/qh-runtime/current`, not the checked-out development branch.
+  Recheck actual container mounts/configuration before relying on that isolation.
+- Preserve private `.env`, the frozen runtime bundle and readonly root
+  `infra/keycloak/qh-realm.json`. Before a switch, verify the target branch keeps
+  the same realm path and bytes and does not overwrite private/ignored files.
+  Unexpected mounts or protected-file differences block switching until resolved.
+- Never run development `make up`, `make migrate` or generic Compose commands as
+  persistent-runtime management. A branch switch grants no deployment, migration,
+  data-write or service-replacement permission. Use only the reviewed runtime
+  bundle for separately authorized operations.
+- Publish verified, review-ready commits to the current task PR unless the user
+  prohibits it. This authorizes ordinary publication of that task branch only,
+  not force pushes, other task branches, tags/releases, Jira writes, merge or
+  deployment. Explicit task restrictions take precedence.
+- Preserve reports, tests and experiment evidence in Git or a documented durable
+  destination. Keep secrets only in protected ignored configuration/private
+  archives; never publish them. Frozen captures, references and ledgers remain
+  immutable; relocation does not create new counters or paid-call authorization.
 
-### Mandatory cleanup after merge
+### Legacy worktree transition and safe retirement
 
-A worktree is a temporary development space and must be removed after its PR is
-merged, once every safety check below succeeds. An open PR or unrecoverable local
-changes always prevent removal. A failed or uncertain check means retain and report.
-
-1. Verify on GitHub that the associated PR is actually merged, not merely closed.
-2. Fetch the main branch and verify the relevant work is reachable from updated
-   `origin/main`. For merge commits, check commit ancestry. For squash/rebase merges,
-   original SHAs may differ: verify the PR's resulting commit(s) are reachable and
-   review the mapped patch/tree changes and any branch-only commits. Do not equate
-   a merged flag or a patch-equivalence hint alone with proof all work is preserved.
-3. Inspect uncommitted changes, untracked files **and ignored files**. Preserve
-   anything important and stop if local changes cannot be recovered. A clean
-   ordinary `git status` alone is insufficient.
-4. Confirm reports, tests, outputs and other important artifacts have verified
-   persistent copies. Preserve private configuration and evidence archives.
-5. Recheck active Codex sessions/processes, open files, container mounts and other
-   path dependencies immediately before removal. Never modify/remove a worktree
-   used by another active session; retain it if activity cannot be resolved safely.
-6. Remove using `git worktree remove <absolute-path>`, **without `--force`**. If Git
-   refuses, keep the worktree and report why; do not bypass the protection.
-7. Inspect `git worktree prune --dry-run`, then run `git worktree prune` only for
-   verified stale registrations. Do not prune metadata for active/offline worktrees.
-8. Delete the local branch only if appropriate and safe with `git branch -d`.
-   If ordinary deletion refuses (including squash/rebase history), retain the ref;
-   never force deletion. No remote branch deletion is implied.
-9. Report the removed/retained worktrees, absolute paths, branches, HEADs, checks
-   and outcomes. Classify runtime/deployment directories and evidence archives
-   separately; a `qh-` prefix does not identify a worktree.
-
-Never use `rm -rf`, `git reset --hard`, `git clean -fdx`, force flags or equivalent
-destructive cleanup to bypass these checks. Never remove runtime environments,
-database resources/volumes, sensitive configuration or evidence archives. This
-policy does not authorize any persistent QH data changes, deployment or auto-merge.
+- Preserve the PR #5 and #7 worktrees, commits, ignored files and evidence until
+  their integration or an explicitly authorized, verified safe migration. Do not
+  move their active branches forcibly. Preserve historical PR #1 and its refs.
+- The PR #6 branch may be released from its clean legacy worktree by an ordinary
+  detached checkout at the retained commit, then selected in `/home/ubuntu/qh`,
+  after runtime/process/file preflight. Keep the detached directory as a snapshot;
+  it is not a second active development directory. No cleanup is implied.
+- A future migration of a legacy task requires clean/saved state, no conflicting
+  session/process/mount, verified durable evidence/private-file copies and retained
+  commit refs. Detach only without force, then select the existing branch in the
+  primary checkout; verify identical commit/tree and original directory contents.
+  If any check fails, retain the worktree and report; never bypass Git protection.
+- Retirement after merge is separate: verify actual reviewed merge on GitHub,
+  updated-main reachability and preservation of every branch-only commit (including
+  squash/rebase mapping if applicable). Check tracked, untracked and ignored files,
+  durable evidence, active sessions/processes/open files and all path dependencies.
+  Then use ordinary `git worktree remove` without force; if refused, retain it.
+- Preview `git worktree prune --dry-run`; prune only verified stale registrations.
+  Delete a local branch only when safe with `git branch -d`; retain it on refusal.
+  No remote branch deletion is implied. Never remove the primary checkout, runtime,
+  database volumes, private configuration or evidence archives. No `rm -rf`,
+  `git reset --hard`, `git clean -fdx` or forced cleanup/switch is permitted.
 
 ## Docker-first development
 

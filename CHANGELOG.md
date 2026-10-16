@@ -24,9 +24,11 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Changed
 
-- Git worktree lifecycle policy, primary-instruction bootstrap and audited sibling
-  locations; merged PR worktrees are retired only after archive/activity checks.
-  Runtime resources and persistent QH data are unchanged.
+- Single-checkout development in `/home/ubuntu/qh`, one task branch/ticket/PR
+  at a time; legacy worktree bootstrap disabled. Explicit technical readiness
+  versus reviewed/merged/Jira-updated DONE. Existing experiment worktrees and
+  frozen evidence retained under safe transition/retirement checks. Runtime
+  resources and persistent QH data are unchanged.
 
 - One registered canonical representation throughout native projection/retrieval;
   fixture category mapping and duplicate temporal/endpoint decoding retired.
