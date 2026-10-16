@@ -80,7 +80,10 @@ Run `python3 scripts/evaluate_qh33_v2.py --out /tmp/qh33-v2-review` and
 `python3 docs/evidence/qh33-v2-20261016/audit.py` without a key, network or QH.
 The 19 v1/v2 accounting/review regressions and sealed-v1 reproduction cover technical
 integrity, not semantic truth. CI also verifies the v2 artifact audit.
-Executable-image and final CI evidence for this increment are recorded on PR #8.
+The exact packaging check passed **19 v1/v2 tests, 2.391 s**, with network disabled
+and no source bind/key, image `qh33-v2-review:f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`,
+ID `sha256:684d040c124af536ba6ed13f9e6fc738e0278354f9c5c60eb4259ba04ab969d0`.
+The final hosted CI result for this increment is recorded on PR #8 after execution.
 
 **Stop for the owner's personal verification.** This is preparation, not a final
 QH-33 Done verdict. After actual confirmation, finalize the report and verify Jira's

@@ -72,3 +72,20 @@ parziale o scrittura canonica. V1, annotazioni storiche, catture e ledger restan
 immutati. Il manifest verifica identità e riproducibilità, non la verità dei giudizi.
 
 [Report e stato QH-33](../../qh33-semantic-evaluation.md).
+
+
+## Verifiche tecniche del pacchetto
+
+- PASS: **19 test v1/v2**, 2,391 s, nell’immagine esatta senza rete, chiavi o bind
+  dei sorgenti; generazione offline del pacchetto riuscita.
+- PASS: audit v1 e v2, identità dei 74 ID, fonti/candidati e 518 motivazioni; link
+  locali e ancoraggi espliciti della nuova matrice verificati.
+- PASS: Ruff, actionlint, Git whitespace e guardia dell’indice per segreti/file privati.
+- CI dell’ultimo commit: risultato registrato nella PR #8 dopo l’esecuzione.
+- Verifica personale: **non attestata**, nessun giudizio importato.
+
+Sorgente eseguibile/OCI `f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, immagine
+`qh33-v2-review:f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, ID immutabile
+`sha256:684d040c124af536ba6ed13f9e6fc738e0278354f9c5c60eb4259ba04ab969d0`.
+Costruita da Git archive; modifiche documentali successive non cambiano tool,
+fixture, test o configurazione. Questa è evidenza di preparazione, non Done.
