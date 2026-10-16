@@ -1,0 +1,49 @@
+{
+  "id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b",
+  "created_at": "2026-10-16T05:29:21.530134+00:00",
+  "source_id": "182dc634-fe1e-5e26-b783-8288d930f4aa",
+  "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+  "revision_no": 1,
+  "content": "Mina: Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.\nJo: Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.\nMina: Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.\nJo: Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.\nMina: La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.\n",
+  "origin": {
+    "kind": "conversation",
+    "turns": [
+      {
+        "end": 91,
+        "start": 6,
+        "speaker": "Mina",
+        "turn_id": "evolving-1"
+      },
+      {
+        "end": 206,
+        "start": 96,
+        "speaker": "Jo",
+        "turn_id": "evolving-2"
+      },
+      {
+        "end": 285,
+        "start": 213,
+        "speaker": "Mina",
+        "turn_id": "evolving-3"
+      },
+      {
+        "end": 384,
+        "start": 290,
+        "speaker": "Jo",
+        "turn_id": "evolving-4"
+      },
+      {
+        "end": 507,
+        "start": 391,
+        "speaker": "Mina",
+        "turn_id": "evolving-5"
+      }
+    ],
+    "metadata": {
+      "synthetic": true,
+      "evaluation_case": "evolving"
+    },
+    "acquired_at": "2026-10-15T18:30:00Z",
+    "conversation_id": "unseen-mistral-evolving"
+  }
+}

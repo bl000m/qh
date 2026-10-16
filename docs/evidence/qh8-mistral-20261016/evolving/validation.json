@@ -1,0 +1,13 @@
+{
+  "case": "evolving",
+  "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b",
+  "scope": "b43538b0-5831-4863-852f-2646b93d5a94",
+  "raw_validation": "FAIL",
+  "validation_error": {
+    "type": "ValueError",
+    "message": "Evidence must exactly match the authorized source span"
+  },
+  "pipeline": "NOT PUBLISHED",
+  "items": 0,
+  "source_retained": true
+}

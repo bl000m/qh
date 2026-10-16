@@ -1,0 +1,107 @@
+[
+  {
+    "local_id": "personal-1",
+    "shape": "item",
+    "text": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.",
+    "descriptors": [
+      {
+        "value": "preference for quiet bar meeting",
+        "certainty": "asserted"
+      }
+    ],
+    "evidence": [
+      {
+        "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "start": 7,
+        "end": 121,
+        "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre."
+      }
+    ]
+  },
+  {
+    "local_id": "personal-2",
+    "shape": "item",
+    "text": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.",
+    "descriptors": [
+      {
+        "value": "train cancellation event",
+        "certainty": "asserted"
+      }
+    ],
+    "temporal": {
+      "fact_from": "2026-10-09T17:30:00Z"
+    },
+    "evidence": [
+      {
+        "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "start": 129,
+        "end": 239,
+        "quote": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani."
+      }
+    ]
+  },
+  {
+    "local_id": "personal-3",
+    "shape": "item",
+    "text": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.",
+    "descriptors": [
+      {
+        "value": "planned walk event",
+        "certainty": "asserted"
+      }
+    ],
+    "temporal": {
+      "fact_from": "2026-10-17T09:00:00Z"
+    },
+    "evidence": [
+      {
+        "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "start": 247,
+        "end": 361,
+        "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove."
+      }
+    ]
+  },
+  {
+    "local_id": "personal-4",
+    "shape": "item",
+    "text": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza.",
+    "descriptors": [
+      {
+        "value": "uncertain attendance to walk",
+        "certainty": "asserted"
+      }
+    ],
+    "evidence": [
+      {
+        "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "start": 369,
+        "end": 436,
+        "quote": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza."
+      }
+    ]
+  },
+  {
+    "local_id": "personal-5",
+    "shape": "item",
+    "text": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.",
+    "descriptors": [
+      {
+        "value": "inquiry about covered path",
+        "certainty": "asserted"
+      },
+      {
+        "value": "open path selection",
+        "certainty": "asserted"
+      }
+    ],
+    "evidence": [
+      {
+        "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "start": 444,
+        "end": 537,
+        "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta."
+      }
+    ]
+  }
+]

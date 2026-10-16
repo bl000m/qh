@@ -1,0 +1,82 @@
+{
+  "max_calls": 8,
+  "max_usd": "0.20",
+  "calls": [
+    {
+      "kind": "/models/mistral-small-2603",
+      "reserved_usd": "0",
+      "status": "completed",
+      "usage": null,
+      "observed_usd": "0"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "failed",
+      "error": "Mistral HTTP 429"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "failed",
+      "error": "Mistral HTTP 429"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "completed",
+      "usage": {
+        "prompt_tokens": 650,
+        "completion_tokens": 1552
+      },
+      "observed_usd": "0.0010287"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "completed",
+      "usage": {
+        "prompt_tokens": 667,
+        "completion_tokens": 2180
+      },
+      "observed_usd": "0.00140805"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "completed",
+      "usage": {
+        "prompt_tokens": 653,
+        "completion_tokens": 951
+      },
+      "observed_usd": "0.00066855"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "completed",
+      "usage": {
+        "prompt_tokens": 703,
+        "completion_tokens": 1239
+      },
+      "observed_usd": "0.00084885"
+    }
+  ],
+  "blocked": false,
+  "reconciliations": [
+    {
+      "time_utc": "2026-10-15T20:20:44.503852+00:00",
+      "reason": "Owner authorized resumption after reporting PAYG activation and positive credit; retain 2 attempts and USD 0.006 failed reservation",
+      "previous_state_sha256": "807ff25af3d70032f754cf7180116d4bb845851b05b0632d0ff22281ff73994b",
+      "calls_retained": 2,
+      "failed_reservations_retained_usd": "0.006"
+    },
+    {
+      "time_utc": "2026-10-16T05:28:34.521661+00:00",
+      "reason": "Owner explicitly requested a new single-first full extraction on 2026-10-16, then remaining three only on success; preserve actual 3 attempts and USD 0.012 uncertain holds; workspace billing not independently verifiable with standard inference key",
+      "previous_state_sha256": "3489d0459a695e0f326929c32589bb1adea7b39f0a2c31c2b1f360e4102d23a6",
+      "calls_retained": 3,
+      "failed_reservations_retained_usd": "0.012"
+    }
+  ]
+}

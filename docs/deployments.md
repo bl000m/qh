@@ -5,6 +5,18 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## Experiment artifact only — QH-8, 2026-10-16 (not deployed)
+
+Owner-authorized four synthetic Mistral extractions ran on disposable test SQL/Neo4j.
+First three used existing source `e2fde579b1bef86b8bfbf9fb0c12b476f998849a`.
+Harness ordering correction and fourth request/offline personal replay used
+`qh8-mistral:1ee72f18f1b6cfef7755f2ae5b34a3c09a393dd8`, OCI revision identical,
+image ID `sha256:e3528ebc399e3a6391a5e742bf502e8b6b8c4b0fc9f40e85d77ab73d4a8b3aba`,
+built from Git archive and executed without application source mounts. No QH
+service replacement, persistent migration/provisioning, product release or schema
+change. Live personal harness assertion and successful offline replay are separate
+results. [Report and captures](qh8-mistral-evaluation.md).
+
 ## Executed — consolidated native foundation, 2026-10-15
 
 | Field | Verified outcome |

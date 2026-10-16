@@ -1,0 +1,74 @@
+[
+  {
+    "local_id": "item-1",
+    "end": 98,
+    "quote": "Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 9,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA."
+  },
+  {
+    "local_id": "item-2",
+    "end": 197,
+    "quote": "Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 105,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo."
+  },
+  {
+    "local_id": "item-3",
+    "end": 330,
+    "quote": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 204,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases."
+  },
+  {
+    "local_id": "item-4",
+    "end": 431,
+    "quote": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 340,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment."
+  },
+  {
+    "local_id": "item-5",
+    "end": 530,
+    "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 438,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+  },
+  {
+    "local_id": "item-6",
+    "end": 635,
+    "quote": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown.",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "start": 537,
+    "source_revision_matches": true,
+    "quote_occurs_in_source": true,
+    "span_exact": true,
+    "within_identified_turn": true,
+    "observed_source_slice": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown."
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "max_calls": 8,
+  "max_usd": "0.20",
+  "calls": [
+    {
+      "kind": "/models/mistral-small-2603",
+      "reserved_usd": "0",
+      "status": "completed",
+      "usage": null,
+      "observed_usd": "0"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "failed",
+      "error": "Mistral HTTP 429"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.006",
+      "status": "failed",
+      "error": "Mistral HTTP 429"
+    }
+  ],
+  "blocked": true,
+  "reconciliations": [
+    {
+      "time_utc": "2026-10-15T20:20:44.503852+00:00",
+      "reason": "Owner authorized resumption after reporting PAYG activation and positive credit; retain 2 attempts and USD 0.006 failed reservation",
+      "previous_state_sha256": "807ff25af3d70032f754cf7180116d4bb845851b05b0632d0ff22281ff73994b",
+      "calls_retained": 2,
+      "failed_reservations_retained_usd": "0.006"
+    }
+  ]
+}
