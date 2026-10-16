@@ -17,7 +17,11 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
    deployment register and post-cutover record before treating old ticket
    category names as mandatory registered types. The permanent checkout is main; deployed apps use immutable images, with no
    source mounts. Preserve the readonly IdP configuration and private .env.
-4. Identify the delta against previous verification reports under AGENTS.md;
+4. Before creating a task branch/worktree, read the permanent primary checkout
+   `/home/ubuntu/qh/AGENTS.md` and follow its Git Worktree Lifecycle Policy and
+   `scripts/start_task_worktree.py` plan/review/create bootstrap. Never infer the
+   current policy from an older feature checkout.
+   Identify the delta against previous verification reports under AGENTS.md;
    inspect only relevant code, Git/baseline and Docker availability, with preflight
    proportional to risk. Repeat completed work only if changes invalidate it,
    regressions emerge or evidence is insufficient. Identify missing decisions,

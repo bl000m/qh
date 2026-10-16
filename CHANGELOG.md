@@ -24,6 +24,10 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Changed
 
+- Git worktree lifecycle policy, primary-instruction bootstrap and audited sibling
+  locations; merged PR worktrees are retired only after archive/activity checks.
+  Runtime resources and persistent QH data are unchanged.
+
 - One registered canonical representation throughout native projection/retrieval;
   fixture category mapping and duplicate temporal/endpoint decoding retired.
 - Standalone snapshot reconciliation/full-scope query checks retired. Incremental

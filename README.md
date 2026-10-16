@@ -113,6 +113,11 @@ Original-byte storage and access policy belong to future QH-31, not this graph.
 
 ## Development and verification
 
+Task branches use dedicated sibling worktrees under `/home/ubuntu/`. Read the
+primary checkout instructions before creation and follow the [worktree bootstrap
+and lifecycle procedure](docs/worktree-lifecycle.md); it also records the audited
+QH-8 relocations and merged-PR cleanup.
+
 Use Docker Engine and Compose v2; dependencies install from committed lockfiles
 inside images. Keep credentials in ignored local `.env`, never in Git or logs.
 For a new local checkout, generate configuration with `python3 scripts/init_env.py`;
