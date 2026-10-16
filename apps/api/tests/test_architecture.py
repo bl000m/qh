@@ -10,7 +10,7 @@ import pytest
 
 API_ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = API_ROOT / "app"
-STDLIB = {"__future__", "dataclasses", "enum", "typing", "copy", "datetime", "hashlib", "json", "uuid"}
+STDLIB = {"__future__", "dataclasses", "enum", "typing", "copy", "datetime", "hashlib", "json", "re", "uuid"}
 LAYERS = {
     "core": {"app.core"},
     "policy": {"app.core", "app.policy"},
@@ -96,6 +96,7 @@ def test_domain_imports_work_without_site_packages_or_frameworks() -> None:
 import sys
 sys.path.insert(0, sys.argv[1])
 from app.core.ports import ContextEngine, LLMProvider
+from app.understanding.extractor import UnderstandingExtractor
 from app.core.services import ContextService
 from app.policy.services import PolicyService
 from app.projections.services import ProjectionService
