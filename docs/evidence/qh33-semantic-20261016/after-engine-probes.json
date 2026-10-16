@@ -1,0 +1,419 @@
+{
+  "label": "QH-33-16c280f",
+  "benchmark_sha256": "f29a68907a8d6471d35c4e0386626ed531cbf04ced7f88fc4d50e9e0715933e6",
+  "temporal_probes_sha256": "2565a1fb2f0b78dd36112af25afb8cc801024c284c3ab33e0dba8bbd62678970",
+  "extractor_sha256": "e1d9aac91bab1aed3bf9f7102fbd407fd0932900ffffa1003e0614e6d961877f",
+  "publication": "in-memory; not SQL integration evidence",
+  "provider_calls": 0,
+  "cases": {
+    "work": {
+      "original": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 9,
+        "all_proposed": true
+      }
+    },
+    "evolving": {
+      "original": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 14,
+        "all_proposed": true
+      }
+    },
+    "personal": {
+      "original": {
+        "accepted": true,
+        "revisions": 5,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 5,
+        "all_proposed": true
+      }
+    },
+    "multilingual": {
+      "original": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      },
+      "resolved": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      }
+    },
+    "control.conditional_es.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.conditional_es.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.negation_en.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.negation_en.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.actual_discount_fr.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.actual_discount_fr.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.collective_it.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.collective_it.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.individual_en.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.individual_en.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.lifecycle_de.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.lifecycle_de.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.future_intent_en.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.future_intent_en.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.past_completed_it.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.past_completed_it.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.uncertain_fr.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.uncertain_fr.mutated": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.provenance_unicode.good": {
+      "original": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      },
+      "resolved": {
+        "accepted": true,
+        "revisions": 1,
+        "all_proposed": true
+      }
+    },
+    "control.provenance_unicode.mutated": {
+      "original": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      },
+      "resolved": {
+        "accepted": false,
+        "revisions": 0,
+        "source_retained": true
+      }
+    }
+  },
+  "temporal_literal_probes": [
+    {
+      "id": "timezone_seconds_prefix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "negative_timezone_seconds_prefix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "fractional_timezone_prefix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "long_year_token",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "word_suffix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "word_prefix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "offset_digit_suffix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "full_zulu",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "full_offset_seconds",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "full_fractional_offset",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "punctuation_boundary",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "explicit_numeric_offset",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "different_literal",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "comma_fractional_timezone_prefix",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "signed_year_token",
+      "expected_accept": false,
+      "accepted": false,
+      "revisions": 0,
+      "source_retained": true
+    },
+    {
+      "id": "full_comma_fractional_offset",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    },
+    {
+      "id": "label_colon_boundary",
+      "expected_accept": true,
+      "accepted": true,
+      "revisions": 2,
+      "all_proposed": true
+    }
+  ]
+}

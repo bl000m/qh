@@ -5,6 +5,17 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## Offline evaluation artifact — QH-33, 2026-10-16 (not deployed)
+
+Executable/OCI revision `16c280f373e9842c311188d147bb33abedba900e`, image
+`qh33-semantics:16c280f373e9842c311188d147bb33abedba900e`, immutable ID
+`sha256:757883a007c92c4ce134e6640e3858e04f156d1558d7f4e974621d1debbfeb62`.
+Built from Git archive for offline benchmark/probe and disposable integration tests.
+No runtime replacement, persistent migration, new provider request or local model.
+Semantic labels remain provisional pending independent owner review. The separate
+candidate prompt is prepared only, with no live/default instruction change.
+[QH-33 report](qh33-semantic-evaluation.md).
+
 ## Offline follow-up artifact — QH-8 citations, 2026-10-16 (not deployed)
 
 The owner authorized only frozen-capture offline resolution and an architectural
