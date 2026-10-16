@@ -1,0 +1,304 @@
+{
+  "status": "PASS",
+  "export": {
+    "context_ids": [
+      "ee26e114-78ed-45f4-8f90-4154659973cc"
+    ],
+    "source_revisions": [
+      {
+        "id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+        "created_at": "2026-10-16T07:33:15.368252+00:00",
+        "source_id": "86c8267f-51c0-5136-8b1d-00f2339d13a9",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": "Robin: Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.\nCasey: Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.\nRobin: Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.\nCasey: Forse verrò alla passeggiata, ma non ho confermato la mia presenza.\nRobin: Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.\n",
+        "origin": {
+          "kind": "conversation",
+          "turns": [
+            {
+              "end": 121,
+              "start": 7,
+              "speaker": "Robin",
+              "turn_id": "personal-1"
+            },
+            {
+              "end": 239,
+              "start": 129,
+              "speaker": "Casey",
+              "turn_id": "personal-2"
+            },
+            {
+              "end": 361,
+              "start": 247,
+              "speaker": "Robin",
+              "turn_id": "personal-3"
+            },
+            {
+              "end": 436,
+              "start": 369,
+              "speaker": "Casey",
+              "turn_id": "personal-4"
+            },
+            {
+              "end": 537,
+              "start": 444,
+              "speaker": "Robin",
+              "turn_id": "personal-5"
+            }
+          ],
+          "metadata": {
+            "synthetic": true,
+            "evaluation_case": "personal"
+          },
+          "acquired_at": "2026-10-15T18:30:00Z",
+          "conversation_id": "unseen-mistral-personal"
+        }
+      }
+    ],
+    "understanding_item_revisions": [
+      {
+        "id": "3287c071-7b2d-5b1e-a4e4-9036afc461a4",
+        "created_at": "2026-10-16T07:33:15.611016+00:00",
+        "item_id": "e8c0ad19-28d8-5157-8377-e8a293dc7d78",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": {
+          "text": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.",
+          "citations": [
+            {
+              "end": 537,
+              "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta.",
+              "start": 444,
+              "turn_id": "personal-5",
+              "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "ea381ef37fbe6801831e50dc2c723bc52889f069ce727e6981fd601b1c9af74b"
+          },
+          "descriptors": [
+            {
+              "value": "inquiry about covered path",
+              "certainty": "asserted"
+            },
+            {
+              "value": "open path selection",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "83253202-fb5d-5073-a27a-ab83e117f09c"
+        ],
+        "relation": null
+      },
+      {
+        "id": "3b0bea0e-c065-5237-a065-7adf748734d1",
+        "created_at": "2026-10-16T07:33:15.611016+00:00",
+        "item_id": "7f8d8eb4-086e-5920-ba93-8cad2028d716",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": {
+          "text": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.",
+          "citations": [
+            {
+              "end": 361,
+              "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove.",
+              "start": 247,
+              "turn_id": "personal-3",
+              "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "ea381ef37fbe6801831e50dc2c723bc52889f069ce727e6981fd601b1c9af74b"
+          },
+          "descriptors": [
+            {
+              "value": "planned walk event",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": "2026-10-17T09:00:00+00:00",
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "83253202-fb5d-5073-a27a-ab83e117f09c"
+        ],
+        "relation": null
+      },
+      {
+        "id": "4432efa1-cd91-5b07-a1fa-91fca35aab47",
+        "created_at": "2026-10-16T07:33:15.611016+00:00",
+        "item_id": "b5ee63fe-ab7a-5a91-8a2d-60ccf063b89c",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": {
+          "text": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.",
+          "citations": [
+            {
+              "end": 121,
+              "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre.",
+              "start": 7,
+              "turn_id": "personal-1",
+              "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "ea381ef37fbe6801831e50dc2c723bc52889f069ce727e6981fd601b1c9af74b"
+          },
+          "descriptors": [
+            {
+              "value": "preference for quiet bar meeting",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "83253202-fb5d-5073-a27a-ab83e117f09c"
+        ],
+        "relation": null
+      },
+      {
+        "id": "6965b148-d543-5176-9c51-1626b163e44c",
+        "created_at": "2026-10-16T07:33:15.611016+00:00",
+        "item_id": "8e3397ac-e1f5-5f8b-aed7-99e40c720822",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": {
+          "text": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza.",
+          "citations": [
+            {
+              "end": 436,
+              "quote": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza.",
+              "start": 369,
+              "turn_id": "personal-4",
+              "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "ea381ef37fbe6801831e50dc2c723bc52889f069ce727e6981fd601b1c9af74b"
+          },
+          "descriptors": [
+            {
+              "value": "uncertain attendance to walk",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "83253202-fb5d-5073-a27a-ab83e117f09c"
+        ],
+        "relation": null
+      },
+      {
+        "id": "aae2dc86-87e7-5ffc-ba23-bec08dda59f3",
+        "created_at": "2026-10-16T07:33:15.611016+00:00",
+        "item_id": "e1c16d28-8c23-5dbb-bf95-1030c41cff2b",
+        "context_space_id": "ee26e114-78ed-45f4-8f90-4154659973cc",
+        "revision_no": 1,
+        "content": {
+          "text": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.",
+          "citations": [
+            {
+              "end": 239,
+              "quote": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani.",
+              "start": 129,
+              "turn_id": "personal-2",
+              "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "ea381ef37fbe6801831e50dc2c723bc52889f069ce727e6981fd601b1c9af74b"
+          },
+          "descriptors": [
+            {
+              "value": "train cancellation event",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": "2026-10-09T17:30:00+00:00",
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "83253202-fb5d-5073-a27a-ab83e117f09c"
+        ],
+        "relation": null
+      }
+    ]
+  },
+  "descriptor_revision_ids": [
+    "3287c071-7b2d-5b1e-a4e4-9036afc461a4",
+    "3b0bea0e-c065-5237-a065-7adf748734d1",
+    "4432efa1-cd91-5b07-a1fa-91fca35aab47",
+    "6965b148-d543-5176-9c51-1626b163e44c",
+    "aae2dc86-87e7-5ffc-ba23-bec08dda59f3"
+  ],
+  "sync_state": "ready",
+  "foreign_subject_denied": true
+}

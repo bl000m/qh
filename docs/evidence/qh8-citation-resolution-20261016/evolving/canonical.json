@@ -1,0 +1,690 @@
+{
+  "status": "PASS",
+  "export": {
+    "context_ids": [
+      "b43538b0-5831-4863-852f-2646b93d5a94"
+    ],
+    "source_revisions": [
+      {
+        "id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b",
+        "created_at": "2026-10-16T07:33:09.589965+00:00",
+        "source_id": "182dc634-fe1e-5e26-b783-8288d930f4aa",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": "Mina: Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.\nJo: Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.\nMina: Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.\nJo: Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.\nMina: La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.\n",
+        "origin": {
+          "kind": "conversation",
+          "turns": [
+            {
+              "end": 91,
+              "start": 6,
+              "speaker": "Mina",
+              "turn_id": "evolving-1"
+            },
+            {
+              "end": 206,
+              "start": 96,
+              "speaker": "Jo",
+              "turn_id": "evolving-2"
+            },
+            {
+              "end": 285,
+              "start": 213,
+              "speaker": "Mina",
+              "turn_id": "evolving-3"
+            },
+            {
+              "end": 384,
+              "start": 290,
+              "speaker": "Jo",
+              "turn_id": "evolving-4"
+            },
+            {
+              "end": 507,
+              "start": 391,
+              "speaker": "Mina",
+              "turn_id": "evolving-5"
+            }
+          ],
+          "metadata": {
+            "synthetic": true,
+            "evaluation_case": "evolving"
+          },
+          "acquired_at": "2026-10-15T18:30:00Z",
+          "conversation_id": "unseen-mistral-evolving"
+        }
+      }
+    ],
+    "understanding_item_revisions": [
+      {
+        "id": "2904717e-c06a-58e2-b353-04f082807b58",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "66973074-26ef-59b9-be0c-0d9225e7b8f8",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.",
+          "citations": [
+            {
+              "end": 384,
+              "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.",
+              "start": 290,
+              "turn_id": "evolving-4",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "descriptors": [
+            {
+              "value": "suspension",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "2b87dcb2-7f7f-57da-b740-cc24ee1c4545",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "13d36ace-de5a-5627-8b49-d50f5301c005",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.",
+          "citations": [
+            {
+              "end": 285,
+              "quote": "Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata.",
+              "start": 213,
+              "turn_id": "evolving-3",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "descriptors": [
+            {
+              "value": "withdrawal",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "2dde1801-4d89-5b05-b91f-57c7afc5b29c",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "78d4ac16-a117-5e59-b70c-8692000c6bc3",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Jo suspends proposal-2",
+          "citations": [
+            {
+              "end": 384,
+              "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti.",
+              "start": 290,
+              "turn_id": "evolving-4",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": {
+          "source_item_id": "66973074-26ef-59b9-be0c-0d9225e7b8f8",
+          "source_revision_id": "2904717e-c06a-58e2-b353-04f082807b58",
+          "target_item_id": "d101b01d-364b-5052-946c-f8273f47f5ca",
+          "target_revision_id": "cf6de08f-a523-5666-a29b-9f960b82ac43",
+          "predicate": "suspends"
+        }
+      },
+      {
+        "id": "402c2d97-a717-51f2-8943-54a2773cea2f",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "8b43a985-d204-56e6-a4c7-ef669196dd44",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.",
+          "citations": [
+            {
+              "end": 206,
+              "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.",
+              "start": 96,
+              "turn_id": "evolving-2",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "descriptors": [
+            {
+              "value": "counter-proposal",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "4c6086d5-8fad-5022-9024-8d75301141a7",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "0aefa09b-d5ff-59bb-a55c-54781dfb0e1e",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "prova sospesa",
+          "citations": [
+            {
+              "end": 428,
+              "quote": "prova sospesa",
+              "start": 415,
+              "turn_id": "evolving-5",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "properties": {
+            "state": "suspended"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "51f82637-dd93-5a18-8d40-4a4a581fccf1",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "49a5e80f-eb84-5382-bdad-1d206f8d2edc",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.",
+          "citations": [
+            {
+              "end": 91,
+              "quote": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta.",
+              "start": 6,
+              "turn_id": "evolving-1",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "descriptors": [
+            {
+              "value": "proposal",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "60b2f305-17c5-5372-8a1b-2de0e46a11d0",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "545cb80e-cbac-5809-8efd-b6091fe859ea",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "2026-11-02T09:00:00Z",
+          "citations": [
+            {
+              "end": 29,
+              "quote": "Il 2026-11-02T09:00:00Z",
+              "start": 6,
+              "turn_id": "evolving-1",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": "2026-11-02T09:00:00+00:00",
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "656bc658-7709-56c7-b52c-5f81d15fcbc8",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "015b0255-a55a-5190-814d-8442b8312f02",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "2026-11-04T08:00:00Z",
+          "citations": [
+            {
+              "end": 313,
+              "quote": "Il 2026-11-04T08:00:00Z",
+              "start": 290,
+              "turn_id": "evolving-4",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": "2026-11-04T08:00:00+00:00",
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "688d06aa-c1e2-5fe3-b514-1011485be259",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "78102b37-99a8-5637-b057-0f96a129f76e",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Jo rejects Mina's proposal",
+          "citations": [
+            {
+              "end": 206,
+              "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana.",
+              "start": 96,
+              "turn_id": "evolving-2",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": {
+          "source_item_id": "8b43a985-d204-56e6-a4c7-ef669196dd44",
+          "source_revision_id": "402c2d97-a717-51f2-8943-54a2773cea2f",
+          "target_item_id": "141a126e-65a2-5d4a-9019-f6ab091202d1",
+          "target_revision_id": "a59f5ad0-d1cc-5459-838d-863fd9fdcadf",
+          "predicate": "rejects"
+        }
+      },
+      {
+        "id": "7aea4246-cc84-539a-a202-b580332c3b2f",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "62436c08-f82b-550e-a086-aa9b2057fd96",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "2026-11-03T10:00:00Z",
+          "citations": [
+            {
+              "end": 119,
+              "quote": "Il 2026-11-03T10:00:00Z",
+              "start": 96,
+              "turn_id": "evolving-2",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": "2026-11-03T10:00:00+00:00",
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "7b961214-fd62-54af-a6de-a6fbb596a335",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "39661ed0-d77e-5807-8cad-17916cd891bb",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.",
+          "citations": [
+            {
+              "end": 507,
+              "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere.",
+              "start": 391,
+              "turn_id": "evolving-5",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "descriptors": [
+            {
+              "value": "status update",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "a59f5ad0-d1cc-5459-838d-863fd9fdcadf",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "141a126e-65a2-5d4a-9019-f6ab091202d1",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "riunioni settimanali di un’ora",
+          "citations": [
+            {
+              "end": 69,
+              "quote": "riunioni settimanali di un’ora",
+              "start": 39,
+              "turn_id": "evolving-1",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "properties": {
+            "duration": "1 hour",
+            "frequency": "weekly"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "cf6de08f-a523-5666-a29b-9f960b82ac43",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "d101b01d-364b-5052-946c-f8273f47f5ca",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "prova di briefing giornalieri di dieci minuti",
+          "citations": [
+            {
+              "end": 186,
+              "quote": "prova di briefing giornalieri di dieci minuti",
+              "start": 141,
+              "turn_id": "evolving-2",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          },
+          "properties": {
+            "trial": true,
+            "duration": "10 minutes",
+            "frequency": "daily"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "entity",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": null
+      },
+      {
+        "id": "d16fbe39-d469-5769-b2fb-004e9fedf779",
+        "created_at": "2026-10-16T07:33:09.923598+00:00",
+        "item_id": "e8a32ae1-0ead-5e2b-96c9-b1e8219617db",
+        "context_space_id": "b43538b0-5831-4863-852f-2646b93d5a94",
+        "revision_no": 1,
+        "content": {
+          "text": "Mina withdraws proposal-1",
+          "citations": [
+            {
+              "end": 259,
+              "quote": "Ritiro la proposta delle riunioni settimanali.",
+              "start": 213,
+              "turn_id": "evolving-3",
+              "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "673c91dfbf4efb15bda22a57ad70092f7d9994cb121950d4454ddb5f2d796841"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b"
+        ],
+        "relation": {
+          "source_item_id": "13d36ace-de5a-5627-8b49-d50f5301c005",
+          "source_revision_id": "2b87dcb2-7f7f-57da-b740-cc24ee1c4545",
+          "target_item_id": "141a126e-65a2-5d4a-9019-f6ab091202d1",
+          "target_revision_id": "a59f5ad0-d1cc-5459-838d-863fd9fdcadf",
+          "predicate": "withdraws"
+        }
+      }
+    ]
+  },
+  "descriptor_revision_ids": [
+    "2904717e-c06a-58e2-b353-04f082807b58",
+    "2b87dcb2-7f7f-57da-b740-cc24ee1c4545",
+    "402c2d97-a717-51f2-8943-54a2773cea2f",
+    "51f82637-dd93-5a18-8d40-4a4a581fccf1",
+    "7b961214-fd62-54af-a6de-a6fbb596a335"
+  ],
+  "sync_state": "ready",
+  "foreign_subject_denied": true
+}

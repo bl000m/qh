@@ -9,6 +9,15 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-8 explicit offline citation derivation: unique exact quote matches in original
+  Unicode turn spans, separate hashed audit/checkpoint, unchanged strict whole-batch
+  publication and no live-provider change. Missing/ambiguous/foreign evidence fails
+  closed; deterministic correction does not repair semantic assertions.
+
+- Owner-approved single Understanding Engine with QH-client extraction and future
+  authorized MCP proposal input; source-verifiable and externally declared provenance
+  remain distinct. ADR 0004 adds no public API, permission, service or migration.
+
 - QH-8 optional official Mistral Small 4 adapter, strict request/token/cost ledger,
   four independent synthetic inputs and frozen pre-call reference, isolated manual
   evaluation and mock HTTP/native-pipeline CI regressions. After two historical HTTP 429s, four authorized full-conversation

@@ -1,0 +1,23 @@
+{
+  "status": "REJECTED",
+  "version": "qh-citation-resolver/1",
+  "original_output_sha256": "7348dddbeaf480d2d4374e8810518e447ecb3557316edd187ccc6f06feb8cccc",
+  "derived_output_sha256": null,
+  "input_sha256": "93ad1535884fa028d3c941fd7d7e4651c1be9a2b9f78337244c348d9e4f859f0",
+  "error_type": "CitationResolutionError",
+  "message": "Citation resolution rejected the batch",
+  "issues": [
+    {
+      "item_index": 6,
+      "code": "missing_or_invalid_evidence"
+    },
+    {
+      "item_index": 7,
+      "code": "missing_or_invalid_evidence"
+    },
+    {
+      "item_index": 8,
+      "code": "missing_or_invalid_evidence"
+    }
+  ]
+}

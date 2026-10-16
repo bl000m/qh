@@ -1,0 +1,49 @@
+{
+  "id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+  "created_at": "2026-10-16T07:33:05.297105+00:00",
+  "source_id": "d11c581e-37df-5bd1-8bda-14b0b5884d2e",
+  "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+  "revision_no": 1,
+  "content": "Nora: L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.\nEli: Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.\nNora: Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.\nEli: Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.\nNora: Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.\n",
+  "origin": {
+    "kind": "conversation",
+    "turns": [
+      {
+        "end": 115,
+        "start": 6,
+        "speaker": "Nora",
+        "turn_id": "work-1"
+      },
+      {
+        "end": 230,
+        "start": 121,
+        "speaker": "Eli",
+        "turn_id": "work-2"
+      },
+      {
+        "end": 332,
+        "start": 237,
+        "speaker": "Nora",
+        "turn_id": "work-3"
+      },
+      {
+        "end": 438,
+        "start": 338,
+        "speaker": "Eli",
+        "turn_id": "work-4"
+      },
+      {
+        "end": 549,
+        "start": 445,
+        "speaker": "Nora",
+        "turn_id": "work-5"
+      }
+    ],
+    "metadata": {
+      "synthetic": true,
+      "evaluation_case": "work"
+    },
+    "acquired_at": "2026-10-15T18:30:00Z",
+    "conversation_id": "unseen-mistral-work"
+  }
+}

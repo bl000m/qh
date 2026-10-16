@@ -1,0 +1,56 @@
+[
+  {
+    "case": "work",
+    "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+    "scope": "253a33ba-4925-4300-be4c-4f507685ff49",
+    "raw_validation": "FAIL",
+    "validation_error": {
+      "type": "ValueError",
+      "message": "Evidence must exactly match the authorized source span"
+    },
+    "pipeline": "NOT PUBLISHED",
+    "items": 0,
+    "source_retained": true
+  },
+  {
+    "case": "evolving",
+    "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b",
+    "scope": "b43538b0-5831-4863-852f-2646b93d5a94",
+    "raw_validation": "FAIL",
+    "validation_error": {
+      "type": "ValueError",
+      "message": "Evidence must exactly match the authorized source span"
+    },
+    "pipeline": "NOT PUBLISHED",
+    "items": 0,
+    "source_retained": true
+  },
+  {
+    "case": "personal",
+    "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+    "scope": "ee26e114-78ed-45f4-8f90-4154659973cc",
+    "raw_validation": "PASS",
+    "pipeline": "PASS",
+    "revision_ids": [
+      "e23d59ce-46a9-5b4f-9bfe-a902e8b5a66c",
+      "08978808-94a3-5a1c-a2bc-95b6e4c4ac6b",
+      "ee85534d-d74b-5b8c-9b9e-3eb619123cfc",
+      "c30265cf-ffb5-54d5-835d-01c9f0256dbf",
+      "f1910b5c-881d-5f69-ba73-0b60812725a6"
+    ],
+    "items": 5
+  },
+  {
+    "case": "multilingual",
+    "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+    "scope": "6343da81-d66a-45d8-9f02-199fbc533ec4",
+    "raw_validation": "FAIL",
+    "validation_error": {
+      "type": "ValueError",
+      "message": "Invalid extraction object fields"
+    },
+    "pipeline": "NOT PUBLISHED",
+    "items": 0,
+    "source_retained": true
+  }
+]

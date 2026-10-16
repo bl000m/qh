@@ -1,0 +1,20 @@
+{
+  "case": "multilingual",
+  "source_revision_id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+  "scope": "6343da81-d66a-45d8-9f02-199fbc533ec4",
+  "raw_validation": "FAIL",
+  "original_raw_validation": "FAIL",
+  "original_validation_error": {
+    "type": "ValueError",
+    "message": "Invalid extraction object fields"
+  },
+  "citation_resolution": "REJECTED",
+  "pipeline": "NOT PUBLISHED",
+  "items": 0,
+  "source_retained": true,
+  "rejected_scope_versions": {
+    "desired": 0,
+    "applied": 0
+  },
+  "offline_provider_replays": 1
+}

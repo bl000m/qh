@@ -1,0 +1,179 @@
+{
+  "items": [
+    {
+      "local_id": "work-1",
+      "shape": "item",
+      "text": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.",
+      "descriptors": [
+        {
+          "value": "obiettivo del progetto Faro",
+          "certainty": "asserted"
+        }
+      ],
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 6,
+          "end": 115,
+          "quote": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM."
+        }
+      ]
+    },
+    {
+      "local_id": "work-2",
+      "shape": "item",
+      "text": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.",
+      "descriptors": [
+        {
+          "value": "decisione pilota",
+          "certainty": "asserted"
+        }
+      ],
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 121,
+          "end": 230,
+          "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+        }
+      ]
+    },
+    {
+      "local_id": "work-3",
+      "shape": "item",
+      "text": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.",
+      "descriptors": [
+        {
+          "value": "ipotesi su pannello condiviso",
+          "certainty": "asserted"
+        }
+      ],
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 237,
+          "end": 332,
+          "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni."
+        }
+      ]
+    },
+    {
+      "local_id": "work-4",
+      "shape": "item",
+      "text": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.",
+      "descriptors": [
+        {
+          "value": "vincoli del progetto",
+          "certainty": "asserted"
+        }
+      ],
+      "properties": {
+        "budget": "300 EUR",
+        "scadenza": "2026-11-20"
+      },
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 338,
+          "end": 438,
+          "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+        }
+      ]
+    },
+    {
+      "local_id": "work-5",
+      "shape": "item",
+      "text": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.",
+      "descriptors": [
+        {
+          "value": "decisione aperta su accesso al pannello",
+          "certainty": "asserted"
+        },
+        {
+          "value": "responsabile sicurezza non scelto",
+          "certainty": "asserted"
+        }
+      ],
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 445,
+          "end": 549,
+          "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza."
+        }
+      ]
+    },
+    {
+      "local_id": "relation-1",
+      "shape": "relation",
+      "text": "Il team Aster gestirà il pannello delle assegnazioni.",
+      "relation": {
+        "source": "work-2",
+        "target": "work-1",
+        "predicate": "gestisce_pannello_per"
+      },
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 121,
+          "end": 230,
+          "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+        }
+      ]
+    },
+    {
+      "local_id": "relation-2",
+      "shape": "relation",
+      "text": "Un pannello condiviso è ipotizzato per ridurre i passaggi duplicati.",
+      "relation": {
+        "source": "work-3",
+        "target": "work-1",
+        "predicate": "ipotizza_misura_per"
+      },
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 237,
+          "end": 332,
+          "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni."
+        }
+      ]
+    },
+    {
+      "local_id": "relation-3",
+      "shape": "relation",
+      "text": "I vincoli includono budget massimo e scadenza.",
+      "relation": {
+        "source": "work-4",
+        "target": "work-1",
+        "predicate": "definisce_vincoli_per"
+      },
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 338,
+          "end": 438,
+          "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+        }
+      ]
+    },
+    {
+      "local_id": "relation-4",
+      "shape": "relation",
+      "text": "Resta aperta la decisione su chi autorizzerà l’accesso al pannello.",
+      "relation": {
+        "source": "work-5",
+        "target": "work-2",
+        "predicate": "decisione_aperta_su"
+      },
+      "evidence": [
+        {
+          "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+          "start": 445,
+          "end": 549,
+          "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza."
+        }
+      ]
+    }
+  ]
+}

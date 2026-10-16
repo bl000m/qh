@@ -198,3 +198,48 @@ Sources commit before generation; validated proposed revisions/evidence commit a
 one batch through the existing SQL outbox. No provider transaction or direct graph
 write is introduced. Checkpoints are revalidated against immutable source revisions;
 replay never changes current/confirmation. This feature is not deployed on the VPS.
+
+## One QH Understanding Engine — approved 2026-10-16
+
+[ADR 0004](adr/0004-unified-understanding-engine.md) refines ADR 0003: the existing
+backend owns one provider-agnostic Understanding Engine that validates, conservatively
+reconciles and persists proposals. It is not another service or a second canonical
+graph. Two input channels converge on its existing governance/publication path:
+
+```mermaid
+flowchart LR
+    Q[QH client: owned source revision] --> A[Explicit source/disclosure authorization]
+    A --> L[LLMProvider: Mistral experiment; future replaceable hosted model]
+    L --> P[Source-backed proposals]
+    C[External client: ChatGPT / Claude / compatible client] -.-> M[Future authorized MCP proposal submission]
+    M -.-> D[Declared external proposals; original evidence may be unavailable]
+    P --> U[One QH Understanding Engine in backend]
+    D -.-> U
+    U --> V[Policy / provenance / schema / scope / revisions]
+    V --> S[CanonicalRepository: proposed revisions + PostgreSQL outbox]
+    S --> W[Existing worker and rebuildable Neo4j projection]
+```
+
+Solid edges describe the trusted internal QH-8 experiment plus this resolver
+increment, not a released conversation UI or public write grant. Dotted edges
+are the approved future input, not an implemented public interface.
+QH-client extraction uses outbound `LLMProvider`; an external submission is an
+inbound application contract owned by `app/understanding`, documented in ADR 0004
+and distinct from generation. It need not carry the entire external conversation
+or require another inference. Independent MCP remains transport-only with no
+backend imports or DB access; no MCP tool/HTTP DTO is implemented here.
+
+Source-backed citations can be verified only against an available, authorized
+original revision. Externally declared proposals without that evidence must retain
+the weaker declared provenance; authenticated submission does not establish original
+source support. The current strict QH-8 evidence requirement is not relaxed to accept
+such submissions. All AI proposals remain proposed; no automatic confirmation,
+identity merge, new permission or cross-space disclosure follows from either channel.
+
+`app/understanding/citations.py` owns deterministic exact-quote location for an
+explicit derivation before strict QH-8 validation. The original capture and derived
+checkpoint are separate, with hashes and locator audit. Unsupported/ambiguous evidence
+rejects the whole batch; source access is authorized before resolution. This does
+not repair semantic errors, replace canonical SQL validation, change the live provider
+or introduce partial publication. Native reconciliation/rebuild remains the QH-30
+responsibility; semantic reconciliation and candidate staging remain future work.

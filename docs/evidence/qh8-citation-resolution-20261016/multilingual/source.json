@@ -1,0 +1,55 @@
+{
+  "id": "192dbd71-0831-55d5-8cea-b2fa67c499a8",
+  "created_at": "2026-10-16T07:33:18.110540+00:00",
+  "source_id": "7afa25c5-51bb-5d20-a288-fc6f6badbef5",
+  "context_space_id": "6343da81-d66a-45d8-9f02-199fbc533ec4",
+  "revision_no": 1,
+  "content": "Camille: Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA.\nAlex: Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo.\nDrew: The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases.\nCamille: Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment.\nAlex: Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa.\nDrew: Who will ask for the discount? We have not assigned that task. The delivery date is still unknown.\n",
+  "origin": {
+    "kind": "conversation",
+    "turns": [
+      {
+        "end": 98,
+        "start": 9,
+        "speaker": "Camille",
+        "turn_id": "multilingual-1"
+      },
+      {
+        "end": 197,
+        "start": 105,
+        "speaker": "Alex",
+        "turn_id": "multilingual-2"
+      },
+      {
+        "end": 330,
+        "start": 204,
+        "speaker": "Drew",
+        "turn_id": "multilingual-3"
+      },
+      {
+        "end": 431,
+        "start": 340,
+        "speaker": "Camille",
+        "turn_id": "multilingual-4"
+      },
+      {
+        "end": 530,
+        "start": 438,
+        "speaker": "Alex",
+        "turn_id": "multilingual-5"
+      },
+      {
+        "end": 635,
+        "start": 537,
+        "speaker": "Drew",
+        "turn_id": "multilingual-6"
+      }
+    ],
+    "metadata": {
+      "synthetic": true,
+      "evaluation_case": "multilingual"
+    },
+    "acquired_at": "2026-10-15T18:30:00Z",
+    "conversation_id": "unseen-mistral-multilingual"
+  }
+}

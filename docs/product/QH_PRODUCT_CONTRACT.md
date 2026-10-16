@@ -173,6 +173,23 @@ le nuove revisioni: il binding registrato governa schema e forma, mentre il sign
 non è limitato ai nomi del registro. Source Vault (QH-31) resta futuro: la rappresentazione inline
 non impone che i byte originali siano conservati in PostgreSQL.
 
+## Chiarimento approvato — ingresso della comprensione (2026-10-16)
+
+QH possiede un unico Understanding Engine indipendente dai provider per validare,
+riconciliare in modo governato e persistere proposte nel Context Space. Il client QH
+può estrarre dalla propria fonte conversazionale tramite LLMProvider (oggi esperimento
+Mistral, in futuro modello open-weight ospitato sostituibile). Client esterni MCP
+possono in futuro inviare direttamente proposte strutturate previa autorizzazione,
+senza obbligo di trasmettere tutta la conversazione o di una seconda inferenza.
+Entrambi i canali convergono sulle stesse invarianti canoniche e di governance.
+
+La provenienza distingue supporto verificabile su fonti originali disponibili e
+proposte dichiarate esternamente senza verifica diretta. Nessuna proposta IA viene
+confermata automaticamente. La decisione non introduce ora un tool/API MCP, una
+nuova autorizzazione, servizio, modello ospitato o migrazione: il relativo ingresso
+è solo documentato in [ADR 0004](../adr/0004-unified-understanding-engine.md).
+I vincoli esistenti di scope, validazione e disclosure restano in vigore.
+
 ## Ipotesi da validare ed evoluzioni del modello
 
 Riutilizzo delle fonti fra più spazi, ontologia completa, formati di interoperabilità
