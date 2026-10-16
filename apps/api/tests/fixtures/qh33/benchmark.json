@@ -1,0 +1,3374 @@
+{
+  "version": 1,
+  "reference_status": "assistant_proposal_pending_independent_human_review",
+  "baseline_main": "21f13d615fc097996370603c1025c25df36859ec",
+  "cases": [
+    {
+      "id": "work",
+      "source": {
+        "path": "docs/evidence/qh8-mistral-20261016/work/source.json",
+        "sha256": "c5fa6db067a6f50209e6d7b27385ba160be29b3f21923d5693489f7aa09cb9f7"
+      },
+      "output": {
+        "path": "docs/evidence/qh8-mistral-20261016/work/output.json",
+        "sha256": "eba1c20e0ce4a45af6bf67a08cc15f4d3c271b125d8f2f7c83d256d9d84897bf"
+      }
+    },
+    {
+      "id": "evolving",
+      "source": {
+        "path": "docs/evidence/qh8-mistral-20261016/evolving/source.json",
+        "sha256": "2730441a4b403ab7029f20296d7e7596de1b9246b28100a9fc544e5ec3713610"
+      },
+      "output": {
+        "path": "docs/evidence/qh8-mistral-20261016/evolving/output.json",
+        "sha256": "08e942d608578d90374673b1b635ab87a217b518c9faaa512ebc61d3c07d5e97"
+      }
+    },
+    {
+      "id": "personal",
+      "source": {
+        "path": "docs/evidence/qh8-mistral-20261016/personal/source.json",
+        "sha256": "61d6de0c7347e8dbd4aca1f85272c5b41b4d5f74344a47b3810d59dbb8ff6b3d"
+      },
+      "output": {
+        "path": "docs/evidence/qh8-mistral-20261016/personal/output.json",
+        "sha256": "e8ae8788d13dc7143d331b6d3bb5af21d686ecad470c45c0750e82f5ca7290b9"
+      }
+    },
+    {
+      "id": "multilingual",
+      "source": {
+        "path": "docs/evidence/qh8-mistral-20261016/multilingual/source.json",
+        "sha256": "a24b98b4d482e105e71ddcc71c151d9d63211f6ab1fa0ee10fbfed592ed0e89c"
+      },
+      "output": {
+        "path": "docs/evidence/qh8-mistral-20261016/multilingual/output.json",
+        "sha256": "52035c2dfd865c69d3047dd5dcfeee65fd6ac9ee2f827c631b3da3ee3915ab5c"
+      }
+    },
+    {
+      "id": "control.conditional_es.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+          "source_id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Si se concede el permiso, el envío podría salir; todavía no se ha concedido.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 86
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 97,
+                "end": 127
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 138,
+                "end": 167
+              }
+            ]
+          }
+        },
+        "sha256": "13eec09dde2063d08742744a6c1c4f443a587d1c950b3185c2310fafe606a722"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "El envío solo podría salir si se concede el permiso.",
+              "evidence": [
+                {
+                  "source_revision_id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+                  "start": 10,
+                  "end": 86,
+                  "quote": "Si se concede el permiso, el envío podría salir; todavía no se ha concedido."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "5b8a295fe801b3da0463612338da0dc47b2491c84c115e032f3e6f8da278eb19"
+      }
+    },
+    {
+      "id": "control.conditional_es.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+          "source_id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Si se concede el permiso, el envío podría salir; todavía no se ha concedido.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 86
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 97,
+                "end": 127
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 138,
+                "end": 167
+              }
+            ]
+          }
+        },
+        "sha256": "13eec09dde2063d08742744a6c1c4f443a587d1c950b3185c2310fafe606a722"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "El permiso se ha concedido y el envío salió.",
+              "evidence": [
+                {
+                  "source_revision_id": "6e319b5e-21bc-51cd-9555-ff78e02919b6",
+                  "start": 10,
+                  "end": 86,
+                  "quote": "Si se concede el permiso, el envío podría salir; todavía no se ha concedido."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "b9df427a98abec608513891b935b70b1798e1e64c35af5fdc907e76d567fa483"
+      }
+    },
+    {
+      "id": "control.negation_en.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+          "source_id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: No booking was approved; approval is still pending.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 61
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 72,
+                "end": 102
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 113,
+                "end": 142
+              }
+            ]
+          }
+        },
+        "sha256": "768133f09014f7ae10b708265d87f33833f67941b842799828433751c0040be7"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "No booking has been approved.",
+              "evidence": [
+                {
+                  "source_revision_id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+                  "start": 10,
+                  "end": 61,
+                  "quote": "No booking was approved; approval is still pending."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "1375b18895937c9ac31c9ea54234245ce5a57267d442e56c5a9fb3ac8c52c691"
+      }
+    },
+    {
+      "id": "control.negation_en.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+          "source_id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: No booking was approved; approval is still pending.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 61
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 72,
+                "end": 102
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 113,
+                "end": 142
+              }
+            ]
+          }
+        },
+        "sha256": "768133f09014f7ae10b708265d87f33833f67941b842799828433751c0040be7"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The booking has been approved.",
+              "evidence": [
+                {
+                  "source_revision_id": "673e78e3-2f6f-5377-a249-d77c8be9d577",
+                  "start": 10,
+                  "end": 61,
+                  "quote": "No booking was approved; approval is still pending."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "20cc09d7cfa53f5c7d609e4b6eb48b0f1b9991382aba49b4eb5f0002f05dd617"
+      }
+    },
+    {
+      "id": "control.actual_discount_fr.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+          "source_id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: La remise de 8 % a été appliquée. Le montant payé est 92 EUR.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 71
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 82,
+                "end": 112
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 123,
+                "end": 152
+              }
+            ]
+          }
+        },
+        "sha256": "90456fa30409d5f19f2bc803df00b5948011a649b5c5cc0c36914ff30345dcfe"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "A discount of 8% was applied; EUR 92 was paid.",
+              "evidence": [
+                {
+                  "source_revision_id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+                  "start": 10,
+                  "end": 71,
+                  "quote": "La remise de 8 % a été appliquée. Le montant payé est 92 EUR."
+                }
+              ],
+              "properties": {
+                "discount_applied": true
+              }
+            }
+          ]
+        },
+        "sha256": "b6090a8ec4f5f40aac1332fbe2f71d3dbb09cdbbe3d8207434bd80706a2b3657"
+      }
+    },
+    {
+      "id": "control.actual_discount_fr.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+          "source_id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: La remise de 8 % a été appliquée. Le montant payé est 92 EUR.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 71
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 82,
+                "end": 112
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 123,
+                "end": 152
+              }
+            ]
+          }
+        },
+        "sha256": "90456fa30409d5f19f2bc803df00b5948011a649b5c5cc0c36914ff30345dcfe"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "No discount was applied.",
+              "evidence": [
+                {
+                  "source_revision_id": "c804a55c-ace0-5fa1-9358-640e1fab2ff6",
+                  "start": 10,
+                  "end": 71,
+                  "quote": "La remise de 8 % a été appliquée. Le montant payé est 92 EUR."
+                }
+              ],
+              "properties": {
+                "discount_applied": false
+              }
+            }
+          ]
+        },
+        "sha256": "ce46cfb73d99777993bf978473d1b8614cdc2fef25d9801578a451a62a2ab036"
+      }
+    },
+    {
+      "id": "control.collective_it.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+          "source_id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 84
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 95,
+                "end": 125
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 136,
+                "end": 165
+              }
+            ]
+          }
+        },
+        "sha256": "a547fee7d52497fc36a28502bf12e7b4ddf624253c18e64b0b7a0463125450a6"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "Le tre delegate hanno deciso insieme la pausa.",
+              "evidence": [
+                {
+                  "source_revision_id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+                  "start": 10,
+                  "end": 84,
+                  "quote": "Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "7d17801d5297f5aba64206c4e8f8b810786ec4ae5c38c27a4965ecd4e80c6455"
+      }
+    },
+    {
+      "id": "control.collective_it.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+          "source_id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 84
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 95,
+                "end": 125
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 136,
+                "end": 165
+              }
+            ]
+          }
+        },
+        "sha256": "a547fee7d52497fc36a28502bf12e7b4ddf624253c18e64b0b7a0463125450a6"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "Uma ha deciso da sola la pausa.",
+              "evidence": [
+                {
+                  "source_revision_id": "7900861d-59c9-5ceb-957d-1133b6da7fb1",
+                  "start": 10,
+                  "end": 84,
+                  "quote": "Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "0ec3bcfb614fcd74db8d089e735e7049040e420def533168b52683f49bef49ba"
+      }
+    },
+    {
+      "id": "control.individual_en.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+          "source_id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: I, Ren, authorized the release; the committee did not vote.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 69
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 80,
+                "end": 110
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 121,
+                "end": 150
+              }
+            ]
+          }
+        },
+        "sha256": "49c5011b7fb23003918d1b2adfadc3bea830cdcbbb0eb91295971e385b7177f9"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "Ren authorized the release; no committee vote occurred.",
+              "evidence": [
+                {
+                  "source_revision_id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+                  "start": 10,
+                  "end": 69,
+                  "quote": "I, Ren, authorized the release; the committee did not vote."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "85abdcf3aedcc1d4c190e322e1eb273341066a15997ff8f80fd9ae30a69fe449"
+      }
+    },
+    {
+      "id": "control.individual_en.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+          "source_id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: I, Ren, authorized the release; the committee did not vote.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 69
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 80,
+                "end": 110
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 121,
+                "end": 150
+              }
+            ]
+          }
+        },
+        "sha256": "49c5011b7fb23003918d1b2adfadc3bea830cdcbbb0eb91295971e385b7177f9"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The committee authorized the release.",
+              "evidence": [
+                {
+                  "source_revision_id": "ec2590a9-f153-59e1-ab0c-473150e41907",
+                  "start": 10,
+                  "end": 69,
+                  "quote": "I, Ren, authorized the release; the committee did not vote."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "66a2e74b5706a2915f8a5d2994c61da308aed4e39ba57c9bf4e581479a9b1bbe"
+      }
+    },
+    {
+      "id": "control.lifecycle_de.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+          "source_id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 142
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 153,
+                "end": 183
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 194,
+                "end": 223
+              }
+            ]
+          }
+        },
+        "sha256": "c30d5477ab2247d1180436e424a07991189ad94b9e4907858ed566eade40de6b"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The test was proposed, then adopted, then suspended; it has not resumed.",
+              "evidence": [
+                {
+                  "source_revision_id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+                  "start": 10,
+                  "end": 142,
+                  "quote": "Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "6ffc997438c1c38fde6231fdedd0717038ab3b4caa4efb6dea237c72e3c76e55"
+      }
+    },
+    {
+      "id": "control.lifecycle_de.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+          "source_id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 142
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 153,
+                "end": 183
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 194,
+                "end": 223
+              }
+            ]
+          }
+        },
+        "sha256": "c30d5477ab2247d1180436e424a07991189ad94b9e4907858ed566eade40de6b"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The test is now active again.",
+              "evidence": [
+                {
+                  "source_revision_id": "133d0391-44d2-5960-98a7-a8abd28b3ff6",
+                  "start": 10,
+                  "end": 142,
+                  "quote": "Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "7aee1aec98a71344487a681b966d81c7793e868f53def86b6ce71b974fd5a0d6"
+      }
+    },
+    {
+      "id": "control.future_intent_en.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+          "source_id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: I intend to cycle next Friday if it is dry. I have not done that ride yet.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 84
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 95,
+                "end": 125
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 136,
+                "end": 165
+              }
+            ]
+          }
+        },
+        "sha256": "aeccbf7268cd54ee898d7e44afcacf4fcd64e88db45f0836620e138bde3ef8c1"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "A future ride is intended, conditional on dry weather, and has not happened.",
+              "evidence": [
+                {
+                  "source_revision_id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+                  "start": 10,
+                  "end": 84,
+                  "quote": "I intend to cycle next Friday if it is dry. I have not done that ride yet."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "d708bbbdd53b5942932fc099d79285225af853d0401481dd1910eb810eb69656"
+      }
+    },
+    {
+      "id": "control.future_intent_en.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+          "source_id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: I intend to cycle next Friday if it is dry. I have not done that ride yet.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 84
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 95,
+                "end": 125
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 136,
+                "end": 165
+              }
+            ]
+          }
+        },
+        "sha256": "aeccbf7268cd54ee898d7e44afcacf4fcd64e88db45f0836620e138bde3ef8c1"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The ride was completed.",
+              "evidence": [
+                {
+                  "source_revision_id": "fad3d229-eff0-5bd0-a97b-756c5351c1e9",
+                  "start": 10,
+                  "end": 84,
+                  "quote": "I intend to cycle next Friday if it is dry. I have not done that ride yet."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "6f4058c31564f80e4a5859ad0275e38475510509f38365b90ce4a3b43c704616"
+      }
+    },
+    {
+      "id": "control.past_completed_it.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+          "source_id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: La visita è avvenuta ieri. Non è una semplice intenzione futura.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 74
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 85,
+                "end": 115
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 126,
+                "end": 155
+              }
+            ]
+          }
+        },
+        "sha256": "1016158501dc85a4b806ca06229f9269fe78f9bf825e3390d94dea0ecfab6f3e"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "La visita è già avvenuta.",
+              "evidence": [
+                {
+                  "source_revision_id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+                  "start": 10,
+                  "end": 74,
+                  "quote": "La visita è avvenuta ieri. Non è una semplice intenzione futura."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "65dcda72b6d6f8c088ca634eaf42c04f3a58c66f7eecc8254ea8cf4d5fb6d5da"
+      }
+    },
+    {
+      "id": "control.past_completed_it.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+          "source_id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: La visita è avvenuta ieri. Non è una semplice intenzione futura.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 74
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 85,
+                "end": 115
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 126,
+                "end": 155
+              }
+            ]
+          }
+        },
+        "sha256": "1016158501dc85a4b806ca06229f9269fe78f9bf825e3390d94dea0ecfab6f3e"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "La visita è soltanto un’intenzione futura.",
+              "evidence": [
+                {
+                  "source_revision_id": "55d5dc90-6939-592d-af04-dd2aeb53c3ce",
+                  "start": 10,
+                  "end": 74,
+                  "quote": "La visita è avvenuta ieri. Non è una semplice intenzione futura."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "b5e866eb53062c8f53cafe0e075ded7ebee64f1109af185693f6abdd28f8cb8f"
+      }
+    },
+    {
+      "id": "control.uncertain_fr.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+          "source_id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Peut-être que Sam participera; sa présence n’est pas confirmée.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 73
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 84,
+                "end": 114
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 125,
+                "end": 154
+              }
+            ]
+          }
+        },
+        "sha256": "11cb75d5c70bb858817cb278fdd2c1636fefea3b7c3b85ec1aec39578301c6be"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "Sam may attend; attendance is unconfirmed.",
+              "evidence": [
+                {
+                  "source_revision_id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+                  "start": 10,
+                  "end": 73,
+                  "quote": "Peut-être que Sam participera; sa présence n’est pas confirmée."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "32b6a6e0172a5834998accfb7471792c26b85cc2d2d5bdb664e67a7adf74c6d6"
+      }
+    },
+    {
+      "id": "control.uncertain_fr.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+          "source_id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: Peut-être que Sam participera; sa présence n’est pas confirmée.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 73
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 84,
+                "end": 114
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 125,
+                "end": 154
+              }
+            ]
+          }
+        },
+        "sha256": "11cb75d5c70bb858817cb278fdd2c1636fefea3b7c3b85ec1aec39578301c6be"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "Sam has confirmed attendance.",
+              "evidence": [
+                {
+                  "source_revision_id": "3b209587-d463-5f03-90c5-25374ecd5ca6",
+                  "start": 10,
+                  "end": 73,
+                  "quote": "Peut-être que Sam participera; sa présence n’est pas confirmée."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "4df4d6c79a0624a26d467d3866ddf627666c9fb75aa33b68f0f643f71f3dbf3e"
+      }
+    },
+    {
+      "id": "control.provenance_unicode.good",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "b884e38c-0852-505e-8257-036b7a99f56a",
+          "source_id": "b884e38c-0852-505e-8257-036b7a99f56a",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: The café reopening was announced, not completed: é, é and 🙂 remain distinct.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 87
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 98,
+                "end": 128
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 139,
+                "end": 168
+              }
+            ]
+          }
+        },
+        "sha256": "ad31251f6cd00528d324959e7be4ab8021237bf214548d36d8481ab648b2e046"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The café reopening is announced, not completed.",
+              "evidence": [
+                {
+                  "source_revision_id": "b884e38c-0852-505e-8257-036b7a99f56a",
+                  "start": 10,
+                  "end": 87,
+                  "quote": "The café reopening was announced, not completed: é, é and 🙂 remain distinct."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "0e5ccf6cfda8a38fe07124f255b05aa03f178db04b64cf0a89c500422e6c1d9a"
+      }
+    },
+    {
+      "id": "control.provenance_unicode.mutated",
+      "kind": "authored_control_not_model_output",
+      "source": {
+        "inline": {
+          "id": "b884e38c-0852-505e-8257-036b7a99f56a",
+          "source_id": "b884e38c-0852-505e-8257-036b7a99f56a",
+          "context_space_id": "11111111-1111-4111-8111-111111111111",
+          "revision_no": 1,
+          "content": "Reporter: The café reopening was announced, not completed: é, é and 🙂 remain distinct.\nRecorder: No additional event is stated.\nRecorder: End of this synthetic record.\n",
+          "origin": {
+            "kind": "conversation",
+            "acquired_at": "2026-10-16T00:00:00Z",
+            "metadata": {
+              "synthetic": true
+            },
+            "turns": [
+              {
+                "turn_id": "focus",
+                "speaker": "Reporter",
+                "start": 10,
+                "end": 87
+              },
+              {
+                "turn_id": "neutral-1",
+                "speaker": "Recorder",
+                "start": 98,
+                "end": 128
+              },
+              {
+                "turn_id": "neutral-2",
+                "speaker": "Recorder",
+                "start": 139,
+                "end": 168
+              }
+            ]
+          }
+        },
+        "sha256": "ad31251f6cd00528d324959e7be4ab8021237bf214548d36d8481ab648b2e046"
+      },
+      "output": {
+        "inline": {
+          "items": [
+            {
+              "local_id": "claim",
+              "shape": "item",
+              "text": "The café reopening is announced, not completed.",
+              "evidence": [
+                {
+                  "source_revision_id": "b884e38c-0852-505e-8257-036b7a99f56a",
+                  "start": 10,
+                  "end": 87,
+                  "quote": "Invented support never spoken."
+                }
+              ]
+            }
+          ]
+        },
+        "sha256": "4f27a7710f593049e6cd7566b00ee2720b4eed1039202746704545602c99b077"
+      }
+    }
+  ],
+  "units": [
+    {
+      "id": "work.objective",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Target: reduce request-to-assignment time by 20%, not a measured result.",
+      "source_evidence": {
+        "turn_id": "work-1",
+        "start": 6,
+        "end": 115,
+        "quote": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "7192d4915cc561d64a148737875d5cbbba721ecfb5d6646f6b7c685ae2862fac"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.crm_unchanged",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Keep the CRM unchanged.",
+      "source_evidence": {
+        "turn_id": "work-1",
+        "start": 6,
+        "end": 115,
+        "quote": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "7192d4915cc561d64a148737875d5cbbba721ecfb5d6646f6b7c685ae2862fac"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.pilot",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "A two-week pilot with team Aster is decided.",
+      "source_evidence": {
+        "turn_id": "work-2",
+        "start": 121,
+        "end": 230,
+        "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "6f57681515b30380dbddd96022a2f5e321e61cf425c09dbc5887d05c18450109"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.panel_actor",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Team Aster will manage the assignment panel.",
+      "source_evidence": {
+        "turn_id": "work-2",
+        "start": 121,
+        "end": 230,
+        "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "6f57681515b30380dbddd96022a2f5e321e61cf425c09dbc5887d05c18450109"
+        },
+        {
+          "pointer": "/items/5/text",
+          "value_sha256": "234139e84d449ed3a0c0c4b58557936aa99b173e070922d81e3ae4974bfe470e"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.hypothesis",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Shared panel reducing duplicate steps is a hypothesis.",
+      "source_evidence": {
+        "turn_id": "work-3",
+        "start": 237,
+        "end": 332,
+        "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "94acf567f05b8e38e6a6701c5faec042ca0ba6b4b185fcb0b3a8a7d5def309b0"
+        },
+        {
+          "pointer": "/items/6/text",
+          "value_sha256": "f1fac7d27327cda51abc8e63c055589b5a5b2efea8d23284dc88f1300299834b"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.no_measurements",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Measurements supporting that effect do not yet exist.",
+      "source_evidence": {
+        "turn_id": "work-3",
+        "start": 237,
+        "end": 332,
+        "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "94acf567f05b8e38e6a6701c5faec042ca0ba6b4b185fcb0b3a8a7d5def309b0"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.budget",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Budget maximum is EUR 300.",
+      "source_evidence": {
+        "turn_id": "work-4",
+        "start": 338,
+        "end": 438,
+        "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "7b9e5b99d8e22fde91c270e918ede85eccdaebbf5dfe1836907a69904f124717"
+        },
+        {
+          "pointer": "/items/7/text",
+          "value_sha256": "7efc5e7087d94a8c76283a892bd12eb1db18bf7078e701e5cfa883884890bcc0"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.no_export",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "No CRM data export is allowed.",
+      "source_evidence": {
+        "turn_id": "work-4",
+        "start": 338,
+        "end": 438,
+        "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "7b9e5b99d8e22fde91c270e918ede85eccdaebbf5dfe1836907a69904f124717"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.deadline",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Deadline is date-only 2026-11-20; no hour/zone inferred.",
+      "source_evidence": {
+        "turn_id": "work-4",
+        "start": 338,
+        "end": 438,
+        "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "7b9e5b99d8e22fde91c270e918ede85eccdaebbf5dfe1836907a69904f124717"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.authorizer_unknown",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "Panel-access authorizer remains undecided.",
+      "source_evidence": {
+        "turn_id": "work-5",
+        "start": 445,
+        "end": 549,
+        "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "5b5f491c6ac94bb5dc90b61d909f53540790256e5ca1fb30d025cb1d78aed338"
+        },
+        {
+          "pointer": "/items/8/text",
+          "value_sha256": "aa5bd0c6c1d8917d97a81827871ac15098e4cda539b27c0fb6e4590ff70cab00"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.security_unselected",
+      "case": "work",
+      "kind": "source_proposition",
+      "meaning": "No security responsible person has been selected.",
+      "source_evidence": {
+        "turn_id": "work-5",
+        "start": 445,
+        "end": 549,
+        "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "5b5f491c6ac94bb5dc90b61d909f53540790256e5ca1fb30d025cb1d78aed338"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "work.relation_encoding",
+      "case": "work",
+      "kind": "output_annotation",
+      "meaning": "Management relation should identify team/panel roles; current endpoints are pilot/goal statements.",
+      "source_evidence": {
+        "turn_id": "work-2",
+        "start": 121,
+        "end": 230,
+        "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/5/relation",
+          "value_sha256": "ac635259ffbc10cf3bb4140665b0aefbe74e83d8ceecadce555f6bb64f3bee49"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "partial",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Structurally legal universal endpoints; usefulness/meaning needs human review, no new endpoint rule imposed."
+    },
+    {
+      "id": "evolving.original_proposal",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Mina proposes weekly one-hour meetings at 2026-11-02T09:00:00Z.",
+      "source_evidence": {
+        "turn_id": "evolving-1",
+        "start": 6,
+        "end": 91,
+        "quote": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "2c1f49ac7bfa2e904a990c1ca177ffc30d86f297493adc92765eb4acfced1673"
+        },
+        {
+          "pointer": "/items/5/text",
+          "value_sha256": "1a90fbc34023f828afa85ed74791bfdf7d7bfabfad3cbd37b131e656f43c3170"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Literal narrative date retained; bound is on a separate timestamp entity, not this proposal assertion."
+    },
+    {
+      "id": "evolving.proposal_only",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Original meetings are only proposed, not adopted at that point.",
+      "source_evidence": {
+        "turn_id": "evolving-1",
+        "start": 6,
+        "end": 91,
+        "quote": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "2c1f49ac7bfa2e904a990c1ca177ffc30d86f297493adc92765eb4acfced1673"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.adopted_trial",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Jo reports a collective choice of daily ten-minute briefings on 2026-11-03T10:00:00Z.",
+      "source_evidence": {
+        "turn_id": "evolving-2",
+        "start": 96,
+        "end": 206,
+        "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "0ffb30b64010f51c7b5e6706de5c7bf117462825693f1f22db4f3ed1354f55f8"
+        },
+        {
+          "pointer": "/items/6/text",
+          "value_sha256": "283445c6a2ed84c635255b9fed98796480996e41529265c9e993db7dd04aa6d1"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Collective wording retained in text. Separate descriptor/relations are assessed separately; fact time is not bound to this assertion."
+    },
+    {
+      "id": "evolving.trial_duration",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "The chosen trial lasts one week.",
+      "source_evidence": {
+        "turn_id": "evolving-2",
+        "start": 96,
+        "end": 206,
+        "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "0ffb30b64010f51c7b5e6706de5c7bf117462825693f1f22db4f3ed1354f55f8"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.withdrawn",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Mina withdraws the original weekly-meeting proposal.",
+      "source_evidence": {
+        "turn_id": "evolving-3",
+        "start": 213,
+        "end": 285,
+        "quote": "Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "39c60c9e9cbd9206e6094df52876f8f32652c91775f74e76fe2c616a55075155"
+        },
+        {
+          "pointer": "/items/9/text",
+          "value_sha256": "2d86d2ef020ad772282cca33fa209805f69ce21eb2b0d6b3a756d2c493421ca4"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.never_adopted",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Weekly meetings were never adopted.",
+      "source_evidence": {
+        "turn_id": "evolving-3",
+        "start": 213,
+        "end": 285,
+        "quote": "Ritiro la proposta delle riunioni settimanali. Non è mai stata adottata."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "39c60c9e9cbd9206e6094df52876f8f32652c91775f74e76fe2c616a55075155"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.suspension",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Jo reports a collective suspension of the daily trial on 2026-11-04T08:00:00Z.",
+      "source_evidence": {
+        "turn_id": "evolving-4",
+        "start": 290,
+        "end": 384,
+        "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "a50e3d25487561183794fc69949ff5a4769d02abccdd54ea35ec3e0989a5aa90"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Source and claim say “sospendiamo”; separate relation overstates actor. Date is narrative/unlinked in canonical temporal fields."
+    },
+    {
+      "id": "evolving.absence_reason",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Two absences explain suspension.",
+      "source_evidence": {
+        "turn_id": "evolving-4",
+        "start": 290,
+        "end": 384,
+        "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "a50e3d25487561183794fc69949ff5a4769d02abccdd54ea35ec3e0989a5aa90"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.current_suspended",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Current trial state is suspended.",
+      "source_evidence": {
+        "turn_id": "evolving-5",
+        "start": 391,
+        "end": 507,
+        "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "580330e8f6f637ebd1fa74c11884ae4f88480a55daa7a39fcb161519a9eb2df3"
+        },
+        {
+          "pointer": "/items/7/text",
+          "value_sha256": "83383ac498305d9248c8b2d9d9724fe9bda35d17657b3b563d01910cdb23e465"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.no_return",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "Suspension does not mean weekly meetings resume.",
+      "source_evidence": {
+        "turn_id": "evolving-5",
+        "start": 391,
+        "end": 507,
+        "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "580330e8f6f637ebd1fa74c11884ae4f88480a55daa7a39fcb161519a9eb2df3"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.restart_unknown",
+      "case": "evolving",
+      "kind": "source_proposition",
+      "meaning": "When the trial resumes is undecided.",
+      "source_evidence": {
+        "turn_id": "evolving-5",
+        "start": 391,
+        "end": 507,
+        "quote": "La situazione attuale è prova sospesa, non ritorno alle riunioni settimanali. Quando riprenderemo resta da decidere."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "580330e8f6f637ebd1fa74c11884ae4f88480a55daa7a39fcb161519a9eb2df3"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "evolving.counter_proposal",
+      "case": "evolving",
+      "kind": "output_annotation",
+      "meaning": "Descriptor assigns counter-proposal to an already adopted trial.",
+      "source_evidence": {
+        "turn_id": "evolving-2",
+        "start": 96,
+        "end": 206,
+        "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/descriptors",
+          "value_sha256": "8c9933ff39296e783e3ea059d78e7337c638c07a323003fc66f189b79eca6441"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "partial",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Open descriptor vocabulary is legal. Assignment/content consistency is questionable, not a banned descriptor or proof of false claim."
+    },
+    {
+      "id": "evolving.personal_rejection",
+      "case": "evolving",
+      "kind": "extra_claim",
+      "meaning": "Jo personally rejects Mina’s proposal.",
+      "source_evidence": {
+        "turn_id": "evolving-2",
+        "start": 96,
+        "end": 206,
+        "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/8/text",
+          "value_sha256": "3c4a2276b0220eb0e99bcdbf4fac41924c35d8c6ed3c3779e83d8311557379f1"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "fail",
+        "attribution": "fail",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "fail"
+      },
+      "rationale": "Collective choice of an alternative does not establish a personal rejection. Unsupported agency, not a proven direct contradiction."
+    },
+    {
+      "id": "evolving.personal_suspension",
+      "case": "evolving",
+      "kind": "extra_claim",
+      "meaning": "Relation names Jo as suspension actor without preserving explicit collective agency.",
+      "source_evidence": {
+        "turn_id": "evolving-4",
+        "start": 290,
+        "end": 384,
+        "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/10/text",
+          "value_sha256": "c2de79fd16f05bf6f197c3f3d81637edd3687ea1be162cf1f00f5be005c7df30"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "partial",
+        "attribution": "partial",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "partial"
+      },
+      "rationale": "The source supports collective suspension. Singular wording loses collectivity but does not prove a claim of Jo acting alone; sufficiency requires independent adjudication."
+    },
+    {
+      "id": "evolving.unlinked_time_1",
+      "case": "evolving",
+      "kind": "output_annotation",
+      "meaning": "Literal timestamp exists, but its fact_from is on a standalone date entity, not the associated event.",
+      "source_evidence": {
+        "turn_id": "evolving-1",
+        "start": 6,
+        "end": 91,
+        "quote": "Il 2026-11-02T09:00:00Z propongo riunioni settimanali di un’ora. È solo una proposta."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/11/temporal",
+          "value_sha256": "61f7e25a8cc8cda3f68bcc29a84038aae86a9253b42aa3be3165a2b28a67aa1d"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "No fabricated timestamp. This is a structured-linkage gap; narrative date retention is a separate success."
+    },
+    {
+      "id": "evolving.unlinked_time_2",
+      "case": "evolving",
+      "kind": "output_annotation",
+      "meaning": "Literal timestamp exists, but its fact_from is on a standalone date entity, not the associated event.",
+      "source_evidence": {
+        "turn_id": "evolving-2",
+        "start": 96,
+        "end": 206,
+        "quote": "Il 2026-11-03T10:00:00Z scegliamo invece una prova di briefing giornalieri di dieci minuti, per una settimana."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/12/temporal",
+          "value_sha256": "3488ecd4a6f05e3cb762bb9ad6031a62f318c9035b6d8d320fb0ff375640f847"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "No fabricated timestamp. This is a structured-linkage gap; narrative date retention is a separate success."
+    },
+    {
+      "id": "evolving.unlinked_time_3",
+      "case": "evolving",
+      "kind": "output_annotation",
+      "meaning": "Literal timestamp exists, but its fact_from is on a standalone date entity, not the associated event.",
+      "source_evidence": {
+        "turn_id": "evolving-4",
+        "start": 290,
+        "end": 384,
+        "quote": "Il 2026-11-04T08:00:00Z sospendiamo anche la prova giornaliera: due partecipanti sono assenti."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/13/temporal",
+          "value_sha256": "56de5a1417a9d569b144103241478a2b792c526800d882c68f3f6d2729f10bd0"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "partial",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "No fabricated timestamp. This is a structured-linkage gap; narrative date retention is a separate success."
+    },
+    {
+      "id": "personal.quiet_preference",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Robin prefers a quiet bar meeting.",
+      "source_evidence": {
+        "turn_id": "personal-1",
+        "start": 7,
+        "end": 121,
+        "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "7c9fb1424bdcf466c663e377dec42571f8077842f0fcb0e87bc881eebc0fed68"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.temporary_avoidance",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Crowds are avoided today, not as a permanent personality trait.",
+      "source_evidence": {
+        "turn_id": "personal-1",
+        "start": 7,
+        "end": 121,
+        "quote": "Preferisco incontrarci in un bar tranquillo; per oggi eviterei i locali affollati, senza dire che li evito sempre."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "7c9fb1424bdcf466c663e377dec42571f8077842f0fcb0e87bc881eebc0fed68"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.past_train",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Casey reports a past train cancellation at 2026-10-09T17:30:00Z.",
+      "source_evidence": {
+        "turn_id": "personal-2",
+        "start": 129,
+        "end": 239,
+        "quote": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "8dc2920a365968cfe80b7f83850c90ff31431704d621719a8c2fcc042dec73fc"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.not_tomorrow",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "That cancellation is not tomorrow’s journey.",
+      "source_evidence": {
+        "turn_id": "personal-2",
+        "start": 129,
+        "end": 239,
+        "quote": "Il mio treno è stato cancellato il 2026-10-09T17:30:00Z. Questo è un evento passato, non il viaggio di domani."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "8dc2920a365968cfe80b7f83850c90ff31431704d621719a8c2fcc042dec73fc"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.future_intent",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Robin intends a future walk on 2026-10-17T09:00:00Z.",
+      "source_evidence": {
+        "turn_id": "personal-3",
+        "start": 247,
+        "end": 361,
+        "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "b2700f1abb823c5a65b44fc200c8c6ffb14182a090879fa310d8e3d88cb4dd1e"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.not_completed",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "The walk has not happened.",
+      "source_evidence": {
+        "turn_id": "personal-3",
+        "start": 247,
+        "end": 361,
+        "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "b2700f1abb823c5a65b44fc200c8c6ffb14182a090879fa310d8e3d88cb4dd1e"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.weather_condition",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Rain may cause Robin to cancel that intention.",
+      "source_evidence": {
+        "turn_id": "personal-3",
+        "start": 247,
+        "end": 361,
+        "quote": "Ho intenzione di fare una passeggiata il 2026-10-17T09:00:00Z. Non l’ho ancora fatta e potrei rinunciare se piove."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "b2700f1abb823c5a65b44fc200c8c6ffb14182a090879fa310d8e3d88cb4dd1e"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.attendance_possible",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Casey’s attendance is only possible.",
+      "source_evidence": {
+        "turn_id": "personal-4",
+        "start": 369,
+        "end": 436,
+        "quote": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "19813d50507613fe6438071146b949b30353b8df4ffaef28e4a006d3e445a384"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.attendance_unconfirmed",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Casey has not confirmed attendance.",
+      "source_evidence": {
+        "turn_id": "personal-4",
+        "start": 369,
+        "end": 436,
+        "quote": "Forse verrò alla passeggiata, ma non ho confermato la mia presenza."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "19813d50507613fe6438071146b949b30353b8df4ffaef28e4a006d3e445a384"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.ask_intent",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Robin intends to ask Lee about a covered route; Lee has not already acted.",
+      "source_evidence": {
+        "turn_id": "personal-5",
+        "start": 444,
+        "end": 537,
+        "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "b28bb6ea11a1d1a12a42c6ac4bf56f744abdb0ee00c1f675852e0cf528dedd9a"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "personal.route_open",
+      "case": "personal",
+      "kind": "source_proposition",
+      "meaning": "Route choice remains open.",
+      "source_evidence": {
+        "turn_id": "personal-5",
+        "start": 444,
+        "end": 537,
+        "quote": "Vorrei chiedere a Lee se conosce un percorso coperto. La scelta del percorso è ancora aperta."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "b28bb6ea11a1d1a12a42c6ac4bf56f744abdb0ee00c1f675852e0cf528dedd9a"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.net",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Net quote is EUR 300 excluding tax.",
+      "source_evidence": {
+        "turn_id": "multilingual-1",
+        "start": 9,
+        "end": 98,
+        "quote": "Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "31f9a9ff0a4310502a0993d6a8b2ae2a3202ab63ca8b72f6ba9354ebcc7afbd2"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.initial_tax_uncertainty",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Camille initially does not know whether the ceiling includes tax; later turns resolve it.",
+      "source_evidence": {
+        "turn_id": "multilingual-1",
+        "start": 9,
+        "end": 98,
+        "quote": "Le devis est de 300 EUR hors taxes. Je ne sais pas encore si notre plafond inclut la TVA."
+      },
+      "anchors": [],
+      "draft_ratings": {
+        "coverage": "fail",
+        "semantic": "n/a",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "fail",
+        "uncertainty": "fail",
+        "provenance": "n/a"
+      },
+      "rationale": "Expanded reference proposes retaining this earlier uncertainty; reviewer must decide relevance for full-conversation summary. Not in old 31-element reference."
+    },
+    {
+      "id": "multilingual.ceiling",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Ceiling is EUR 350 including tax.",
+      "source_evidence": {
+        "turn_id": "multilingual-2",
+        "start": 105,
+        "end": 197,
+        "quote": "Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/1/text",
+          "value_sha256": "8dc21a74c94db70fef4160641b41cdf8e71dda4fbac82d79820120702c2dd81c"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.initial_fit_hypothesis",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Alex initially considers fit possible but explicitly unverified; later total exceeds ceiling.",
+      "source_evidence": {
+        "turn_id": "multilingual-2",
+        "start": 105,
+        "end": 197,
+        "quote": "Il nostro tetto è 350 EUR IVA inclusa. Forse il preventivo rientra, ma dobbiamo verificarlo."
+      },
+      "anchors": [],
+      "draft_ratings": {
+        "coverage": "fail",
+        "semantic": "n/a",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "fail",
+        "uncertainty": "fail",
+        "provenance": "n/a"
+      },
+      "rationale": "Expanded historical hypothesis; relevance to summary is a human decision, not an automatic error assertion."
+    },
+    {
+      "id": "multilingual.gross",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Final total is EUR 360 including tax.",
+      "source_evidence": {
+        "turn_id": "multilingual-3",
+        "start": 204,
+        "end": 330,
+        "quote": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/2/text",
+          "value_sha256": "dea543969ce97a0dd89906c470c8a0219b60e79017a49e65fa03378e31dc5443"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.tax_bases",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "300 versus 360 uses different tax bases, not correction/deletion of net price.",
+      "source_evidence": {
+        "turn_id": "multilingual-3",
+        "start": 204,
+        "end": 330,
+        "quote": "The final total is 360 EUR including tax. That resolves the apparent 300 versus 360 discrepancy; they use different tax bases."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/7/text",
+          "value_sha256": "42094b7044a0d771e37d6212d25d494cb14679b66a77ccc1ea3247f51d39754c"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.excess",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Quote exceeds ceiling by EUR 10.",
+      "source_evidence": {
+        "turn_id": "multilingual-4",
+        "start": 340,
+        "end": 431,
+        "quote": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/3/text",
+          "value_sha256": "45651ac9eb0ff29e4fb3583f31a0401b4c2b898024680647b8f5659b4259ac73"
+        },
+        {
+          "pointer": "/items/6/text",
+          "value_sha256": "45651ac9eb0ff29e4fb3583f31a0401b4c2b898024680647b8f5659b4259ac73"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.no_order_approved",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "No order is currently approved.",
+      "source_evidence": {
+        "turn_id": "multilingual-4",
+        "start": 340,
+        "end": 431,
+        "quote": "Donc le devis dépasse le plafond de 10 EUR. Aucune commande n’est approuvée pour le moment."
+      },
+      "anchors": [],
+      "draft_ratings": {
+        "coverage": "fail",
+        "semantic": "n/a",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "n/a"
+      },
+      "rationale": "Exact source phrase exists only inside item-4 evidence; evidence is not an extracted proposition."
+    },
+    {
+      "id": "multilingual.discount_condition",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "EUR 350 inclusive is a hypothetical discounted target, not an applied discount.",
+      "source_evidence": {
+        "turn_id": "multilingual-5",
+        "start": 438,
+        "end": 530,
+        "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/text",
+          "value_sha256": "fe602aee9baf3c5211180ff94944a398f7ba11f0f349f4da071dbf49691d1c72"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "partial",
+        "semantic": "partial",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "pass"
+      },
+      "rationale": "Conditional text fragment retained, but same candidate asserts discount_applied=true. Conflicting property is assessed as extra claim too."
+    },
+    {
+      "id": "multilingual.order_possible",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Ordering is only possible if the discount brings total to EUR 350.",
+      "source_evidence": {
+        "turn_id": "multilingual-5",
+        "start": 438,
+        "end": 530,
+        "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/8/text",
+          "value_sha256": "0a38579fa202744115a92b2f86b3ca35aabb652475d1a2c4b0c0dadbd1485788"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.not_decided",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "The possible order is explicitly not a decision already made.",
+      "source_evidence": {
+        "turn_id": "multilingual-5",
+        "start": 438,
+        "end": 530,
+        "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+      },
+      "anchors": [],
+      "draft_ratings": {
+        "coverage": "fail",
+        "semantic": "n/a",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "n/a"
+      },
+      "rationale": "Conditional ordering survives, but explicit non-decision is absent from text/properties; do not count evidence-only retention."
+    },
+    {
+      "id": "multilingual.unassigned",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "No one is assigned to request the discount.",
+      "source_evidence": {
+        "turn_id": "multilingual-6",
+        "start": 537,
+        "end": 635,
+        "quote": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/5/text",
+          "value_sha256": "b82c032e2996d27373de34ae8e9dc6b155a91becdee2f618c27defe3eb3515c3"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.delivery_unknown",
+      "case": "multilingual",
+      "kind": "source_proposition",
+      "meaning": "Delivery date remains unknown.",
+      "source_evidence": {
+        "turn_id": "multilingual-6",
+        "start": 537,
+        "end": 635,
+        "quote": "Who will ask for the discount? We have not assigned that task. The delivery date is still unknown."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/5/text",
+          "value_sha256": "b82c032e2996d27373de34ae8e9dc6b155a91becdee2f618c27defe3eb3515c3"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Provisional assistant judgment; inspect original source and full candidate payload."
+    },
+    {
+      "id": "multilingual.discount_applied",
+      "case": "multilingual",
+      "kind": "extra_claim",
+      "meaning": "Discount has already been applied.",
+      "source_evidence": {
+        "turn_id": "multilingual-5",
+        "start": 438,
+        "end": 530,
+        "quote": "Se lo sconto ci porta a 350 EUR tutto incluso, potremmo ordinare. Non è una decisione presa."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/4/properties/discount_applied",
+          "value_sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "n/a",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "fail"
+      },
+      "rationale": "True property is unsupported by the hypothetical source. No keyword/property blacklist may repair the model response."
+    },
+    {
+      "id": "control.conditional_es.good",
+      "case": "control.conditional_es.good",
+      "kind": "control",
+      "meaning": "El envío solo podría salir si se concede el permiso.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 86,
+        "quote": "Si se concede el permiso, el envío podría salir; todavía no se ha concedido."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "c21d86e9f6e6f4271a50beb38ab653c32cdcf351b4bb3338d9f2072c1d67cd9d"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.conditional_es.mutated",
+      "case": "control.conditional_es.mutated",
+      "kind": "control",
+      "meaning": "El envío solo podría salir si se concede el permiso.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 86,
+        "quote": "Si se concede el permiso, el envío podría salir; todavía no se ha concedido."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "80aae00b8bfb82133d53227045a6e072c2382dd18a73eda6106a7114fb67fdb0"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.negation_en.good",
+      "case": "control.negation_en.good",
+      "kind": "control",
+      "meaning": "No booking has been approved.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 61,
+        "quote": "No booking was approved; approval is still pending."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "30a3c5971a242dc7e870a9e93d3e84dca8987f28d062e802c3dd39a7fec8c5cc"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.negation_en.mutated",
+      "case": "control.negation_en.mutated",
+      "kind": "control",
+      "meaning": "No booking has been approved.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 61,
+        "quote": "No booking was approved; approval is still pending."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "36efd972463eab2cf95ddda96aea967bf21f4fe3b49e90be3b6b8e7723ad907f"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.actual_discount_fr.good",
+      "case": "control.actual_discount_fr.good",
+      "kind": "control",
+      "meaning": "A discount of 8% was applied; EUR 92 was paid.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 71,
+        "quote": "La remise de 8 % a été appliquée. Le montant payé est 92 EUR."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "52d77d1109a209803a81e2a0e2fc052614f25589535e8390d47b05125a947097"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.actual_discount_fr.mutated",
+      "case": "control.actual_discount_fr.mutated",
+      "kind": "control",
+      "meaning": "A discount of 8% was applied; EUR 92 was paid.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 71,
+        "quote": "La remise de 8 % a été appliquée. Le montant payé est 92 EUR."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "595a3d813ce387ede4297deee52af5a6d9557a893eda7751ea565400c41006b6"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.collective_it.good",
+      "case": "control.collective_it.good",
+      "kind": "control",
+      "meaning": "Le tre delegate hanno deciso insieme la pausa.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 84,
+        "quote": "Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "21a212a98e7b3e8440d32f364421dcb8a137d61ba2abef293f9d372d8bbefc27"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.collective_it.mutated",
+      "case": "control.collective_it.mutated",
+      "kind": "control",
+      "meaning": "Le tre delegate hanno deciso insieme la pausa.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 84,
+        "quote": "Le tre delegate hanno votato insieme la pausa. Uma riferisce il risultato."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "a6aa6d50c762fc13db9b71ea0e9d206efe8342fe4b6a0b711f71d1347267b8fe"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "fail",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.individual_en.good",
+      "case": "control.individual_en.good",
+      "kind": "control",
+      "meaning": "Ren authorized the release; no committee vote occurred.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 69,
+        "quote": "I, Ren, authorized the release; the committee did not vote."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "94b10ad5f235d538dccb97a9568acba23c9683849f96f6fc823b2815982a5cdc"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "pass",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.individual_en.mutated",
+      "case": "control.individual_en.mutated",
+      "kind": "control",
+      "meaning": "Ren authorized the release; no committee vote occurred.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 69,
+        "quote": "I, Ren, authorized the release; the committee did not vote."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "75f91094e5757517d45cc8bc944df070418f17d8a3ef5cdbda0091e67a3157a9"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "fail",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.lifecycle_de.good",
+      "case": "control.lifecycle_de.good",
+      "kind": "control",
+      "meaning": "The test was proposed, then adopted, then suspended; it has not resumed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 142,
+        "quote": "Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "67a36cfbb8bb97ad7c9220239b1f122adbc84d6e996bf416989f98ee120ba369"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.lifecycle_de.mutated",
+      "case": "control.lifecycle_de.mutated",
+      "kind": "control",
+      "meaning": "The test was proposed, then adopted, then suspended; it has not resumed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 142,
+        "quote": "Am 2030-05-01 wurde der Test vorgeschlagen, am 2030-05-02 angenommen und am 2030-05-03 ausgesetzt. Er wurde nicht wiederaufgenommen."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "52663d987b3fe8657e7cc77941d8fcd0b786b0e0be8360dbc1ccca65c759e37f"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "fail",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.future_intent_en.good",
+      "case": "control.future_intent_en.good",
+      "kind": "control",
+      "meaning": "A future ride is intended, conditional on dry weather, and has not happened.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 84,
+        "quote": "I intend to cycle next Friday if it is dry. I have not done that ride yet."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "d4ea9056d88540e3ed7d60913e52b0a6dd19399a37b6c1c40e5352c3a01bce54"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.future_intent_en.mutated",
+      "case": "control.future_intent_en.mutated",
+      "kind": "control",
+      "meaning": "A future ride is intended, conditional on dry weather, and has not happened.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 84,
+        "quote": "I intend to cycle next Friday if it is dry. I have not done that ride yet."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "265071c36e906f362d58d2fd9b558d7f534e63c2cc4eb51c0b4251043aab1827"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "fail",
+        "uncertainty": "fail",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.past_completed_it.good",
+      "case": "control.past_completed_it.good",
+      "kind": "control",
+      "meaning": "La visita è già avvenuta.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 74,
+        "quote": "La visita è avvenuta ieri. Non è una semplice intenzione futura."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "5815b3695ec69dae47388ada9dcc440f6b0c423f6688839ddab7b161a40dcfcc"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "pass",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.past_completed_it.mutated",
+      "case": "control.past_completed_it.mutated",
+      "kind": "control",
+      "meaning": "La visita è già avvenuta.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 74,
+        "quote": "La visita è avvenuta ieri. Non è una semplice intenzione futura."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "5479975933a5e978f52d4238ce2010774c31c6bca001468991f94648c4e6e5e3"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "fail",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.uncertain_fr.good",
+      "case": "control.uncertain_fr.good",
+      "kind": "control",
+      "meaning": "Sam may attend; attendance is unconfirmed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 73,
+        "quote": "Peut-être que Sam participera; sa présence n’est pas confirmée."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "c1a81f49789036bbff8f35921f5eb23c592a9edd5da9bfdc85a6284c11befd6d"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "pass",
+        "temporality": "n/a",
+        "uncertainty": "pass",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.uncertain_fr.mutated",
+      "case": "control.uncertain_fr.mutated",
+      "kind": "control",
+      "meaning": "Sam may attend; attendance is unconfirmed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 73,
+        "quote": "Peut-être que Sam participera; sa présence n’est pas confirmée."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "13f99d4271cefe28c315babad77d0ece2ac73ff2b84b08ea9a6a5c1a64ebad4f"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "fail",
+        "attribution": "n/a",
+        "negation": "fail",
+        "temporality": "n/a",
+        "uncertainty": "fail",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.provenance_unicode.good",
+      "case": "control.provenance_unicode.good",
+      "kind": "control",
+      "meaning": "The café reopening is announced, not completed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 87,
+        "quote": "The café reopening was announced, not completed: é, é and 🙂 remain distinct."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "1e4a7bcdc1977742199b1dd23f32708e673f6dbf9534b5ea4f92b35bf55729da"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "pass"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    },
+    {
+      "id": "control.provenance_unicode.mutated",
+      "case": "control.provenance_unicode.mutated",
+      "kind": "control",
+      "meaning": "The café reopening is announced, not completed.",
+      "source_evidence": {
+        "turn_id": "focus",
+        "start": 10,
+        "end": 87,
+        "quote": "The café reopening was announced, not completed: é, é and 🙂 remain distinct."
+      },
+      "anchors": [
+        {
+          "pointer": "/items/0/text",
+          "value_sha256": "1e4a7bcdc1977742199b1dd23f32708e673f6dbf9534b5ea4f92b35bf55729da"
+        }
+      ],
+      "draft_ratings": {
+        "coverage": "pass",
+        "semantic": "pass",
+        "attribution": "n/a",
+        "negation": "n/a",
+        "temporality": "n/a",
+        "uncertainty": "n/a",
+        "provenance": "fail"
+      },
+      "rationale": "Authored positive/mutated control, never an LLM result. Scope: one focus proposition; neutral turns are harness scaffolding. Review both expected meaning and ratings independently."
+    }
+  ],
+  "limits": [
+    "Provisional manually authored judgments; not independent human validation.",
+    "Source propositions expand/split the old 31 bundled expectations; counts are not interchangeable.",
+    "Extra-claim inventory is targeted, not exhaustive model-claim precision.",
+    "Contextual provenance judgments differ from deterministic locator accuracy.",
+    "No semantic text matching or ontology is used by the scorer."
+  ]
+}

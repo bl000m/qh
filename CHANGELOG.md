@@ -9,6 +9,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-33 offline proposition benchmark, separate draft metrics and blank independent
+  review packet; synthetic positive/mutated controls expose remaining semantic
+  gaps. Complete literal temporal-evidence tokens now reject timestamp prefixes
+  atomically. No claim of improved LLM comprehension or human-validated accuracy;
+  candidate prompt and bounded future protocol remain unexecuted.
+
 - QH-8 explicit offline citation derivation: unique exact quote matches in original
   Unicode turn spans, separate hashed audit/checkpoint, unchanged strict whole-batch
   publication and no live-provider change. Missing/ambiguous/foreign evidence fails

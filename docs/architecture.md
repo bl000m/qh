@@ -243,3 +243,15 @@ rejects the whole batch; source access is authorized before resolution. This doe
 not repair semantic errors, replace canonical SQL validation, change the live provider
 or introduce partial publication. Native reconciliation/rebuild remains the QH-30
 responsibility; semantic reconciliation and candidate staging remain future work.
+
+## QH-33 offline evaluation boundary
+
+`scripts/evaluate_qh33.py` is offline benchmark/review tooling, outside canonical
+publication and provider generation. It accounts for versioned, explicitly judged
+propositions, verifies source/payload identities and emits pending review material.
+It is not a semantic classifier, ontology or automatic approval gate. The existing
+extractor's literal temporal-evidence check requires a whole timestamp occurrence,
+not a prefix of another offset/token; this proves lexical support only. Unknown
+bounds, proposed state, whole-batch publication and human governance remain intact.
+The candidate prompt is documentary/opt-in future experiment input, not the live
+default. See [QH-33](qh33-semantic-evaluation.md) for measured limits and review gates.

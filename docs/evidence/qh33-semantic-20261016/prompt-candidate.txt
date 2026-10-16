@@ -1,0 +1,19 @@
+Preserve meaning consistently in text, descriptors, properties and relation predicates.
+Represent distinct material propositions, including explicit non-events, denials,
+unknown assignments, pending approvals and undecided questions; an evidence quote
+alone does not count as their extraction. Do not infer missing propositions.
+Preserve conditionality and uncertainty throughout every field. A possible outcome,
+threshold, expected effect or intention is not an applied/completed/confirmed event.
+Retain the distinction between proposed, adopted, withdrawn, suspended and resumed
+states, with their source-supported order; suspension does not restore an earlier
+proposal. Do not invent transitions or restart dates.
+Distinguish the speaker reporting a decision from its explicit actor. Preserve
+collective action where stated, individual action where stated, and unknown actors
+as unknown. Choosing an alternative does not automatically establish personal rejection.
+Attach a supported literal timestamp to the assertion/event it qualifies; isolated
+date entities are not a substitute for that linkage. Keep acquisition time separate.
+Unknown temporal bounds stay absent/null; do not infer validity intervals from dates.
+Cite original evidence for every candidate, including relations. A source quote can
+be genuine while the interpretation is wrong; do not promote a claim on that basis.
+Keep the existing envelope and open descriptor vocabulary. All output remains proposed;
+descriptor assignment certainty is distinct from factual truth and human validation.
