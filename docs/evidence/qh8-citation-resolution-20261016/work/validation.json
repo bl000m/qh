@@ -1,0 +1,28 @@
+{
+  "case": "work",
+  "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+  "scope": "253a33ba-4925-4300-be4c-4f507685ff49",
+  "raw_validation": "PASS",
+  "original_raw_validation": "FAIL",
+  "original_validation_error": {
+    "type": "ValueError",
+    "message": "Evidence must exactly match the authorized source span"
+  },
+  "citation_resolution": "PASS",
+  "corrected_spans": 5,
+  "checkpoint_replay": "PASS",
+  "pipeline": "PASS",
+  "revision_ids": [
+    "304018d7-2b12-542a-bb9e-f3ce05691d98",
+    "ad8764c1-4309-59a8-8f14-322a1f4ce2ce",
+    "d54354ad-6ec9-5a65-adb3-ad2c28248fe6",
+    "a3728e60-5e12-5bdf-91a8-24931117918e",
+    "503a72aa-43c8-5372-b71b-c52ca8a2e66a",
+    "dcef8b5e-aa38-5dd4-99a7-2946ddf31504",
+    "e67ad67b-f8f5-5ee1-af3a-4b96e3c11b76",
+    "79fac10d-5dbc-58fa-b69e-36c13e206a85",
+    "176d79bf-099f-58d3-9057-53620e78be6d"
+  ],
+  "items": 9,
+  "offline_provider_replays": 1
+}

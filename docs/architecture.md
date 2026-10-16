@@ -220,8 +220,9 @@ flowchart LR
     S --> W[Existing worker and rebuildable Neo4j projection]
 ```
 
-Solid edges describe the existing internal path plus this resolver increment;
-dotted edges are the approved future input, not an implemented public interface.
+Solid edges describe the trusted internal QH-8 experiment plus this resolver
+increment, not a released conversation UI or public write grant. Dotted edges
+are the approved future input, not an implemented public interface.
 QH-client extraction uses outbound `LLMProvider`; an external submission is an
 inbound application contract owned by `app/understanding`, documented in ADR 0004
 and distinct from generation. It need not carry the entire external conversation

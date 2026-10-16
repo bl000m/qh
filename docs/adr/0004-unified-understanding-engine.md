@@ -61,8 +61,8 @@ submit, disclose to an LLM or act across spaces. Explicit operation authorizatio
 must precede protected reads, processing and disclosure. MCP grants no extra rights;
 external clients cannot select owner, canonical IDs, trusted schema, validation
 actor/state or confirmed-current pointer. Every accepted AI proposal remains
-`proposed`. Only the existing explicitly authorized human-validation workflow may
-create a confirmed revision; this PR adds no such workflow.
+`proposed`. Only explicit, authorized human validation may create a confirmed revision under
+the existing canonical constraints; this PR implements no approval workflow.
 
 ## Future inbound application contract — documentary only
 

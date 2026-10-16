@@ -1,0 +1,33 @@
+{
+  "case": "evolving",
+  "source_revision_id": "3f2a8b04-ebe5-5f75-9173-f4cb4f45172b",
+  "scope": "b43538b0-5831-4863-852f-2646b93d5a94",
+  "raw_validation": "PASS",
+  "original_raw_validation": "FAIL",
+  "original_validation_error": {
+    "type": "ValueError",
+    "message": "Evidence must exactly match the authorized source span"
+  },
+  "citation_resolution": "PASS",
+  "corrected_spans": 6,
+  "checkpoint_replay": "PASS",
+  "pipeline": "PASS",
+  "revision_ids": [
+    "51f82637-dd93-5a18-8d40-4a4a581fccf1",
+    "402c2d97-a717-51f2-8943-54a2773cea2f",
+    "2b87dcb2-7f7f-57da-b740-cc24ee1c4545",
+    "2904717e-c06a-58e2-b353-04f082807b58",
+    "7b961214-fd62-54af-a6de-a6fbb596a335",
+    "a59f5ad0-d1cc-5459-838d-863fd9fdcadf",
+    "cf6de08f-a523-5666-a29b-9f960b82ac43",
+    "4c6086d5-8fad-5022-9024-8d75301141a7",
+    "688d06aa-c1e2-5fe3-b514-1011485be259",
+    "d16fbe39-d469-5769-b2fb-004e9fedf779",
+    "2dde1801-4d89-5b05-b91f-57c7afc5b29c",
+    "60b2f305-17c5-5372-8a1b-2de0e46a11d0",
+    "7aea4246-cc84-539a-a202-b580332c3b2f",
+    "656bc658-7709-56c7-b52c-5f81d15fcbc8"
+  ],
+  "items": 14,
+  "offline_provider_replays": 1
+}

@@ -1,0 +1,492 @@
+{
+  "status": "PASS",
+  "export": {
+    "context_ids": [
+      "253a33ba-4925-4300-be4c-4f507685ff49"
+    ],
+    "source_revisions": [
+      {
+        "id": "2ec42859-b01c-534c-b7ca-22428aad5895",
+        "created_at": "2026-10-16T07:33:05.297105+00:00",
+        "source_id": "d11c581e-37df-5bd1-8bda-14b0b5884d2e",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": "Nora: L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.\nEli: Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.\nNora: Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.\nEli: Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.\nNora: Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.\n",
+        "origin": {
+          "kind": "conversation",
+          "turns": [
+            {
+              "end": 115,
+              "start": 6,
+              "speaker": "Nora",
+              "turn_id": "work-1"
+            },
+            {
+              "end": 230,
+              "start": 121,
+              "speaker": "Eli",
+              "turn_id": "work-2"
+            },
+            {
+              "end": 332,
+              "start": 237,
+              "speaker": "Nora",
+              "turn_id": "work-3"
+            },
+            {
+              "end": 438,
+              "start": 338,
+              "speaker": "Eli",
+              "turn_id": "work-4"
+            },
+            {
+              "end": 549,
+              "start": 445,
+              "speaker": "Nora",
+              "turn_id": "work-5"
+            }
+          ],
+          "metadata": {
+            "synthetic": true,
+            "evaluation_case": "work"
+          },
+          "acquired_at": "2026-10-15T18:30:00Z",
+          "conversation_id": "unseen-mistral-work"
+        }
+      }
+    ],
+    "understanding_item_revisions": [
+      {
+        "id": "176d79bf-099f-58d3-9057-53620e78be6d",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "ffbd5f0c-64fb-514a-86b0-30cdcad75793",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Resta aperta la decisione su chi autorizzerà l’accesso al pannello.",
+          "citations": [
+            {
+              "end": 549,
+              "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.",
+              "start": 445,
+              "turn_id": "work-5",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": {
+          "source_item_id": "4fbe08fc-274b-54eb-b732-f92e94a983e9",
+          "source_revision_id": "503a72aa-43c8-5372-b71b-c52ca8a2e66a",
+          "target_item_id": "1e69bd02-c526-54ab-9a91-fd89aa700dc0",
+          "target_revision_id": "ad8764c1-4309-59a8-8f14-322a1f4ce2ce",
+          "predicate": "decisione_aperta_su"
+        }
+      },
+      {
+        "id": "304018d7-2b12-542a-bb9e-f3ce05691d98",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "52a57401-59ed-50f3-b6a5-55a55290a012",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.",
+          "citations": [
+            {
+              "end": 115,
+              "quote": "L’obiettivo del progetto Faro è ridurre del 20% il tempo tra richiesta e assegnazione, senza cambiare il CRM.",
+              "start": 6,
+              "turn_id": "work-1",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          },
+          "descriptors": [
+            {
+              "value": "obiettivo del progetto Faro",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": null
+      },
+      {
+        "id": "503a72aa-43c8-5372-b71b-c52ca8a2e66a",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "4fbe08fc-274b-54eb-b732-f92e94a983e9",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.",
+          "citations": [
+            {
+              "end": 549,
+              "quote": "Resta aperto chi autorizzerà l’accesso al pannello. Non abbiamo ancora scelto un responsabile sicurezza.",
+              "start": 445,
+              "turn_id": "work-5",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          },
+          "descriptors": [
+            {
+              "value": "decisione aperta su accesso al pannello",
+              "certainty": "asserted"
+            },
+            {
+              "value": "responsabile sicurezza non scelto",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": null
+      },
+      {
+        "id": "79fac10d-5dbc-58fa-b69e-36c13e206a85",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "81e95822-c2d6-5083-86b9-1f7bbd896d9f",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "I vincoli includono budget massimo e scadenza.",
+          "citations": [
+            {
+              "end": 438,
+              "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.",
+              "start": 338,
+              "turn_id": "work-4",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": {
+          "source_item_id": "5f642057-7c3c-5c9b-b5be-b75f6d880ba5",
+          "source_revision_id": "a3728e60-5e12-5bdf-91a8-24931117918e",
+          "target_item_id": "52a57401-59ed-50f3-b6a5-55a55290a012",
+          "target_revision_id": "304018d7-2b12-542a-bb9e-f3ce05691d98",
+          "predicate": "definisce_vincoli_per"
+        }
+      },
+      {
+        "id": "a3728e60-5e12-5bdf-91a8-24931117918e",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "5f642057-7c3c-5c9b-b5be-b75f6d880ba5",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.",
+          "citations": [
+            {
+              "end": 438,
+              "quote": "Vincoli: budget massimo 300 EUR e nessuna esportazione di dati dal CRM. La scadenza è il 2026-11-20.",
+              "start": 338,
+              "turn_id": "work-4",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          },
+          "properties": {
+            "budget": "300 EUR",
+            "scadenza": "2026-11-20"
+          },
+          "descriptors": [
+            {
+              "value": "vincoli del progetto",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": null
+      },
+      {
+        "id": "ad8764c1-4309-59a8-8f14-322a1f4ce2ce",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "1e69bd02-c526-54ab-9a91-fd89aa700dc0",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.",
+          "citations": [
+            {
+              "end": 230,
+              "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.",
+              "start": 121,
+              "turn_id": "work-2",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          },
+          "descriptors": [
+            {
+              "value": "decisione pilota",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": null
+      },
+      {
+        "id": "d54354ad-6ec9-5a65-adb3-ad2c28248fe6",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "63a163cb-7461-5c54-8ac4-9b6eae3c31ec",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.",
+          "citations": [
+            {
+              "end": 332,
+              "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.",
+              "start": 237,
+              "turn_id": "work-3",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          },
+          "descriptors": [
+            {
+              "value": "ipotesi su pannello condiviso",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "item",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": null
+      },
+      {
+        "id": "dcef8b5e-aa38-5dd4-99a7-2946ddf31504",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "39d768f3-86d1-5594-bfb6-b32a0d5b534c",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Il team Aster gestirà il pannello delle assegnazioni.",
+          "citations": [
+            {
+              "end": 230,
+              "quote": "Decidiamo un pilota di due settimane con il team Aster. Il team Aster gestirà il pannello delle assegnazioni.",
+              "start": 121,
+              "turn_id": "work-2",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": {
+          "source_item_id": "1e69bd02-c526-54ab-9a91-fd89aa700dc0",
+          "source_revision_id": "ad8764c1-4309-59a8-8f14-322a1f4ce2ce",
+          "target_item_id": "52a57401-59ed-50f3-b6a5-55a55290a012",
+          "target_revision_id": "304018d7-2b12-542a-bb9e-f3ce05691d98",
+          "predicate": "gestisce_pannello_per"
+        }
+      },
+      {
+        "id": "e67ad67b-f8f5-5ee1-af3a-4b96e3c11b76",
+        "created_at": "2026-10-16T07:33:05.639088+00:00",
+        "item_id": "6b67968f-9a69-52ed-ab90-7b3f158cb23d",
+        "context_space_id": "253a33ba-4925-4300-be4c-4f507685ff49",
+        "revision_no": 1,
+        "content": {
+          "text": "Un pannello condiviso è ipotizzato per ridurre i passaggi duplicati.",
+          "citations": [
+            {
+              "end": 332,
+              "quote": "Ipotizzo che un pannello condiviso riduca i passaggi duplicati; non abbiamo ancora misurazioni.",
+              "start": 237,
+              "turn_id": "work-3",
+              "source_revision_id": "2ec42859-b01c-534c-b7ca-22428aad5895"
+            }
+          ],
+          "extraction": {
+            "key": "mistral-citation-resolution-v1",
+            "input_sha256": "c51ed035186f686671d455d3180418836e764ac0504c235e12b662c71d2a97a1"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "based_on_revision_id": null,
+        "current_revision_id": null,
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "fact_from": null,
+        "fact_to": null,
+        "valid_from": null,
+        "valid_to": null,
+        "structural_kind": "relation",
+        "provenance": [
+          "2ec42859-b01c-534c-b7ca-22428aad5895"
+        ],
+        "relation": {
+          "source_item_id": "63a163cb-7461-5c54-8ac4-9b6eae3c31ec",
+          "source_revision_id": "d54354ad-6ec9-5a65-adb3-ad2c28248fe6",
+          "target_item_id": "52a57401-59ed-50f3-b6a5-55a55290a012",
+          "target_revision_id": "304018d7-2b12-542a-bb9e-f3ce05691d98",
+          "predicate": "ipotizza_misura_per"
+        }
+      }
+    ]
+  },
+  "descriptor_revision_ids": [
+    "304018d7-2b12-542a-bb9e-f3ce05691d98",
+    "503a72aa-43c8-5372-b71b-c52ca8a2e66a",
+    "a3728e60-5e12-5bdf-91a8-24931117918e",
+    "ad8764c1-4309-59a8-8f14-322a1f4ce2ce",
+    "d54354ad-6ec9-5a65-adb3-ad2c28248fe6"
+  ],
+  "sync_state": "ready",
+  "foreign_subject_denied": true
+}

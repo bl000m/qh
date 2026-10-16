@@ -1,0 +1,20 @@
+{
+  "case": "personal",
+  "source_revision_id": "83253202-fb5d-5073-a27a-ab83e117f09c",
+  "scope": "ee26e114-78ed-45f4-8f90-4154659973cc",
+  "raw_validation": "PASS",
+  "original_raw_validation": "PASS",
+  "citation_resolution": "PASS",
+  "corrected_spans": 0,
+  "checkpoint_replay": "PASS",
+  "pipeline": "PASS",
+  "revision_ids": [
+    "4432efa1-cd91-5b07-a1fa-91fca35aab47",
+    "aae2dc86-87e7-5ffc-ba23-bec08dda59f3",
+    "3b0bea0e-c065-5237-a065-7adf748734d1",
+    "6965b148-d543-5176-9c51-1626b163e44c",
+    "3287c071-7b2d-5b1e-a4e4-9036afc461a4"
+  ],
+  "items": 5,
+  "offline_provider_replays": 1
+}

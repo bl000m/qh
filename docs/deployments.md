@@ -5,6 +5,19 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## Offline follow-up artifact — QH-8 citations, 2026-10-16 (not deployed)
+
+The owner authorized only frozen-capture offline resolution and an architectural
+record, with no new paid inference or persistent QH change. Exact source/OCI revision
+`1446a26e9821470f8619c08d3dba40e0662034ed`, tag
+`qh8-citations:1446a26e9821470f8619c08d3dba40e0662034ed`, immutable image ID
+`sha256:67bcad2b7160102652878e009bda29bc25d1e5484bb5878b21387d7d442b8a82`.
+Built from Git archive without ignored configuration; test/replay runs have no
+application source bind mount or provider key, only disposable SQL/Neo4j targets.
+No schema version/migration, service deployment or model installation. Subsequent
+report/evidence commits do not change executable code or this image identity.
+[Follow-up report](qh8-citation-followup.md).
+
 ## Experiment artifact only — QH-8, 2026-10-16 (not deployed)
 
 Owner-authorized four synthetic Mistral extractions ran on disposable test SQL/Neo4j.
