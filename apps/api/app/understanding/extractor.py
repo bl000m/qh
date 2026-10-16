@@ -106,7 +106,7 @@ def timestamp(value):
 def literal_timestamp(value, quote):
     """A complete literal token; no timestamp-prefix or semantic entailment claim."""
     return (
-        re.search(r"(?<!\w)" + re.escape(value) + r"(?![\w:+-]|\.\d)", quote)
+        re.search(r"(?<![\w+-])" + re.escape(value) + r"(?![\w:+-]|[.,]\d)", quote)
         is not None
     )
 

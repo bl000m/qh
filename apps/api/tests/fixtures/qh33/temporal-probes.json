@@ -1,15 +1,104 @@
 [
-  {"id":"timezone_seconds_prefix","source":"2031-04-03T10:00:00+01:00:30","bound":"2031-04-03T10:00:00+01:00","valid":false},
-  {"id":"negative_timezone_seconds_prefix","source":"2029-12-01T12:04:09-03:30:15","bound":"2029-12-01T12:04:09-03:30","valid":false},
-  {"id":"fractional_timezone_prefix","source":"2032-02-29T08:10:00+04:00:00.5","bound":"2032-02-29T08:10:00+04:00","valid":false},
-  {"id":"long_year_token","source":"12031-04-03T10:00:00Z","bound":"2031-04-03T10:00:00Z","valid":false},
-  {"id":"word_suffix","source":"2031-04-03T10:00:00Zebra","bound":"2031-04-03T10:00:00Z","valid":false},
-  {"id":"word_prefix","source":"id2031-04-03T10:00:00Z","bound":"2031-04-03T10:00:00Z","valid":false},
-  {"id":"offset_digit_suffix","source":"2031-04-03T10:00:00+01:001","bound":"2031-04-03T10:00:00+01:00","valid":false},
-  {"id":"full_zulu","source":"2031-04-03T10:00:00Z","bound":"2031-04-03T10:00:00Z","valid":true},
-  {"id":"full_offset_seconds","source":"2031-04-03T10:00:00+01:00:30","bound":"2031-04-03T10:00:00+01:00:30","valid":true},
-  {"id":"full_fractional_offset","source":"2032-02-29T08:10:00+04:00:00.5","bound":"2032-02-29T08:10:00+04:00:00.5","valid":true},
-  {"id":"punctuation_boundary","source":"[2029-12-01T12:04:09-03:30].","bound":"2029-12-01T12:04:09-03:30","valid":true},
-  {"id":"explicit_numeric_offset","source":"2028-06-15 06:07:08.123+05:30","bound":"2028-06-15 06:07:08.123+05:30","valid":true},
-  {"id":"different_literal","source":"2031-04-03T10:00:00Z","bound":"2031-04-03T11:00:00Z","valid":false}
+  {
+    "id": "timezone_seconds_prefix",
+    "source": "2031-04-03T10:00:00+01:00:30",
+    "bound": "2031-04-03T10:00:00+01:00",
+    "valid": false
+  },
+  {
+    "id": "negative_timezone_seconds_prefix",
+    "source": "2029-12-01T12:04:09-03:30:15",
+    "bound": "2029-12-01T12:04:09-03:30",
+    "valid": false
+  },
+  {
+    "id": "fractional_timezone_prefix",
+    "source": "2032-02-29T08:10:00+04:00:00.5",
+    "bound": "2032-02-29T08:10:00+04:00",
+    "valid": false
+  },
+  {
+    "id": "long_year_token",
+    "source": "12031-04-03T10:00:00Z",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": false
+  },
+  {
+    "id": "word_suffix",
+    "source": "2031-04-03T10:00:00Zebra",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": false
+  },
+  {
+    "id": "word_prefix",
+    "source": "id2031-04-03T10:00:00Z",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": false
+  },
+  {
+    "id": "offset_digit_suffix",
+    "source": "2031-04-03T10:00:00+01:001",
+    "bound": "2031-04-03T10:00:00+01:00",
+    "valid": false
+  },
+  {
+    "id": "full_zulu",
+    "source": "2031-04-03T10:00:00Z",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": true
+  },
+  {
+    "id": "full_offset_seconds",
+    "source": "2031-04-03T10:00:00+01:00:30",
+    "bound": "2031-04-03T10:00:00+01:00:30",
+    "valid": true
+  },
+  {
+    "id": "full_fractional_offset",
+    "source": "2032-02-29T08:10:00+04:00:00.5",
+    "bound": "2032-02-29T08:10:00+04:00:00.5",
+    "valid": true
+  },
+  {
+    "id": "punctuation_boundary",
+    "source": "[2029-12-01T12:04:09-03:30].",
+    "bound": "2029-12-01T12:04:09-03:30",
+    "valid": true
+  },
+  {
+    "id": "explicit_numeric_offset",
+    "source": "2028-06-15 06:07:08.123+05:30",
+    "bound": "2028-06-15 06:07:08.123+05:30",
+    "valid": true
+  },
+  {
+    "id": "different_literal",
+    "source": "2031-04-03T10:00:00Z",
+    "bound": "2031-04-03T11:00:00Z",
+    "valid": false
+  },
+  {
+    "id": "comma_fractional_timezone_prefix",
+    "source": "2031-04-03T10:00:00+04:00,5",
+    "bound": "2031-04-03T10:00:00+04:00",
+    "valid": false
+  },
+  {
+    "id": "signed_year_token",
+    "source": "-2031-04-03T10:00:00Z",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": false
+  },
+  {
+    "id": "full_comma_fractional_offset",
+    "source": "2031-04-03T10:00:00+04:00,5",
+    "bound": "2031-04-03T10:00:00+04:00,5",
+    "valid": true
+  },
+  {
+    "id": "label_colon_boundary",
+    "source": "at:2031-04-03T10:00:00Z",
+    "bound": "2031-04-03T10:00:00Z",
+    "valid": true
+  }
 ]

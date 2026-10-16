@@ -19,7 +19,14 @@ def probes():
     return module.probe_engine(b, cases, "test"), cases
 
 
-@pytest.mark.parametrize("index", range(13))
+@pytest.mark.parametrize(
+    "index",
+    range(
+        len(
+            module.read_json(ROOT / "apps/api/tests/fixtures/qh33/temporal-probes.json")
+        )
+    ),
+)
 def test_complete_literal_timestamps_and_atomic_rejection(probes, index):
     result = probes[0]["temporal_literal_probes"][index]
     assert result["accepted"] is result["expected_accept"]
