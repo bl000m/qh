@@ -32,7 +32,8 @@ from adapters.postgres.security import PostgresSecurityReader
 from adapters.postgres.semantic_profiles import register_generic_profiles
 from app.core.models import ContextRequest, ContextQuery
 from app.policy.owner import OwnerPolicyService
-from app.understanding.extractor import UnderstandingExtractor, decode_output
+from app.understanding.extractor import UnderstandingExtractor, decode_output, digest
+from app.understanding.citations import VERSION as CITATION_RESOLVER_VERSION
 
 FIXTURES = ROOT / "apps/api/tests/fixtures"
 
@@ -119,7 +120,10 @@ def execute(
     resume_from=None,
     case_names=None,
     reviewed_resumption=False,
+    resolve_citations=False,
 ):
+    if resolve_citations and (live or replay_from is None):
+        raise ValueError("Citation derivation requires offline capture replay")
     expected = {
         "POSTGRES_HOST": "qh30-sql-test",
         "POSTGRES_DB": "qh30_admin",
@@ -288,8 +292,60 @@ def execute(
                         "request_sha256": request_hash(provider.last_request),
                     }
                     dump(case_dir / "raw.json", capture)
+            if resolve_citations:
+                result["original_raw_validation"] = result["raw_validation"]
+                if "validation_error" in result:
+                    result["original_validation_error"] = result.pop("validation_error")
+                original = dict(
+                    version=1,
+                    context_space_id=scope,
+                    source_revision_id=ref,
+                    input_sha256=extractor.source_hash(source),
+                    extraction_key="mistral-initial-v1",
+                    output=decode_output(
+                        capture["response"]["choices"][0]["message"]["content"]
+                    ),
+                )
+                try:
+                    cp, audit = asyncio.run(
+                        extractor.resolve_citations(
+                            subject_id=owner,
+                            checkpoint=original,
+                            extraction_key="mistral-citation-resolution-v1",
+                        )
+                    )
+                    dump(case_dir / "derived-output.json", cp["output"])
+                    dump(case_dir / "citation-resolution.json", audit)
+                    result.update(
+                        raw_validation="PASS",
+                        citation_resolution="PASS",
+                        corrected_spans=sum(r["changed"] for r in audit["citations"]),
+                    )
+                except ValueError as exc:
+                    cp = None
+                    issues = getattr(exc, "issues", ())
+                    dump(
+                        case_dir / "citation-resolution.json",
+                        dict(
+                            status="REJECTED",
+                            version=CITATION_RESOLVER_VERSION,
+                            original_output_sha256=digest(original["output"]),
+                            derived_output_sha256=None,
+                            input_sha256=original["input_sha256"],
+                            error_type=type(exc).__name__,
+                            message=str(exc),
+                            issues=issues,
+                        ),
+                    )
+                    result.update(raw_validation="FAIL", citation_resolution="REJECTED")
             if cp is not None:
                 ids = asyncio.run(extractor.publish(subject_id=owner, checkpoint=cp))
+                if resolve_citations:
+                    replayed_ids = asyncio.run(
+                        extractor.publish(subject_id=owner, checkpoint=cp)
+                    )
+                    assert replayed_ids == ids
+                    result["checkpoint_replay"] = "PASS"
                 pipeline = collect_pipeline(runtime, repo, owner, scope, ids)
                 dump(case_dir / "canonical.json", pipeline)
                 result.update(pipeline="PASS", revision_ids=list(ids), items=len(ids))
@@ -297,6 +353,17 @@ def execute(
             else:
                 assert not repo.read_snapshot((scope,))["understanding_item_revisions"]
                 result.update(pipeline="NOT PUBLISHED", items=0, source_retained=True)
+                if resolve_citations:
+                    rejected_state = repo.sync_status((scope,))[0]
+                    assert (
+                        rejected_state["desired_version"]
+                        == rejected_state["applied_version"]
+                        == 0
+                    )
+                    result["rejected_scope_versions"] = dict(desired=0, applied=0)
+            if resolve_citations:
+                assert provider.calls == 1
+                result["offline_provider_replays"] = provider.calls
             dump(case_dir / "validation.json", result)
             results.append(result)
             dump(out / "results.json", results)
@@ -362,6 +429,11 @@ if __name__ == "__main__":
     parser.add_argument("--resume-from", type=Path)
     parser.add_argument("--case", action="append", dest="case_names")
     parser.add_argument("--reviewed-resumption", action="store_true")
+    parser.add_argument(
+        "--resolve-citations",
+        action="store_true",
+        help="Derive exact locators from frozen captures; offline replay only",
+    )
     args = parser.parse_args()
     try:
         if (args.resume_from or args.reviewed_resumption) and not args.live:
@@ -373,6 +445,7 @@ if __name__ == "__main__":
             resume_from=args.resume_from,
             case_names=args.case_names,
             reviewed_resumption=args.reviewed_resumption,
+            resolve_citations=args.resolve_citations,
         )
     except Exception as exc:
         print("Experiment stopped:", type(exc).__name__, file=sys.stderr)

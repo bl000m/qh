@@ -40,7 +40,7 @@ def main():
         "-q", "-x", "--tb=short", "-p", "no:cacheprovider",
         "-o", "faulthandler_timeout=60",
         "tests/test_mistral.py", "tests/test_mistral_pipeline.py",
-        "tests/test_understanding.py", "tests/test_understanding_pipeline.py",
+        "tests/test_understanding.py", "tests/test_citations.py", "tests/test_understanding_pipeline.py",
         "tests/test_native_semantics_sql.py", "tests/test_generic_semantics.py",
         "tests/test_projection_outbox.py",
         "tests/test_canonical_graph_pipeline.py", "tests/test_native_runtime.py",

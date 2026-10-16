@@ -16,6 +16,7 @@ from uuid import UUID, uuid5
 from app.core.models import GenerationRequest, Message, MessageRole
 from app.core.ports import LLMProvider
 from app.policy.models import PolicyAction, PolicyRequest
+from app.understanding.citations import resolve_output_citations
 
 MAX_JSON = 1_000_000
 SHAPES = ("item", "entity", "relation")
@@ -234,8 +235,7 @@ class UnderstandingExtractor:
         )  # Fail before returning an invalid checkpoint.
         return checkpoint
 
-    async def publish(self, *, subject_id, checkpoint):
-        """Offline replay: no provider call, immutable IDs, full validation, one commit."""
+    async def _checkpoint_source(self, *, subject_id, checkpoint):
         object_fields(
             checkpoint,
             (
@@ -251,6 +251,48 @@ class UnderstandingExtractor:
             raise ValueError("Unsupported extraction checkpoint")
         source = await self._source(
             subject_id, checkpoint["context_space_id"], checkpoint["source_revision_id"]
+        )
+        if (
+            source["id"] != checkpoint["source_revision_id"]
+            or source["context_space_id"] != checkpoint["context_space_id"]
+        ):
+            raise ValueError("Checkpoint source/scope mismatch")
+        if checkpoint["input_sha256"] != self.source_hash(source):
+            raise ValueError("Extraction input fingerprint mismatch")
+        return source
+
+    async def resolve_citations(self, *, subject_id, checkpoint, extraction_key):
+        """Explicit derivation only: owner-read gate, no provider or repository write."""
+        source = await self._checkpoint_source(
+            subject_id=subject_id, checkpoint=checkpoint
+        )
+        nonempty(extraction_key)
+        if extraction_key == checkpoint["extraction_key"]:
+            raise ValueError("Derived extraction key must differ from the original")
+        output, audit = resolve_output_citations(checkpoint["output"], source=source)
+        derived = {
+            **deepcopy(checkpoint),
+            "output": output,
+            "extraction_key": extraction_key,
+        }
+        self._resolve(
+            derived, source
+        )  # Whole-batch canonical validation still applies.
+        audit.update(
+            source_revision_id=source["id"],
+            context_space_id=source["context_space_id"],
+            input_sha256=self.source_hash(source),
+            original_output_sha256=digest(checkpoint["output"]),
+            derived_output_sha256=digest(output),
+            original_extraction_key=checkpoint["extraction_key"],
+            derived_extraction_key=extraction_key,
+        )
+        return derived, audit
+
+    async def publish(self, *, subject_id, checkpoint):
+        """Offline replay: no provider call, immutable IDs, full validation, one commit."""
+        source = await self._checkpoint_source(
+            subject_id=subject_id, checkpoint=checkpoint
         )
         revisions = self._resolve(checkpoint, source)
         self.repository.save(revisions=revisions)
