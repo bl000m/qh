@@ -1,5 +1,10 @@
 # QH-33 — guida alla revisione semantica
 
+**Validazione umana differita a QH-38:** leggi l'[addendum di chiusura](qh33-closure-scope.it.md)
+per l'esito riferito della seconda verifica AI e le due nuove riserve sui controlli.
+Nessun giudizio v2 è cambiato, nessuna verifica personale è attestata. Questa guida
+e il pacchetto congelato restano disponibili per la futura review completa.
+
 **D1–D5 ora approvate; verifica personale non attestata.** Questa guida conserva
 gli esempi precedenti. Per la review corrente usa la [matrice v2](evidence/qh33-v2-20261016/review-matrix.it.md)
 e il [pacchetto con rubriche e istruzioni](evidence/qh33-v2-20261016/README.md).

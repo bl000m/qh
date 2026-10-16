@@ -1,5 +1,12 @@
 # QH-33 — sintesi per la decisione del proprietario
 
+**Aggiornamento di chiusura:** la [proposta corrente](qh33-closure-scope.it.md)
+registra la seconda verifica AI e il differimento della validazione umana a
+[QH-38](https://contextlab.atlassian.net/browse/QH-38). Il protocollo personale
+rimane invariato; la sequenza precedente sotto è conservata come storia, non
+come requisito aggiuntivo della consegna tecnica proposta. Jira QH-33 richiede
+ancora l'allineamento formale dello scope prima della chiusura.
+
 **Aggiornamento: D1–D5 approvate, con le precisazioni del proprietario.** Il testo
 sotto conserva il percorso decisionale precedente; le richieste D1–D5 non sono
 più pendenti. La verifica personale di tutte le unità non è invece attestata.

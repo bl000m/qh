@@ -4,7 +4,12 @@
 consolidated main `21f13d615fc097996370603c1025c25df36859ec`, in the sole development
 checkout `/home/ubuntu/qh`, branch `feat/QH-33-semantic-fidelity`.
 **Technical delivery for review; not DONE.** Independent human validation of the
-reference is still pending. No new inference, persistent write/migration, deployment
+reference is still pending, explicitly assigned to QH-38 for later work. The
+[current scope amendment and second AI review](qh33-closure-scope.it.md) propose
+replacing the earlier sequence requiring personal review before finalizing this
+technical delivery. The amendment is not yet recorded in QH-33's Jira description;
+the original human-validation requirement is not marked satisfied.
+No new inference, persistent write/migration, deployment
 or Jira status change. QH-8 originals/reference, QH-32 derivations and the original
 7/8 ledger remain unchanged. No model comprehension improvement has been measured.
 
@@ -85,9 +90,13 @@ and no source bind/key, image `qh33-v2-review:f745db5e62f65f35fd7960f93e367ff6fb
 ID `sha256:684d040c124af536ba6ed13f9e6fc738e0278354f9c5c60eb4259ba04ab969d0`.
 The final hosted CI result for this increment is recorded on PR #8 after execution.
 
-**Stop for the owner's personal verification.** This is preparation, not a final
-QH-33 Done verdict. After actual confirmation, finalize the report and verify Jira's
-real DoD; merge, Jira DONE and further inference require separate authorization.
+**Updated closure proposal:** defer the unchanged personal-review protocol to
+[QH-38](https://contextlab.atlassian.net/browse/QH-38), which explicitly covers all
+74 units and the two new control-coverage reservations from the second AI review.
+No v2 rating or provisional metric is changed by that review. Human metrics remain
+null. See the [criterion-by-criterion scope proposal](qh33-closure-scope.it.md#scope-e-definition-of-done-proposti)
+for technical evidence, the remaining Jira scope mismatch and authorization gates.
+No merge or Jira transition is performed; this is not a final Done declaration.
 
 ## Historical v1 record (preserved)
 

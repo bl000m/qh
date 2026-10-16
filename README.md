@@ -228,8 +228,10 @@ python3 scripts/evaluate_qh33.py --out /tmp/qh33-review --prepare-protocol
 The output directory must be new. Source-first material, blank human-review grid
 and separate draft metrics are reproducible; durable copies are committed under
 `docs/evidence/qh33-semantic-20261016/`. Prepared requests are a proposal only;
-no live execution mode is provided. QH-33 is not DONE without its remaining human
-review, reviewed merge and Jira closure. No subsequent task starts automatically.
+no live execution mode is provided. The [current scope proposal](docs/qh33-closure-scope.it.md)
+defers complete human validation to QH-38; QH-33's Jira description still needs
+formal scope alignment before closure. Reviewed merge and Jira closure remain
+pending. No subsequent task starts automatically.
 
 
 QH-33 v2 applies owner-approved D1–D5 while keeping the original benchmark sealed.
