@@ -101,12 +101,21 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
                         partial or len(selected) < len(revisions), bound, len(context.content.encode()))
 
 
+def unique_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError('Duplicate provider field')
+        result[key] = value
+    return result
+
+
 def decode_answer(message, context):
     """Verify declared references, not natural-language semantic entailment."""
     try:
         if message.role != MessageRole.ASSISTANT or len(message.content.encode()) > 12000:
             raise ValueError()
-        value = json.loads(message.content)
+        value = json.loads(message.content, object_pairs_hook=unique_keys)
         if type(value) is not dict or set(value) != {'answer', 'revision_ids', 'insufficient_context'}:
             raise ValueError()
         answer, ids, insufficient = value['answer'], value['revision_ids'], value['insufficient_context']

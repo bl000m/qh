@@ -31,21 +31,25 @@ IDENTITY_PATHS = {"/health", "/auth/me"}
 SPACE_PATHS = {"/context-spaces", "/context-spaces/{context_id}"}
 QUERY_PATHS = {"/context-spaces/query"}
 BROWSE_PATHS = {"/context-spaces/{context_id}/understanding"}
+CHAT_PATHS = {"/context-spaces/{context_id}/chat"}
 
 
 def check_business_paths(document, *, spaces_required):
     paths = document['paths']
     spaces = IDENTITY_PATHS | SPACE_PATHS
-    expected = spaces | QUERY_PATHS | BROWSE_PATHS
+    browse = spaces | QUERY_PATHS | BROWSE_PATHS
+    expected = browse | CHAT_PATHS
     if spaces_required:
         assert set(paths) == expected
     else:
         # The read-only live verifier also supports the pinned c723d32 VPS.
         # Both versions are exact allowlists, never arbitrary added endpoints.
-        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, expected)
+        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, expected)
     if '/context-spaces' in paths:
         assert set(paths['/context-spaces']) == {'get', 'post'}
         assert set(paths['/context-spaces/{context_id}']) == {'get', 'patch'}
+    if '/context-spaces/{context_id}/chat' in paths:
+        assert set(paths['/context-spaces/{context_id}/chat']) == {'post'}
     if '/context-spaces/query' in paths:
         assert set(paths['/context-spaces/query']) == {'post'}
 

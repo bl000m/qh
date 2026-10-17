@@ -86,3 +86,14 @@ def test_source_instructions_remain_data_and_are_never_promoted_to_system():
     assert row.content['text'] not in context.request.messages[0].content
     assert row.content['text'] in context.request.messages[1].content
     # This verifies separation, not a claim of adversarial robustness of an untested LLM.
+
+
+def test_huge_dialogue_rejected_instead_of_silent_history_drop():
+    messages=tuple(Message(role=MessageRole.USER if i%2==0 else MessageRole.ASSISTANT,
+                           content='é'*4096) for i in range(7))
+    with pytest.raises(ChatInputInvalid):build_context(context_id='space',revisions=(),messages=messages)
+
+
+def test_duplicate_json_fields_fail_closed():
+    text='{"answer":"a","answer":"b","revision_ids":["revision"],"insufficient_context":false}'
+    with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=text),built((revision(),)))
