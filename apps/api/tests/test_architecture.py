@@ -12,7 +12,6 @@ API_ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = API_ROOT / "app"
 STDLIB = {"__future__", "dataclasses", "enum", "typing", "copy", "datetime", "hashlib", "json", "re", "uuid"}
 LAYERS = {
-    "context": {"app.core", "app.policy", "app.context"},
     "core": {"app.core"},
     "policy": {"app.core", "app.policy"},
     "projections": {"app.core", "app.projections"},
@@ -99,7 +98,6 @@ sys.path.insert(0, sys.argv[1])
 from app.core.ports import ContextEngine, LLMProvider
 from app.understanding.extractor import UnderstandingExtractor
 from app.core.services import ContextService
-from app.context.service import ManagedContextService
 from app.policy.services import PolicyService
 from app.projections.services import ProjectionService
 from app.chat.services import ChatService
