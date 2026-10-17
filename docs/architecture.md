@@ -21,6 +21,37 @@ synthetic smoke, exact-ID restart and pending-intent recovery passed; see
 identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
+## Current code and planned product flows — 2026-10-17
+
+QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via
+[PR #8](https://github.com/bl000m/qh/pull/8), merge
+`a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`. Its benchmark v2, provisional metrics,
+offline comparisons and temporal validation correction are available in source,
+**not activated on the VPS**. The deployed application images still come from
+`c723d32c5d0825f9232ece560e7e666e69dceb27`, schema 0005. QH-38 remains open for
+independent human validation of all 74 units; `human_review.metrics` stays null.
+See the [closure record](qh33-closure-scope.it.md) and [deployment register](deployments.md).
+
+The following roadmap reflects existing Jira scope, not new architecture or
+implemented public contracts. The Product Contract and ADRs 0003/0004 above remain
+authoritative; PostgreSQL is canonical and Neo4j derived.
+
+| Planned flow | Reused responsibility / acceptance boundary |
+| --- | --- |
+| Demo A — QH-9–12 | ContextService/owner policy, scoped REST retrieval and React views; synthetic pipeline data is sufficient. Show structural shape, open optional descriptors/assignment certainty, canonical revision, validation, time and provenance separately; no closed category vocabulary or frontend re-extraction |
+| QH chat — QH-13, then conversational update QH-39 | ChatService reuses retrieval and LLMProvider. QH-39 separately acquires an authorized SourceRevision and routes extraction through the existing QH-8/QH-32 Engine into atomic proposed revisions/outbox. No canonical write from an unvalidated chat answer or automatic confirmation |
+| Demo B — QH-40, QH-14–16 and QH-18–22 | Manual Projection Editor → authorized preview → immutable Approved Snapshot → expiring/revocable guest link. Natural-language scope suggestion QH-17 is optional, not a dependency of the manual editor; MCP is not required |
+| Complete demo / Demo C — QH-26 with QH-23–25 | Reuse verified guest flow, add MCP discovery/preview/retrieve and cross-channel access checks through the authenticated backend. MCP has no backend imports or direct DB access; external proposal submission QH-34 remains a separate future ingress |
+
+Snapshot approval authorizes sharing; it does not promote an item's epistemic
+state to `confirmed`. Guest retrieval and optional generative questions are limited
+to the materialized authorized snapshot revisions, never the live source Space or
+an unrestricted graph query. Later Space updates cannot broaden the snapshot.
+Demo B can start with verified synthetic data; a live chat-to-understanding claim
+requires QH-39. Disclosure policy and separately authorized provider cost limits
+apply before inference. None of these roadmap entries grants deployment or write
+permission or certifies general semantic correctness.
+
 ## Containers
 
 | Service | Runtime | Responsibility | Network / host access |
@@ -102,12 +133,13 @@ not a currently implemented filtering engine.
   assemble implementations through dependency injection.
 - `apps/api/adapters/context` owns the native Neo4j projector/retriever behind
   ContextEngine (QH-30). PostgreSQL is authoritative; the graph is an operational
-  projection, never a second canonical repository. `adapters/llm` reserves replaceable
+  projection, never a second canonical repository. `adapters/llm` owns replaceable
   provider clients. Extractor/resolver/repository/projector/retriever responsibilities,
   synchronization, rebuild and approval boundaries are in ADR 0003. Native runtime
-  and incremental worker are bound by the backend lifespan; real-provider
-  calls and public context routes remain future work. QH-8 offline extraction is
-  explicit internal composition on its feature branch (see below).
+  and incremental worker are bound by the backend lifespan. QH-8's optional Mistral
+  adapter/manual experiment and offline extraction are merged internal composition
+  (see below), not startup behavior or a released conversational write route.
+  Product CRUD/retrieval/chat routes remain QH-9/QH-10/QH-13 work.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
@@ -179,8 +211,9 @@ exact descriptor selector. The owner approved the profiles and open descriptor c
 shape selects storage constraints. Applied 0005 removes null legacy category
 metadata without rewriting historical types/bindings. The generic profiles and
 internal selector are active; source changes in the permanent main checkout do
-not change deployed application images. QH-31 Source Vault, Domain Packs, LLM extraction
-and advanced vector retrieval are not implemented. Ordinary native queries use
+not change deployed application images. QH-31 Source Vault, Domain Packs and
+advanced vector retrieval remain future work; QH-8 extraction is merged internal
+code, not a deployed conversational feature. Ordinary native queries use
 per-scope sync state and candidate hydration; `ProjectionWorker.rebuild` is explicit recovery.
 The separate snapshot reconciler and full-scope query scans have been retired from the active implementation;
 its generation publisher remains necessary for rebuild.
@@ -245,6 +278,10 @@ or introduce partial publication. Native reconciliation/rebuild remains the QH-3
 responsibility; semantic reconciliation and candidate staging remain future work.
 
 ## QH-33 offline evaluation boundary
+
+QH-33's technical delivery is merged/DONE; independent human review is deferred
+to QH-38, not silently replaced with a second AI assessment. No evaluation script
+is a deployed semantic adjudicator or confirmation mechanism.
 
 `scripts/evaluate_qh33.py` is offline benchmark/review tooling, outside canonical
 publication and provider generation. It accounts for versioned, explicitly judged

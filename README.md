@@ -8,14 +8,19 @@ A space can contain multiple domains without a separate schema for each.
 
 ## Implementation status
 
+Status aligned with GitHub and Jira on **2026-10-17**. Code merged into `main`
+and code running on the VPS are separate checkpoints; this documentation update
+does not activate any merged extraction or evaluation feature.
+
 | Layer | State |
 | --- | --- |
-| Consolidated `main` | QH-30 and semantic foundation merged through PR #2/#3; 261 native hosted tests plus quality/OIDC passed |
+| Consolidated `main` | Native foundation, QH-8 extraction/evaluation, QH-32 citation resolution and QH-33 technical delivery merged. [PR #8](https://github.com/bl000m/qh/pull/8) merge: `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`; its head CI passed quality, OIDC and 383 native tests without skips |
 | QH environment | Schema 0005; native backend/worker, frontend and MCP run versioned images from `c723d32` without application source mounts. Smoke, exact evidence, isolation, restart and pending-intent recovery passed |
 | Semantic foundation | Three generic profiles provisioned; authorized exact descriptor selection active. Historical type bindings, canonical revisions and six Graphiti nodes preserved. [Deployment record](docs/deployments.md) |
-| QH-8 feature branch | Offline conversation import/extractor/resolver, two interchangeable fake/replay providers, exact citations and generic proposed understanding. Isolated SQL/Neo4j verification; not deployed, no real LLM extraction |
-| Mistral experiment branch | Four full synthetic Small 4 generations; 7/8 cumulative requests, 2,673 input / 5,922 output tokens, USD 0.00392283 cache-aware calculated usage charge. One of four QH batches accepted; 23/34 citation spans exact. Provisional reference, no independent validation. [Report](docs/qh8-mistral-evaluation.md) |
-| Offline citation follow-up | One Understanding Engine/two governed inputs documented in ADR 0004; unique exact quote resolution on the four frozen captures raises contract-valid batches from 1/4 to 3/4. Missing evidence still rejects the full batch; semantic errors remain. [Follow-up](docs/qh8-citation-followup.md) |
+| QH-8 merged internal pipeline | Conversation import, interchangeable fake/replay providers, strict citations and generic proposed understanding; isolated SQL/Neo4j verification. The internal pipeline is in `main`, not deployed as a conversational product flow |
+| Merged Mistral experiment evidence | Four full synthetic `mistral-small-2603` generations on 2026-10-16; 7/8 cumulative requests, 2,673 input / 5,922 output tokens, USD 0.00392283 cache-aware calculated usage charge. One of four QH batches accepted; 23/34 citation spans exact. Provisional reference, no independent human validation. [Report](docs/qh8-mistral-evaluation.md) |
+| QH-32 merged offline follow-up | One Understanding Engine/two governed inputs documented in ADR 0004; unique exact quote resolution on the four frozen captures raises contract-valid batches from 1/4 to 3/4. Missing evidence still rejects the full batch; semantic errors remain. [Follow-up](docs/qh8-citation-followup.md) |
+| QH-33 technical delivery DONE | Reproducible v2 benchmark, separate provisional metrics, offline comparisons and integrity checks. All 74 human decisions remain pending in [QH-38](https://contextlab.atlassian.net/browse/QH-38); `human_review.metrics=null`. [Closure record](docs/qh33-closure-scope.it.md) |
 | Future | Source Vault (QH-31), Domain Packs, verified real-provider extraction quality, embedding cache and advanced vector/hybrid retrieval; product context operations through MCP |
 
 Graphiti is a preserved historical prototype, not a native-engine dependency.
@@ -25,6 +30,28 @@ descriptor selector: authorize → canonical IDs from SQL → Neo4j verification
 canonical hydration and freshness recheck. No public context DTO/API or semantic
 ranking is implied. The sole development checkout is `/home/ubuntu/qh`, using one
 task branch at a time. Deployed images and the frozen Compose bundle are independent of that branch.
+
+## Planned demo sequence — 2026-10-17
+
+These are delivery milestones, **not implemented or deployed product capabilities**.
+They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine
+[ADR 0003](docs/adr/0003-native-context-engine.md) and unified Understanding Engine
+[ADR 0004](docs/adr/0004-unified-understanding-engine.md).
+
+| Milestone | Jira scope | Observable outcome and boundary |
+| --- | --- | --- |
+| Demo A: inspect a Context Space | [QH-9](https://contextlab.atlassian.net/browse/QH-9), [QH-10](https://contextlab.atlassian.net/browse/QH-10), [QH-11](https://contextlab.atlassian.net/browse/QH-11), [QH-12](https://contextlab.atlassian.net/browse/QH-12) | Authenticated CRUD, scoped retrieval and browser views with sources/revisions. May use synthetic data acquired by the existing pipeline; no claim of live AI updates |
+| Conversational understanding update | [QH-13](https://contextlab.atlassian.net/browse/QH-13), [QH-39](https://contextlab.atlassian.net/browse/QH-39) | Chat uses scoped retrieval/LLMProvider; QH-39 separately connects authorized conversation → source revision → validated `proposed` understanding → existing repository/outbox. Reuse the same Engine; a chat answer is not a canonical write or confirmation |
+| Demo B: Alice shares with a guest | [QH-40](https://contextlab.atlassian.net/browse/QH-40), QH-14–16 and QH-18–22 | Manual selection, exact preview, immutable Approved Snapshot, expiring/revocable link and guest access restricted to that snapshot. QH-17's natural-language suggestion is optional; no MCP prerequisite |
+| Complete demo with MCP (Demo C) | [QH-26](https://contextlab.atlassian.net/browse/QH-26), QH-23–25 | Reuse verified Demo B; add real MCP discovery/preview/retrieve and cross-channel isolation. Future MCP proposal-write QH-34 is a different ingress, not this demo's read transport |
+
+Demo B may reuse a verified synthetic dataset. Any demonstration of understanding
+changing **live from chat** requires QH-39 to have been verified; it must not be
+simulated. Share approval authorizes disclosure, not the truth of `proposed` items.
+New Space revisions never expand an approved snapshot; guest questions use only its
+authorized materialized revisions, with policy checks before retrieval/provider
+disclosure. Real-provider use requires separate consent/budget authorization.
+Independent human benchmark validation remains QH-38, not a completed demo gate.
 
 ## Architecture and data flow
 
@@ -184,7 +211,7 @@ one space: conversation → interchangeable extractor → exact citation/endpoin
 validation → generic proposed items → PostgreSQL/outbox → existing worker → Neo4j
 → authorized descriptor selection and canonical hydration. No external call occurs.
 
-Run on **disposable infrastructure only**, from the feature checkout:
+Run on **disposable infrastructure only**, from the single development checkout:
 
 ```bash
 python3 - <<'PYENV'
@@ -228,10 +255,11 @@ python3 scripts/evaluate_qh33.py --out /tmp/qh33-review --prepare-protocol
 The output directory must be new. Source-first material, blank human-review grid
 and separate draft metrics are reproducible; durable copies are committed under
 `docs/evidence/qh33-semantic-20261016/`. Prepared requests are a proposal only;
-no live execution mode is provided. The [current scope proposal](docs/qh33-closure-scope.it.md)
-defers complete human validation to QH-38; QH-33's Jira description still needs
-formal scope alignment before closure. Reviewed merge and Jira closure remain
-pending. No subsequent task starts automatically.
+no live execution mode is provided. [QH-33 is DONE for its approved technical scope](docs/qh33-closure-scope.it.md):
+PR #8 merged as `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`, Jira scope aligned and
+closure verified. Full independent human validation is explicitly deferred to
+[QH-38](https://contextlab.atlassian.net/browse/QH-38), still open; metrics remain
+provisional and human attestations absent. No subsequent task starts automatically.
 
 
 QH-33 v2 applies owner-approved D1–D5 while keeping the original benchmark sealed.

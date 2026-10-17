@@ -1,5 +1,33 @@
 # QH-33 — proposition-level semantic evaluation
 
+## Current closure status — 2026-10-17
+
+**QH-33 is DONE for the explicitly approved technical scope.**
+[PR #8](https://github.com/bl000m/qh/pull/8) merged as
+`a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`; Jira's dated scope addendum and effective
+DONE transition were verified. The delivered scope is the reproducible v2 benchmark,
+separate provisional metrics, offline comparisons, integrity checks, residual-defect
+report and next-experiment protocol. [Closure evidence](qh33-closure-scope.it.md#stato-conclusivo--17-ottobre-2026).
+
+Independent human validation of all 74 units remains explicitly deferred to
+[QH-38](https://contextlab.atlassian.net/browse/QH-38), still open and linked to
+the `main` review package. Human metrics remain null, 0/74 units accepted; the
+personal template and attestations remain unfilled. The second GPT-6 assessment
+is AI-only. The two control-coverage reservations and original semantic defects
+remain open; closure does not certify their resolution or model accuracy.
+
+The merged source is not the running VPS application: backend/frontend/MCP still
+use images from `c723d32c5d0825f9232ece560e7e666e69dceb27`, schema 0005. No
+deployment, schema change or new inference accompanies this documentation update.
+The baseline/candidate Mistral comparison remains prepared and unexecuted, subject
+to its existing human-review and paid-call authorization gates.
+
+## Historical preparation checkpoint — 2026-10-16 (preserved)
+
+The earlier sequence, pending scope decision and authorization statements below
+describe the pre-closure checkpoint. They are retained as history; the current
+closure above supersedes them without changing any v1/v2 judgment or metric.
+
 2026-10-16. [QH-33](https://contextlab.atlassian.net/browse/QH-33) starts from
 consolidated main `21f13d615fc097996370603c1025c25df36859ec`, in the sole development
 checkout `/home/ubuntu/qh`, branch `feat/QH-33-semantic-fidelity`.

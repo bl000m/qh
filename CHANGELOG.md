@@ -7,6 +7,23 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+### Status alignment — 2026-10-17
+
+- QH-33 technical scope closed: PR #8 merged as
+  `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`, Jira DONE with the approved scope
+  addendum. Reproducible v2 benchmark, separate provisional metrics, offline
+  comparisons and integrity checks are merged; independent human review of all
+  74 units remains open in QH-38, with null human metrics and no attestations.
+- Roadmap follows the already updated Jira scope: Demo A QH-9–12; chat QH-13 and
+  conversation-to-understanding QH-39; guest-link Demo B QH-40 with manual selection
+  (QH-17 optional); complete MCP demo QH-26. These are planned flows, not shipped
+  capabilities. Product Contract and ADRs 0003/0004 remain authoritative.
+- Merged code/evidence is distinct from VPS activation: application images still
+  use `c723d32`, persistent schema 0005. Documentation only; no new deployment,
+  inference, migration, feature, release/tag or rewrite of frozen evidence.
+  Earlier preparation entries below retain their historical scope; this dated
+  status and the deployment register describe current activation.
+
 ### Added
 
 - QH-33 offline proposition benchmark, separate draft metrics and blank independent
