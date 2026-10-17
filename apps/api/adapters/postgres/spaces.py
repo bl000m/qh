@@ -21,14 +21,20 @@ class PostgresContextSpaceRepository:
 
     async def _execute(self, query, parameters, *, many=False):
         try:
-            async with await psycopg.AsyncConnection.connect(
+            connection = await psycopg.AsyncConnection.connect(
                 host=self._url.host, port=self._url.port, dbname=self._url.database,
                 user=self._url.username, password=self._url.password, connect_timeout=5,
                 row_factory=dict_row,
-            ) as connection:
-                await connection.execute("SET statement_timeout = '5s'")
-                cursor = await connection.execute(query, parameters)
-                return await cursor.fetchall() if many else await cursor.fetchone()
+            )
+            try:
+                async with connection:
+                    await connection.execute("SET statement_timeout = '5s'")
+                    cursor = await connection.execute(query, parameters)
+                    return await cursor.fetchall() if many else await cursor.fetchone()
+            finally:
+                # As in CanonicalRepository, commit failures must not leak a
+                # psycopg 3.2.9 session; context-manager exit may raise first.
+                await connection.close()
         except psycopg.Error:
             raise ContextStorageUnavailable("Context storage unavailable") from None
 

@@ -5,7 +5,11 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+import psycopg
 import pytest
+from sqlalchemy.engine import URL
+
+from adapters.postgres.spaces import PostgresContextSpaceRepository
 
 from app.api.security import SecurityBindings
 from app.composition import ApplicationServices
@@ -163,3 +167,21 @@ def test_mismatched_security_and_service_policy_cannot_be_composed():
         create_app(services=ApplicationServices(context=ManagedContextService(repository=MemorySpaces(), policy=first),
                                                 policy=first),
                    security=SecurityBindings(authenticate=None, policy=second))
+
+
+def test_commit_failure_closes_connection_and_sanitizes_error(monkeypatch):
+    import asyncio
+    class Connection:
+        closed = False
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): raise psycopg.OperationalError('private-commit-details')
+        async def execute(self, *args): return self
+        async def fetchone(self): return None
+        async def close(self): self.closed = True
+    connection = Connection()
+    async def connect(**kwargs): return connection
+    monkeypatch.setattr(psycopg.AsyncConnection, 'connect', connect)
+    repo = PostgresContextSpaceRepository(url=URL.create('postgresql', host='unused', database='test'))
+    with pytest.raises(ContextStorageUnavailable, match='^Context storage unavailable$'):
+        asyncio.run(repo._execute('SELECT 1', ()))
+    assert connection.closed
