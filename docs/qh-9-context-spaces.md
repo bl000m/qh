@@ -129,3 +129,10 @@ sudo -n docker run --rm --network qh30-native-test \
 Existing Starlette/AnyIO deprecation warning remains non-blocking. No dependency
 or lockfile changes, new infrastructure, paid calls, persistent migration or VPS
 service replacement. Test success alone does not make QH-9 DONE; stop for review.
+
+The first hosted OIDC run exposed an obsolete two-route allowlist in the existing
+Keycloak test. Its candidate check now requires exactly the identity plus QH-9
+metadata routes/methods; the isolated real-Keycloak scenario also exercises
+Alice's REST create/list/open/rename and Bob's denial. The separate live verifier
+stays read-only and accepts only the two exact known route sets (pinned c723d32
+or the QH-9 candidate). No application behavior or CI protection is bypassed.

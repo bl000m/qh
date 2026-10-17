@@ -27,6 +27,22 @@ from tests.oidc_database import connect, isolated_database
 pytestmark = pytest.mark.skipif(os.environ.get("QH_RUN_OIDC") != "1", reason="Run make test-oidc")
 ISSUER = os.environ.get("OIDC_ISSUER", "http://localhost:8080/realms/qh")
 INTERNAL = "http://keycloak:8080"
+IDENTITY_PATHS = {"/health", "/auth/me"}
+SPACE_PATHS = {"/context-spaces", "/context-spaces/{context_id}"}
+
+
+def check_business_paths(document, *, spaces_required):
+    paths = document['paths']
+    expected = IDENTITY_PATHS | SPACE_PATHS
+    if spaces_required:
+        assert set(paths) == expected
+    else:
+        # The read-only live verifier also supports the pinned c723d32 VPS.
+        # Both versions are exact allowlists, never arbitrary added endpoints.
+        assert set(paths) in (IDENTITY_PATHS, expected)
+    if '/context-spaces' in paths:
+        assert set(paths['/context-spaces']) == {'get', 'post'}
+        assert set(paths['/context-spaces/{context_id}']) == {'get', 'patch'}
 
 
 class LoginForm(HTMLParser):
@@ -87,7 +103,7 @@ def test_real_oidc_login_mapping_and_owner_isolation():
         # Actual production composition with real JWKS and PostgreSQL adapters.
         application = create_runtime_app()
         assert "/context-spaces/{id}/access" not in application.openapi()["paths"]
-        assert set(application.openapi()["paths"]) == {"/health", "/auth/me"}
+        check_business_paths(application.openapi(), spaces_required=True)
         reads = []
         @application.get("/test/private/{context_id}")
         async def private(context_id: str, subject=Depends(require_context_owner)):
@@ -101,6 +117,26 @@ def test_real_oidc_login_mapping_and_owner_isolation():
             assert "qh-api" in ([claims["aud"]] if isinstance(claims["aud"], str) else claims["aud"])
             assert claims["sub"] == identity[2], "Imported demo subject differs from configured mapping"
         with TestClient(application) as client:
+            alice_headers = {"Authorization": "Bearer " + tokens[0]}
+            bob_headers = {"Authorization": "Bearer " + tokens[1]}
+            response = client.post('/context-spaces', headers=alice_headers, json={'name': 'Alice REST A'})
+            assert response.status_code == 201
+            created = response.json()
+            assert created['owner_id'] == str(DEMO_IDENTITIES[0][1])
+            response = client.get('/context-spaces', headers=alice_headers)
+            assert response.status_code == 200
+            assert created['id'] in {s['id'] for s in response.json()['items']}
+            path = '/context-spaces/' + created['id']
+            response = client.get(path, headers=alice_headers)
+            assert response.status_code == 200 and response.json() == created
+            response = client.get(path, headers=bob_headers)
+            assert response.status_code == 404
+            response = client.patch(path, headers=bob_headers, json={'name': 'forbidden'})
+            assert response.status_code == 404
+            response = client.get('/context-spaces', headers=bob_headers)
+            assert created['id'] not in {s['id'] for s in response.json()['items']}
+            response = client.patch(path, headers=alice_headers, json={'name': 'Alice renamed'})
+            assert response.status_code == 200 and response.json()['name'] == 'Alice renamed'
             for index, (token, identity) in enumerate(zip(tokens, DEMO_IDENTITIES)):
                 headers = {"Authorization": "Bearer " + token, "X-User-ID": str(DEMO_IDENTITIES[1-index][1])}
                 assert client.get("/auth/me?user_id=spoof", headers=headers).json() == {"user_id": str(identity[1])}
@@ -168,7 +204,7 @@ def test_live_application_identity():
             ).fetchone() == (identity,)
     with httpx.Client(base_url="http://backend:8000", timeout=10) as client:
         assert client.get("/health").status_code == 200
-        assert set(client.get("/openapi.json").json()["paths"]) == {"/health", "/auth/me"}
+        check_business_paths(client.get("/openapi.json").json(), spaces_required=False)
         for name, identity in zip(("alice", "bob"), DEMO_IDENTITIES):
             token = login(name, os.environ["QH_" + name.upper() + "_PASSWORD"])
             response = client.get("/auth/me?user_id=spoof", headers={
