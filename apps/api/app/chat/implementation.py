@@ -69,9 +69,10 @@ class ContextualChatService:
                       include_proposed=request.include_proposed)
         await self._authorize(request)
         selected = await self._collect(request)
+        expected = fingerprint(selected)
         built = build_context(context_id=request.context_id, revisions=selected[0],
             messages=request.messages, include_proposed=request.include_proposed, partial=selected[1])
-        if fingerprint(await self._collect(request)) != fingerprint(selected):
+        if fingerprint(await self._collect(request)) != expected:
             raise ChatContextUnavailable('Context changed before generation')
         await self._authorize(request)  # Separate CHAT gate immediately before disclosure.
         elapsed = None
@@ -87,7 +88,7 @@ class ContextualChatService:
                 raise ChatProviderUnavailable('Chat provider unavailable') from None
             elapsed = self.clock() - started if self.clock and started is not None else None
         # No transaction spans generation. Reject changed selection, lost policy or graph trust.
-        if fingerprint(await self._collect(request)) != fingerprint(selected):
+        if fingerprint(await self._collect(request)) != expected:
             raise ChatContextUnavailable('Context changed during generation')
         await self._authorize(request)
         return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=answer),

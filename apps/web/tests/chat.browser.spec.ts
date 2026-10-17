@@ -61,3 +61,16 @@ test('late answer after navigation cannot populate a different Space',async({pag
  release();await page.getByRole('button',{name:'Discuter avec ce contexte',exact:true}).click();
  await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
 });
+test('real Bob OIDC cannot chat with Alice Space, arbitrary IDs reveal no private data',async({page})=>{
+ let authorization='';page.on('request',r=>{if(r.url().endsWith('/auth/me'))authorization=r.headers()['authorization']||'';});
+ await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+ await page.locator('#username').fill('bob');await page.locator('#password').fill(process.env.QH_BOB_PASSWORD!);await page.locator('#kc-login').click();
+ await expect(page.getByText('Ce Context Space est introuvable ou inaccessible.',{exact:true})).toBeVisible();
+ expect(authorization.startsWith('Bearer ')).toBe(true);
+ const body={messages:[{role:'user',content:'Décisions privées ?'}]};
+ for(const scope of [expected.scope,'ffffffff-ffff-4fff-8fff-ffffffffffff']){
+  const r=await page.request.post('/api/context-spaces/'+scope+'/chat',{headers:{Authorization:authorization},data:body});
+  expect(r.status()).toBe(404);expect(await r.json()).toEqual({detail:'Context space not found'});
+ }
+ const r=await page.request.post('/api/context-spaces/'+expected.scope+'/chat',{data:body});expect(r.status()).toBe(401);
+});

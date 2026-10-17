@@ -126,3 +126,22 @@ def test_invalid_history_fails_before_reading_context():
     service,context,model,_=case()
     with pytest.raises(ChatInputInvalid):asyncio.run(service.respond(request(messages=())))
     assert not context.calls and not model.calls
+
+
+def test_in_place_content_mutation_cannot_change_the_saved_fingerprint():
+    service,context,model,_=case()
+    generate=model.generate
+    async def changed(request):
+        context.values[0].content['text']='Changed in place'
+        return await generate(request)
+    model.generate=changed
+    with pytest.raises(ChatContextUnavailable):asyncio.run(service.respond(request()))
+
+
+def test_graph_unavailability_precedes_provider_call():
+    from app.core.models import ContextRetrievalUnavailable
+    service,context,model,_=case()
+    async def unavailable(request):raise ContextRetrievalUnavailable('private-driver-detail')
+    context.browse=unavailable
+    with pytest.raises(ContextRetrievalUnavailable):asyncio.run(service.respond(request()))
+    assert not model.calls
