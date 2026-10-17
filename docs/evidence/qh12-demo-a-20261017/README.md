@@ -19,3 +19,9 @@ The test performs real outage, a protected synthetic pg_dump/new-DB restore with
 all-table fingerprints, graph rebuild without an extractor and real browser
 re-open of retained IDs. None is a VPS operation or production backup.
 [Report and exact reproduction](../../qh-12-context-understanding.md).
+
+Initial checkpoint 50061be metadata remains in [verification](verified-initial.json),
+[images](candidate-images-initial.json) and [preflight](compose-preflight-initial.json).
+The final d70626b candidate additionally preserves opaque historical descriptor
+objects as JSON instead of coercing certainty into a string. Canonical data,
+original QH-8 fixture proposals and the public retrieval contract are unchanged.

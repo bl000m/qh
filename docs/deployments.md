@@ -17,7 +17,7 @@ The artifact identities and executed deployment records below are preserved.
 
 ## QH-12 Demo A candidate — 2026-10-17 (NOT DEPLOYED)
 
-Executable/configuration source `50061bea301bc558785ed56d7914d6a558cb5284`:
+Executable/configuration source `d70626bbe50c070c428b02564d22dec42b3b22b0`:
 [immutable image manifest](evidence/qh12-demo-a-20261017/candidate-images.json),
 [real packaged browser/recovery results](qh-12-context-understanding.md) and
 [separate activation gate](qh-12-demo-a-deployment.md). Exact-source local API,
@@ -33,6 +33,9 @@ remain NOT TESTED; the candidate is prepared, not activated.
 
 QH-11 PR #12 is now merged as `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`
 and Jira DONE. The historical candidate rows below preserve their test identities.
+
+The initial 50061be image/test metadata is retained in the evidence archive; the
+final legacy-display correction changes no schema, public contract or runtime bundle.
 
 ## QH-11 browser candidate — 2026-10-17 (not deployed)
 

@@ -1,0 +1,32 @@
+{
+  "source_commit": "50061bea301bc558785ed56d7914d6a558cb5284",
+  "built_from": "git archive",
+  "registry_published": false,
+  "deployed": false,
+  "images": [
+    {
+      "component": "api",
+      "tag": "qh12-api:50061bea301bc558785ed56d7914d6a558cb5284",
+      "image_id": "sha256:230abeac676cbf1e88b682898da829ab2fb59b652cd2a6b3916686e8cefeef75",
+      "oci_revision": "50061bea301bc558785ed56d7914d6a558cb5284"
+    },
+    {
+      "component": "web",
+      "tag": "qh12-web:50061bea301bc558785ed56d7914d6a558cb5284",
+      "image_id": "sha256:982d5971baf5e9e5df871cec64db6b8dff626e947e790aa97de13842dc620981",
+      "oci_revision": "50061bea301bc558785ed56d7914d6a558cb5284"
+    },
+    {
+      "component": "mcp",
+      "tag": "qh12-mcp:50061bea301bc558785ed56d7914d6a558cb5284",
+      "image_id": "sha256:7cc35b9cb774e14f4b71ecd7989bdb641201496c1841918b08f8f329e78f921b",
+      "oci_revision": "50061bea301bc558785ed56d7914d6a558cb5284"
+    },
+    {
+      "component": "browser",
+      "tag": "qh12-browser:50061bea301bc558785ed56d7914d6a558cb5284",
+      "image_id": "sha256:0e1ea4b443a606ce02ab5e984fa9b723d1afac8d2e9742c4dd4cc9ef87db2faa",
+      "oci_revision": "50061bea301bc558785ed56d7914d6a558cb5284"
+    }
+  ]
+}

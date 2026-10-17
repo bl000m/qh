@@ -99,7 +99,7 @@ volume deletion. The archive is test scratch, not a durable production backup.
 
 ## Reproduction and immutable candidates
 
-Executable/configuration source: `50061bea301bc558785ed56d7914d6a558cb5284`.
+Final executable/configuration source: `d70626bbe50c070c428b02564d22dec42b3b22b0`.
 Backend, frontend, MCP and browser test images are built from its Git archive with
 that OCI revision label. [Image manifest](evidence/qh12-demo-a-20261017/candidate-images.json)
 records immutable local IDs, not a registry digest/release or deployment.
@@ -107,9 +107,9 @@ Later report/artifact commits have no executable/configuration drift.
 
 ```sh
 python3 scripts/test_qh11_browser.py --sudo-docker --understanding \
-  --backend-image qh12-api:50061bea301bc558785ed56d7914d6a558cb5284 \
-  --frontend-image qh12-web:50061bea301bc558785ed56d7914d6a558cb5284 \
-  --browser-image qh12-browser:50061bea301bc558785ed56d7914d6a558cb5284 \
+  --backend-image qh12-api:d70626bbe50c070c428b02564d22dec42b3b22b0 \
+  --frontend-image qh12-web:d70626bbe50c070c428b02564d22dec42b3b22b0 \
+  --browser-image qh12-browser:d70626bbe50c070c428b02564d22dec42b3b22b0 \
   --output /tmp/qh12-evidence-new
 ```
 
@@ -162,7 +162,7 @@ audit. Semantic correctness and event-time entailment are not improved/validated
 by rendering. Independent human semantic review remains QH-38. No new prompt
 experiment, chat/ingestion or QH-13 work is performed.
 
-## Executed verification — sealed source 50061be
+## Initial executed verification — sealed source 50061be
 
 | Check | Observed verdict |
 | --- | --- |
@@ -192,6 +192,30 @@ ISO offset. One preliminary restored-browser run exhausted its 30 s budget durin
 competing builds; the sequential sealed run passes without retries or relaxed checks.
 No product schema/rule or original capture was altered to make the fixture pass.
 
-The source/configuration tree is frozen at 50061be; later documentation/image-manifest
-commits are checked for zero executable drift. Proposed next action is owner review
+The initial source/configuration checkpoint was 50061be. Final correction d70626b
+recognizes only descriptor assignments conforming to the approved value/certainty
+contract, preserving other historical JSON without object-to-string coercion.
+This fixes a reproducible rendering failure for an opaque legacy certainty object.
+Nine targeted contract tests and strict TypeScript pass; the final packaged run
+and current-head CI are recorded below/on the task PR. Initial metric/image
+records remain in the evidence archive with an `-initial` suffix. Later
+documentation commits are checked for zero executable drift against d70626b. Proposed next action is owner review
 of the QH-12 PR and image/runbook evidence. No QH-13 work or automatic deployment.
+
+## Final executed verification — source d70626b
+
+The final packet supersedes the initial checkpoint for current reproduction,
+preserving its `-initial.json` records. Exact-image Node22 build/typecheck PASS;
+**24 frontend/Chromium checks PASS, zero skips, 55.7 s**, including the new actual
+legacy JSON rendering control. Real OIDC/Core/persistence regression PASS (1 passed,
+1 live-only case deselected, 14.46 s). Real graph outage PASS (1 test, 3.7 s).
+Synthetic dump/new-DB restore, all-table fingerprints and canonical-preserving
+rebuild PASS; real browser re-open of the same restored IDs PASS (1 repeated case,
+14.5 s). Final MCP image/actual server: 2 tests PASS. Initial and final counts are
+not summed. Latest-head hosted CI is recorded on [PR #13](https://github.com/bl000m/qh/pull/13).
+
+All UI acceptance rows above are implemented and tested. Conditional deployment
+rows stay NOT TESTED / NOT DEPLOYED, and owner review/merge/Jira closure remain
+pending. The final candidate is **READY FOR DEPLOYMENT / NOT DEPLOYED** in the
+technical preparation sense, subject to review/merge and a separate authorization
+of exact image pins, access method and maintenance window. No permission is inferred.

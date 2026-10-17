@@ -92,7 +92,7 @@ Rendering preserves structural shape, open assignments/certainty, epistemic
 state, immutable revision identity, relation endpoint anchors, fact/validity
 bounds and source-revision provenance separately. Only recognizable QH-8 locator
 payloads are displayed as literal quotations; arbitrary historical citation
-properties remain unmodified JSON. Source bodies are not invented/fetched through
+properties and nonconforming historical descriptor objects remain unmodified JSON. Source bodies are not invented/fetched through
 a new API; matching quotations are not a semantic-validity assertion. A failed
 request/freshness check discards visible pages and displays unavailable, not empty.
 No editing, confirmation, new policy, schema, service or browser session is added.
