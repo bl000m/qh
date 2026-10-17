@@ -34,10 +34,12 @@ def token(**changes):
     return jwt.encode(values, KEY, algorithm="RS256", headers={"kid": "current"})
 
 
-def build_auth(*, mapping=None, handler=None, settings=SETTINGS):
+def build_auth(*, mapping=None, handler=None, settings=SETTINGS, resolver=None):
     calls = []
     async def resolve(issuer, subject):
         calls.append((issuer, subject))
+        if resolver is not None:
+            return await resolver(issuer, subject)
         return (mapping if mapping is not None else {"external-alice": QH_ALICE}).get(subject)
     def jwks(request):
         assert str(request.url) == SETTINGS.jwks_url

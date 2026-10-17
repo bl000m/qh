@@ -11,13 +11,20 @@ operational Context Graph. Graphiti remains an archived prototype on its own bra
 schema and minimal contract corrections, without graph duplication or feature
 workflows. Further persistent migrations/deployment still need separate approval.
 
+[Flexible Semantic Persistence and Context Graph Architecture](flexible-semantic-persistence.md)
+explains the implemented SQL model through 0005, with an ER diagram, exact revision
+anchors, generic profiles and open descriptors, independent validation/provenance/time
+dimensions, and the internal authorized descriptor retrieval path. It distinguishes
+implemented storage from planned collaboration, snapshot sharing and public retrieval;
+it does not amend the Product Contract or ADRs.
+
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
 consolidated in main and active on the VPS at schema 0005 using images from
 `c723d32c5d0825f9232ece560e7e666e69dceb27`. Backend/frontend/MCP have no source
 mounts; the frozen Compose bundle is independent of Git worktrees. Persistent
 synthetic smoke, exact-ID restart and pending-intent recovery passed; see
-[deployment evidence](deployments.md). Production business routes remain deferred except QH-5
+[deployment evidence](deployments.md). Deployed business routes remain deferred except QH-5
 identity and owner authorization. See
 [ADR 0001](adr/0001-modular-architecture.md).
 
@@ -72,6 +79,18 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
+### QH-9 Context Space management (candidate, not deployed)
+
+`app/context` implements the Core ContextService management operations, depending
+only on Core repository/value contracts and the existing PolicyService. Core keeps
+its retrieval signature; QH-9 exposes no Understanding retrieval. The PostgreSQL
+adapter manages existing Space metadata; FastAPI validates wire inputs and uses
+the authenticated internal subject. Bootstrap supplies the same policy instance
+to security and service bindings. Create/list authorize the authenticated subject's
+own namespace; read/rename authorize owner access before metadata lookup. There
+are no sharing grants, owner transfers or deletion lifecycle in this increment.
+No schema change, second identity system, graph dependency or runtime deployment.
+
 ### Identity and authorization (QH-5 / QH-29)
 
 [Identity ADR](adr/0002-identity-and-authorization.md) records the approved
@@ -99,7 +118,7 @@ test-only. Remote delegated MCP OAuth is outside QH-5.
 
 QH-29 formalizes `PolicyService` as the one logical resource-decision point,
 initially implemented by the backend's existing `OwnerPolicyService`, with
-replaceability through explicit injection. Future REST (QH-9) and MCP (QH-24)
+replaceability through explicit injection. Candidate REST metadata (QH-9) and future MCP (QH-24)
 share that policy through the authenticated backend; MCP has no direct DB access,
 duplicate owner rules or unverified-identity bypass. Default deny precedes private
 reads, semantic retrieval and LLM disclosure. Authentication, resource decisions
@@ -119,15 +138,17 @@ not a currently implemented filtering engine.
 - `app/policy`, `app/projections` and `app/chat` own their request/result values
   and PolicyService, ProjectionService and ChatService Protocols. Responsibilities
   and method signatures are documented in ADR 0001. OwnerPolicyService implements
-  the owner-only READ_CONTEXT gate; other actions fail closed.
+  owner READ_CONTEXT and QH-9's own-namespace create/list/name-update actions;
+  unrelated actions still fail closed. Projection/chat remain unbound in QH-9.
 - `app/composition.py` holds the explicitly supplied ApplicationServices bindings.
   `app/main.py:create_app(services=...)` composes the HTTP transport. Services are
   optional for the scaffold; authentication without bindings fails closed. The
   runtime factory `app/bootstrap.py:create_runtime_app` binds the OIDC verifier,
   PostgreSQL identity/owner reader and Core owner policy explicitly.
-- `app/api` owns FastAPI routes. The only current business-independent route
-  routes are `/health` and `/auth/me`. Private owner probe routes exist only in
-  tests, and no access endpoint is installed in production.
+- `app/api` owns FastAPI routes. `/health` and `/auth/me` remain available; the
+  QH-9 candidate adds `/context-spaces` POST/GET and UUID detail GET/PATCH-name.
+  Private owner probes remain test-only; no `/access` or Understanding retrieval
+  endpoint is installed. See [QH-9 contract and evidence](qh-9-context-spaces.md).
 - API, MCP and outbound adapters depend on Core interfaces. Core must never
   import FastAPI, Graphiti, MCP, adapters or provider SDKs. Composition roots
   assemble implementations through dependency injection.
@@ -139,7 +160,7 @@ not a currently implemented filtering engine.
   and incremental worker are bound by the backend lifespan. QH-8's optional Mistral
   adapter/manual experiment and offline extraction are merged internal composition
   (see below), not startup behavior or a released conversational write route.
-  Product CRUD/retrieval/chat routes remain QH-9/QH-10/QH-13 work.
+  QH-9 binds metadata CRUD in this candidate; retrieval/chat remain QH-10/QH-13.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.

@@ -33,6 +33,11 @@ task branch at a time. Deployed images and the frozen Compose bundle are indepen
 
 ## Planned demo sequence — 2026-10-17
 
+**QH-9 candidate:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
+implements POST/list/detail/PATCH-name through the existing ContextService,
+OIDC identity, PolicyService and canonical PostgreSQL. It is an unmerged increment
+of Demo A, not the full demo or a VPS deployment. No deletion/retrieval/UI is added.
+
 These are delivery milestones, **not implemented or deployed product capabilities**.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine
 [ADR 0003](docs/adr/0003-native-context-engine.md) and unified Understanding Engine
@@ -89,6 +94,10 @@ This simplified ERD describes deployed schema **0005**. It preserves all 0004
 tables; 0005 removes only the unused null legacy category column/check. Composite foreign keys enforce matching space and stable-ID/revision
 anchors. Revisions, provenance, type schemas and semantic rules are immutable;
 unknown fact/validity times stay null and are separate from acquisition metadata.
+
+See [Flexible Semantic Persistence and Context Graph Architecture](docs/flexible-semantic-persistence.md)
+for the detailed canonical ER diagram, generic profiles, open descriptors,
+revision governance, provenance and authorized internal retrieval boundaries.
 
 ```mermaid
 erDiagram

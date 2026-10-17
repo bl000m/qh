@@ -4,6 +4,7 @@ from app.api.health import router as health_router
 from app.composition import ApplicationServices
 from app.api.auth import router as auth_router
 from app.api.security import SecurityBindings
+from app.api.context_spaces import router as spaces_router
 
 
 def create_app(*, services: ApplicationServices | None = None,
@@ -15,10 +16,13 @@ def create_app(*, services: ApplicationServices | None = None,
     or concrete adapters. This factory does not create any outbound adapter.
     """
     application = FastAPI(title="QH API", version="0.1.0", lifespan=lifespan)
+    if services is not None and security is not None and services.policy is not security.policy:
+        raise ValueError("Application and security must share the same PolicyService")
     application.state.services = services
     application.state.security = security
     application.include_router(health_router)
     application.include_router(auth_router)
+    application.include_router(spaces_router)
     return application
 
 

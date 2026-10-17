@@ -10,7 +10,7 @@ from app.projections.services import ProjectionService
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ApplicationServices:
-    """Required inbound service implementations; no defaults or auto-discovery.
+    """Explicit inbound services; unimplemented feature facets remain unbound.
 
     Service implementations receive their ContextEngine/LLMProvider and other
     dependencies through their own constructors. Transport factories receive
@@ -19,5 +19,5 @@ class ApplicationServices:
 
     context: ContextService
     policy: PolicyService
-    projections: ProjectionService
-    chat: ChatService
+    projections: ProjectionService | None = None
+    chat: ChatService | None = None

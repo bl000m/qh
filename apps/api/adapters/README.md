@@ -20,8 +20,14 @@ The full-generation publisher remains required by `ProjectionWorker.rebuild`;
 recovery regressions exercise that actual maintenance path, including graph loss,
 lost acknowledgement, transaction failure and concurrent rebuilds. `context/runtime.py` binds
 the actual worker and authorized engine in the backend lifespan (VPS schema 0005,
-main c723d32). There is no public context route; QH-8 offline generation is
+main c723d32). The deployed image has no public context route; QH-8 offline generation is
 explicit internal composition, not a startup binding.
+
+QH-9's candidate `postgres/spaces.py` implements the Core Space metadata repository
+on existing tables: parameterized create/list/read/name-update, active-user and
+owner predicates, short transactions and sanitized availability failures. Runtime
+composition binds it to ContextService and the existing owner policy for the new
+REST routes. No migration, Neo4j dependency, deletion or VPS activation follows.
 The consolidated runtime accepts 0004/0005 without startup migrations; deployed app images have no source mounts. Implementations accept clients/readers through explicit constructors and
 translate SDK requests/results into QH domain values. SDK objects and exceptions
 must not leak into port signatures. Never import these modules from Core.

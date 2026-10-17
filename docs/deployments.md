@@ -15,6 +15,19 @@ application source mounts. Application image revision/mounts were rechecked
 read-only for this alignment; no new schema probe or activation was performed.
 The artifact identities and executed deployment records below are preserved.
 
+## QH-9 metadata REST candidate — 2026-10-17 (not deployed)
+
+Executable/OCI revision `2f8386aa2efb8d74e30ceb589ab4abc1a6d45c76`, test image
+`qh9-context-spaces:2f8386aa2efb8d74e30ceb589ab4abc1a6d45c76`, immutable ID
+`sha256:7f5de34d7194d15646291fb6963c0ac20c8ede3974f4999bc79c6f7406a8460b`.
+Built from Git archive with the existing hash-locked development image recipe;
+no source bind/private configuration in the test container. The new metadata routes
+reuse OIDC/PolicyService and existing SQL tables. Tests use unique disposable
+databases, never the persistent QH database; schema 0005 on the VPS is unchanged.
+See [contract and verification](qh-9-context-spaces.md). This is a local test
+artifact, not Demo A deployment; that window belongs to QH-12 and requires
+separate authorization. The VPS continues running the c723d32 application images.
+
 ## Offline personal-review package — QH-33 v2, 2026-10-16 (not deployed)
 
 Executable/OCI revision `f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, image

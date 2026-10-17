@@ -26,6 +26,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-9 candidate REST metadata management: authenticated create/list/detail and
+  name-only update, existing owner policy/identity mapping, bounded UUID pagination
+  and canonical PostgreSQL persistence. Foreign/missing IDs share a uniform denial;
+  SQL owner predicates fence stale permissions. No lifecycle/delete, schema change,
+  Understanding retrieval, UI or deployment. Isolated HTTP/SQL/reopen regressions.
+
 - QH-33 offline proposition benchmark, separate draft metrics and blank independent
   review packet; synthetic positive/mutated controls expose remaining semantic
   gaps. Complete literal temporal-evidence tokens now reject timestamp prefixes

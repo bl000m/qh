@@ -7,9 +7,12 @@ from contextlib import asynccontextmanager
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
 from adapters.postgres.config import database_url
 from adapters.postgres.security import PostgresSecurityReader
+from adapters.postgres.spaces import PostgresContextSpaceRepository
 from app.api.security import SecurityBindings
 from app.main import create_app
 from app.policy.owner import OwnerPolicyService
+from app.context.service import ManagedContextService
+from app.composition import ApplicationServices
 
 
 def create_runtime_app():
@@ -57,6 +60,10 @@ def create_runtime_app():
                 application.state.native_context = None
 
     return create_app(
+        services=ApplicationServices(
+            context=ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()), policy=policy),
+            policy=policy,
+        ),
         security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy),
         lifespan=lifespan,
     )
