@@ -43,6 +43,22 @@ write Understanding State. Mistral configuration is prepared but remains disable
 until separately authorized; no API key is exposed to the browser. See
 [ADR 0006](docs/adr/0006-scoped-contextual-chat.md) for policy and limits.
 
+## Demo A preparation and next UX direction — 2026-10-17
+
+The [three-Space operational plan](docs/qh-13-demo-a-plan.md) reuses the original
+QH-8 project/health/personal fixtures: 18 proposed revisions, three sources and new
+Alice-owned Spaces. Offline rehearsal passes; persistent seed is **NOT EXECUTED**
+and needs explicit write approval. Even six fixture revisions can exceed the chat
+byte budget; the mock returns excerpts, not an interpretation of the question.
+
+The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
+sets the **next**, separately scoped UX increment: login to `Mon environnement`,
+Space overview, primary contextual chat, expandable `Explorer la compréhension`
+and supplied QH branding. The current QH-13 layout and OIDC flow are unchanged.
+The presentation's future Domain hierarchy creates no Domain model or sharing.
+The proposed UX ticket awaits scope confirmation and owner assets; no ticket was
+created. Real Mistral remains separately consented/budgeted, maximum EUR 5.
+
 ## Planned demo sequence — 2026-10-17
 
 **QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)

@@ -207,32 +207,24 @@ sudo -n docker run --rm --network qh30-native-test \
   -u /workspace/scripts/run_qh30_integration.py
 ```
 
-### Optional persistent synthetic demo plan — NOT EXECUTED
+### Persistent synthetic demo and next UX — planning addendum, NOT EXECUTED
 
-The first populated chat is tested only in isolated fixtures/CI. Alice's existing
-VPS Spaces remain unpopulated by this task. If the owner later wants a persistent
-populated demo:
+The [three-Space operational plan](qh-13-demo-a-plan.md) supersedes the earlier
+optional single-batch outline: separate project/health/personal fixture Spaces,
+18 proposed revisions, explicit ID/hash manifest and creation-receipt reconciliation,
+backup/failure controls, Alice/Bob acceptance and Mac checks. No persistent import
+is authorized or executed. Offline rehearsal validates all three six-record batches;
+with simulation UUIDs each chat context contains only five records and the mock
+quotes three, illustrating bounded non-semantic retrieval rather than comprehension.
 
-1. Read-only preflight: authenticated internal Alice identity, the exact chosen
-   owned Space, schema 0005, existing pinned profiles, graph readiness and private
-   manifest/checkpoint. Do not reassign historical data or repoint the test harness
-   at QH. Freeze a clearly synthetic conversation and deterministic source/item
-   IDs, literal quotations/spans and input fingerprint using existing QH-8 machinery.
-2. Present exact rows/IDs/Space/content/provenance and idempotency behavior. **STOP
-   AND ASK before storing the source**. Existing identical source is reused;
-   conflicting identity/content stops without replacement or new hidden IDs.
-3. Prepare one atomic proposal checkpoint, normally six generic fixture meanings/
-   relations with exact source support, using the existing offline fixture provider,
-   resolver and CanonicalRepository/outbox. **STOP AND ASK before publication**;
-   preserve proposed state and null confirmed pointer. Exact replay returns the
-   same IDs; no duplicate batch, type registration, paid call or schema change.
-4. Let the existing worker project only that committed batch; verify the same IDs
-   through browse and explicitly opted-in mock chat. Retain all source/checkpoint/
-   revision evidence and demo data. No cleanup/delete/confirmation is implied.
-
-This is a bounded future operational plan, not QH-39 implementation or present
-write authorization. A real Mistral experiment requires its own disclosure/budget
-gate even if the fixture data are synthetic.
+The [later owner UX amendment](product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
+records environment landing, primary chat with expandable exploration and supplied
+QH branding for a separate confirmed ticket, not this PR's implementation. Current
+browse-first UI tests still describe the code under review. Assets are not assumed
+present; no ticket, redesign or Keycloak theme activation is performed. QH-39 remains
+future acquisition, and real Mistral disclosure/spending needs its own synthetic-only
+scope and maximum-EUR-5 gate. Original captures, ledgers and execution evidence
+remain unchanged. This addendum changes documentation/planning only.
 
 ## Source and verified units
 

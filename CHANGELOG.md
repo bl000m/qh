@@ -15,6 +15,16 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### Demo A operating plan and next UX direction — 2026-10-17
+
+- Document a three-Space fixture seed plan with proposed-only publication, source/
+  revision hashes, idempotent canonical replay, explicit create-receipt reconciliation,
+  backup/failure controls and Mac checks. Memory-only offline rehearsal validates
+  18 revisions and exposes partial chat coverage; no persistent seed is executed.
+- Record owner direction for environment landing, primary chat, expandable explorer
+  and supplied QH visual identity as a **future** bounded UX ticket. No UI redesign,
+  new Domain model, ticket creation, paid call or runtime change in this addendum.
+
 ### Owner-approved browse-first QH-12 evolution — 2026-10-17
 
 - New scoped read-only canonical browsing alongside unchanged QH-10 search:
