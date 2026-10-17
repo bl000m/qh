@@ -33,6 +33,11 @@ task branch at a time. Deployed images and the frozen Compose bundle are indepen
 
 ## Planned demo sequence — 2026-10-17
 
+**QH-9 candidate:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
+implements POST/list/detail/PATCH-name through the existing ContextService,
+OIDC identity, PolicyService and canonical PostgreSQL. It is an unmerged increment
+of Demo A, not the full demo or a VPS deployment. No deletion/retrieval/UI is added.
+
 These are delivery milestones, **not implemented or deployed product capabilities**.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine
 [ADR 0003](docs/adr/0003-native-context-engine.md) and unified Understanding Engine
