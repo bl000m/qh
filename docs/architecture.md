@@ -79,7 +79,25 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
-### QH-11 browser client (candidate, not deployed)
+### QH-12 structured understanding view (candidate, not deployed)
+
+The existing browser detail composes the QH-11 metadata view with read-only QH-10
+canonical retrieval. Every request names one authorized Space, an explicit
+current/proposed/history view and exactly one approved text/descriptor selector.
+No initial browse-all request, empty query, wildcard or fixed meaning vocabulary
+is introduced. Unclassified items remain searchable by text. Cursor pagination
+uses the backend's view-filtered pages; no frontend visibility filtering.
+
+Rendering preserves structural shape, open assignments/certainty, epistemic
+state, immutable revision identity, relation endpoint anchors, fact/validity
+bounds and source-revision provenance separately. Only recognizable QH-8 locator
+payloads are displayed as literal quotations; arbitrary historical citation
+properties remain unmodified JSON. Source bodies are not invented/fetched through
+a new API; matching quotations are not a semantic-validity assertion. A failed
+request/freshness check discards visible pages and displays unavailable, not empty.
+No editing, confirmation, new policy, schema, service or browser session is added.
+
+### QH-11 browser client (merged, not deployed)
 
 The existing React 18/TypeScript/Vite client owns browser navigation and Space
 metadata views only. Its HTTP client uses QH-9 public REST contracts through the

@@ -1,13 +1,13 @@
+import { revisionPage } from './understanding';
+import type { RevisionPage, RevisionQuery } from './understanding';
 // QH-9 wire contract; never import backend implementation or accept a UI owner.
 export interface ContextSpace {
   id: string; owner_id: string; name: string; status: string;
   created_at: string; updated_at: string;
 }
 export interface SpacePage { items: ContextSpace[]; next_after_id: string | null }
-export class ApiError extends Error {
-  constructor(public readonly status: number) { super('QH request failed'); }
-}
-export const isUuid = (v: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+export { ApiError, isUuid } from './transport';
+import { ApiError, isUuid } from './transport';
 export const validName = (v: string) => v.trim().length > 0 && [...v].length <= 256 && !v.includes('\0');
 function space(value: unknown): ContextSpace {
   const v = value as ContextSpace | null;
@@ -30,6 +30,9 @@ export class QhApi {
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async query(query: RevisionQuery): Promise<RevisionPage> {
+    return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);
   }
   async me(): Promise<string> {
     const v = await this.request('/auth/me') as { user_id?: string };
