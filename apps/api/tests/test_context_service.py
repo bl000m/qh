@@ -1,7 +1,9 @@
 """Policy ordering and scope checks without a database or transport."""
 
 import asyncio
+import inspect
 from datetime import datetime, timezone
+from typing import get_type_hints
 
 import pytest
 
@@ -15,6 +17,13 @@ ALICE, BOB = SubjectId("alice"), SubjectId("bob")
 A = ContextId("space-a")
 SPACE = ContextSpace(id=A, owner_id=ALICE, name="A", status="active",
                      created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc))
+
+
+@pytest.mark.parametrize('method', ['create_space', 'list_spaces', 'get_space', 'rename_space'])
+def test_management_implementation_matches_core_contract(method):
+    expected, actual = getattr(ContextService, method), getattr(ManagedContextService, method)
+    assert get_type_hints(expected) == get_type_hints(actual)
+    assert tuple(inspect.signature(expected).parameters) == tuple(inspect.signature(actual).parameters)
 
 
 @pytest.mark.parametrize("action,subject,contexts,allowed", [

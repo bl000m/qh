@@ -8,9 +8,10 @@ from app.core.models import (ContextId, ContextRequest, ContextResult, ContextSp
 class ContextService(Protocol):
     """Inbound Space management and separately scoped understanding retrieval.
 
-    Implementations coordinate the policy boundary and ContextEngine. They must
-    return scoped QH search hits rather than infrastructure entities. Defines only the
-    contract; QH-9 implements metadata management, not understanding retrieval.
+    Implementations authorize metadata operations through the application policy.
+    Retrieval separately coordinates policy/ContextEngine and returns scoped QH
+    hits rather than infrastructure entities. QH-9 implements metadata management,
+    not understanding retrieval.
     """
 
     async def retrieve(self, request: ContextRequest) -> ContextResult: ...

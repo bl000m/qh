@@ -47,6 +47,7 @@ def main():
         "tests/test_native_context.py", "tests/test_architecture.py",
         "tests/test_contracts.py", "tests/test_identity_migration.py",
         "tests/test_oidc_security.py", "tests/test_owner_policy.py",
+        "tests/test_context_service.py", "tests/test_context_spaces_api.py", "tests/test_context_spaces_sql.py",
     ], plugins=[RequireExecuted()])
 
 

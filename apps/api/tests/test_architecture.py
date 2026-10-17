@@ -99,6 +99,7 @@ sys.path.insert(0, sys.argv[1])
 from app.core.ports import ContextEngine, LLMProvider
 from app.understanding.extractor import UnderstandingExtractor
 from app.core.services import ContextService
+from app.context.service import ManagedContextService
 from app.policy.services import PolicyService
 from app.projections.services import ProjectionService
 from app.chat.services import ChatService
