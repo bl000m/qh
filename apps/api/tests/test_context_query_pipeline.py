@@ -168,6 +168,23 @@ def test_relations_temporal_bounds_and_direct_id_bypass(retrieved):
         assert client.post(PATH,headers=headers('external-bob'),json=body).status_code==422
 
 
+def test_visibility_is_applied_before_page_limit(retrieved):
+    p,client=retrieved
+    # This matching proposal sorts before every other UUID. A filter applied
+    # after LIMIT 1 would hide the real confirmed current revision.
+    proposal=deepcopy(p['choice'])
+    proposal.update(id='00000000-0000-0000-0000-000000000000',item_id=str(uuid4()))
+    p['repo'].save(revisions=[proposal])
+    drain(p['worker'])
+    for selector in ({'text':'pilot'},{'descriptors':['decision']}):
+        current=request(client,p,view='current',limit=1,**selector)
+        assert current.status_code==200,current.text
+        assert [r['revision_id'] for r in current.json()['items']]==[p['confirmed']['id']]
+        assert current.json()['next_after_revision_id'] is None
+        history=request(client,p,view='history',limit=1,**selector)
+        assert history.json()['items'][0]['revision_id']==proposal['id']
+
+
 @pytest.mark.parametrize('corruption',['marker','text','evidence','endpoint','missing'])
 def test_graph_corruption_fails_closed(retrieved,corruption):
     p,client=retrieved
