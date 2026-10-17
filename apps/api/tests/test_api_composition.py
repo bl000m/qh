@@ -36,4 +36,5 @@ def test_health_scaffold_does_not_construct_business_services() -> None:
         "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc", "/health", "/auth/me",
         "/context-spaces", "/context-spaces/{context_id}",
         "/context-spaces/query",
+        "/context-spaces/{context_id}/understanding",
     }

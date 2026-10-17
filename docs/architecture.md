@@ -32,6 +32,28 @@ No Core responsibility, public contract, canonical schema or provider policy cha
 See
 [ADR 0001](adr/0001-modular-architecture.md).
 
+## Product decisions and rationale
+
+The owner-approved [ADR 0005](adr/0005-browse-first-context-understanding.md)
+adds browse-first navigation of canonical understanding to QH-12, preserving
+[Product Contract](product/QH_PRODUCT_CONTRACT.md#browse-first-understanding--owner-amendment-2026-10-17),
+ADR 0003's PostgreSQL/derived graph separation and ADR 0004's governed proposal
+inputs. Its decision matrix records rationale, alternatives, UX/architecture
+consequences, limits and open questions. The new authenticated read-only GET
+`/context-spaces/{id}/understanding` uses a distinct `ContextBrowse` value through
+ContextService and the existing native service; it does not relax QH-10's search
+selector. CanonicalRepository selects bounded owned IDs with filters before LIMIT;
+Neo4j exact-ID verification, shared hydration, readiness and policy checks precede
+disclosure. Empty selections also fail closed on unavailable/stale graph state.
+No table, migration, new service, ownership rule or provider change.
+
+The UI previews literal existing excerpts, current heads and proposals separately;
+page-local descriptor groups are not global counts or a taxonomy. Readable cards
+lead to reused canonical revision detail and exact history/relation navigation.
+Search is secondary. Canonical-summary selection, LLM synthesis, editing/human
+validation and advanced graph navigation remain outside this increment. See
+[verifiable QH-12 criteria](qh-12-context-understanding.md#owner-approved-acceptance-criteria).
+
 ## Current code and planned product flows — 2026-10-17
 
 QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via
@@ -86,10 +108,11 @@ independent of backend startup and has no DB credentials or data network access.
 ### QH-12 structured understanding view (unmerged, active in authorized development POC)
 
 The existing browser detail composes the QH-11 metadata view with read-only QH-10
-canonical retrieval. Every request names one authorized Space, an explicit
-current/proposed/history view and exactly one approved text/descriptor selector.
-No initial browse-all request, empty query, wildcard or fixed meaning vocabulary
-is introduced. Unclassified items remain searchable by text. Cursor pagination
+canonical retrieval. Navigation names one authorized Space and an explicit
+current/proposed/history view. Complementary QH-10 search additionally requires
+exactly one approved text/descriptor selector.
+The later browse-first amendment adds a real no-selector GET; QH-10 POST remains
+selector-based. No empty query, wildcard or fixed meaning vocabulary is introduced. Unclassified items remain searchable by text. Cursor pagination
 uses the backend's view-filtered pages; no frontend visibility filtering.
 
 Rendering preserves structural shape, open assignments/certainty, epistemic

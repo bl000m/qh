@@ -1,5 +1,70 @@
 # QH-12 — structured Context Space view and Demo A preparation
 
+## Current scope — browse-first amendment, 2026-10-17
+
+The owner approved a navigable Context Space experience and a genuine read-only
+browse operation before PR #13 merge. [ADR 0005](adr/0005-browse-first-context-understanding.md)
+supersedes the earlier search-required UX recorded below, without rewriting that
+checkpoint or changing QH-10 POST selector semantics. This remains the same
+QH-12 branch, checkout and PR. Owner visual review, merge and Jira closure remain pending.
+
+## Product decisions and rationale
+
+“QH does not require users to know what to search for before showing them what
+their Context Space understands. Browsing is the primary experience; search is a
+complementary capability.”
+
+The [ADR decision matrix](adr/0005-browse-first-context-understanding.md#product-decisions-and-rationale)
+records motivations, alternatives, architectural/UX consequences and open points
+for all eight owner decisions. The [Product Contract](product/QH_PRODUCT_CONTRACT.md#browse-first-understanding--owner-amendment-2026-10-17)
+is the functional authority. Canonical content, open annotations, entity/relation
+shape, immutable source/revision provenance and epistemic validation remain distinct.
+
+The overview requests bounded current/proposed/history pages and displays existing
+literal excerpts as `Aperçu structuré`, never validated synthesis or importance
+ranking. Navigation uses exact canonical filters, with groups explicitly scoped to
+loaded pages. No global facet counts or complete summary are inferred. A canonical
+summary selection convention is not approved; a summary-labelled record is ordinary
+content, not an automatically selected/validated synthesis. Generative synthesis,
+interactive confirmation/editing and advanced graph navigation remain future work.
+
+`GET /context-spaces/{id}/understanding` reuses the QH-10 canonical revision page.
+View is mandatory; limit 1–100, UUID cursor, descriptor/tentative, kind/unclassified,
+item/revision and explicit related-item filters are documented in ADR 0005.
+The existing service/policy, owned canonical selection, exact Neo4j assertion
+verification, hydration and freshness checks apply. No SQL-only bypass. Search
+remains in `Rechercher dans ce contexte`; it still uses the unchanged QH-10 POST.
+
+## Owner-approved acceptance criteria
+
+1. Opening an owned populated Space renders `Aperçu structuré` without a search request; literal excerpts, ordering and partial coverage are explicit, with no invented narrative or ranking.
+2. Current confirmed understanding, proposed content and retained history are visibly distinct. Proposed-only, historical-only and truly empty Spaces are distinguishable; no automatic confirmation.
+3. New read-only GET `/context-spaces/{id}/understanding` requires explicit view and bounded UUID keyset pagination; optional exact navigation filters apply before LIMIT. QH-10 POST still requires its original selector.
+4. OIDC internal identity and the shared PolicyService authorize before private reads and before disclosure on every page; missing/foreign Spaces yield uniform 404. Known IDs/cursors and arbitrary headers are not capabilities.
+5. Canonical candidate IDs go through native graph verification, common canonical hydration/provenance/anchors and repeated readiness checks. Pending, missing/corrupt graph and concurrent changes fail closed with 503, including empty selections; no SQL-only fallback.
+6. Open/multiple/tentative/absent descriptors and all three structural kinds remain navigable. Facets/counts derived from loaded pages never claim global coverage; subsequent pages are explicit user actions.
+7. Shared revision renderer supports readable detail, exact relation predicate/endpoints, source provenance/literal quotes, temporal unknowns, item history and incident explicit relations; no inferred entity/relation or changed state.
+8. Progressive disclosure and secondary search preserve keyboard/mobile usability. Loading, failed/late responses, changed filters and changed Spaces disclose no stale private content.
+9. Real isolated Chromium/Keycloak/PostgreSQL 0005/Neo4j tests, native/OIDC/Core/QH-9/10 regressions, lint and complete latest-head CI pass with executed evidence, not static claims.
+10. English ADR 0005, Product Contract amendment, architecture and QH-12 Product decisions and rationale record adopted choices, motivations, alternatives, consequences, limits and open questions with cross-links.
+11. Existing single-checkout hot reload remains operational on original ports, with no infrastructure/MCP/realm/volume recreation, migration, paid call or persistent demo import. Empty Alice Spaces remain empty; a populated VPS demo requires separate write consent.
+12. PR #13 remains the only task PR, unmerged for owner visual review; Jira stays open until reviewed merge and authorized closure. QH-13 is not started.
+
+## Execution status for this amendment
+
+Implementation and new tests are present; verification is in progress. No claim of
+complete acceptance or owner visual review is made here. Executed evidence and
+limits will be appended after the isolated runs and latest-head CI. The earlier
+503-native/24-browser checkpoint below is historical evidence, not verification of
+the new browse path. No populated synthetic data has been written to the VPS.
+
+## Historical pre-browse implementation and evidence (preserved)
+
+The following report describes the earlier selector-based contract. Statements
+that browsing was excluded or required new approval belong to that earlier scope;
+the owner's later decision and ADR 0005 above now govern the new implementation.
+
+
 2026-10-17. [QH-12](https://contextlab.atlassian.net/browse/QH-12) uses the existing
 React client, ephemeral OIDC session, QH-9 metadata routes and QH-10 canonical
 retrieval. No backend/Core/public contract, schema, policy or provider change.

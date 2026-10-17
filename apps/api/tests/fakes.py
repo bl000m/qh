@@ -62,6 +62,9 @@ class AlternateLLMProvider:
 class FakeContextService:
     engine: ContextEngine
 
+    async def browse(self, request: ContextRequest) -> ContextResult:
+        raise NotImplementedError('Explicit browse test double required')
+
     async def create_space(self, *, subject_id: SubjectId, name: str) -> ContextSpace:
         raise NotImplementedError("Retrieval-only test double")
 

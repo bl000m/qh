@@ -53,9 +53,12 @@ no sharing or new session backend. QH-11 and the QH-9/10 API are now active in t
 authorized VPS POC; MCP alone retains the earlier c723d32 app image.
 
 **QH-12 candidate:** [structured Context detail](docs/qh-12-context-understanding.md)
-uses explicit current/proposed/history and text/open-descriptor searches, showing
+opens with a deterministic structured preview and bounded no-selector navigation;
+QH-10 text/open-descriptor search remains complementary. It preserves
 canonical revisions, state, temporal bounds, source provenance and relation anchors.
-No fake browse-all, editing or automatic confirmation. The owner authorized
+The owner-approved [ADR 0005](docs/adr/0005-browse-first-context-understanding.md)
+records browse-first rationale, alternatives and limits. No fabricated search,
+editing or automatic confirmation. The owner authorized
 [hot-reload VPS activation before merge](docs/qh-development-stack.md); PR #13
 remains open for personal browser review. Existing Understanding data remain under
 their original synthetic owners; Alice's new empty Space has no extracted items.

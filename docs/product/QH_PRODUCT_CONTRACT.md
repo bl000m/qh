@@ -4,6 +4,39 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Browse-first understanding — owner amendment, 2026-10-17
+
+> QH does not require users to know what to search for before showing them what their Context Space understands. Browsing is the primary experience; search is a complementary capability.
+
+A Context Space is navigable evolving understanding. Opening it must expose
+accessible existing understanding without first requiring the owner to guess a
+query. Search remains complementary. Canonical content, open descriptors,
+structural entities/relations, original sources, immutable revisions and provenance
+are distinct; no descriptor is a mandatory domain category or proof of truth.
+
+The structured preview is deterministic: literal excerpts and data-derived groups,
+labelled with bounded/partial coverage, not interpretative narrative or a validated
+synthesis. An explicitly validated canonical synthesis and a future LLM-generated
+proposal are different artifacts; QH-12 defines no summary registration/selection
+convention and runs no generative synthesis. A summary-like descriptor alone grants
+neither summary authority nor validation. No automatic priority or semantic grouping.
+
+Current confirmed heads, proposals and complete retained history remain separate.
+An empty current view does not mean an empty Space; proposals and historical-only
+content must be discoverable. Descriptor assignment certainty is independent from
+human validation and real-world truth. Progressive disclosure proceeds from overview
+to exploration, readable detail, sources and revisions; technical IDs/JSON remain
+available without dominating the overview. No interactive confirmation/editing,
+new ontology or advanced graph UI is implied.
+
+[ADR 0005](../adr/0005-browse-first-context-understanding.md#product-decisions-and-rationale)
+records the adopted decisions, motivations, alternatives, consequences and open
+questions. The scoped read-only browse API preserves the canonical PostgreSQL,
+replaceable native graph and shared policy guarantees of ADRs 0003/0004; QH-10
+search remains unchanged. [QH-12 acceptance](../qh-12-context-understanding.md#owner-approved-acceptance-criteria)
+makes this decision verifiable. Approval of the decision is not evidence of
+implementation completion, test success or human acceptance.
+
 ## Principi confermati: definizione e oggetto fondamentale
 
 QH è un ambiente sovrano di contesto, indipendente dai provider e dai modelli

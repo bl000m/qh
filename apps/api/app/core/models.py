@@ -147,6 +147,41 @@ class ContextQuery:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class ContextBrowse:
+    """One scoped, bounded navigation page; deliberately not a search selector."""
+
+    context_id: ContextId
+    view: str
+    limit: int = 20
+    after_revision_id: UnderstandingRevisionId | None = None
+    descriptor: str | None = None
+    include_tentative: bool = False
+    kind: str | None = None
+    unclassified: bool = False
+    item_id: UnderstandingItemId | None = None
+    revision_id: UnderstandingRevisionId | None = None
+    related_item_id: UnderstandingItemId | None = None
+
+    def __post_init__(self):
+        if not self.context_id or self.view not in ('current', 'proposed', 'history'):
+            raise ValueError('Explicit scope and view required')
+        if type(self.limit) is not int or not 1 <= self.limit <= 100:
+            raise ValueError('Bounded page required')
+        if type(self.include_tentative) is not bool or type(self.unclassified) is not bool:
+            raise ValueError('Explicit boolean filters required')
+        if self.kind not in (None, 'item', 'entity', 'relation'):
+            raise ValueError('Invalid structural kind')
+        if self.descriptor is not None and (not isinstance(self.descriptor, str) or not self.descriptor):
+            raise ValueError('Nonempty exact descriptor required')
+        if self.include_tentative and self.descriptor is None or self.unclassified and self.descriptor is not None:
+            raise ValueError('Incompatible navigation filters')
+
+    @property
+    def context_ids(self):
+        return (self.context_id,)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ContextResult:
     hits: tuple[ContextSearchHit, ...]
     revisions: tuple[CanonicalRevision, ...] = ()
@@ -156,7 +191,7 @@ class ContextResult:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ContextRequest:
     subject_id: SubjectId
-    query: ContextQuery
+    query: ContextQuery | ContextBrowse
 
 
 class MessageRole(str, Enum):

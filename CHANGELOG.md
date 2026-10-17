@@ -7,6 +7,18 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+### Owner-approved browse-first QH-12 evolution — 2026-10-17
+
+- New scoped read-only canonical browsing alongside unchanged QH-10 search:
+  explicit revision view, bounded keyset pages, exact navigation filters, native
+  graph/canonical validation, shared policy and fail-closed freshness.
+- Deterministic structured preview and page-local open descriptor grouping lead
+  to readable detail, exact relation anchors and item history. No LLM synthesis,
+  semantic taxonomy, editing or confirmation. English ADR 0005/Product Contract
+  amendment and criterion-by-criterion QH-12 scope preserve previous history.
+- Verification for this increment is recorded separately in the QH-12 report;
+  the previous 503-native/24-browser checkpoint is not proof of browsing.
+
 ### Owner-authorized VPS development POC — 2026-10-17
 
 - Existing project `qh`: activate QH-11/12 frontend and QH-9/10 backend from the

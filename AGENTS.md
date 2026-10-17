@@ -38,6 +38,17 @@ are open-ended content, not mandatory registry types or the eleven QH-4 categori
 Optional specialized schemas/rules remain supported; never rewrite applied
 migrations or immutable historical bindings to force a new vocabulary.
 
+## Browse-first product decision
+
+Read [ADR 0005](docs/adr/0005-browse-first-context-understanding.md) and the Product
+Contract's browse-first amendment before changing understanding UX or retrieval.
+Browsing is primary; search complements it. Preserve deterministic-preview versus
+validated/generative synthesis distinctions, open data-derived groups, epistemic
+states and progressive disclosure. No global counts from partial pages, semantic
+inference from descriptors, or SQL-only graph bypass. Search QH-10's selector
+contract remains distinct. The ADR and QH-12 report distinguish implemented/tested
+capabilities from future work; never infer acceptance from the approved direction.
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

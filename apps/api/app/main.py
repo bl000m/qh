@@ -6,6 +6,7 @@ from app.api.auth import router as auth_router
 from app.api.security import SecurityBindings
 from app.api.context_spaces import router as spaces_router
 from app.api.context_query import router as query_router
+from app.api.context_browse import router as browse_router
 
 
 def create_app(*, services: ApplicationServices | None = None,
@@ -25,6 +26,7 @@ def create_app(*, services: ApplicationServices | None = None,
     application.include_router(auth_router)
     application.include_router(spaces_router)
     application.include_router(query_router)
+    application.include_router(browse_router)
     return application
 
 
