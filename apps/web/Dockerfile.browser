@@ -1,0 +1,11 @@
+# Test-only image. Reuses the app scaffold and pinned Chromium distribution.
+FROM mcr.microsoft.com/playwright:v1.64.1-noble
+WORKDIR /workspace
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/shared/package.json packages/shared/package.json
+RUN npm ci --no-audit --no-fund
+COPY tsconfig.base.json ./
+COPY apps/web apps/web
+COPY packages/shared packages/shared
+CMD ["npm", "run", "test", "--workspace", "apps/web"]

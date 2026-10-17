@@ -1,0 +1,23 @@
+{
+  "ticket": "QH-11",
+  "browser": "Chromium",
+  "oidc": "Keycloak 26.4.7",
+  "api": "production bootstrap",
+  "postgres": "16.8 tmpfs test-only",
+  "backend_image": "sha256:c93049dcc6b73938c7af6da7ea23db32e3c504d3772ca8463a973339241c2169",
+  "browser_image": "sha256:cfb8548e68d0564f02c1526aed1695d64b1b1d89625a5f6366ba538caafed429",
+  "browser_and_contract_checks": "PASS",
+  "existing_real_oidc_regression": "PASS",
+  "published_ports": [],
+  "live_qh_access": false,
+  "paid_calls": 0,
+  "frontend_checks_passed": 14,
+  "frontend_checks_skipped": 0,
+  "browser_suite_seconds": 28.3,
+  "existing_oidc_regression_passed": 1,
+  "existing_oidc_regression_deselected": 1,
+  "existing_oidc_regression_seconds": 10.78,
+  "backend_network_disabled_regressions_passed": 96,
+  "source_scope": "QH-11 frontend/tests/harness; backend identical to reviewed QH-10",
+  "independent_human_review": false
+}
