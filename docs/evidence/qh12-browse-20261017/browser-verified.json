@@ -1,0 +1,18 @@
+{
+  "ticket": "QH-12",
+  "browser": "Chromium",
+  "oidc": "Keycloak 26.4.7",
+  "api": "production bootstrap",
+  "postgres": "16.8 tmpfs test-only",
+  "backend_image": "sha256:eb7e9cf66e105b84cff281b342d80d45c1394c639bd06dac07389f689eb051b3",
+  "frontend_image": "sha256:1ce93bcd9fb378d5805f4df6fb4a01283aa400b08d52ada69c3eb1cc0d36c696",
+  "browser_image": "sha256:07fde1b209d0bdb9c931d1b85b941e2f05363c2fc996e269e9ddab6d4d2a6111",
+  "browser_and_contract_checks": "PASS",
+  "existing_real_oidc_regression": "PASS",
+  "native_graph_enabled": true,
+  "real_graph_outage": "PASS",
+  "synthetic_backup_restore_rebuild_browser": "PASS",
+  "published_ports": [],
+  "live_qh_access": false,
+  "paid_calls": 0
+}

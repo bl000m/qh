@@ -5,6 +5,22 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## QH-12 browse-first source update — 2026-10-17
+
+Owner-approved ADR 0005 adds no-selector canonical browsing and a deterministic
+structured preview on the existing hot-reload branch. Executable source:
+`799c64ce5b615d42f6119c6d187b1f26d96f7237`; the existing d70626b dependency images
+and all six container identities/configurations remain unchanged. Vite/Uvicorn
+load the new source without container replacement, migration or new dependencies.
+Actual VPS Chromium verifies Alice's existing empty Space without a search and
+with GET-only Space requests. No persistent demo data is created or reassigned.
+Populated navigation/provenance and recovery are demonstrated separately on real
+isolated services: [browse evidence](evidence/qh12-browse-20261017/README.md),
+[decision and acceptance](qh-12-context-understanding.md).
+PR #13 and QH-12 remain open for owner review; no merge, Jira transition,
+realm/security-policy change, MCP activation or inference. Prior activation and
+backup/rollback records below retain their original identities and scope.
+
 ## Executed VPS development POC transition — 2026-10-17
 
 Owner explicitly authorized frontend/backend hot reload on the existing `qh`

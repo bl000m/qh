@@ -52,11 +52,44 @@ remains in `Rechercher dans ce contexte`; it still uses the unchanged QH-10 POST
 
 ## Execution status for this amendment
 
-Implementation and new tests are present; verification is in progress. No claim of
-complete acceptance or owner visual review is made here. Executed evidence and
-limits will be appended after the isolated runs and latest-head CI. The earlier
-503-native/24-browser checkpoint below is historical evidence, not verification of
-the new browse path. No populated synthetic data has been written to the VPS.
+Local acceptance is verified against exact source/image revision
+`799c64ce5b615d42f6119c6d187b1f26d96f7237`, with no source mounts or inference
+in the isolated runs. Later documentation/evidence commits have no executable or
+configuration drift. [Separate archive](evidence/qh12-browse-20261017/README.md),
+[measured results](evidence/qh12-browse-20261017/verification.json),
+[image identities](evidence/qh12-browse-20261017/test-images.json).
+
+| Criteria | Classification / executed evidence | Limits |
+| --- | --- | --- |
+| 1–2: immediate overview, explicit epistemic views | Implemented and tested, PASS: populated preview without POST query, separate current/proposed, empty/proposed-only/historical-only real browser controls | Literal excerpts, not semantic synthesis; proposed includes all retained proposed revisions, not a curated active approval queue |
+| 3: bounded no-selector contract and unchanged search | Implemented and tested, PASS: view-before-LIMIT, full keyset traversal, exact item/anchor filters, invalid/duplicate/unknown parameters; QH-10 regressions | Stable UUID order, not importance/chronological ranking or a multi-request snapshot |
+| 4–5: policy, isolation, integrity, freshness | Implemented and tested, PASS: Alice/Bob API denial, revocation on next page, missing graph assertion/marker/pending and empty-scope outage; changed-during-hydration rejection even for empty results | No guest/write grant or SQL-only fallback |
+| 6–7: open navigation, detail/provenance/history | Implemented and tested, PASS: novel Unicode/multiple/tentative/unclassified controls, all kinds, exact endpoints, literal citations and same stable item's retained revisions | Facets local to loaded pages; no global descriptor count/ontology, source-body API or inferred concepts |
+| 8: disclosure and usability | Implemented and tested, PASS: late responses, failed pagination clears rows, keyboard Enter/navigation, 375px layout; QH-11 session/loading/error regressions | No advanced graph canvas or new persistence/session model |
+| 9: integrated verification | Implemented and tested locally, PASS: strict **532 native tests, zero skips, 760.17 s**; packaged **29 browser/contract checks, 1.7 min**; real OIDC regression **1 PASS/1 live-only deselected**, real graph outage **1 PASS**, restored-ID browser **1 PASS**; Ruff, strict app/test TypeScript and private-file/whitespace guards PASS | Counts overlap and are not summed. Complete hosted quality/native/browser/OIDC checks are required and attached to the exact latest head of [PR #13](https://github.com/bl000m/qh/pull/13) after publication |
+| 10: recoverable product decisions | Implemented and checked, PASS: English ADR decision matrix, dated Product Contract amendment, architecture/report/AGENTS links; Jira criteria appended with original wording preserved (Markdown line-break whitespace normalized by Jira) | Decision approval is not owner acceptance of the UI |
+| 11: existing VPS and write boundary | Implemented and tested, PASS: real Chromium opens existing Alice empty Space and explores using only GETs; all six container IDs/images/mounts/config and protected .env/realm/frozen manifest unchanged | No populated persistent demo; personal Mac session is not attested |
+| 12: review workflow | PR #13 remains open/unmerged on the same branch; Jira remains En cours; no QH-13 | Owner review/merge and authorized Jira closure remain outstanding; never DONE on tests alone |
+
+Exact reproduction (dedicated test credentials only):
+
+```sh
+sudo -n docker run --rm --network qh30-native-test \
+  --env-file /tmp/qh30-postgres-test.env --env-file /tmp/qh30-native-test.env \
+  -w /workspace/apps/api --entrypoint python \
+  qh12-browse-api:799c64ce5b615d42f6119c6d187b1f26d96f7237 \
+  -u /workspace/scripts/run_qh30_integration.py
+```
+
+The reused browser harness command is in the archive README. It verifies backup,
+restore, exact canonical hashes, graph reconstruction and reopening without
+another extractor call. Existing Starlette/AnyIO deprecation and empty-new-graph
+property notices remain non-blocking. The earlier missing test-fixture import and
+gated network-free probe were corrected; final strict execution has no skips.
+Preliminary/targeted counts are not added to the full suite. Original QH-8 and
+QH-33 archive audits pass; no reference, ledger, source or semantic judgment is
+rewritten. These tests establish navigation/integrity behavior, not general LLM
+semantic correctness or independent human validation.
 
 ## Historical pre-browse implementation and evidence (preserved)
 
@@ -287,3 +320,26 @@ rows stay NOT TESTED / NOT DEPLOYED, and owner review/merge/Jira closure remain
 pending. The final candidate is **READY FOR DEPLOYMENT / NOT DEPLOYED** in the
 technical preparation sense, subject to review/merge and a separate authorization
 of exact image pins, access method and maintenance window. No permission is inferred.
+
+## Optional populated VPS demo plan — NOT EXECUTED
+
+The live Alice Spaces remain empty and are not reassigned historical understanding.
+The real VPS smoke opens the existing retained Space through Code+PKCE, observes
+`Aperçu structuré` and the honest empty state without a search, then explores using
+only GET requests. No Space, identity, source, understanding or outbox intent is
+created by this browse increment. Populated examples are isolated test screenshots.
+The owner's own Mac/forwarding session is not attested by VPS Chromium.
+
+If the owner later wants interactive populated content, obtain separate explicit
+persistent-write consent first. A minimal plan would use one conspicuously named
+synthetic demo Space with stable import/source/revision IDs, an immutable fixture
+fingerprint/checkpoint, one synthetic source and six generic proposed QH-8 fixture
+revisions (including entity/relation and exact citations). Resolve Alice through
+existing internal QH identity; never rebind old owners or infer write permission
+from READ_CONTEXT. Replay identical IDs/content idempotently; stop on any conflict.
+Use the existing internal fixture import/extractor/publisher and native worker,
+without LLM calls, schema/profile changes or deployment. Preserve proposed state,
+null confirmed pointer and every created artifact/row. No confirmed examples or
+human actor assertions without a distinct explicit validation authorization.
+Verify exact IDs/provenance and Bob denial; retain the demo instead of deleting it.
+This plan is not an authorized command, a seeded dataset or part of technical Done.

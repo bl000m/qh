@@ -1,0 +1,32 @@
+{
+  "source": "799c64ce5b615d42f6119c6d187b1f26d96f7237",
+  "native": {
+    "passed": 532,
+    "skipped": 0,
+    "seconds": 760.17,
+    "command": "python -u /workspace/scripts/run_qh30_integration.py"
+  },
+  "browser_and_contracts": {
+    "passed": 29,
+    "duration_observed": "1.7m"
+  },
+  "existing_real_oidc_regression": {
+    "passed": 1,
+    "deselected_live_only": 1,
+    "seconds": 14.0
+  },
+  "real_graph_outage": {
+    "passed": 1,
+    "seconds": 5.2
+  },
+  "restored_id_browser": {
+    "passed": 1,
+    "seconds": 16.1
+  },
+  "sql_restore_all_table_hashes_equal": true,
+  "canonical_hashes_unchanged_across_rebuild": true,
+  "new_paid_calls": 0,
+  "persistent_understanding_writes": 0,
+  "human_or_owner_visual_acceptance": "not_attested",
+  "latest_head_ci": "check PR #13 exact head checks after publication"
+}
