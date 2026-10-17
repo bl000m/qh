@@ -15,7 +15,8 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   app-only `make dev-*` commands, drift regressions and updated switch safeguards.
 - Real protected PostgreSQL dump restored in isolation; all 14 table fingerprints
   match. Separately authorized Alice/Bob identity provisioning fixes missing links;
-  browser smoke conserves one empty synthetic Space. Historical rows/evidence remain.
+  browser smoke conserves two empty synthetic Spaces (one unintended duplicate
+  from the temporary smoke script, retained without deletion). Historical rows/evidence remain.
 - Real VPS PKCE, same-origin API, Space UI, revision views, Bob denial and React/
   Python reload verified. Historical provenance checked readonly; populated Alice
   provenance and personal Mac verification remain pending. QH-12 PR #13 stays open;

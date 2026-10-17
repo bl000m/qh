@@ -97,8 +97,11 @@ Sul VPS il login inizialmente restituiva 401: non esistevano righe in
 `user_identities`. Dopo **ulteriore consenso esplicito** del proprietario è stato
 eseguito una volta il provisioning demo QH-5 già esistente, aggiungendo solo
 Alice/Bob e i due collegamenti OIDC; nessun reseeding/startup automatico o cambio
-di policy/realm. La prova create/list/open ha conservato un unico Space vuoto
-`Vérification hot reload QH-12 — 2026-10-17`, appartenente ad Alice. Nessun elemento
+di policy/realm. Le prove create/list/open hanno conservato due Space vuoti
+`Vérification hot reload QH-12 — 2026-10-17`, appartenenti ad Alice. Il secondo
+è stato creato per errore dallo smoke temporaneo, che controllava la lista prima
+del caricamento; non è stato cancellato. Lo smoke corretto riapre il primo per ID
+tramite navigazione SPA, senza altre creazioni o reload che perdano la sessione. Nessun elemento
 Understanding è stato creato, confermato o riassegnato.
 
 Le sette revisioni Understanding storiche appartengono ad altri proprietari
@@ -108,7 +111,7 @@ provenance nel browser richiede un'acquisizione sintetica separatamente autorizz
 non è stata inventata una corrispondenza fra utenti e dati esistenti.
 
 Il confronto SQL prima/dopo verifica ogni riga precedente. Le sole aggiunte sono
-due utenti, due collegamenti OIDC, uno Space e la sua riga `context_projection_state`
+due utenti, due collegamenti OIDC, due Space e le rispettive righe `context_projection_state`
 con avanzamento zero; le altre dieci tabelle sono identiche. Nessun intent outbox
 è stato aggiunto/rimosso/reset. Il container isolato di restore è stato arrestato
 e rimosso normalmente dopo la verifica; nessun volume persistente è stato creato
@@ -120,7 +123,7 @@ o rimosso.
 | --- | --- |
 | Frontend, API health, discovery Keycloak | PASS, HTTP 200 sulle porte originali |
 | Chromium sul vero VPS: login Alice/Bob Code+PKCE, API via proxy | PASS dopo provisioning demo autorizzato; nessun token in Web Storage |
-| Space: creazione, lista, apertura; Bob negato | PASS; singolo Space sintetico conservato |
+| Space: creazione, lista, apertura; Bob negato | PASS; due Space sintetici conservati; riapertura del primo verificata per ID |
 | Vista Compréhension: current/proposed/history e testo/descrittori | PASS, risposte 200 vuote coerenti con il nuovo Space |
 | Understanding/provenance storici, controllo interno autorizzato readonly dopo restart | PASS; nessuna reinterpretazione o inferenza |
 | Provenance con risultati popolati nel browser persistente | NOT TESTED: dati storici non appartenenti agli account demo |

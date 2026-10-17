@@ -27,8 +27,10 @@ supersedes the prior image-only operating gate for this transition only.
   ports or persistent volumes matches all 14 SQL table counts/hashes. No QH restore.
 - Initial real login failed 401 because no QH OIDC links existed. After separate
   explicit owner approval, the existing demo provisioning adds only two demo users
-  and two identity links. Real-browser create/list/open retains one empty synthetic
-  Alice Space and its zero-progress projection-state row. All preexisting rows retained; 10 other tables exactly unchanged,
+  and two identity links. Real-browser create/list/open retains two empty synthetic
+  Alice Spaces and their zero-progress projection-state rows. The second is an
+  unintended smoke-script duplicate, retained without deletion; corrected smoke
+  opens the original ID through SPA navigation without creating more data. All preexisting rows retained; 10 other tables exactly unchanged,
   including canonical understanding/source/provenance/registry/outbox. No new items.
 - PASS real VPS Chromium PKCE, proxy/API, Alice/Bob denial, QH-12 views and empty
   text/descriptor queries. PASS internal readonly retrieval of retained historical
