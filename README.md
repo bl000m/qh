@@ -33,10 +33,16 @@ task branch at a time. Deployed images and the frozen Compose bundle are indepen
 
 ## Planned demo sequence — 2026-10-17
 
-**QH-9 candidate:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
+**QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
 implements POST/list/detail/PATCH-name through the existing ContextService,
-OIDC identity, PolicyService and canonical PostgreSQL. It is an unmerged increment
+OIDC identity, PolicyService and canonical PostgreSQL. It is a merged increment
 of Demo A, not the full demo or a VPS deployment. No deletion/retrieval/UI is added.
+
+**QH-10 candidate:** [scoped canonical retrieval](docs/qh-10-scoped-retrieval.md)
+adds one authenticated query route for native text search or exact open descriptors,
+with mandatory current/proposed/history selection, canonical content, validation,
+revision anchors, source provenance and time bounds. This source increment is not
+deployed; it adds no LLM generation, temporal filtering, sharing or frontend.
 
 These are delivery milestones, **not implemented or deployed product capabilities**.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine

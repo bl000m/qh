@@ -26,6 +26,15 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Added
 
+- QH-10 candidate canonical retrieval via `POST /context-spaces/query`: explicit
+  owner-authorized scopes, mandatory current/proposed/history view, native substring
+  search or exact open-descriptor selection, bounded UUID pagination and verified
+  PostgreSQL hydration after Neo4j lookup. Canonical payloads retain structural
+  shape, registered profile/version, proposed/confirmed/rejected state, current
+  pointer, exact source revisions, citations, relation anchors and temporal bounds.
+  Pending/stale/missing graph state fails closed. No temporal/as-of filters,
+  generation, canonical writes, new schema or deployment.
+
 - QH-9 candidate REST metadata management: authenticated create/list/detail and
   name-only update, existing owner policy/identity mapping, bounded UUID pagination
   and canonical PostgreSQL persistence. Foreign/missing IDs share a uniform denial;

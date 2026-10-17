@@ -15,6 +15,17 @@ application source mounts. Application image revision/mounts were rechecked
 read-only for this alignment; no new schema probe or activation was performed.
 The artifact identities and executed deployment records below are preserved.
 
+## QH-10 scoped retrieval candidate — 2026-10-17 (not deployed)
+
+Executable/test OCI revision `48cbb60627d1947092ec74607222af0e689ea0ca`, test image
+`qh10-retrieval:48cbb60627d1947092ec74607222af0e689ea0ca`, immutable ID
+`sha256:6fb804a03725037703797f0c1318e82713b0d3a90cf6b7f020f8965e99f2ea48`.
+Built from Git archive; tests use dedicated disposable SQL/Neo4j and offline QH-8
+fixtures, with no paid provider, source mounts in the packaged run, or persistent
+QH write. Mandatory view selection and canonical hydrated responses belong to the
+[QH-10 candidate contract](qh-10-scoped-retrieval.md). No schema/dependency change;
+VPS images remain c723d32/schema 0005. This artifact is not a deployment window.
+
 ## QH-9 metadata REST candidate — 2026-10-17 (not deployed)
 
 Executable/OCI revision `2f8386aa2efb8d74e30ceb589ab4abc1a6d45c76`, test image

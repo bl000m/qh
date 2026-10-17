@@ -134,7 +134,8 @@ test-only. Remote delegated MCP OAuth is outside QH-5.
 
 QH-29 formalizes `PolicyService` as the one logical resource-decision point,
 initially implemented by the backend's existing `OwnerPolicyService`, with
-replaceability through explicit injection. Candidate REST metadata (QH-9) and future MCP (QH-24)
+replaceability through explicit injection. Merged metadata REST (QH-9), candidate
+canonical retrieval (QH-10) and future MCP (QH-24)
 share that policy through the authenticated backend; MCP has no direct DB access,
 duplicate owner rules or unverified-identity bypass. Default deny precedes private
 reads, semantic retrieval and LLM disclosure. Authentication, resource decisions
@@ -162,9 +163,11 @@ not a currently implemented filtering engine.
   runtime factory `app/bootstrap.py:create_runtime_app` binds the OIDC verifier,
   PostgreSQL identity/owner reader and Core owner policy explicitly.
 - `app/api` owns FastAPI routes. `/health` and `/auth/me` remain available; the
-  QH-9 candidate adds `/context-spaces` POST/GET and UUID detail GET/PATCH-name.
-  Private owner probes remain test-only; no `/access` or Understanding retrieval
-  endpoint is installed. See [QH-9 contract and evidence](qh-9-context-spaces.md).
+  QH-9 adds `/context-spaces` POST/GET and UUID detail GET/PATCH-name;
+  the QH-10 candidate adds `POST /context-spaces/query` for structured retrieval.
+  Private owner probes remain test-only; no `/access` or generative `ask`
+  endpoint is installed. See [QH-9 evidence](qh-9-context-spaces.md) and the
+  [QH-10 query contract](qh-10-scoped-retrieval.md). Neither increment is deployed.
 - API, MCP and outbound adapters depend on Core interfaces. Core must never
   import FastAPI, Graphiti, MCP, adapters or provider SDKs. Composition roots
   assemble implementations through dependency injection.
@@ -176,7 +179,8 @@ not a currently implemented filtering engine.
   and incremental worker are bound by the backend lifespan. QH-8's optional Mistral
   adapter/manual experiment and offline extraction are merged internal composition
   (see below), not startup behavior or a released conversational write route.
-  QH-9 binds metadata CRUD in this candidate; retrieval/chat remain QH-10/QH-13.
+  QH-9 binds metadata CRUD; the QH-10 candidate binds canonical retrieval through
+  that runtime. Chat remains QH-13.
 - `services/mcp-server` owns its Python dependencies and transport. Future QH
   operations use a documented boundary; do not import backend source files.
   `scaffold_ping` is solely a transport test, with no context or LLM behavior.
