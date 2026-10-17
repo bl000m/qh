@@ -1,5 +1,18 @@
 COMPOSE = docker compose --env-file .env -f infra/docker/docker-compose.yml
 
+# Existing VPS only: guarded frontend/backend operations, never dependencies.
+.PHONY: dev-up dev-status dev-logs dev-restart dev-stop
+dev-up:
+	python3 scripts/manage_qh_dev.py up
+dev-status:
+	python3 scripts/manage_qh_dev.py status
+dev-logs:
+	python3 scripts/manage_qh_dev.py logs
+dev-restart:
+	python3 scripts/manage_qh_dev.py restart
+dev-stop:
+	python3 scripts/manage_qh_dev.py stop
+
 .PHONY: config build up down logs ps test smoke verify verify-running verify-infra verify-persistence migrate migration-current test-migrations lock-node lock-python
 config:
 	$(COMPOSE) config --quiet
