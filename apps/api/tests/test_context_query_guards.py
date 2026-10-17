@@ -33,16 +33,28 @@ def case():
     return repo,row,query
 
 
-@pytest.mark.parametrize('bad',['missing','duplicate','source','scope','citation','current'])
+@pytest.mark.parametrize('bad',['missing','duplicate','source','scope','citation','missing_citations','current'])
 def test_canonical_payload_and_provenance_fail_closed(bad):
     repo,row,query=case();id=row['id']
     if bad=='missing':repo.snapshot['understanding_item_revisions']=[]
     if bad=='duplicate':repo.snapshot['understanding_item_revisions'].append(deepcopy(row))
     if bad=='source':repo.snapshot['source_revisions']=[]
     if bad=='scope':row['context_space_id']='foreign'
-    if bad=='citation':row['content']['citations']=[dict(source_revision_id=row['provenance'][0],start=0,end=4,quote='fake')]
+    if bad in ('citation','missing_citations'):
+        row['content']['extraction']={'key':'synthetic','input_sha256':'0'*64}
+        row['content']['citations']=[] if bad=='missing_citations' else [dict(source_revision_id=row['provenance'][0],start=0,end=4,quote='fake')]
     if bad=='current':row['current_revision_id']='missing'
     with pytest.raises(NativeContextError):hydrate(repo,query,[id])
+
+
+@pytest.mark.parametrize('metadata',['Imported bibliography',{'title':'Opaque reference'},['book-1']])
+def test_historical_extension_property_is_preserved_without_extractor_coercion(metadata):
+    repo,row,query=case()
+    row['content']['citations']=deepcopy(metadata)
+    before=deepcopy(row['content'])
+    result=hydrate(repo,query,[row['id']])
+    assert result[0].type_id==row['type_id']
+    assert result[0].content==before
 
 
 def test_changed_during_final_hydration_is_unavailable():

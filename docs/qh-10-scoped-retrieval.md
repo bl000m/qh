@@ -124,7 +124,11 @@ revision IDs reference Understanding Items, unlike the Source revision IDs in
 provenance. The response exposes exact source revision identity/number and origin,
 not an original-byte download endpoint. Literal citations, including turn IDs and
 Unicode code-point spans, remain in canonical `content.citations` when available.
-Their quote equality is checked against authorized source revisions; equality is
+For the recognized QH-8 extraction receipt (`key` and `input_sha256`), their
+presence and quote equality are checked against authorized source revisions.
+Historical extension properties named `citations` without that receipt remain
+opaque canonical JSON, without coercion to the extractor format or a claim that
+they are verified locators. Quote equality is
 not semantic entailment or human approval. No missing quote is manufactured.
 
 The `certainty` of a descriptor assignment is independent of epistemic state.

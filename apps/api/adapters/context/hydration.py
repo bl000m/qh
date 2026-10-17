@@ -39,7 +39,15 @@ def hydrate(repository, query, revision_ids):
                 endpoint = indexed.get(detail[side + '_revision_id'])
                 if not endpoint or endpoint['item_id'] != detail[side + '_item_id'] or endpoint['context_space_id'] != scope:
                     raise NativeContextError('Missing or foreign canonical relation endpoint')
-        for citation in row['content'].get('citations', []):
+        # QH-8 emits this receipt together with its reserved locator payload.
+        # Historical registered schemas can use a property named "citations"
+        # for other JSON values; do not impose the extractor envelope on them.
+        receipt = row['content'].get('extraction')
+        qh8_locators = isinstance(receipt, dict) and {'key', 'input_sha256'} <= receipt.keys()
+        citations = row['content'].get('citations') if qh8_locators else []
+        if not isinstance(citations, list) or qh8_locators and not citations:
+            raise NativeContextError('Missing canonical QH-8 citations')
+        for citation in citations:
             source = sources.get(citation['source_revision_id'])
             start, end = citation['start'], citation['end']
             if (citation['source_revision_id'] not in row['provenance'] or source is None

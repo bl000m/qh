@@ -69,7 +69,8 @@ def retrieved(generic,monkeypatch):
         clones.append(row)
     p['confirmed']=clones[0]
     legacy=revision(p,'legacy')
-    legacy.update(type_id='qh.decision',content={'legacy_note':'Readable specialized history'})
+    legacy.update(type_id='qh.decision',content={'legacy_note':'Readable specialized history',
+                  'citations':'Opaque imported bibliography'})
     sibling_source={**p['source'],'id':str(uuid4()),'source_id':str(uuid4()),'context_space_id':p['sibling']}
     sibling=deepcopy(choice)
     sibling.update(id=str(uuid4()),item_id=str(uuid4()),context_space_id=p['sibling'],provenance=[sibling_source['id']])
@@ -139,7 +140,8 @@ def test_views_pagination_specialized_history_and_immutable_revisions(retrieved)
         assert [r['revision_id'] for r in rows]==sorted(r['revision_id'] for r in rows)
     legacy=request(client,p,text='specialized')
     assert legacy.status_code==200 and legacy.json()['items'][0]['type_id']=='qh.decision'
-    assert legacy.json()['items'][0]['content']=={'legacy_note':'Readable specialized history'}
+    assert legacy.json()['items'][0]['content']=={'legacy_note':'Readable specialized history',
+                                                'citations':'Opaque imported bibliography'}
     for old in p['original']:
         row=p['repo'].read_snapshot((p['scope'],),(old['id'],))['understanding_item_revisions'][0]
         assert {k:v for k,v in row.items() if k!='current_revision_id'}=={k:v for k,v in old.items() if k!='current_revision_id'}
