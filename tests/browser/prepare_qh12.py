@@ -53,7 +53,8 @@ timestamp = dict(base, id=str(uuid4()), item_id=str(uuid4()), type_id='qh.generi
                  fact_from='2026-10-01T12:00:00Z', fact_to='2026-10-01T12:00:00Z')
 legacy = dict(base, id=str(uuid4()), item_id=str(uuid4()), type_id='qh.decision',
               content={'legacy_note': 'Opaque bibliography control', 'citations': 'Bibliography, not a QH-8 locator',
-                       'descriptors': [{'value': 'bibliography', 'certainty': 'asserted'}]})
+                       'descriptors': [{'value': 'bibliography', 'certainty': 'asserted'},
+                                       {'value': 'opaque_attribute', 'certainty': {'toString': None}}]})
 repo.save(revisions=[*clones, timestamp, legacy])
 with repo.connect() as connection:
     connection.execute('UPDATE understanding_items SET current_revision_id=%s WHERE id=%s', (clones[0]['id'], choice['item_id']))

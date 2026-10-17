@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ApiError, apiMessage } from './api';
 import type { QhApi } from './api';
-import { descriptorValues, recognizedCitations } from './understanding';
+import { descriptorAssignment, descriptorValues, recognizedCitations } from './understanding';
 import type { CanonicalRevision, Json, RevisionQuery, RevisionView } from './understanding';
 
 const views: { value: RevisionView; label: string }[] = [
@@ -17,8 +17,10 @@ function Revision({ row }: { row: CanonicalRevision }) {
     {typeof row.content.text === 'string' ? <p className="claim">{row.content.text}</p> : <JsonValue value={row.content} />}
     <p className="muted">Révision confirmée courante : <strong>{row.is_current_confirmed ? 'oui' : 'non'}</strong> · Origine de l’élément : {row.origin_kind}</p>
     <h4>Descripteurs</h4>
-    {assignments.length ? <ul className="assignments">{assignments.map((a,i) => typeof a === 'object' && a !== null && !Array.isArray(a) && typeof a.value === 'string' ?
-      <li key={i}><code>{a.value}</code> <span>· attribution : {String(a.certainty ?? 'non renseignée')}</span></li> : <li key={i}><JsonValue value={a} /></li>)}</ul> : <p className="muted">Aucun descripteur déclaré.</p>}
+    {assignments.length ? <ul className="assignments">{assignments.map((a,i) => {
+      const assignment = descriptorAssignment(a);
+      return assignment ? <li key={i}><code>{assignment.value}</code> <span>· attribution : {assignment.certainty}</span></li> : <li key={i}><JsonValue value={a} /></li>;
+    })}</ul> : <p className="muted">Aucun descripteur déclaré.</p>}
     <p className="small muted">La certitude d’attribution d’un descripteur ne confirme ni le contenu ni sa véracité.</p>
     {row.relation && <section aria-label="Relation"><h4>Relation</h4><p>Prédicat : <code>{row.relation.predicate}</code></p><dl className="metadata">
       <div><dt>Élément source</dt><dd>{row.relation.source_item_id}</dd></div><div><dt>Révision source</dt><dd>{row.relation.source_revision_id}</dd></div>

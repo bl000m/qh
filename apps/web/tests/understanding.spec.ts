@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { descriptorValues, recognizedCitations, revisionPage } from '../src/understanding';
-import type { CanonicalRevision } from '../src/understanding';
+import { descriptorAssignment, descriptorValues, recognizedCitations, revisionPage } from '../src/understanding';
+import type { CanonicalRevision, Json } from '../src/understanding';
 import { QhApi } from '../src/api';
 const id='00000000-0000-0000-0000-000000000001';
 const row:CanonicalRevision={context_space_id:id,item_id:id,revision_id:id,revision_no:1,structural_kind:'item',type_id:'qh.generic.item',type_version:1,content:{text:'Hypothesis'},origin_kind:'ai',validation_state:'proposed',validated_by:null,validated_at:null,current_revision_id:null,is_current_confirmed:false,based_on_revision_id:null,created_at:'2026-10-17T12:00:00Z',temporal:{fact_from:null,fact_to:null,valid_from:null,valid_to:null},relation:null,provenance:[{source_id:id,source_revision_id:id,revision_no:1,origin:{kind:'synthetic'}}]};
@@ -26,4 +26,10 @@ test('query sends explicit view and selector with canonical cursor, without infe
  const original=globalThis.fetch;let body:unknown;
  globalThis.fetch=async(path,init)=>{expect(path).toBe('/api/context-spaces/query');body=JSON.parse(String(init?.body));return new Response(JSON.stringify({view:'history',items:[row],next_after_revision_id:null}));};
  try {const query={context_ids:[id],view:'history' as const,descriptors:['new_meaning'],include_tentative:false,limit:5,after_revision_id:id};expect((await new QhApi(()=> 'synthetic-test-only',()=>{}).query(query)).items[0].revision_id).toBe(id);expect(body).toEqual(query);}finally{globalThis.fetch=original;}
+});
+
+test('historical opaque assignment JSON is not coerced into a certainty string',()=>{
+ expect(descriptorAssignment({value:'new',certainty:'tentative'})).toEqual({value:'new',certainty:'tentative'});
+ const opaque:Json[]=[{value:'opaque',certainty:{toString:null}},'decision',{value:'new'},null];
+ for(const value of opaque) expect(descriptorAssignment(value)).toBeNull();
 });

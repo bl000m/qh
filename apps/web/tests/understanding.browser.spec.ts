@@ -80,6 +80,7 @@ test('tentative selection is opt-in; legacy citation properties are not asserted
   await expect(page.getByText('Aucune citation QH-8 reconnaissable disponible',{exact:false})).toBeVisible();
   await page.getByText('Identité et détails canoniques',{exact:true}).click();
   await expect(page.locator('.json-value').filter({hasText:'Bibliography, not a QH-8 locator'}).first()).toBeVisible();
+  await expect(page.locator('.assignments .json-value').filter({hasText:'opaque_attribute'})).toBeVisible();
 });
 test('Bob cannot retrieve Alice understanding by direct URL or direct scoped REST', async ({page}) => {
   await open(page,'bob');

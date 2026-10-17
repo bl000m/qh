@@ -27,6 +27,11 @@ const object = (v: unknown): v is Record<string, Json> => !!v && typeof v === 'o
 const uuid = (v: unknown) => typeof v === 'string' && isUuid(v);
 const positive = (v: unknown) => typeof v === 'number' && Number.isInteger(v) && v > 0;
 const time = (v: unknown) => v === null || typeof v === 'string' && Number.isFinite(Date.parse(v));
+export function descriptorAssignment(value: Json): {value: string; certainty: 'asserted' | 'tentative'} | null {
+  if (!object(value) || typeof value.value !== 'string' || !value.value ||
+      (value.certainty !== 'asserted' && value.certainty !== 'tentative')) return null;
+  return {value:value.value,certainty:value.certainty};
+}
 export function descriptorValues(input: string): string[] {
   // One literal descriptor per line. Never trim, fold case or normalize meaning.
   return input.split('\n').filter(value => value.length > 0);
