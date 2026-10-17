@@ -17,6 +17,17 @@ The artifact identities and executed deployment records below are preserved.
 
 ## QH-10 scoped retrieval candidate — 2026-10-17 (not deployed)
 
+Final compatibility checkpoint: executable/test OCI revision
+`e47a295fe5b9528571779d838286a55318846e51`, image
+`qh10-retrieval:e47a295fe5b9528571779d838286a55318846e51`, immutable ID
+`sha256:c93049dcc6b73938c7af6da7ea23db32e3c504d3772ca8463a973339241c2169`.
+The historical JSON citation-property fix retains the existing schema and public
+DTO; recognized QH-8 receipts retain strict locator validation. This supersedes
+the test artifact below for current reproduction, without replacing its evidence.
+No persistent environment or data change is performed.
+
+Prior checkpoint retained:
+
 Executable/test OCI revision `48cbb60627d1947092ec74607222af0e689ea0ca`, test image
 `qh10-retrieval:48cbb60627d1947092ec74607222af0e689ea0ca`, immutable ID
 `sha256:6fb804a03725037703797f0c1318e82713b0d3a90cf6b7f020f8965e99f2ea48`.

@@ -199,18 +199,30 @@ and frozen QH-33/citation audits pass. An initial pagination test wrongly expect
 text `pilot` to select only decision revisions; its expectation now preserves the
 separate matching hypothesis. No fixture or original extraction was rewritten.
 
-Exact final test/OCI commit `48cbb60627d1947092ec74607222af0e689ea0ca`, test image
-`qh10-retrieval:48cbb60627d1947092ec74607222af0e689ea0ca`, immutable image ID
-`sha256:6fb804a03725037703797f0c1318e82713b0d3a90cf6b7f020f8965e99f2ea48`.
+Exact final test/OCI commit `e47a295fe5b9528571779d838286a55318846e51`, test image
+`qh10-retrieval:e47a295fe5b9528571779d838286a55318846e51`, immutable image ID
+`sha256:c93049dcc6b73938c7af6da7ea23db32e3c504d3772ca8463a973339241c2169`.
 Built from Git archive with the existing hash-locked Docker recipe, excluding
-ignored configuration/secrets. Packaged API/hydration and visibility-pagination
-checks on this image: **39 passed**, 18 deselected, 20.07 s, no source mount.
-The two new deterministic pagination cases also passed separately (2 passed,
-18 deselected, 18.80 s). Deselection is intentional targeted selection, not a
-claim that the full suite ran. Application code/configuration is identical to
-implementation commit `60b7ddd`; the later test commit adds only these two cases.
-The full strict run uses no source mount or provider key; results are recorded
-once observed. Later documentation does not alter executable/configuration files.
+ignored configuration/secrets. Prior packaged checkpoint `48cbb60` passed
+**39 targeted tests**, 18 deselected, 20.07 s, without a source mount; its two
+deterministic pagination cases also passed separately (2 passed, 18 deselected,
+18.80 s). Deselection is intentional targeted selection, not a full-suite claim.
+The implementation image `60b7ddd` passed the full strict suite: **497 passed,
+zero skips**, 550.54 s. The initial head CI `429e8cc` passed quality/OIDC and
+**499 strict tests, zero skips**, including the two added pagination cases.
+
+Final technical review then identified a compatibility bug: interpreting every
+JSON property named `citations` as the QH-8 envelope would reject otherwise valid
+historical profile content. The minimal fix recognizes the QH-8 receipt before
+validating its locators, preserves other JSON properties unchanged, and adds
+regressions for opaque string/object/array bibliography plus missing marked
+QH-8 citations. Targeted fix verification: **14 passed**, 18 deselected, 25.99 s,
+including real legacy-profile REST retrieval on both schemas. These are validation
+and compatibility improvements, not semantic correction or a new canonical schema.
+Final packaged/full head CI results are recorded on
+[PR #11](https://github.com/bl000m/qh/pull/11) after execution. Earlier green
+checkpoints do not substitute for the corrected head's required CI.
+Later documentation does not alter executable/configuration/test files from e47a295.
 
 Reproduction on the explicitly configured dedicated test network, using the
 reviewed candidate image (exact identity recorded after the build):
@@ -219,7 +231,7 @@ reviewed candidate image (exact identity recorded after the build):
 sudo -n docker run --rm --network qh30-native-test \
   --env-file /tmp/qh30-postgres-test.env --env-file /tmp/qh30-native-test.env \
   -w /workspace/apps/api --entrypoint python \
-  qh10-retrieval:48cbb60627d1947092ec74607222af0e689ea0ca \
+  qh10-retrieval:e47a295fe5b9528571779d838286a55318846e51 \
   -u /workspace/scripts/run_qh30_integration.py
 ```
 
