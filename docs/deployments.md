@@ -22,6 +22,12 @@ migration, new persistent container/volume or Understanding write is part of thi
 increment. [Verification and limits](qh-13-contextual-chat.md). No claim of a live
 Mistral demo, populated persistent Alice chat or personal Mac verification.
 
+The QH-13 executable source `f88e690c27db553d02bcca269744ebb25ddd53da` passed all
+four hosted jobs in [run 39060747371](https://github.com/bl000m/qh/actions/runs/39060747371):
+599 native tests without skips and 36 browser/contract checks, plus reused OIDC,
+real graph-outage and restored-ID cases. This is source/test evidence, not activation
+of Mistral or a new immutable production image. [QH-13 evidence](evidence/qh13-chat-20261017/README.md).
+
 ## QH-12 browse-first source update — 2026-10-17
 
 Owner-approved ADR 0005 adds no-selector canonical browsing and a deterministic

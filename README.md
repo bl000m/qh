@@ -32,7 +32,7 @@ query contract; no semantic ranking is implied. The sole development checkout is
 task branch at a time. Frontend/backend now follow that branch: stop the apps
 before switching. The frozen image-only bundle is retained for rollback.
 
-## Contextual chat — QH-13 in progress
+## Contextual chat — QH-13 review candidate
 
 [QH-13](docs/qh-13-contextual-chat.md) adds the complementary **Discuter avec ce
 contexte** action to the browse-first Space page. The default provider is a clearly
