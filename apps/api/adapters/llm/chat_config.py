@@ -44,7 +44,9 @@ class ScopedMistralChatProvider:
             # Existing stricter experiment envelope: <=8 attempts / <=0.20 USD.
             # With the explicitly verified FX ceiling this cannot reserve >5 EUR.
             state = private_json(ledger_path)
-            if not 1 <= state['max_calls'] <= 8 or not Decimal('0') < Decimal(state['max_usd']) <= Decimal('0.20'):
+            if (state.get('purpose') != 'QH-13 contextual chat'
+                or type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= 8
+                or not Decimal('0') < Decimal(state['max_usd']) <= Decimal('0.20')):
                 raise ValueError()
             self.context_ids, self.expires, self.ledger_path = frozenset(receipt['context_ids']), expires, Path(ledger_path)
             self.provider = MistralProvider(budget=ExperimentBudget(ledger_path),

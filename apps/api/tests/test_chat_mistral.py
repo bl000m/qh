@@ -19,6 +19,7 @@ def setup(tmp_path, monkeypatch, **changes):
         eur_per_usd_upper_bound='2',input_usd_per_million='0.15',output_usd_per_million='0.60') | changes
     auth=tmp_path/'authorization.json';auth.write_text(json.dumps(data));auth.chmod(0o600)
     ledger=tmp_path/'chat-ledger.json';ExperimentBudget(ledger,create=True)
+    state=json.loads(ledger.read_text());state['purpose']='QH-13 contextual chat';ledger.write_text(json.dumps(state))
     return auth,ledger
 
 
@@ -72,3 +73,11 @@ def test_unapproved_scope_does_not_reserve(tmp_path,monkeypatch):
     provider=ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger)
     with pytest.raises(ChatConfigurationError):asyncio.run(provider.generate(built((revision(),)).request))
     assert not json.loads(ledger.read_text())['calls']
+
+
+def test_unmarked_extraction_ledger_is_rejected_without_modifying_it(tmp_path,monkeypatch):
+    auth,ledger=setup(tmp_path,monkeypatch)
+    data=json.loads(ledger.read_text());data.pop('purpose');ledger.write_text(json.dumps(data))
+    original=ledger.read_bytes()
+    with pytest.raises(ChatConfigurationError):ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger)
+    assert ledger.read_bytes()==original
