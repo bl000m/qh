@@ -1,0 +1,59 @@
+// QH-9 wire contract; never import backend implementation or accept a UI owner.
+export interface ContextSpace {
+  id: string; owner_id: string; name: string; status: string;
+  created_at: string; updated_at: string;
+}
+export interface SpacePage { items: ContextSpace[]; next_after_id: string | null }
+export class ApiError extends Error {
+  constructor(public readonly status: number) { super('QH request failed'); }
+}
+export const isUuid = (v: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+export const validName = (v: string) => v.trim().length > 0 && [...v].length <= 256 && !v.includes('\0');
+function space(value: unknown): ContextSpace {
+  const v = value as ContextSpace | null;
+  if (!v || !isUuid(v.id ?? '') || !isUuid(v.owner_id ?? '') || typeof v.name !== 'string' ||
+      typeof v.status !== 'string' || !Number.isFinite(Date.parse(v.created_at)) ||
+      !Number.isFinite(Date.parse(v.updated_at))) throw new ApiError(502);
+  return v;
+}
+export class QhApi {
+  constructor(private readonly token: () => string, private readonly expired: () => void) {}
+  private async request(path: string, method = 'GET', body?: unknown): Promise<unknown> {
+    const token = this.token();
+    let response: Response;
+    try {
+      response = await fetch('/api' + path, {
+        method, headers: { Authorization: 'Bearer ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error'
+      });
+    } catch { throw new ApiError(503); }
+    if (response.status === 401) this.expired();
+    if (!response.ok) throw new ApiError(response.status);
+    try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async me(): Promise<string> {
+    const v = await this.request('/auth/me') as { user_id?: string };
+    if (!v || !isUuid(v.user_id ?? '')) throw new ApiError(502);
+    return v.user_id!;
+  }
+  async list(after?: string): Promise<SpacePage> {
+    if (after && !isUuid(after)) throw new ApiError(422);
+    const page = await this.request('/context-spaces?limit=20' + (after ? '&after_id=' + after : '')) as SpacePage;
+    if (!page || !Array.isArray(page.items) || !(page.next_after_id === null || typeof page.next_after_id === 'string' && isUuid(page.next_after_id))) throw new ApiError(502);
+    return { items: page.items.map(space), next_after_id: page.next_after_id };
+  }
+  async get(id: string): Promise<ContextSpace> {
+    if (!isUuid(id)) throw new ApiError(404);
+    return space(await this.request('/context-spaces/' + id));
+  }
+  async create(name: string): Promise<ContextSpace> {
+    if (!validName(name)) throw new ApiError(422);
+    return space(await this.request('/context-spaces', 'POST', { name }));
+  }
+}
+export function apiMessage(error: unknown): string {
+  if (error instanceof ApiError && error.status === 404) return 'Ce Context Space est introuvable ou inaccessible.';
+  if (error instanceof ApiError && error.status === 403) return 'Votre compte ne dispose pas des autorisations nécessaires.';
+  if (error instanceof ApiError && error.status === 422) return 'Vérifiez les informations saisies.';
+  return 'Le service est indisponible. Réessayez dans un instant.';
+}

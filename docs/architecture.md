@@ -79,6 +79,24 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
+### QH-11 browser client (candidate, not deployed)
+
+The existing React 18/TypeScript/Vite client owns browser navigation and Space
+metadata views only. Its HTTP client uses QH-9 public REST contracts through the
+same-origin `/api` development proxy. The backend still resolves OIDC identity
+and enforces the shared PolicyService before private reads; UI filtering grants
+no access. No Understanding view, session backend, table or service is added.
+
+Owner-approved browser session choice (2026-10-17): public `qh-web` Authorization
+Code + PKCE S256 via `oidc-client-ts`, with a nonce and one-use state validation.
+Tokens remain in memory; only pending authentication state/verifier use tab-scoped
+sessionStorage, with a five-minute stale-state limit. No localStorage token,
+automatic renewal or password grant. Reload requires login again (IdP SSO may
+satisfy it); token expiry/HTTP 401 removes the private UI. Logout first clears QH
+memory, then invokes OIDC end-session without expanding the realm redirect list.
+An unavailable IdP cannot prevent local logout; remote logout may then be incomplete.
+This bounded SPA choice adds no BFF or persistent session contract.
+
 ### QH-10 canonical Understanding retrieval (candidate, not deployed)
 
 QH-10 extends the same ContextService with structured, owner-authorized retrieval
