@@ -1,0 +1,26 @@
+{
+  "built_from": "git archive",
+  "source": "799c64ce5b615d42f6119c6d187b1f26d96f7237",
+  "images": [
+    {
+      "role": "isolated_test_api",
+      "tag": "qh12-browse-api:799c64ce5b615d42f6119c6d187b1f26d96f7237",
+      "image_id": "sha256:eb7e9cf66e105b84cff281b342d80d45c1394c639bd06dac07389f689eb051b3",
+      "oci_revision": "799c64ce5b615d42f6119c6d187b1f26d96f7237"
+    },
+    {
+      "role": "isolated_test_web",
+      "tag": "qh12-browse-web:799c64ce5b615d42f6119c6d187b1f26d96f7237",
+      "image_id": "sha256:1ce93bcd9fb378d5805f4df6fb4a01283aa400b08d52ada69c3eb1cc0d36c696",
+      "oci_revision": "799c64ce5b615d42f6119c6d187b1f26d96f7237"
+    },
+    {
+      "role": "isolated_test_browser",
+      "tag": "qh12-browse-browser:799c64ce5b615d42f6119c6d187b1f26d96f7237",
+      "image_id": "sha256:07fde1b209d0bdb9c931d1b85b941e2f05363c2fc996e269e9ddab6d4d2a6111",
+      "oci_revision": "799c64ce5b615d42f6119c6d187b1f26d96f7237"
+    }
+  ],
+  "live_dependency_images_unchanged": true,
+  "registry_published": false
+}

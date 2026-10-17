@@ -404,6 +404,15 @@ class AuthorizedNativeContextService:
             raise PermissionError("Context access denied")
         return await self.engine.search(request.query)
 
+    async def browse(self, request: ContextRequest):
+        decision = await self.policy.evaluate(PolicyRequest(
+            subject_id=request.subject_id, action=PolicyAction.READ_CONTEXT,
+            context_ids=request.query.context_ids,
+        ))
+        if not decision.allowed:
+            raise PermissionError('Context access denied')
+        return await self.engine.browse(request.query)
+
     async def select_descriptors(self, *, subject_id, context_ids, values,
                                  include_tentative=False, limit=20, after_revision_id=None):
         """Internal authorized exact selection; no public port/HTTP DTO change."""

@@ -5,7 +5,63 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
-**Status alignment — 2026-10-17:** QH-8, QH-32 and QH-33 code/evidence are merged
+## QH-12 browse-first source update — 2026-10-17
+
+Owner-approved ADR 0005 adds no-selector canonical browsing and a deterministic
+structured preview on the existing hot-reload branch. Executable source:
+`799c64ce5b615d42f6119c6d187b1f26d96f7237`; the existing d70626b dependency images
+and all six container identities/configurations remain unchanged. Vite/Uvicorn
+load the new source without container replacement, migration or new dependencies.
+Actual VPS Chromium verifies Alice's existing empty Space without a search and
+with GET-only Space requests. No persistent demo data is created or reassigned.
+Populated navigation/provenance and recovery are demonstrated separately on real
+isolated services: [browse evidence](evidence/qh12-browse-20261017/README.md),
+[decision and acceptance](qh-12-context-understanding.md).
+PR #13 and QH-12 remain open for owner review; no merge, Jira transition,
+realm/security-policy change, MCP activation or inference. Prior activation and
+backup/rollback records below retain their original identities and scope.
+
+## Executed VPS development POC transition — 2026-10-17
+
+Owner explicitly authorized frontend/backend hot reload on the existing `qh`
+project before QH-12 PR #13 merge. [Operating procedure](qh-development-stack.md)
+supersedes the prior image-only operating gate for this transition only.
+
+- At cutover, app source HEAD `70c30b2ad998ea70fb29f958c042dd1c037c12ec`, with
+  executable source identical to tested image source `d70626b`. API/frontend use
+  the [exact candidate image IDs](evidence/qh12-demo-a-20261017/candidate-images.json)
+  as dependency bases, with five/four source binds and Uvicorn/Vite reload.
+  Subsequent transition commits change operational configuration/tests/docs only.
+- Backend container `03b9bcf60623` → `04523dbcd096`; frontend `120118fbc04b` →
+  `e9b60a63e109`. Both healthy, ports still localhost 8000/5173. No MCP replacement.
+- PostgreSQL `30b1e8cfc87b`, Neo4j `0a2ee862bcca`, Keycloak `4a84b44ce480` and MCP
+  `39fda1713b33` retain IDs, image IDs, start times, networks, mounts and environment.
+  Persistent volumes, private `.env`, readonly realm and frozen bundle unchanged.
+  Schema remains 0005; three exact generic definitions and 14 registry rows retained.
+- Real protected backup: `/home/ubuntu/qh-runtime/backups/20261017-hot-reload/qh.dump`;
+  checksum/archive listing retained privately. Isolated restore with no network,
+  ports or persistent volumes matches all 14 SQL table counts/hashes. No QH restore.
+- Initial real login failed 401 because no QH OIDC links existed. After separate
+  explicit owner approval, the existing demo provisioning adds only two demo users
+  and two identity links. Real-browser create/list/open retains two empty synthetic
+  Alice Spaces and their zero-progress projection-state rows. The second is an
+  unintended smoke-script duplicate, retained without deletion; corrected smoke
+  opens the original ID through SPA navigation without creating more data. All preexisting rows retained; 10 other tables exactly unchanged,
+  including canonical understanding/source/provenance/registry/outbox. No new items.
+- PASS real VPS Chromium PKCE, proxy/API, Alice/Bob denial, QH-12 views and empty
+  text/descriptor queries. PASS internal readonly retrieval of retained historical
+  synthetic understanding/provenance after app restart. PASS visible React HMR
+  without full reload and two Python reloads, same images/containers, probes restored.
+- Populated provenance in Alice's browser remains NOT TESTED: historical synthetic
+  Spaces have different owners. Real graph-outage handling retains isolated QH-12
+  evidence; no persistent graph fault was induced. Mac forwarding/personal browser
+  review remains for the owner. No migration, realm change, inference or release.
+- Rollback: preserved c723d32 bundle/images, frontend/backend only, no database
+  rollback or data deletion. PR #13 remains open; QH-12 stays En cours.
+
+## Historical status alignment before the hot-reload transition — 2026-10-17
+
+QH-8, QH-32 and QH-33 code/evidence are merged
 on `main`; QH-33 PR #8 merged as `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2` and
 its approved technical scope is DONE. Independent human validation remains open
 in QH-38, with null human metrics. These merges are **not deployments**: the VPS
@@ -14,6 +70,28 @@ backend/frontend/MCP still run images from
 application source mounts. Application image revision/mounts were rechecked
 read-only for this alignment; no new schema probe or activation was performed.
 The artifact identities and executed deployment records below are preserved.
+
+## QH-12 Demo A candidate — 2026-10-17 (NOT DEPLOYED)
+
+Executable/configuration source `d70626bbe50c070c428b02564d22dec42b3b22b0`:
+[immutable image manifest](evidence/qh12-demo-a-20261017/candidate-images.json),
+[real packaged browser/recovery results](qh-12-context-understanding.md) and
+[separate activation gate](qh-12-demo-a-deployment.md). Exact-source local API,
+frontend and MCP images plus a browser test image were built from Git archive.
+No registry publication, application replacement, migration or realm edit.
+
+The candidate passes isolated 0005/native/PKCE/owner/provenance/history checks,
+real test-graph outage and synthetic SQL restore/rebuild/browser re-open. Compose
+was rendered read-only: zero app mounts and unchanged DB/IdP images/volumes,
+networks and readonly root realm bind. Actual VPS still reports healthy c723d32
+app images and schema 0005. Its backup/restore, SSH/browser smoke and deployment
+remain NOT TESTED; the candidate is prepared, not activated.
+
+QH-11 PR #12 is now merged as `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`
+and Jira DONE. The historical candidate rows below preserve their test identities.
+
+The initial 50061be image/test metadata is retained in the evidence archive; the
+final legacy-display correction changes no schema, public contract or runtime bundle.
 
 ## QH-11 browser candidate — 2026-10-17 (not deployed)
 

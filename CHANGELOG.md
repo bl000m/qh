@@ -7,7 +7,42 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+### Owner-approved browse-first QH-12 evolution — 2026-10-17
+
+- New scoped read-only canonical browsing alongside unchanged QH-10 search:
+  explicit revision view, bounded keyset pages, exact navigation filters, native
+  graph/canonical validation, shared policy and fail-closed freshness.
+- Deterministic structured preview and page-local open descriptor grouping lead
+  to readable detail, exact relation anchors and item history. No LLM synthesis,
+  semantic taxonomy, editing or confirmation. English ADR 0005/Product Contract
+  amendment and criterion-by-criterion QH-12 scope preserve previous history.
+- Verification for this increment is recorded separately in the QH-12 report;
+  the previous 503-native/24-browser checkpoint is not proof of browsing.
+
+### Owner-authorized VPS development POC — 2026-10-17
+
+- Existing project `qh`: activate QH-11/12 frontend and QH-9/10 backend from the
+  single checkout with Vite/Uvicorn reload, preserving loopback ports, schema 0005,
+  native worker/namespace, DB/Neo4j/IdP/MCP containers and volumes. Add guarded
+  app-only `make dev-*` commands, drift regressions and updated switch safeguards.
+- Real protected PostgreSQL dump restored in isolation; all 14 table fingerprints
+  match. Separately authorized Alice/Bob identity provisioning fixes missing links;
+  browser smoke conserves two empty synthetic Spaces (one unintended duplicate
+  from the temporary smoke script, retained without deletion). Historical rows/evidence remain.
+- Real VPS PKCE, same-origin API, Space UI, revision views, Bob denial and React/
+  Python reload verified. Historical provenance checked readonly; populated Alice
+  provenance and personal Mac verification remain pending. QH-12 PR #13 stays open;
+  no merge, Jira transition, migration, realm edit or paid inference.
+
+Earlier status entries below describe their checkpoints, before this explicit
+runtime transition. The immutable bundle/images remain preserved for rollback.
+
 ### Status alignment — 2026-10-17
+
+- QH-11 PR #12 owner-reviewed and merged with history as
+  `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`; Jira DONE, four green head jobs.
+  QH-12 source/UI and Demo A preparation remain distinct from VPS activation.
+
 
 - QH-10 owner-reviewed PR #11 merged with history preserved as
   `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`; Jira QH-10 is DONE. Its final
@@ -30,6 +65,13 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   status and the deployment register describe current activation.
 
 ### Added
+
+- QH-12 candidate read-only Understanding view: explicit revision views, text/open
+  descriptor selection, bounded pages, distinct validation/certainty/time/provenance
+  and exact relation anchors. Real browser/native/SQL/graph outage and synthetic
+  backup/restore/rebuild proof. Immutable images and Demo A deployment plan only;
+  no browse-all API, schema/realm change, persistent operation or deployment.
+
 
 - QH-11 candidate `Mon environnement`: existing React/TypeScript/Vite client with
   real OIDC Code + PKCE, ephemeral tokens, Space list/create/detail, bounded pages,

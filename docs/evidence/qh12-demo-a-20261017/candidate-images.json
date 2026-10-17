@@ -1,0 +1,32 @@
+{
+  "source_commit": "d70626bbe50c070c428b02564d22dec42b3b22b0",
+  "built_from": "git archive",
+  "registry_published": false,
+  "deployed": false,
+  "images": [
+    {
+      "component": "api",
+      "tag": "qh12-api:d70626bbe50c070c428b02564d22dec42b3b22b0",
+      "image_id": "sha256:eea46595e97112cd86385009fa2cc8c5749c2715f5ec76d3b68058fc227dee7d",
+      "oci_revision": "d70626bbe50c070c428b02564d22dec42b3b22b0"
+    },
+    {
+      "component": "web",
+      "tag": "qh12-web:d70626bbe50c070c428b02564d22dec42b3b22b0",
+      "image_id": "sha256:32d2fcdeb69a72f778863b174455dbc08a19f882caf5727896b173504e395ade",
+      "oci_revision": "d70626bbe50c070c428b02564d22dec42b3b22b0"
+    },
+    {
+      "component": "mcp",
+      "tag": "qh12-mcp:d70626bbe50c070c428b02564d22dec42b3b22b0",
+      "image_id": "sha256:679ea01c3a09d0bf44214744485f61066fd325f3632f538d304b376bcfe886ba",
+      "oci_revision": "d70626bbe50c070c428b02564d22dec42b3b22b0"
+    },
+    {
+      "component": "browser",
+      "tag": "qh12-browser:d70626bbe50c070c428b02564d22dec42b3b22b0",
+      "image_id": "sha256:49aa3139180dad67f21deb9af32ebf5bd7986cec953fe935ba66c1c9d97df9b5",
+      "oci_revision": "d70626bbe50c070c428b02564d22dec42b3b22b0"
+    }
+  ]
+}

@@ -20,13 +20,39 @@ it does not amend the Product Contract or ADRs.
 
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
-consolidated in main and active on the VPS at schema 0005 using images from
-`c723d32c5d0825f9232ece560e7e666e69dceb27`. Backend/frontend/MCP have no source
-mounts; the frozen Compose bundle is independent of Git worktrees. Persistent
-synthetic smoke, exact-ID restart and pending-intent recovery passed; see
-[deployment evidence](deployments.md). Deployed business routes remain deferred except QH-5
-identity and owner authorization. See
+consolidated in main and active on the VPS at schema 0005. The owner's later
+2026-10-17 POC decision activates QH-12 frontend/backend from the single checkout
+with Vite/Uvicorn hot reload, keeping project `qh`, loopback ports, native namespace,
+worker, OIDC and policy. MCP remains image-only at c723d32; DB/IdP services and
+volumes are unchanged. QH-9/10 business routes and QH-11/12 UI are active before
+PR #13 merge. The prior frozen bundle is preserved for rollback; branch switches
+now require stopping the two source-dependent apps. See
+[operating procedure](qh-development-stack.md) and [deployment evidence](deployments.md).
+No Core responsibility, public contract, canonical schema or provider policy changes.
+See
 [ADR 0001](adr/0001-modular-architecture.md).
+
+## Product decisions and rationale
+
+The owner-approved [ADR 0005](adr/0005-browse-first-context-understanding.md)
+adds browse-first navigation of canonical understanding to QH-12, preserving
+[Product Contract](product/QH_PRODUCT_CONTRACT.md#browse-first-understanding--owner-amendment-2026-10-17),
+ADR 0003's PostgreSQL/derived graph separation and ADR 0004's governed proposal
+inputs. Its decision matrix records rationale, alternatives, UX/architecture
+consequences, limits and open questions. The new authenticated read-only GET
+`/context-spaces/{id}/understanding` uses a distinct `ContextBrowse` value through
+ContextService and the existing native service; it does not relax QH-10's search
+selector. CanonicalRepository selects bounded owned IDs with filters before LIMIT;
+Neo4j exact-ID verification, shared hydration, readiness and policy checks precede
+disclosure. Empty selections also fail closed on unavailable/stale graph state.
+No table, migration, new service, ownership rule or provider change.
+
+The UI previews literal existing excerpts, current heads and proposals separately;
+page-local descriptor groups are not global counts or a taxonomy. Readable cards
+lead to reused canonical revision detail and exact history/relation navigation.
+Search is secondary. Canonical-summary selection, LLM synthesis, editing/human
+validation and advanced graph navigation remain outside this increment. See
+[verifiable QH-12 criteria](qh-12-context-understanding.md#owner-approved-acceptance-criteria).
 
 ## Current code and planned product flows — 2026-10-17
 
@@ -79,7 +105,26 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
-### QH-11 browser client (candidate, not deployed)
+### QH-12 structured understanding view (unmerged, active in authorized development POC)
+
+The existing browser detail composes the QH-11 metadata view with read-only QH-10
+canonical retrieval. Navigation names one authorized Space and an explicit
+current/proposed/history view. Complementary QH-10 search additionally requires
+exactly one approved text/descriptor selector.
+The later browse-first amendment adds a real no-selector GET; QH-10 POST remains
+selector-based. No empty query, wildcard or fixed meaning vocabulary is introduced. Unclassified items remain searchable by text. Cursor pagination
+uses the backend's view-filtered pages; no frontend visibility filtering.
+
+Rendering preserves structural shape, open assignments/certainty, epistemic
+state, immutable revision identity, relation endpoint anchors, fact/validity
+bounds and source-revision provenance separately. Only recognizable QH-8 locator
+payloads are displayed as literal quotations; arbitrary historical citation
+properties and nonconforming historical descriptor objects remain unmodified JSON. Source bodies are not invented/fetched through
+a new API; matching quotations are not a semantic-validity assertion. A failed
+request/freshness check discards visible pages and displays unavailable, not empty.
+No editing, confirmation, new policy, schema, service or browser session is added.
+
+### QH-11 browser client (merged, active in authorized development POC)
 
 The existing React 18/TypeScript/Vite client owns browser navigation and Space
 metadata views only. Its HTTP client uses QH-9 public REST contracts through the

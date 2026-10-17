@@ -1,0 +1,17 @@
+# Owner-authorized VPS POC, 2026-10-17. Use scripts/manage_qh_dev.py only.
+# Source mounts and reload commands come from the base development Compose.
+services:
+  frontend:
+    image: qh12-web:d70626bbe50c070c428b02564d22dec42b3b22b0
+    build: !reset null
+  backend:
+    image: qh12-api:d70626bbe50c070c428b02564d22dec42b3b22b0
+    build: !reset null
+  # MCP stays on its existing image-only runtime, never targeted by dev commands.
+  mcp:
+    image: ${QH_MCP_IMAGE:?Retain the existing MCP image}
+    build: !reset null
+    volumes: !reset []
+    command: [uvicorn, 'app.main:app', --host, '0.0.0.0', --port, '3001']
+    environment:
+      WATCHFILES_FORCE_POLLING: !reset null

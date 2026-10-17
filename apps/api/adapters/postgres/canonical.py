@@ -321,6 +321,47 @@ class CanonicalRepository:
                       list(values), certainty, limit)
             ).fetchall())
 
+    def browse_candidates(self, query):
+        """Single owned scope; intersect exact navigation filters before keyset LIMIT."""
+        from app.core.models import ContextBrowse
+
+        if not isinstance(query, ContextBrowse):
+            raise ValueError('Explicit browse contract required')
+        after = str(UUID(str(query.after_revision_id))) if query.after_revision_id else None
+        with self.connect() as c:
+            c.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
+            scopes = self._authorize(c, query.context_ids)
+            return json_values(c.execute('''
+                SELECT r.id,r.context_space_id FROM understanding_item_revisions r
+                JOIN understanding_items i ON i.id=r.item_id
+                JOIN item_revision_types t ON t.item_revision_id=r.id
+                JOIN semantic_type_versions s ON (s.type_id,s.version)=(t.type_id,t.type_version)
+                LEFT JOIN relation_revision_details d ON d.item_revision_id=r.id
+                WHERE r.context_space_id=ANY(%s::uuid[])
+                  AND (%s::uuid IS NULL OR r.id>%s::uuid)
+                  AND (%s='history' OR (%s='proposed' AND r.validation_state='proposed')
+                    OR (%s='current' AND r.id=i.current_revision_id AND r.validation_state='confirmed'))
+                  AND (%s::text IS NULL OR s.structural_kind::text=%s)
+                  AND (%s::uuid IS NULL OR r.item_id=%s::uuid)
+                  AND (%s::uuid IS NULL OR r.id=%s::uuid)
+                  AND (%s::uuid IS NULL OR d.source_item_id=%s::uuid OR d.target_item_id=%s::uuid)
+                  AND (%s::text IS NULL OR EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
+                        THEN r.content->'descriptors' ELSE '[]'::jsonb END) a
+                    WHERE jsonb_typeof(a->'value')='string' AND a->>'value'=%s
+                      AND a->>'certainty'=ANY(%s::text[])))
+                  AND (NOT %s OR NOT EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
+                        THEN r.content->'descriptors' ELSE '[]'::jsonb END) a
+                    WHERE jsonb_typeof(a->'value')='string' AND length(a->>'value')>0
+                      AND a->>'certainty' IN ('asserted','tentative')))
+                ORDER BY r.id LIMIT %s
+            ''', (scopes,after,after,query.view,query.view,query.view,
+                  query.kind,query.kind,query.item_id,query.item_id,query.revision_id,query.revision_id,
+                  query.related_item_id,query.related_item_id,query.related_item_id,
+                  query.descriptor,query.descriptor,['asserted','tentative'] if query.include_tentative else ['asserted'],
+                  query.unclassified,query.limit+1)).fetchall())
+
     def read_snapshot(self, context_ids, revision_ids=None):
         """Authorized, consistent bulk read; all history unless IDs explicitly given.
 

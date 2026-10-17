@@ -16,8 +16,10 @@ description: Analyze, implement or verify a QH Jira ticket using the Product Con
    ADR 0003 supersedes the Graphiti runtime choice; read the current QH-30
    deployment register and post-cutover record before treating old ticket
    category names as mandatory registered types. The single development checkout
-   is `/home/ubuntu/qh` on one task branch; deployed apps use immutable images,
-   with no source mounts. Preserve the readonly IdP configuration and private .env.
+   is `/home/ubuntu/qh` on one task branch. The owner's 2026-10-17 VPS POC decision
+   enables frontend/backend source mounts and hot reload; MCP remains image-only.
+   Read `docs/qh-development-stack.md`; stop frontend/backend via guarded `dev-stop`
+   before any branch switch. Preserve readonly IdP configuration and private .env.
 4. Develop only in `/home/ubuntu/qh`, following its Single Checkout Development
    Policy: one active branch/ticket/PR, previous task closed unless explicitly
    excepted, clean/saved files and safe processes/mounts, then fast-forward `main`

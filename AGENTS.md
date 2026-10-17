@@ -21,11 +21,13 @@ or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
 QH-30 and semantic foundation are consolidated in main. Persistent schema is 0005;
-backend/frontend/MCP run images from c723d32c5d0825f9232ece560e7e666e69dceb27
-without source bind mounts. The sole development checkout is /home/ubuntu/qh;
+the owner authorized a VPS POC hot-reload transition on 2026-10-17:
+frontend/backend use the QH-12 checkout with source binds; MCP retains c723d32
+image-only operation. See [active POC procedure](docs/qh-development-stack.md).
+The sole development checkout is /home/ubuntu/qh;
 use one active task branch there under the Single Checkout Development Policy
-below. Runtime management uses the frozen
-/home/ubuntu/qh-runtime/current bundle and private .env, not development make up.
+below. Runtime management uses guarded `make dev-*` commands and private .env;
+/home/ubuntu/qh-runtime/current remains the preserved image-only rollback bundle.
 Keep the readonly root Keycloak realm import file unchanged. Future planning does
 not authorize further persistent writes/deployment/retirement.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
@@ -35,6 +37,17 @@ SQL types or human validation from descriptors. Semantic meanings
 are open-ended content, not mandatory registry types or the eleven QH-4 categories.
 Optional specialized schemas/rules remain supported; never rewrite applied
 migrations or immutable historical bindings to force a new vocabulary.
+
+## Browse-first product decision
+
+Read [ADR 0005](docs/adr/0005-browse-first-context-understanding.md) and the Product
+Contract's browse-first amendment before changing understanding UX or retrieval.
+Browsing is primary; search complements it. Preserve deterministic-preview versus
+validated/generative synthesis distinctions, open data-derived groups, epistemic
+states and progressive disclosure. No global counts from partial pages, semantic
+inference from descriptors, or SQL-only graph bypass. Search QH-10's selector
+contract remains distinct. The ADR and QH-12 report distinguish implemented/tested
+capabilities from future work; never infer acceptance from the approved direction.
 
 ## Autonomy and STOP AND ASK
 
@@ -227,9 +240,13 @@ At the end of every task, always report:
 
 ## Versioning and verification
 
-Read [main consolidation](docs/main-consolidation.md) before merge, checkout or
-runtime-source changes. Source mounts have been removed from all app services;
-root retains only the readonly IdP configuration bind. The primary checkout may
+Read [main consolidation](docs/main-consolidation.md) and the later
+[hot-reload decision](docs/qh-development-stack.md) before merge, checkout or
+runtime-source changes. Frontend/backend now depend on this tree: stop only these
+apps with `sudo -n make dev-stop` before any branch switch, verify they are stopped
+and no other source-dependent process is active, then restart via `dev-up` only
+after reviewing the selected branch's compatibility. The root readonly IdP bind remains.
+The primary checkout may
 be on the single authorized task branch; older instructions that require it to
 remain on main are historical and superseded by this policy. Preserve the readonly
 bind and private .env.
@@ -295,17 +312,19 @@ Tags, GitHub Releases and Jira milestone/version writes require explicit approva
 
 ### Runtime and publication boundary
 
-- Deployed backend/frontend/MCP use immutable images and the frozen bundle under
-  `/home/ubuntu/qh-runtime/current`, not the checked-out development branch.
-  Recheck actual container mounts/configuration before relying on that isolation.
+- The owner-approved VPS POC runs frontend/backend from this checkout with hot
+  reload. MCP remains image-only; `/home/ubuntu/qh-runtime/current` is the retained
+  rollback bundle, not the active app configuration. Changes in app source become
+  live before merge. Stop apps before branch switches; inspect actual mounts/processes.
 - Preserve private `.env`, the frozen runtime bundle and readonly root
   `infra/keycloak/qh-realm.json`. Before a switch, verify the target branch keeps
   the same realm path and bytes and does not overwrite private/ignored files.
   Unexpected mounts or protected-file differences block switching until resolved.
-- Never run development `make up`, `make migrate` or generic Compose commands as
-  persistent-runtime management. A branch switch grants no deployment, migration,
-  data-write or service-replacement permission. Use only the reviewed runtime
-  bundle for separately authorized operations.
+- Use only guarded `make dev-up|dev-status|dev-logs|dev-restart|dev-stop` for this
+  POC (with Docker permission). Never run `make up`, `make migrate`, `make verify`,
+  `make oidc-up` or generic Compose lifecycle commands against the persistent stack.
+  A branch switch grants no migration, seed, data-write or dependency replacement
+  permission. Runtime rollback is a separately reviewed app-only operation.
 - Publish verified, review-ready commits to the current task PR unless the user
   prohibits it. This authorizes ordinary publication of that task branch only,
   not force pushes, other task branches, tags/releases, Jira writes, merge or

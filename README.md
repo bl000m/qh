@@ -9,13 +9,13 @@ A space can contain multiple domains without a separate schema for each.
 ## Implementation status
 
 Status aligned with GitHub and Jira on **2026-10-17**. Code merged into `main`
-and code running on the VPS are separate checkpoints; this documentation update
-does not activate any merged extraction or evaluation feature.
+and code running on the VPS are separate checkpoints. The later owner-authorized
+hot-reload POC below activates the application UI/API, without running extraction.
 
 | Layer | State |
 | --- | --- |
 | Consolidated `main` | Native foundation, QH-8 extraction/evaluation, QH-32 citation resolution and QH-33 technical delivery merged. [PR #8](https://github.com/bl000m/qh/pull/8) merge: `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`; its head CI passed quality, OIDC and 383 native tests without skips |
-| QH environment | Schema 0005; native backend/worker, frontend and MCP run versioned images from `c723d32` without application source mounts. Smoke, exact evidence, isolation, restart and pending-intent recovery passed |
+| QH environment | Owner-authorized VPS development POC: QH-12 frontend/backend run from `/home/ubuntu/qh` with hot reload; schema 0005, native worker/namespace unchanged. MCP retains c723d32 image-only operation. [Current commands, backup and limits](docs/qh-development-stack.md) |
 | Semantic foundation | Three generic profiles provisioned; authorized exact descriptor selection active. Historical type bindings, canonical revisions and six Graphiti nodes preserved. [Deployment record](docs/deployments.md) |
 | QH-8 merged internal pipeline | Conversation import, interchangeable fake/replay providers, strict citations and generic proposed understanding; isolated SQL/Neo4j verification. The internal pipeline is in `main`, not deployed as a conversational product flow |
 | Merged Mistral experiment evidence | Four full synthetic `mistral-small-2603` generations on 2026-10-16; 7/8 cumulative requests, 2,673 input / 5,922 output tokens, USD 0.00392283 cache-aware calculated usage charge. One of four QH batches accepted; 23/34 citation spans exact. Provisional reference, no independent human validation. [Report](docs/qh8-mistral-evaluation.md) |
@@ -27,30 +27,44 @@ Graphiti is a preserved historical prototype, not a native-engine dependency.
 The independent MCP server currently provides transport scaffolding, not a QH context
 client. Deployed retrieval offers scoped substring search and an internal exact
 descriptor selector: authorize → canonical IDs from SQL → Neo4j verification →
-canonical hydration and freshness recheck. No public context DTO/API or semantic
-ranking is implied. The sole development checkout is `/home/ubuntu/qh`, using one
-task branch at a time. Deployed images and the frozen Compose bundle are independent of that branch.
+canonical hydration and freshness recheck. QH-10 exposes its bounded authenticated
+query contract; no semantic ranking is implied. The sole development checkout is `/home/ubuntu/qh`, using one
+task branch at a time. Frontend/backend now follow that branch: stop the apps
+before switching. The frozen image-only bundle is retained for rollback.
 
 ## Planned demo sequence — 2026-10-17
 
 **QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
 implements POST/list/detail/PATCH-name through the existing ContextService,
 OIDC identity, PolicyService and canonical PostgreSQL. It is a merged increment
-of Demo A, not the full demo or a VPS deployment. No deletion/retrieval/UI is added.
+of Demo A; its routes are now active in the authorized hot-reload POC. No deletion
+or ingestion flow is added.
 
 **QH-10 merged:** [scoped canonical retrieval](docs/qh-10-scoped-retrieval.md)
 adds one authenticated query route for native text search or exact open descriptors,
 with mandatory current/proposed/history selection, canonical content, validation,
 revision anchors, source provenance and time bounds. This source increment is not
-deployed; it adds no LLM generation, temporal filtering, sharing or frontend.
+active in the hot-reload POC; it adds no LLM generation, temporal filtering or sharing.
 
-**QH-11 candidate:** [Mon environnement](docs/qh-11-mon-environnement.md) adds
+**QH-11 merged:** [Mon environnement](docs/qh-11-mon-environnement.md) adds
 real browser OIDC login, owned Space list/create/detail and return navigation to the
 existing React client. Code + PKCE uses the approved ephemeral in-memory session;
-no Understanding view, sharing, new backend route or VPS activation. It requires
-the QH-9 backend: the deployed c723d32 API does not expose these Space routes.
+no sharing or new session backend. QH-11 and the QH-9/10 API are now active in the
+authorized VPS POC; MCP alone retains the earlier c723d32 app image.
 
-These are delivery milestones, **not implemented or deployed product capabilities**.
+**QH-12 candidate:** [structured Context detail](docs/qh-12-context-understanding.md)
+opens with a deterministic structured preview and bounded no-selector navigation;
+QH-10 text/open-descriptor search remains complementary. It preserves
+canonical revisions, state, temporal bounds, source provenance and relation anchors.
+The owner-approved [ADR 0005](docs/adr/0005-browse-first-context-understanding.md)
+records browse-first rationale, alternatives and limits. No fabricated search,
+editing or automatic confirmation. The owner authorized
+[hot-reload VPS activation before merge](docs/qh-development-stack.md); PR #13
+remains open for personal browser review. Existing Understanding data remain under
+their original synthetic owners; Alice's new empty Space has no extracted items.
+
+The roadmap rows below describe target milestones; the status paragraphs above
+identify which increments are already implemented and active.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine
 [ADR 0003](docs/adr/0003-native-context-engine.md) and unified Understanding Engine
 [ADR 0004](docs/adr/0004-unified-understanding-engine.md).
@@ -182,7 +196,7 @@ For a new local checkout, generate configuration with `python3 scripts/init_env.
 inspect the checkout/configuration before starting any separately authorized services.
 
 - `make config`: validate Compose without printing credentials.
-- `make up`: build/start the development stack; use only when container changes are authorized.
+- `make up`: build/start a disposable/local stack; **unsafe for persistent VPS management**.
 - `make verify-running`: verify an existing stack without rebuilding/replacing containers.
 - `make verify`: build/start plus existing quality checks; not proof of dedicated QH-30 integration coverage.
 - `make migrate`: **Alembic `upgrade head` against the configured database**. This command is not authorization to migrate persistent QH. A cutover must use the explicitly approved target/commit and configuration.
@@ -201,8 +215,10 @@ opt-in through `QH_NATIVE_CONTEXT_ENABLED`; the historical fd50 image requires 0
 The consolidated runtime accepts 0004/0005; startup never migrates. The VPS is at 0005;
 never restart its incompatible historical fd50 image. The
 [deployment register](docs/deployments.md) records executed activation and recovery.
-For VPS management use the frozen `/home/ubuntu/qh-runtime/current` Compose bundle
-with its image pins and existing private .env, not default development `make up`.
+For the current VPS POC use `sudo -n make dev-up`, `dev-status`, `dev-logs`,
+`dev-restart` and `dev-stop`, targeting frontend/backend only. See
+[live development](docs/qh-development-stack.md). The frozen
+`/home/ubuntu/qh-runtime/current` image-only bundle is preserved for rollback.
 
 ## Modules and technical references
 

@@ -62,6 +62,12 @@ class ManagedContextService:
         return value
 
     async def retrieve(self, request: ContextRequest) -> ContextResult:
+        return await self._retrieval(request, 'retrieve')
+
+    async def browse(self, request: ContextRequest) -> ContextResult:
+        return await self._retrieval(request, 'browse')
+
+    async def _retrieval(self, request, operation):
         decision = await self.policy.evaluate(PolicyRequest(
             subject_id=request.subject_id, action=PolicyAction.READ_CONTEXT,
             context_ids=request.query.context_ids,
@@ -71,7 +77,7 @@ class ManagedContextService:
         if self.retrieval_for is None:
             raise ContextRetrievalUnavailable("Context retrieval unavailable")
         try:
-            result = await self.retrieval_for(request.subject_id).retrieve(request)
+            result = await getattr(self.retrieval_for(request.subject_id), operation)(request)
         except PermissionError:
             raise ContextSpaceNotFound("Context space not found") from None
         if (any(h.context_id not in request.query.context_ids for h in result.hits)

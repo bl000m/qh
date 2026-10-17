@@ -481,3 +481,34 @@ class IncrementalContextEngine:
         if before != after:
             raise NativeContextError("Projection advanced during retrieval; retry read")
         return ContextResult(hits=tuple(sorted(hits, key=lambda h: str(h.item_revision.revision_id))))
+
+    async def browse(self, query):
+        """Bounded canonical IDs, exact graph verification, common hydration/guards."""
+        from adapters.context.hydration import hydrate
+
+        try:
+            before = await asyncio.to_thread(self._ready, query.context_ids)
+            candidates = await asyncio.to_thread(self.repository.browse_candidates, query)
+            ids = [r['id'] for r in candidates]
+            hits = ()
+            if ids:
+                engine = NativeContextEngine(
+                    self.projector.driver, slice_id=self.projector.key(query.context_id),
+                    read_snapshot=lambda scopes, refs: immutable_snapshot(self.repository.read_snapshot(scopes, refs)),
+                )
+                result = await engine.select_revisions(
+                    context_ids=query.context_ids, revision_ids=ids, view=query.view)
+                hits = result.hits
+                if {h.item_revision.revision_id for h in hits} != set(ids):
+                    raise NativeContextError('Missing selected graph assertion')
+            visible = ids[:query.limit]
+            revisions = await asyncio.to_thread(hydrate, self.repository, query, visible)
+            after = await asyncio.to_thread(self._ready, query.context_ids)
+            if before != after:
+                raise NativeContextError('Projection advanced during browse')
+            return ContextResult(hits=tuple(h for h in hits if h.item_revision.revision_id in visible),
+                revisions=revisions, next_after_revision_id=visible[-1] if len(ids) > query.limit else None)
+        except PermissionError:
+            raise
+        except Exception:
+            raise ContextRetrievalUnavailable('Context retrieval unavailable') from None
