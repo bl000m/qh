@@ -35,9 +35,12 @@ The old `scripts/start_task_worktree.py` is disabled: no arguments, old plan mod
 only explains the change. No automatic replacement performs hidden switches,
 fetches, runtime actions or task creation.
 
-Development `make up`/generic Compose must not manage the persistent stack. Keep
-production on the frozen `/home/ubuntu/qh-runtime/current` bundle. Switching Git
-is not migration/deployment or permission to use production credentials in tests.
+The later owner-approved [VPS POC hot-reload workflow](qh-development-stack.md)
+binds frontend/backend to this checkout. Stop only those apps with `sudo -n make
+dev-stop` before branch switches, verify stopped state and other processes, then
+use `dev-up` after reviewing the new branch. The frozen bundle is retained for
+image-only rollback. Development `make up`/generic Compose must not manage the
+persistent stack. Switching Git grants no migration, seeding or test-data writes.
 
 ## Readiness, closure and reporting
 

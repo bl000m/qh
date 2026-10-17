@@ -1,5 +1,11 @@
 # Main consolidation and image-only runtime — executed record and historical procedure
 
+**Later decision, 2026-10-17:** the owner authorized the existing VPS POC's
+frontend/backend hot reload from the single checkout. See the
+[current operating procedure](qh-development-stack.md). This record preserves
+the earlier image-only consolidation and rollback identities; it no longer
+establishes that branch switching is isolated from running apps.
+
 2026-10-15. The owner subsequently authorized the full sequence in the attached
 final-consolidation request. PR #2/#3 are merged and main c723d32 is deployed at
 0005; smoke/restart/pending recovery and shared-resource preservation passed.

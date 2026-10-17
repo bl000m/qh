@@ -20,12 +20,16 @@ it does not amend the Product Contract or ADRs.
 
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
-consolidated in main and active on the VPS at schema 0005 using images from
-`c723d32c5d0825f9232ece560e7e666e69dceb27`. Backend/frontend/MCP have no source
-mounts; the frozen Compose bundle is independent of Git worktrees. Persistent
-synthetic smoke, exact-ID restart and pending-intent recovery passed; see
-[deployment evidence](deployments.md). Deployed business routes remain deferred except QH-5
-identity and owner authorization. See
+consolidated in main and active on the VPS at schema 0005. The owner's later
+2026-10-17 POC decision activates QH-12 frontend/backend from the single checkout
+with Vite/Uvicorn hot reload, keeping project `qh`, loopback ports, native namespace,
+worker, OIDC and policy. MCP remains image-only at c723d32; DB/IdP services and
+volumes are unchanged. QH-9/10 business routes and QH-11/12 UI are active before
+PR #13 merge. The prior frozen bundle is preserved for rollback; branch switches
+now require stopping the two source-dependent apps. See
+[operating procedure](qh-development-stack.md) and [deployment evidence](deployments.md).
+No Core responsibility, public contract, canonical schema or provider policy changes.
+See
 [ADR 0001](adr/0001-modular-architecture.md).
 
 ## Current code and planned product flows — 2026-10-17
@@ -79,7 +83,7 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
-### QH-12 structured understanding view (candidate, not deployed)
+### QH-12 structured understanding view (unmerged, active in authorized development POC)
 
 The existing browser detail composes the QH-11 metadata view with read-only QH-10
 canonical retrieval. Every request names one authorized Space, an explicit
@@ -97,7 +101,7 @@ a new API; matching quotations are not a semantic-validity assertion. A failed
 request/freshness check discards visible pages and displays unavailable, not empty.
 No editing, confirmation, new policy, schema, service or browser session is added.
 
-### QH-11 browser client (merged, not deployed)
+### QH-11 browser client (merged, active in authorized development POC)
 
 The existing React 18/TypeScript/Vite client owns browser navigation and Space
 metadata views only. Its HTTP client uses QH-9 public REST contracts through the

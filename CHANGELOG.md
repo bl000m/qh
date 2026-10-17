@@ -7,6 +7,23 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+### Owner-authorized VPS development POC — 2026-10-17
+
+- Existing project `qh`: activate QH-11/12 frontend and QH-9/10 backend from the
+  single checkout with Vite/Uvicorn reload, preserving loopback ports, schema 0005,
+  native worker/namespace, DB/Neo4j/IdP/MCP containers and volumes. Add guarded
+  app-only `make dev-*` commands, drift regressions and updated switch safeguards.
+- Real protected PostgreSQL dump restored in isolation; all 14 table fingerprints
+  match. Separately authorized Alice/Bob identity provisioning fixes missing links;
+  browser smoke conserves one empty synthetic Space. Historical rows/evidence remain.
+- Real VPS PKCE, same-origin API, Space UI, revision views, Bob denial and React/
+  Python reload verified. Historical provenance checked readonly; populated Alice
+  provenance and personal Mac verification remain pending. QH-12 PR #13 stays open;
+  no merge, Jira transition, migration, realm edit or paid inference.
+
+Earlier status entries below describe their checkpoints, before this explicit
+runtime transition. The immutable bundle/images remain preserved for rollback.
+
 ### Status alignment — 2026-10-17
 
 - QH-11 PR #12 owner-reviewed and merged with history as

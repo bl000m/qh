@@ -5,7 +5,45 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
-**Status alignment — 2026-10-17:** QH-8, QH-32 and QH-33 code/evidence are merged
+## Executed VPS development POC transition — 2026-10-17
+
+Owner explicitly authorized frontend/backend hot reload on the existing `qh`
+project before QH-12 PR #13 merge. [Operating procedure](qh-development-stack.md)
+supersedes the prior image-only operating gate for this transition only.
+
+- At cutover, app source HEAD `70c30b2ad998ea70fb29f958c042dd1c037c12ec`, with
+  executable source identical to tested image source `d70626b`. API/frontend use
+  the [exact candidate image IDs](evidence/qh12-demo-a-20261017/candidate-images.json)
+  as dependency bases, with five/four source binds and Uvicorn/Vite reload.
+  Subsequent transition commits change operational configuration/tests/docs only.
+- Backend container `03b9bcf60623` → `04523dbcd096`; frontend `120118fbc04b` →
+  `e9b60a63e109`. Both healthy, ports still localhost 8000/5173. No MCP replacement.
+- PostgreSQL `30b1e8cfc87b`, Neo4j `0a2ee862bcca`, Keycloak `4a84b44ce480` and MCP
+  `39fda1713b33` retain IDs, image IDs, start times, networks, mounts and environment.
+  Persistent volumes, private `.env`, readonly realm and frozen bundle unchanged.
+  Schema remains 0005; three exact generic definitions and 14 registry rows retained.
+- Real protected backup: `/home/ubuntu/qh-runtime/backups/20261017-hot-reload/qh.dump`;
+  checksum/archive listing retained privately. Isolated restore with no network,
+  ports or persistent volumes matches all 14 SQL table counts/hashes. No QH restore.
+- Initial real login failed 401 because no QH OIDC links existed. After separate
+  explicit owner approval, the existing demo provisioning adds only two demo users
+  and two identity links. Real-browser create/list/open retains one empty synthetic
+  Alice Space and its zero-progress projection-state row. All preexisting rows retained; 10 other tables exactly unchanged,
+  including canonical understanding/source/provenance/registry/outbox. No new items.
+- PASS real VPS Chromium PKCE, proxy/API, Alice/Bob denial, QH-12 views and empty
+  text/descriptor queries. PASS internal readonly retrieval of retained historical
+  synthetic understanding/provenance after app restart. PASS visible React HMR
+  without full reload and two Python reloads, same images/containers, probes restored.
+- Populated provenance in Alice's browser remains NOT TESTED: historical synthetic
+  Spaces have different owners. Real graph-outage handling retains isolated QH-12
+  evidence; no persistent graph fault was induced. Mac forwarding/personal browser
+  review remains for the owner. No migration, realm change, inference or release.
+- Rollback: preserved c723d32 bundle/images, frontend/backend only, no database
+  rollback or data deletion. PR #13 remains open; QH-12 stays En cours.
+
+## Historical status alignment before the hot-reload transition — 2026-10-17
+
+QH-8, QH-32 and QH-33 code/evidence are merged
 on `main`; QH-33 PR #8 merged as `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2` and
 its approved technical scope is DONE. Independent human validation remains open
 in QH-38, with null human metrics. These merges are **not deployments**: the VPS

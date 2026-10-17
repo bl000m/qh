@@ -3,8 +3,11 @@
 2026-10-17. [QH-12](https://contextlab.atlassian.net/browse/QH-12) uses the existing
 React client, ephemeral OIDC session, QH-9 metadata routes and QH-10 canonical
 retrieval. No backend/Core/public contract, schema, policy or provider change.
-Deployment is a separate gate: **NOT DEPLOYED**. Owner review, merge and Jira
-closure are pending; green tests alone do not make this task DONE.
+Initial preparation was **NOT DEPLOYED**. A later explicit owner decision on
+2026-10-17 authorized [VPS hot-reload activation](qh-development-stack.md) before
+merge. That executed transition is separate from the sealed-image tests below.
+Owner browser review, merge and Jira closure remain pending; green tests alone
+do not make this task DONE.
 
 QH-11 was closed first: owner-reviewed PR #12 merged with history as
 `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`; Jira QH-11 is DONE.

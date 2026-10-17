@@ -1,5 +1,13 @@
 # Demo A — candidate deployment gate (QH-12)
 
+**Later owner authorization — 2026-10-17:** the owner explicitly chose hot reload
+of frontend/backend on the existing VPS project, before PR #13 merge, instead of
+this image-only activation. [Executed POC procedure](qh-development-stack.md) and
+[deployment register](deployments.md) supersede the pending activation gate only
+for that bounded operation. The prepared immutable images and evidence below
+remain intact; no migration, realm change, MCP replacement or production release
+is implied. QH-12 remains unmerged and Jira open for the owner's browser review.
+
 2026-10-17. Preparation only: **NOT DEPLOYED**. This runbook authorizes no
 persistent migration, backup of real data, Keycloak change or container replacement.
 The owner must review/merge QH-12 separately and then authorize an exact image set
