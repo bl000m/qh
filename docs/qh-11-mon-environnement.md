@@ -9,7 +9,9 @@ real browser PKCE proof, UI states, accessible/mobile navigation and green CI.
 QH-10's PR #11 merged first as `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`;
 its Jira closure is verified. QH-11 starts from that updated main in the sole
 checkout `/home/ubuntu/qh`, branch `feat/QH-11-mon-environnement`.
-QH-11 remains unmerged; no DONE transition or QH-12 work is authorized.
+QH-11 was subsequently owner-reviewed and merged as
+`a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`; Jira is DONE. The results below
+retain the pre-merge technical checkpoint; subsequent QH-12 work was separately authorized.
 
 ## Functional path and boundaries
 
@@ -53,7 +55,7 @@ The owner explicitly approved the minimal SPA session on 2026-10-17:
 
 This is a POC session, not a new BFF, persistence model, MFA or SaaS hardening claim.
 The [identity ADR](adr/0002-identity-and-authorization.md), Product Contract and
-[architecture](architecture.md#qh-11-browser-client-candidate-not-deployed) remain
+[architecture](architecture.md#qh-11-browser-client-merged-not-deployed) remain
 in force. Browser authentication grants no sharing or confirmation permission.
 
 ## Configuration and running

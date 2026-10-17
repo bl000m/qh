@@ -9,6 +9,11 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Status alignment — 2026-10-17
 
+- QH-11 PR #12 owner-reviewed and merged with history as
+  `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`; Jira DONE, four green head jobs.
+  QH-12 source/UI and Demo A preparation remain distinct from VPS activation.
+
+
 - QH-10 owner-reviewed PR #11 merged with history preserved as
   `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`; Jira QH-10 is DONE. Its final
   head CI passed quality/OIDC and 503 native tests without skips. No activation.
@@ -30,6 +35,13 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   status and the deployment register describe current activation.
 
 ### Added
+
+- QH-12 candidate read-only Understanding view: explicit revision views, text/open
+  descriptor selection, bounded pages, distinct validation/certainty/time/provenance
+  and exact relation anchors. Real browser/native/SQL/graph outage and synthetic
+  backup/restore/rebuild proof. Immutable images and Demo A deployment plan only;
+  no browse-all API, schema/realm change, persistent operation or deployment.
+
 
 - QH-11 candidate `Mon environnement`: existing React/TypeScript/Vite client with
   real OIDC Code + PKCE, ephemeral tokens, Space list/create/detail, bounded pages,

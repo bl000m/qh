@@ -15,6 +15,25 @@ application source mounts. Application image revision/mounts were rechecked
 read-only for this alignment; no new schema probe or activation was performed.
 The artifact identities and executed deployment records below are preserved.
 
+## QH-12 Demo A candidate — 2026-10-17 (NOT DEPLOYED)
+
+Executable/configuration source `50061bea301bc558785ed56d7914d6a558cb5284`:
+[immutable image manifest](evidence/qh12-demo-a-20261017/candidate-images.json),
+[real packaged browser/recovery results](qh-12-context-understanding.md) and
+[separate activation gate](qh-12-demo-a-deployment.md). Exact-source local API,
+frontend and MCP images plus a browser test image were built from Git archive.
+No registry publication, application replacement, migration or realm edit.
+
+The candidate passes isolated 0005/native/PKCE/owner/provenance/history checks,
+real test-graph outage and synthetic SQL restore/rebuild/browser re-open. Compose
+was rendered read-only: zero app mounts and unchanged DB/IdP images/volumes,
+networks and readonly root realm bind. Actual VPS still reports healthy c723d32
+app images and schema 0005. Its backup/restore, SSH/browser smoke and deployment
+remain NOT TESTED; the candidate is prepared, not activated.
+
+QH-11 PR #12 is now merged as `a5a635fb3200c77a3c1cf2b9e47dcdbb4116da73`
+and Jira DONE. The historical candidate rows below preserve their test identities.
+
 ## QH-11 browser candidate — 2026-10-17 (not deployed)
 
 The existing frontend now has a candidate Space-management UI, tested with real

@@ -44,11 +44,17 @@ with mandatory current/proposed/history selection, canonical content, validation
 revision anchors, source provenance and time bounds. This source increment is not
 deployed; it adds no LLM generation, temporal filtering, sharing or frontend.
 
-**QH-11 candidate:** [Mon environnement](docs/qh-11-mon-environnement.md) adds
+**QH-11 merged:** [Mon environnement](docs/qh-11-mon-environnement.md) adds
 real browser OIDC login, owned Space list/create/detail and return navigation to the
 existing React client. Code + PKCE uses the approved ephemeral in-memory session;
 no Understanding view, sharing, new backend route or VPS activation. It requires
 the QH-9 backend: the deployed c723d32 API does not expose these Space routes.
+
+**QH-12 candidate:** [structured Context detail](docs/qh-12-context-understanding.md)
+uses explicit current/proposed/history and text/open-descriptor searches, showing
+canonical revisions, state, temporal bounds, source provenance and relation anchors.
+No fake browse-all, editing or automatic confirmation. Demo A is verified/prepared
+in isolation; [VPS activation remains separately gated](docs/qh-12-demo-a-deployment.md).
 
 These are delivery milestones, **not implemented or deployed product capabilities**.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine
