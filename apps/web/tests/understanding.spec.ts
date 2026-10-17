@@ -33,3 +33,9 @@ test('historical opaque assignment JSON is not coerced into a certainty string',
  const opaque:Json[]=[{value:'opaque',certainty:{toString:null}},'decision',{value:'new'},null];
  for(const value of opaque) expect(descriptorAssignment(value)).toBeNull();
 });
+
+test('browse uses a scoped GET without a fabricated selector or owner field',async()=>{
+ const original=globalThis.fetch;let observed='';
+ globalThis.fetch=async(path,init)=>{observed=String(path);expect(init?.method).toBe('GET');expect(init?.body).toBeUndefined();return new Response(JSON.stringify({view:'history',items:[row],next_after_revision_id:null}));};
+ try {await new QhApi(()=> 'synthetic-test-only',()=>{}).browse(id,{view:'history',limit:5,descriptor:' padded Ω ',include_tentative:true});const u=new URL(observed,'http://localhost');expect(u.pathname).toBe('/api/context-spaces/'+id+'/understanding');expect(u.searchParams.get('descriptor')).toBe(' padded Ω ');expect(u.searchParams.has('text')).toBe(false);expect(u.searchParams.has('owner_id')).toBe(false);}finally{globalThis.fetch=original;}
+});

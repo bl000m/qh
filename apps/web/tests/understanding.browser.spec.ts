@@ -7,7 +7,7 @@ async function open(page:Page, name='alice') {
   await page.locator('#username').fill(name);
   await page.locator('#password').fill(process.env['QH_' + name.toUpperCase() + '_PASSWORD']!);
   await page.locator('#kc-login').click();
-  if (name === 'alice') await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();
+  if (name === 'alice') {await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await page.getByText('Rechercher dans ce contexte',{exact:true}).click();}
 }
 async function search(page:Page, view:string, input:string, descriptors=false) {
   await page.getByRole('button',{name:view,exact:true}).click();
@@ -24,22 +24,22 @@ async function search(page:Page, view:string, input:string, descriptors=false) {
 }
 test('QH-8 rows, canonical provenance, open meanings, history and pagination use real REST', async ({page},info) => {
   await open(page);
-  await expect(page.getByText('L’API ne fournit pas de liste complète sans recherche.',{exact:false})).toBeVisible();
+  await expect(page.getByText('Cette recherche complète la navigation du contexte.',{exact:false})).toBeVisible();
   const none = await search(page,'Confirmé','reversible pause');
   expect(none.items).toHaveLength(0);
-  await expect(page.getByRole('status')).toContainText('Aucune révision confirmée courante');
+  await expect(page.getByRole('region',{name:'Recherche complémentaire'}).getByRole('status')).toContainText('Aucune révision confirmée courante');
   const rows = await search(page,'Propositions','decision\nhypothesis\nopen_question\nreversible_pause',true);
   expect(rows.items.length).toBeGreaterThanOrEqual(5);
   for (const meaning of ['decision','hypothesis','open_question','reversible_pause']) await expect(page.locator('.assignments code').filter({hasText:new RegExp('^'+meaning+'$')}).first()).toBeVisible();
   expect(rows.items.every((r:any) => r.validation_state==='proposed' && !r.is_current_confirmed)).toBe(true);
   expect(rows.items.every((r:any) => r.provenance[0].source_revision_id===expected.source_revision_id)).toBe(true);
   await expect(page.locator('blockquote').first()).toBeVisible();
-  await expect(page.locator('.state-confirmed')).toHaveCount(0);
+  await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(0);
   await page.getByRole('button',{name:'Confirmé',exact:true}).click();
-  await expect(page.locator('.state-confirmed')).toHaveCount(1);
-  await expect(page.locator('.state-proposed')).toHaveCount(0);
+  await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(1);
+  await expect(page.locator('.secondary-search .state-proposed')).toHaveCount(0);
   await page.getByRole('button',{name:'Historique',exact:true}).click();
-  await expect(page.locator('.state-rejected')).toHaveCount(1);
+  await expect(page.locator('.secondary-search .state-rejected')).toHaveCount(1);
   for (const id of expected.decision_ids) await expect(page.getByRole('article',{name:'Révision '+id,exact:true})).toBeVisible();
   await page.getByLabel('Résultats par page').selectOption('5');
   const paged = await search(page,'Historique','decision\nhypothesis\nopen_question\nreversible_pause\nstated_by',true);
@@ -109,11 +109,11 @@ test('late historical responses cannot relabel proposals as confirmed-current (r
   await page.getByRole('button',{name:'Historique',exact:true}).click();
   await expect.poll(()=>waiting).toBe(true);
   await page.getByRole('button',{name:'Confirmé',exact:true}).click();
-  await expect(page.locator('.state-confirmed')).toHaveCount(1);
+  await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(1);
   const old=page.waitForResponse(r=>r.url().endsWith('/api/context-spaces/query') && r.request().postDataJSON().view==='history');
   release();await(await old).finished();
   await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
-  await expect(page.locator('.state-confirmed')).toHaveCount(1);
-  await expect(page.locator('.state-proposed')).toHaveCount(0);
-  await expect(page.locator('.state-rejected')).toHaveCount(0);
+  await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(1);
+  await expect(page.locator('.secondary-search .state-proposed')).toHaveCount(0);
+  await expect(page.locator('.secondary-search .state-rejected')).toHaveCount(0);
 });

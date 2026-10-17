@@ -60,8 +60,24 @@ with repo.connect() as connection:
     connection.execute('UPDATE understanding_items SET current_revision_id=%s WHERE id=%s', (clones[0]['id'], choice['item_id']))
 print('PASS: QH-8 fake-provider batch and distinct revision/time/legacy controls published to test DB only')
 
+# Additional browse controls are isolated fixtures, never a persistent demo seed.
+empty_scope, proposed_scope, historical_scope = (str(uuid4()) for _ in range(3))
+with repo.connect() as connection:
+    for id, name in [(empty_scope,'Empty navigation control'),(proposed_scope,'Proposals-only control'),(historical_scope,'History-only control')]:
+        connection.execute('INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,%s)',(id,owner,name))
+source = repo.read_sources((scope,),(source_ref,))[0]
+for id,state in [(proposed_scope,'proposed'),(historical_scope,'rejected')]:
+    copy_source = dict(source,id=str(uuid4()),source_id=str(uuid4()),context_space_id=id)
+    copy_row = deepcopy(base)
+    copy_row.update(id=str(uuid4()),item_id=str(uuid4()),context_space_id=id,
+        type_id='qh.generic.item', content={'text':'Explicit isolated navigation control.', 'descriptors':[{'value':'Previously unseen Ω','certainty':'tentative'}, {'value':'control','certainty':'asserted'}]},
+        validation_state=state,provenance=[copy_source['id']])
+    if state=='rejected':copy_row.update(validated_by=owner,validated_at='2026-10-17T12:00:00Z')
+    repo.save(sources=[copy_source],revisions=[copy_row])
+
 print(json.dumps({'scope': scope, 'source_revision_id': source_ref,
                   'original_ids': [r['id'] for r in original],
+                  'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],
                   'all_ids': [r['id'] for r in [*original, *clones, timestamp, legacy]],
                   'decision_ids': [choice['id'], *[r['id'] for r in clones]],

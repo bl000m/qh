@@ -22,6 +22,11 @@ export interface RevisionQuery {
   include_tentative?: boolean; limit: number; after_revision_id?: string;
 }
 export interface RevisionPage { view: RevisionView; items: CanonicalRevision[]; next_after_revision_id: string | null }
+export interface BrowseQuery {
+  view: RevisionView; limit: number; after_revision_id?: string; descriptor?: string;
+  include_tentative?: boolean; kind?: 'item' | 'entity' | 'relation'; unclassified?: boolean;
+  item_id?: string; revision_id?: string; related_item_id?: string;
+}
 export interface Citation { source_revision_id: string; start: number; end: number; quote: string; turn_id?: string }
 const object = (v: unknown): v is Record<string, Json> => !!v && typeof v === 'object' && !Array.isArray(v);
 const uuid = (v: unknown) => typeof v === 'string' && isUuid(v);

@@ -36,6 +36,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   await page.getByRole('link', {name:'Projet QH',exact:true}).click();
   await expect(page.getByRole('heading', {name:'Projet QH',exact:true})).toBeVisible();
   const path = new URL(page.url()).pathname;
+  await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
   await page.getByRole('link', {name:'← Mes Context Spaces'}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();

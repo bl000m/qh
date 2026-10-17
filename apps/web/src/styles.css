@@ -71,3 +71,13 @@ blockquote { margin: 1rem 0 .4rem; white-space: pre-wrap; }
 figure { margin: 1rem 0; } figcaption { font-size: .75rem; color: #62685d; }
 .json-value { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; background: #f7f7f4; padding: .7rem; font-size: .75rem; }
 details { margin: 1rem 0; } summary { cursor: pointer; text-decoration: underline; text-underline-offset: .2em; }
+/* QH-12 browse-first: readable excerpts precede technical revision detail. */
+.understanding-cards { list-style: none; padding: 0; display: grid; gap: .75rem; }
+.understanding-card { display: grid; gap: .45rem; text-align: left; width: 100%; color: #242622; background: #fff; border-color: #dedfd9; font-weight: 400; padding: 1rem; }
+.understanding-card:hover { background: #f1f4ee; border-color: #858d7d; }
+.understanding-card > :first-child { font-size: .75rem; font-weight: 650; }
+.card-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.browse-understanding > nav { margin: 1.5rem 0; }
+.exploration-filters { margin: 1rem 0; }
+.secondary-search { margin-top: 2.5rem; border-top: 1px solid #dedfd9; padding-top: 1rem; }
+.secondary-search > summary { font-weight: 600; }

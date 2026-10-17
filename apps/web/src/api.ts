@@ -1,5 +1,5 @@
 import { revisionPage } from './understanding';
-import type { RevisionPage, RevisionQuery } from './understanding';
+import type { BrowseQuery, RevisionPage, RevisionQuery } from './understanding';
 // QH-9 wire contract; never import backend implementation or accept a UI owner.
 export interface ContextSpace {
   id: string; owner_id: string; name: string; status: string;
@@ -33,6 +33,13 @@ export class QhApi {
   }
   async query(query: RevisionQuery): Promise<RevisionPage> {
     return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);
+  }
+  async browse(scope: string, query: BrowseQuery): Promise<RevisionPage> {
+    if (!isUuid(scope)) throw new ApiError(404);
+    const params = new URLSearchParams();
+    for (const [key,value] of Object.entries(query)) if (value !== undefined) params.set(key,String(value));
+    return revisionPage(await this.request('/context-spaces/' + scope + '/understanding?' + params),
+      {context_ids:[scope],view:query.view,limit:query.limit});
   }
   async me(): Promise<string> {
     const v = await this.request('/auth/me') as { user_id?: string };
