@@ -81,3 +81,10 @@ details { margin: 1rem 0; } summary { cursor: pointer; text-decoration: underlin
 .exploration-filters { margin: 1rem 0; }
 .secondary-search { margin-top: 2.5rem; border-top: 1px solid #dedfd9; padding-top: 1rem; }
 .secondary-search > summary { font-weight: 600; }
+
+.context-chat { margin-block: 2rem; border-top: 1px solid var(--border, #d9dedc); padding-block: 1.5rem; }
+.chat-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-turn { margin-block: 1.5rem; padding: 1rem; border: 1px solid #d9dedc; border-radius: .7rem; }
+.chat-opt-in { display: flex; align-items: center; gap: .6rem; }
+.chat-opt-in input { width: auto; }
+.context-chat textarea { width: 100%; max-width: 100%; resize: vertical; font: inherit; padding: .8rem; }

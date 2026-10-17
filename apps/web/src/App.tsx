@@ -4,6 +4,7 @@ import { apiMessage, QhApi, validName } from './api';
 import type { ContextSpace } from './api';
 import type { BrowserSession } from './auth';
 import Understanding from './Understanding';
+import Chat from './Chat';
 import { navigate, usePath } from './navigation';
 
 function Link({ to, children }: { to: string; children: ReactNode }) {
@@ -96,7 +97,7 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   }, [id, api, refresh]);
   return <section><Link to="/">← Mes Context Spaces</Link>
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className="detail"><p className="eyebrow">Context Space</p><h2>{space.name}</h2><details><summary>Métadonnées du Space</summary><Metadata space={space} /></details><Understanding key={space.id} api={api} scope={space.id} /></article> :
+      space ? <article className="detail"><p className="eyebrow">Context Space</p><h2>{space.name}</h2><details><summary>Métadonnées du Space</summary><Metadata space={space} /></details><Understanding key={space.id} api={api} scope={space.id} /><Chat key={space.id} api={api} scope={space.id} /></article> :
         <Notice>Chargement du Context Space…</Notice>}
   </section>;
 }

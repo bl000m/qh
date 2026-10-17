@@ -97,3 +97,10 @@ def test_huge_dialogue_rejected_instead_of_silent_history_drop():
 def test_duplicate_json_fields_fail_closed():
     text='{"answer":"a","answer":"b","revision_ids":["revision"],"insufficient_context":false}'
     with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=text),built((revision(),)))
+
+
+def test_mock_preserves_late_negation_without_truncating_a_record():
+    row=revision(content={'text':'x'*650+'; aucune commande approuvée.'})
+    context=built((row,))
+    answer,refs,_=decode_answer(asyncio.run(MockChatProvider().generate(context.request)).message,context)
+    assert row.content['text'] in answer and refs==(row,)
