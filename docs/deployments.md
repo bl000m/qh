@@ -5,6 +5,16 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+**Status alignment — 2026-10-17:** QH-8, QH-32 and QH-33 code/evidence are merged
+on `main`; QH-33 PR #8 merged as `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2` and
+its approved technical scope is DONE. Independent human validation remains open
+in QH-38, with null human metrics. These merges are **not deployments**: the VPS
+backend/frontend/MCP still run images from
+`c723d32c5d0825f9232ece560e7e666e69dceb27`, persistent schema 0005, without
+application source mounts. Application image revision/mounts were rechecked
+read-only for this alignment; no new schema probe or activation was performed.
+The artifact identities and executed deployment records below are preserved.
+
 ## Offline personal-review package — QH-33 v2, 2026-10-16 (not deployed)
 
 Executable/OCI revision `f745db5e62f65f35fd7960f93e367ff6fbeaa7f7`, image

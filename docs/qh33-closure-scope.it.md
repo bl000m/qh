@@ -1,4 +1,41 @@
-# QH-33 — proposta di chiusura tecnica e validazione differita
+# QH-33 — chiusura tecnica e validazione differita
+
+## Stato conclusivo — 17 ottobre 2026
+
+**QH-33 è DONE per lo scope tecnico approvato; PR #8 è merged.** Il merge è
+[`a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`](https://github.com/bl000m/qh/commit/a7a2da3e43fca3fbcd54dd743956c14e0fa599e2),
+con due genitori e storia dei commit preservata. La descrizione Jira contiene
+l'addendum di scope datato 16 ottobre, conservando il testo originale; il
+[commento di chiusura 10008](https://contextlab.atlassian.net/browse/QH-33?focusedCommentId=10008)
+registra merge, prove e limiti. La transizione effettiva è stata verificata come
+`Terminé(e)`, categoria DONE. La precedente proposta sotto è quindi approvata,
+registrata ed eseguita, non più un impedimento alla chiusura.
+
+| DoD tecnica approvata | Risultato verificato |
+| --- | --- |
+| Benchmark v2 riproducibile e metriche separate provvisorie | PASS — 74 unità, 46 proposizioni originali / 44 attive; nessuna metrica umana o indice complessivo |
+| Confronti offline e controlli di integrità | PASS — audit v1/v2 e review gate; nove false accettazioni temporali eliminate, sette positivi conservati, senza nuova comprensione LLM misurata |
+| CI dell'ultimo head PR `1b900fa` | PASS — [quality, OIDC e native](https://github.com/bl000m/qh/actions/runs/38901663903) verdi; 19 test benchmark/review, 383 native senza skip, due test OIDC; albero del merge identico all'head verificato |
+| Report dei difetti residui e protocollo futuro | PASS — errori/riserve visibili; confronto Mistral baseline/candidato preparato, non eseguito |
+| Review, merge effettivo e Jira allineato | PASS — chiusura autorizzata dal proprietario, merge verificato e QH-33 DONE |
+
+La validazione umana indipendente completa è **differita, non completata**, in
+[QH-38](https://contextlab.atlassian.net/browse/QH-38), ancora aperto e collegato
+tramite `Relates`. I link della sua matrice/fonti/rubrica sono già riallineati a
+`main`. Rimangono `human_review.metrics=null`, 0/74 unità accettate, template e
+attestazioni non compilati. La seconda review GPT-6 resta AI-only; i due controlli
+contestati conservano i giudizi v2. V1/v2, output originali, derivati e ledger
+sono preservati. Nessuna promozione automatica a `confirmed`.
+
+Codice integrato in `main` non significa codice distribuito: il runtime VPS resta
+basato sulle immagini `c723d32c5d0825f9232ece560e7e666e69dceb27` e schema 0005.
+Nessun deployment, migrazione o nuova inferenza è stato eseguito per la chiusura.
+I difetti semantici e i gate del prossimo esperimento rimangono quelli documentati.
+
+## Proposta e verifiche preparatorie del 16 ottobre (storico preservato)
+
+Il testo seguente conserva il checkpoint precedente all'approvazione finale;
+le sue indicazioni «aperta», «non DONE» e «non autorizzati» non sono lo stato corrente.
 
 16 ottobre 2026 · [QH-33](https://contextlab.atlassian.net/browse/QH-33) ·
 [PR #8](https://github.com/bl000m/qh/pull/8), aperta ·
