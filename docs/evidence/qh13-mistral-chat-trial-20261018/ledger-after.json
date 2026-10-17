@@ -1,0 +1,44 @@
+{
+  "purpose": "QH-13 contextual chat",
+  "experiment": "qh13-three-synthetic-spaces-20261018",
+  "max_calls": 4,
+  "max_usd": "0.20",
+  "calls": [
+    {
+      "kind": "/models/mistral-small-2603",
+      "reserved_usd": "0",
+      "status": "completed",
+      "usage": null,
+      "observed_usd": "0"
+    },
+    {
+      "kind": "/chat/completions",
+      "reserved_usd": "0.0024",
+      "status": "completed",
+      "usage": {
+        "prompt_tokens": 3251,
+        "completion_tokens": 234
+      },
+      "observed_usd": "0.00062805"
+    }
+  ],
+  "blocked": true,
+  "blocked_reason": null,
+  "proposed_manifest_sha256": "553b56c219e150bed675fa86c0960a124b2087a99b950098fc82794206cc76c1",
+  "authorizations": [
+    {
+      "time_utc": "2026-10-17T23:18:11.087874+00:00",
+      "manifest_sha256": "553b56c219e150bed675fa86c0960a124b2087a99b950098fc82794206cc76c1",
+      "previous_ledger_sha256": "540db335a86b45daaf70471fdc1023806f33aa930922f86e19ff63ceb556de07",
+      "authorization_sha256": "e90e4e9d4556fdb1359cb2d8f494048280490affe32e557f1ca9f7c62e2fed15",
+      "calls_retained": 0,
+      "reason": "Owner explicitly authorized frozen manifest; preparation block lifted without resetting counters"
+    }
+  ],
+  "stops": [
+    {
+      "phase": "project",
+      "error_type": "RuntimeError"
+    }
+  ]
+}

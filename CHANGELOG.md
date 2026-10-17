@@ -7,6 +7,61 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+- QH-13: owner-approved ephemeral, single-Space contextual chat through existing
+  policy/browse/LLMProvider, bounded context, explicit proposal opt-in, French UI
+  and canonical reference cards; deterministic mock default. Prepared Mistral
+  adapter uses separate private authorization/ledger and no retry; no real paid
+  inference or canonical understanding write. Verification is recorded in the
+  QH-13 report; deployment/merge remain separate.
+
+
+### QH-13 first authorized Mistral chat trial — 2026-10-18
+
+- Record exact-manifest GET plus one POST through the existing backend's temporary
+  FastAPI/ChatService binding, candidate Italian-language behavior and unchanged
+  public mock. Provider 200, QH 503: three item IDs supplied as revision IDs; strict
+  reference rejection and stop without retry, other two inferences not executed.
+- Preserve original response, six supplied records, ledger lineage, separate
+  provisional semantic assessment and mock comparison. Observed 3,251 input / 234
+  output tokens; list-price estimate USD 0.00062805, not an invoice. Proposal labels
+  were omitted despite relevant Italian raw text. Ledger blocked 2/4; all canonical
+  tables and runtime configurations unchanged. Future Mac activation requires a
+  new protocol/authorization; no new feature, merge or Jira DONE.
+
+### QH-13 owner-review corrections — 2026-10-18
+
+- Fix duplicate React sibling keys and verify reset of dialogue, draft, proposal
+  opt-in and understanding detail across all three Alice fixture Spaces.
+- Label mock results as demonstration excerpts without question understanding;
+  preserve the real-provider heading and exact canonical source panels.
+- Losslessly compact complete canonical context through shared source records and
+  identical administrative metadata, with collision/scope/JSON/round-trip guards.
+  Measured initial coverage increases from five to six revisions in each demo
+  Space under unchanged limits; no semantic ranking or comprehension improvement.
+- Seal three exact synthetic Mistral request proposals and pricing/budget checks,
+  separate blocked zero-call ledger and language-of-question candidate. No active
+  language change, paid request, deployment, data write, merge or Jira DONE.
+
+### Authorized synthetic Demo A data — 2026-10-18
+
+- Retain three newly populated Alice-owned fixture Spaces and 18 proposed revisions;
+  fresh backup/isolated restore, exact provenance, replay, worker and real browser
+  Alice/Bob/chat verification passed. All historical data/runtime remain unchanged.
+- Document five provided versus three mock-declared references and measured,
+  unimplemented source-deduplication proposal; no semantic ranking or paid inference.
+- Owner-confirmed UX/branding ticket QH-43 created but not started. PR #14 merge,
+  QH-13 DONE and personal Mac acceptance remain pending.
+
+### Demo A operating plan and next UX direction — 2026-10-17
+
+- Document a three-Space fixture seed plan with proposed-only publication, source/
+  revision hashes, idempotent canonical replay, explicit create-receipt reconciliation,
+  backup/failure controls and Mac checks. Memory-only offline rehearsal validates
+  18 revisions and exposes partial chat coverage; no persistent seed is executed.
+- Record owner direction for environment landing, primary chat, expandable explorer
+  and supplied QH visual identity as a **future** bounded UX ticket. No UI redesign,
+  new Domain model, ticket creation, paid call or runtime change in this addendum.
+
 ### Owner-approved browse-first QH-12 evolution — 2026-10-17
 
 - New scoped read-only canonical browsing alongside unchanged QH-10 search:

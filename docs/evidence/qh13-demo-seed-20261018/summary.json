@@ -1,0 +1,289 @@
+{
+  "approved_plan_commit": "d90647a7ae82c377862d0f13e5bd9d35c92e2c9d",
+  "backup": {
+    "constraints": 71,
+    "dump_sha256": "ddbc9ba2dcf107ca032a3fbd2add8ac630c55c9834bad46e3ccf2fa5be7438c2",
+    "equivalent_array_cast_deparse_normalized_only_for": [
+      "ck_item_origin",
+      "ck_item_validation",
+      "ck_item_validation_actor"
+    ],
+    "expected_internal_fk_trigger_oids_normalized": true,
+    "function_definitions": 12,
+    "live_inventory_unchanged": true,
+    "matching_tables": 14,
+    "result": "PASS",
+    "schema": "0005_retire_legacy_category",
+    "source_database_restored": false,
+    "triggers_including_internal": 104
+  },
+  "browser": {
+    "bob_denials": [
+      {
+        "operation": "metadata",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "status": 404
+      },
+      {
+        "operation": "browse",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "status": 404
+      },
+      {
+        "operation": "revision",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "status": 404
+      },
+      {
+        "operation": "chat",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "status": 404
+      },
+      {
+        "operation": "metadata",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "status": 404
+      },
+      {
+        "operation": "browse",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "status": 404
+      },
+      {
+        "operation": "revision",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "status": 404
+      },
+      {
+        "operation": "chat",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "status": 404
+      },
+      {
+        "operation": "metadata",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "status": 404
+      },
+      {
+        "operation": "browse",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "status": 404
+      },
+      {
+        "operation": "revision",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "status": 404
+      },
+      {
+        "operation": "chat",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "status": 404
+      }
+    ],
+    "bob_owned_list_excludes_all_demo": true,
+    "cases": [
+      {
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] We can take a reversible pause.\n[Proposé, non confirmé] Alex\n[Proposé, non confirmé] The choice was stated by Alex.",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "context_bytes": 6975,
+        "context_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "current": 0,
+        "declared": 3,
+        "entity_navigation": "PASS",
+        "follow_up": "PASS",
+        "input_bound": 8904,
+        "name": "project",
+        "opt_in_off": "insufficient/no generation",
+        "partial": true,
+        "provided": 5,
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS"
+      },
+      {
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] The choice was stated by Alex.\n[Proposé, non confirmé] A quiet evening might help me rest.\n[Proposé, non confirmé] Alex",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "context_bytes": 7006,
+        "context_id": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "current": 0,
+        "declared": 3,
+        "entity_navigation": "PASS",
+        "follow_up": "PASS",
+        "input_bound": 8935,
+        "name": "health",
+        "opt_in_off": "insufficient/no generation",
+        "partial": true,
+        "provided": 5,
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS"
+      },
+      {
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] The choice was stated by Alex.\n[Proposé, non confirmé] Alex\n[Proposé, non confirmé] Who can join?",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "context_bytes": 6940,
+        "context_id": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "current": 0,
+        "declared": 3,
+        "entity_navigation": "PASS",
+        "follow_up": "PASS",
+        "input_bound": 8869,
+        "name": "personal",
+        "opt_in_off": "insufficient/no generation",
+        "partial": true,
+        "provided": 5,
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS"
+      }
+    ],
+    "invalid_token": 401,
+    "local_storage_keys": 0,
+    "missing_token": 401,
+    "new_canonical_writes": 0,
+    "paid_calls": 0,
+    "personal_mac_session": "not attested",
+    "result": "PASS"
+  },
+  "canonical": {
+    "all_prior_rows_unchanged": true,
+    "deltas": {
+      "context_projection_state": 3,
+      "context_spaces": 3,
+      "item_revision_provenance": 18,
+      "item_revision_types": 18,
+      "projection_outbox": 18,
+      "relation_revision_details": 3,
+      "source_revisions": 3,
+      "sources": 3,
+      "understanding_item_revisions": 18,
+      "understanding_items": 18
+    },
+    "identities_unchanged": true,
+    "new_scope_desired_applied": [
+      6,
+      6
+    ],
+    "nonready_outbox": 0,
+    "result": "PASS",
+    "schema_unchanged": true
+  },
+  "cases": [
+    {
+      "confirmed_current": null,
+      "context_id": "eb122625-1830-4557-b805-473d3b66132a",
+      "derived_checkpoint_sha256": "1665dac7ca9ae20e522f856d269d7836b059f969e0bfb84e32c8e655c1d3d117",
+      "fixture": "project",
+      "name": "Projet pilote",
+      "original_checkpoint_sha256": "b8056d5484ad3aaa68ce7cae346940694279fa4a5b8ef68dd454f9c0a0d84566",
+      "replay_identical": true,
+      "revision_ids": [
+        "8fbcd4e5-c974-5900-a083-e154611eab2f",
+        "2bb9c6ea-6e50-56e8-9c88-7b79b521fd2e",
+        "ad227e63-c35f-562a-b9b8-a17953c89628",
+        "03b72464-d157-550e-8eae-39431bdf2acb",
+        "06b29078-984f-5a4a-894e-b19b811f8227",
+        "285e1392-4a35-5beb-8e1b-8e4739659917"
+      ],
+      "revisions_sha256": "dd9abba482eee625b012c9b568b57db50c9079ae1aa2d419b0e8e8ce4e41d02e",
+      "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+      "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+      "source_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723",
+      "url": "http://localhost:5173/context-spaces/eb122625-1830-4557-b805-473d3b66132a",
+      "validation_state": "proposed"
+    },
+    {
+      "confirmed_current": null,
+      "context_id": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+      "derived_checkpoint_sha256": "1fabedab6844cbad98347c776ef0d8a57a8d8fa1c43d2e8afd3f3b2858761932",
+      "fixture": "health",
+      "name": "Bien-être",
+      "original_checkpoint_sha256": "80814ae67c54feede05b19d06c1f55fa3d82f4ad0bfa8cb5d943ebc1767da5ce",
+      "replay_identical": true,
+      "revision_ids": [
+        "db345e4e-3b70-5d26-98ba-0981c3e80f88",
+        "608c8fde-5915-53ff-9806-631c02064946",
+        "d3ca2250-b3db-5d92-af3d-892f2bf8d28e",
+        "b2b60798-b874-558d-97c0-d080e2e88a2e",
+        "6ac7cbd6-770b-5574-8642-f60032b62e2a",
+        "243b644b-6e39-5434-a29b-cd8eaa000dc6"
+      ],
+      "revisions_sha256": "a5cbc2d4db62cc18f87a76f0f23c4f1a6c8c2c921651e70999f4614113aea0df",
+      "source_id": "a3ffdf5f-0c17-52f6-9c6b-96cb5530c4fc",
+      "source_revision_id": "1b72bae1-80d3-57aa-9c27-730735f46b66",
+      "source_sha256": "ddaeda5803e7ca687a1cb815b5d3304a0b99d7e730783dc22524e1de9d8c9c39",
+      "url": "http://localhost:5173/context-spaces/780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+      "validation_state": "proposed"
+    },
+    {
+      "confirmed_current": null,
+      "context_id": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+      "derived_checkpoint_sha256": "065d0cab2c3f2572536a79f56143d9a73fcd22f5f7124ce1f3af64b6a6de70e2",
+      "fixture": "personal",
+      "name": "Organisation personnelle",
+      "original_checkpoint_sha256": "094c54eda8e05dfca42b980dff5a17641cd9b99e2048bfbaf9c66f82aaf51c1a",
+      "replay_identical": true,
+      "revision_ids": [
+        "f8875402-9a64-51b4-8d84-d8103d67dfe5",
+        "fab795e7-64e2-530b-ba96-3e7a31cb93bf",
+        "e1e4b6b8-1500-56ba-bfce-b028bb232f2c",
+        "e3b1f762-52ef-534c-ad91-f898d1b3cb26",
+        "cd4ba2fb-4f7a-567d-8b89-8a2e125588e1",
+        "a7e59fbf-a39f-504d-9f79-d844b20f708c"
+      ],
+      "revisions_sha256": "22bf0c27158914f57c14154167015bf1fec22bd6113d78d87e1fecc2827fc113",
+      "source_id": "eaa316c8-9c00-58e5-b111-15aa91462b21",
+      "source_revision_id": "91a3cd92-ffa7-57e5-9ff5-0b737820dfc9",
+      "source_sha256": "d07391dafb0bb704eff7c4670b6353ba8c48f4f26e93cfae132755d209c90220",
+      "url": "http://localhost:5173/context-spaces/a0e43025-aad1-457e-86f1-6a813fcd14c4",
+      "validation_state": "proposed"
+    }
+  ],
+  "compaction_proposal": [
+    {
+      "all_six_current_format_bytes": 8297,
+      "all_six_proposed_compact_bytes": 6167,
+      "implementation_enabled": false,
+      "lossless_reconstruction": true,
+      "name": "project",
+      "proposed_input_bound": 8096,
+      "would_fit_existing_caps": true
+    },
+    {
+      "all_six_current_format_bytes": 8332,
+      "all_six_proposed_compact_bytes": 6227,
+      "implementation_enabled": false,
+      "lossless_reconstruction": true,
+      "name": "health",
+      "proposed_input_bound": 8156,
+      "would_fit_existing_caps": true
+    },
+    {
+      "all_six_current_format_bytes": 8351,
+      "all_six_proposed_compact_bytes": 6196,
+      "implementation_enabled": false,
+      "lossless_reconstruction": true,
+      "name": "personal",
+      "proposed_input_bound": 8125,
+      "would_fit_existing_caps": true
+    }
+  ],
+  "date": "2026-10-18",
+  "date_timezone": "Europe/Rome",
+  "fixture_file_sha256": "26fd712e4c23aea05bc6c5bbb6f7f35697631a31a2e359bf09f3f7d753c244ec",
+  "manifest_sha256": "44b23f64f6e48eb8c76489bcf8826f1fe7a0ae897aab16b0425bcb22722be07e",
+  "paid_calls": 0,
+  "preservation": {
+    "all_14_tables_unchanged_after_chat": true,
+    "protected_files_unchanged": true,
+    "result": "PASS",
+    "runtime_containers_unchanged": 6
+  },
+  "producer": "scripted FixtureUnderstandingProvider, not real LLM inference",
+  "ux_ticket": {
+    "implemented": false,
+    "key": "QH-43",
+    "status_observed": "À faire",
+    "url": "https://contextlab.atlassian.net/browse/QH-43"
+  }
+}

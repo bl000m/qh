@@ -1,0 +1,10 @@
+{
+  "purpose": "QH-13 contextual chat",
+  "experiment": "qh13-three-synthetic-spaces-20261018",
+  "max_calls": 4,
+  "max_usd": "0.20",
+  "calls": [],
+  "blocked": true,
+  "blocked_reason": "Await explicit owner approval of manifest SHA-256",
+  "proposed_manifest_sha256": "553b56c219e150bed675fa86c0960a124b2087a99b950098fc82794206cc76c1"
+}

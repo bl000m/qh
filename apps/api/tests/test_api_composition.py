@@ -37,4 +37,5 @@ def test_health_scaffold_does_not_construct_business_services() -> None:
         "/context-spaces", "/context-spaces/{context_id}",
         "/context-spaces/query",
         "/context-spaces/{context_id}/understanding",
+        "/context-spaces/{context_id}/chat",
     }

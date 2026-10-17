@@ -1,0 +1,34 @@
+[
+  {
+    "declared_id": "d8141c7a-4d1b-5424-9c9f-93b391ae6767",
+    "valid_provided_revision_id": false,
+    "matches_existing_item_id": true,
+    "matching_item_revision_id_for_diagnosis_only": "8fbcd4e5-c974-5900-a083-e154611eab2f",
+    "matching_text": "We choose a small pilot with Team Cedar 🌱.",
+    "corrected": false
+  },
+  {
+    "declared_id": "b84ab369-8a74-57ab-853d-00a4990617dc",
+    "valid_provided_revision_id": false,
+    "matches_existing_item_id": true,
+    "matching_item_revision_id_for_diagnosis_only": "2bb9c6ea-6e50-56e8-9c88-7b79b521fd2e",
+    "matching_text": "The pilot may reduce waiting.",
+    "corrected": false
+  },
+  {
+    "declared_id": "436fdb87-93ea-535c-a425-f3449d17d0e9",
+    "valid_provided_revision_id": false,
+    "matches_existing_item_id": true,
+    "matching_item_revision_id_for_diagnosis_only": "ad227e63-c35f-562a-b9b8-a17953c89628",
+    "matching_text": "What will we measure?",
+    "corrected": false
+  },
+  {
+    "declared_id": "03b72464-d157-550e-8eae-39431bdf2acb",
+    "valid_provided_revision_id": true,
+    "matches_existing_item_id": false,
+    "matching_item_revision_id_for_diagnosis_only": null,
+    "matching_text": "We can take a reversible pause.",
+    "corrected": false
+  }
+]

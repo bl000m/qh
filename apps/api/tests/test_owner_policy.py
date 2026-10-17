@@ -22,7 +22,9 @@ FOREIGN = ContextId("foreign-space")
     (SubjectId(""), (OWN,), PolicyAction.READ_CONTEXT, False, []),
     (OWNER, (), PolicyAction.READ_CONTEXT, False, []),
     (OWNER, (OWN,), PolicyAction.PROJECT_CONTEXT, False, []),
-    (OWNER, (OWN,), PolicyAction.CHAT, False, []),
+    (OWNER, (OWN,), PolicyAction.CHAT, True, [OWN]),
+    (OTHER, (OWN,), PolicyAction.CHAT, False, [OWN]),
+    (OWNER, (OWN, FOREIGN), PolicyAction.CHAT, False, []),
 ])
 def test_owner_read_policy(subject, contexts, action, allowed, lookups) -> None:
     calls = []

@@ -1,0 +1,78 @@
+{
+  "source_revision": "f88e690c27db553d02bcca269744ebb25ddd53da",
+  "ci_run": "https://github.com/bl000m/qh/actions/runs/39060747371",
+  "ci_jobs": {
+    "quality": "SUCCESS",
+    "native_integration": "SUCCESS",
+    "browser": "SUCCESS",
+    "oidc": "SUCCESS"
+  },
+  "native": {
+    "passed": 599,
+    "skipped": 0,
+    "seconds": 249.22
+  },
+  "browser_and_contracts": {
+    "passed": 36,
+    "seconds": 59.7
+  },
+  "graph_outage_followup": {
+    "passed": 3,
+    "includes_repeated_contract_tests": 2,
+    "seconds": 2.0
+  },
+  "restored_id_browser": {
+    "passed": 1,
+    "seconds": 6.0
+  },
+  "oidc": {
+    "real_workflow_cases_passed": 2,
+    "unrelated_live_only_case_deselected_per_command": 1
+  },
+  "synthetic_sql_restore_all_table_hashes_equal": true,
+  "canonical_hashes_unchanged_across_graph_rebuild": true,
+  "local_native_earlier_collection": {
+    "passed": 594,
+    "skipped": 0,
+    "seconds": 763.18
+  },
+  "final_targeted_chat": {
+    "passed": 45,
+    "seconds": 0.69,
+    "network": "none"
+  },
+  "frontend_contracts_local": {
+    "passed": 12,
+    "seconds": 2.0,
+    "network": "none"
+  },
+  "vps_probe": {
+    "existing_empty_space": true,
+    "real_oidc_alice": true,
+    "chat_status": 200,
+    "provider": "mock",
+    "references": 0,
+    "provided_revisions": 0,
+    "insufficient_context": true,
+    "generation_seconds": null,
+    "observed_local_storage_keys": 0,
+    "personal_mac_session": "not_attested"
+  },
+  "persistent_preservation": {
+    "container_ids_images_mounts_unchanged": true,
+    "infrastructure_start_times_unchanged": true,
+    "protected_files_unchanged": true,
+    "historical_14_table_rows_unchanged": true,
+    "additional_pre_task_space_and_state_retained": true,
+    "additional_space_created_utc": "2026-10-17T18:17:49.461693Z"
+  },
+  "new_real_mistral_requests": 0,
+  "observed_real_api_token_usage": null,
+  "observed_real_api_charge": null,
+  "persistent_understanding_writes": 0,
+  "paid_adapter": "HTTP mocks only; real smoke separately gated",
+  "merged": false,
+  "owner_visual_acceptance": "not_attested",
+  "counts_overlap_do_not_sum": true,
+  "final_documentation_head_ci": "verify exact latest head on PR #14; this record pins executable source only"
+}
