@@ -5,6 +5,23 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+## QH-12 closure / QH-13 source-only increment — 2026-10-17
+
+PR #13 merged with history preserved as
+`92dc300c03147a7fb7978203d97f2320c8c3051f`; Jira QH-12 DONE verified. Before the
+single-checkout switch, guarded `dev-stop` stopped only frontend/backend; main
+fast-forwarded to the merge, branch `feat/QH-13-context-chat` was created and
+`dev-up` restored hot reload on the same ports. All six container IDs, images and
+mounts remain unchanged; PostgreSQL/Neo4j/Keycloak/MCP start times, readonly realm
+and private `.env` are preserved. The dependency images and schema 0005 below
+remain unchanged; source-mounted code follows this branch and local edits.
+
+The QH-13 application source now supplies scoped ephemeral chat with the explicit
+deterministic mock. Mistral is not activated, no paid request, canonical demo import,
+migration, new persistent container/volume or Understanding write is part of this
+increment. [Verification and limits](qh-13-contextual-chat.md). No claim of a live
+Mistral demo, populated persistent Alice chat or personal Mac verification.
+
 ## QH-12 browse-first source update — 2026-10-17
 
 Owner-approved ADR 0005 adds no-selector canonical browsing and a deterministic

@@ -246,3 +246,19 @@ decisione, esiste una contraddizione o cambia una responsabilità strutturale.
 Esporre alternative, conseguenze, vantaggi, rischi e raccomandazione, poi attendere
 approvazione per la parte coinvolta. Un ticket non autorizza implicitamente a
 risolvere queste scelte o a derogare al contratto.
+
+## Scoped ephemeral contextual chat — owner amendment, 2026-10-17
+
+The owner approves QH-13's distinct single-Space owner CHAT operation, not a
+promotion of READ_CONTEXT to disclosure authority. Confirmed-current is default;
+proposals need explicit opt-in, retain unconfirmed state, and canonical history is
+excluded. Browser dialogue and model answers remain temporary/untrusted, never
+canonical understanding or confirmation. Browsing remains primary. See
+[ADR 0006](../adr/0006-scoped-contextual-chat.md) and the
+[implementation/verification record](../qh-13-contextual-chat.md).
+
+Mock is the default. External inference requires separate explicit authorization,
+private backend configuration and a bounded budget; key presence is not consent.
+Semantic correctness and robustness of a live model are not established by canonical
+reference checks. Conversation-to-understanding remains QH-39, local-model hosting
+remains QH-35, and no second engine, canonical store or automatic confirmation follows.

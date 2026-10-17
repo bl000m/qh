@@ -32,6 +32,17 @@ query contract; no semantic ranking is implied. The sole development checkout is
 task branch at a time. Frontend/backend now follow that branch: stop the apps
 before switching. The frozen image-only bundle is retained for rollback.
 
+## Contextual chat — QH-13 in progress
+
+[QH-13](docs/qh-13-contextual-chat.md) adds the complementary **Discuter avec ce
+contexte** action to the browse-first Space page. The default provider is a clearly
+labelled deterministic mock. It uses only bounded authorized confirmed-current
+records, with explicit opt-in for unconfirmed proposals and expandable canonical
+references; history is excluded. Answers and dialogue are ephemeral and never
+write Understanding State. Mistral configuration is prepared but remains disabled
+until separately authorized; no API key is exposed to the browser. See
+[ADR 0006](docs/adr/0006-scoped-contextual-chat.md) for policy and limits.
+
 ## Planned demo sequence — 2026-10-17
 
 **QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
@@ -52,7 +63,7 @@ existing React client. Code + PKCE uses the approved ephemeral in-memory session
 no sharing or new session backend. QH-11 and the QH-9/10 API are now active in the
 authorized VPS POC; MCP alone retains the earlier c723d32 app image.
 
-**QH-12 candidate:** [structured Context detail](docs/qh-12-context-understanding.md)
+**QH-12 merged:** [structured Context detail](docs/qh-12-context-understanding.md)
 opens with a deterministic structured preview and bounded no-selector navigation;
 QH-10 text/open-descriptor search remains complementary. It preserves
 canonical revisions, state, temporal bounds, source provenance and relation anchors.
@@ -60,7 +71,7 @@ The owner-approved [ADR 0005](docs/adr/0005-browse-first-context-understanding.m
 records browse-first rationale, alternatives and limits. No fabricated search,
 editing or automatic confirmation. The owner authorized
 [hot-reload VPS activation before merge](docs/qh-development-stack.md); PR #13
-remains open for personal browser review. Existing Understanding data remain under
+was merged as `92dc300c03147a7fb7978203d97f2320c8c3051f`; Jira QH-12 is DONE. Existing Understanding data remain under
 their original synthetic owners; Alice's new empty Space has no extracted items.
 
 The roadmap rows below describe target milestones; the status paragraphs above

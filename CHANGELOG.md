@@ -7,6 +7,14 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## Unreleased — semantic foundation (QH-30)
 
+- QH-13: owner-approved ephemeral, single-Space contextual chat through existing
+  policy/browse/LLMProvider, bounded context, explicit proposal opt-in, French UI
+  and canonical reference cards; deterministic mock default. Prepared Mistral
+  adapter uses separate private authorization/ledger and no retry; no real paid
+  inference or canonical understanding write. Verification is recorded in the
+  QH-13 report; deployment/merge remain separate.
+
+
 ### Owner-approved browse-first QH-12 evolution — 2026-10-17
 
 - New scoped read-only canonical browsing alongside unchanged QH-10 search:

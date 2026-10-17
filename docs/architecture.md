@@ -396,3 +396,24 @@ not a prefix of another offset/token; this proves lexical support only. Unknown
 bounds, proposed state, whole-batch publication and human governance remain intact.
 The candidate prompt is documentary/opt-in future experiment input, not the live
 default. See [QH-33](qh33-semantic-evaluation.md) for measured limits and review gates.
+
+## Scoped contextual chat — QH-13
+
+Owner-approved [ADR 0006](adr/0006-scoped-contextual-chat.md) implements the chat
+path without a second Context Engine or LLMProvider contract. Authentication →
+ChatService → separate single-Space CHAT policy → existing ContextService browse/
+canonical and graph verification → pure bounded Context Builder → replaceable
+LLMProvider. The default is an explicitly labelled offline extractive mock;
+Mistral configuration remains separately authorized and disabled on the VPS.
+
+Confirmed-current is default, proposals require explicit opt-in and keep their
+state, canonical history is excluded. Browser-memory dialogue is untrusted and
+not persisted. Generated responses never change Understanding State; QH-39 remains
+separate. The service rechecks selection and policy before/after generation;
+no transaction spans inference. Source records are data, not executable instructions.
+
+The [QH-13 report](qh-13-contextual-chat.md) records bounded UUID enumeration,
+input/output caps, partial coverage, reference-membership checks, paid-call gates
+and the limits of semantic/prompt-injection guarantees. Browsing stays primary
+under ADR 0005; chat is complementary. Exact source identity is not proof of answer
+entailment. Local-model substitution only changes the outbound adapter.
