@@ -95,6 +95,10 @@ tables; 0005 removes only the unused null legacy category column/check. Composit
 anchors. Revisions, provenance, type schemas and semantic rules are immutable;
 unknown fact/validity times stay null and are separate from acquisition metadata.
 
+See [Flexible Semantic Persistence and Context Graph Architecture](docs/flexible-semantic-persistence.md)
+for the detailed canonical ER diagram, generic profiles, open descriptors,
+revision governance, provenance and authorized internal retrieval boundaries.
+
 ```mermaid
 erDiagram
     users ||--o{ user_identities : maps

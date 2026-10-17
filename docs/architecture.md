@@ -11,6 +11,13 @@ operational Context Graph. Graphiti remains an archived prototype on its own bra
 schema and minimal contract corrections, without graph duplication or feature
 workflows. Further persistent migrations/deployment still need separate approval.
 
+[Flexible Semantic Persistence and Context Graph Architecture](flexible-semantic-persistence.md)
+explains the implemented SQL model through 0005, with an ER diagram, exact revision
+anchors, generic profiles and open descriptors, independent validation/provenance/time
+dimensions, and the internal authorized descriptor retrieval path. It distinguishes
+implemented storage from planned collaboration, snapshot sharing and public retrieval;
+it does not amend the Product Contract or ADRs.
+
 The repository contains the working QH-1 scaffold, the five-service Compose
 environment from QH-3 and the QH-2 domain/application contracts. The native Context Engine, approved semantic schema and incremental outbox are
 consolidated in main and active on the VPS at schema 0005 using images from
