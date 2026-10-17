@@ -247,3 +247,13 @@ is changed and no semantic quality improvement is inferred from retrieval tests.
 The VPS remains on c723d32 application images/schema 0005. Candidate commits and
 CI are not a deployment. No paid inference, persistent migration, new grant or
 automatic promotion to confirmed occurs. QH-11 does not start on completion.
+
+## Authorized closure — 2026-10-17
+
+The owner positively reviewed PR #11 at head
+`03995061adbcc1bb108310f9b37b2d1d2619c9d2` and authorized merge/closure.
+GitHub confirms merge commit `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`,
+with all five task commits retained. Jira QH-10 is DONE, with the PR, merge and
+executed evidence recorded. This supersedes the earlier review-pending state;
+test artifact identities and historical verification above remain unchanged.
+The VPS is unchanged; no deployment follows from closure.

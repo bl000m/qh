@@ -38,11 +38,17 @@ implements POST/list/detail/PATCH-name through the existing ContextService,
 OIDC identity, PolicyService and canonical PostgreSQL. It is a merged increment
 of Demo A, not the full demo or a VPS deployment. No deletion/retrieval/UI is added.
 
-**QH-10 candidate:** [scoped canonical retrieval](docs/qh-10-scoped-retrieval.md)
+**QH-10 merged:** [scoped canonical retrieval](docs/qh-10-scoped-retrieval.md)
 adds one authenticated query route for native text search or exact open descriptors,
 with mandatory current/proposed/history selection, canonical content, validation,
 revision anchors, source provenance and time bounds. This source increment is not
 deployed; it adds no LLM generation, temporal filtering, sharing or frontend.
+
+**QH-11 candidate:** [Mon environnement](docs/qh-11-mon-environnement.md) adds
+real browser OIDC login, owned Space list/create/detail and return navigation to the
+existing React client. Code + PKCE uses the approved ephemeral in-memory session;
+no Understanding view, sharing, new backend route or VPS activation. It requires
+the QH-9 backend: the deployed c723d32 API does not expose these Space routes.
 
 These are delivery milestones, **not implemented or deployed product capabilities**.
 They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native engine

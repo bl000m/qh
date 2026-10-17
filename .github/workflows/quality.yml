@@ -109,3 +109,18 @@ jobs:
             docker compose --env-file /tmp/qh30-ci.env -p qh30-ci -f infra/docker/qh30-integration.yml down
             rm /tmp/qh30-ci.env
           fi
+
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Build existing backend and test-only Chromium image
+        run: |
+          docker build -f apps/api/Dockerfile.dev -t qh11-api:ci .
+          docker build -f apps/web/Dockerfile.browser -t qh11-browser:ci .
+      - name: Real browser PKCE and Alice/Bob REST acceptance
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --output /tmp/qh11-browser-evidence
