@@ -1,4 +1,4 @@
-"""Owner-only read policy for the local demo; no transport or SQL dependencies."""
+"""Owner-only resource policy; no transport or SQL dependencies."""
 
 from typing import Awaitable, Callable
 
@@ -11,7 +11,13 @@ class OwnerPolicyService:
         self._owner_for = owner_for
 
     async def evaluate(self, request: PolicyRequest) -> PolicyDecision:
-        if not request.subject_id or not request.context_ids or request.action != PolicyAction.READ_CONTEXT:
+        if not request.subject_id:
+            return PolicyDecision(allowed=False, reason="Owner access required")
+        if request.action in (PolicyAction.CREATE_CONTEXT, PolicyAction.LIST_CONTEXTS):
+            # The trusted authenticated subject selects only their own namespace.
+            # No target owner or foreign scope can be supplied with these actions.
+            return PolicyDecision(allowed=not request.context_ids, reason=None if not request.context_ids else "Owner access required")
+        if not request.context_ids or request.action not in (PolicyAction.READ_CONTEXT, PolicyAction.UPDATE_CONTEXT):
             return PolicyDecision(allowed=False, reason="Owner access required")
         for context_id in request.context_ids:
             owner = await self._owner_for(context_id)

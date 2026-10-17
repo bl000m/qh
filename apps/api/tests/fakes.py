@@ -8,6 +8,7 @@ from app.core.models import (
     GenerationRequest, GenerationResult, Message, MessageRole,
     ItemRevisionRef, SourceRevisionRef, RetrievalHitId, SourceId, SourceRevisionId,
     UnderstandingItemId, UnderstandingRevisionId,
+    ContextSpace, ContextSpacePage, SubjectId,
 )
 from app.core.ports import ContextEngine, LLMProvider
 from app.policy.models import PolicyDecision, PolicyRequest
@@ -60,6 +61,20 @@ class AlternateLLMProvider:
 @dataclass
 class FakeContextService:
     engine: ContextEngine
+
+    async def create_space(self, *, subject_id: SubjectId, name: str) -> ContextSpace:
+        raise NotImplementedError("Retrieval-only test double")
+
+    async def list_spaces(self, *, subject_id: SubjectId, limit: int = 20,
+                          after_id: ContextId | None = None) -> ContextSpacePage:
+        raise NotImplementedError("Retrieval-only test double")
+
+    async def get_space(self, *, subject_id: SubjectId, context_id: ContextId) -> ContextSpace:
+        raise NotImplementedError("Retrieval-only test double")
+
+    async def rename_space(self, *, subject_id: SubjectId, context_id: ContextId,
+                           name: str) -> ContextSpace:
+        raise NotImplementedError("Retrieval-only test double")
 
     async def retrieve(self, request: ContextRequest) -> ContextResult:
         # Delegation belongs to this test double, not a production use case.

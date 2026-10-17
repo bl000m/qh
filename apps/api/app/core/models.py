@@ -5,6 +5,7 @@ conversation behavior are deliberately deferred to later tickets.
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import NewType
 
@@ -15,6 +16,30 @@ UnderstandingRevisionId = NewType("UnderstandingRevisionId", str)
 SourceId = NewType("SourceId", str)
 SourceRevisionId = NewType("SourceRevisionId", str)
 RetrievalHitId = NewType("RetrievalHitId", str)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ContextSpace:
+    id: ContextId
+    owner_id: SubjectId
+    name: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ContextSpacePage:
+    items: tuple[ContextSpace, ...]
+    next_after_id: ContextId | None = None
+
+
+class ContextStorageUnavailable(RuntimeError):
+    """Sanitized persistence failure, without driver/credential details."""
+
+
+class ContextSpaceNotFound(LookupError):
+    """Uniform missing or inaccessible Space result."""
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

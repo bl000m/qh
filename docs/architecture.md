@@ -72,6 +72,18 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
+### QH-9 Context Space management (candidate, not deployed)
+
+`app/context` implements the Core ContextService management operations, depending
+only on Core repository/value contracts and the existing PolicyService. Core keeps
+its retrieval signature; QH-9 exposes no Understanding retrieval. The PostgreSQL
+adapter manages existing Space metadata; FastAPI validates wire inputs and uses
+the authenticated internal subject. Bootstrap supplies the same policy instance
+to security and service bindings. Create/list authorize the authenticated subject's
+own namespace; read/rename authorize owner access before metadata lookup. There
+are no sharing grants, owner transfers or deletion lifecycle in this increment.
+No schema change, second identity system, graph dependency or runtime deployment.
+
 ### Identity and authorization (QH-5 / QH-29)
 
 [Identity ADR](adr/0002-identity-and-authorization.md) records the approved
