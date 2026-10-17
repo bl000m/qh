@@ -15,6 +15,16 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### Authorized synthetic Demo A data — 2026-10-18
+
+- Retain three newly populated Alice-owned fixture Spaces and 18 proposed revisions;
+  fresh backup/isolated restore, exact provenance, replay, worker and real browser
+  Alice/Bob/chat verification passed. All historical data/runtime remain unchanged.
+- Document five provided versus three mock-declared references and measured,
+  unimplemented source-deduplication proposal; no semantic ranking or paid inference.
+- Owner-confirmed UX/branding ticket QH-43 created but not started. PR #14 merge,
+  QH-13 DONE and personal Mac acceptance remain pending.
+
 ### Demo A operating plan and next UX direction — 2026-10-17
 
 - Document a three-Space fixture seed plan with proposed-only publication, source/

@@ -7,6 +7,14 @@ The [Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#demo-a-experienc
 records product direction; [ADR 0006](adr/0006-scoped-contextual-chat.md) and the
 [QH-13 report](qh-13-contextual-chat.md) describe implemented chat and verification.
 
+## Execution follow-through — 2026-10-18
+
+The owner subsequently authorized this exact synthetic import. It has now been
+[executed and verified](qh-13-demo-a-execution.md); the three Alice-owned Spaces
+are retained. The sections below preserve the planning checkpoint approved at
+`d90647a`, including its then-unexecuted status. UX ticket [QH-43](https://contextlab.atlassian.net/browse/QH-43)
+is created but not started. Mistral/merge/DONE gates remain closed.
+
 ## Dataset and observable scope
 
 Use the three cases in [qh8_conversations.json](../apps/api/tests/fixtures/qh8_conversations.json),

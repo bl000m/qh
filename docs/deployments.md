@@ -5,6 +5,21 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+
+## 2026-10-18 — authorized Demo A synthetic data import (no deployment)
+
+On the existing hot-reload stack, owner-approved [plan d90647a](qh-13-demo-a-plan.md)
+was [executed](qh-13-demo-a-execution.md): three new Alice-owned Spaces,
+three source revisions, 18 proposed revisions and three anchored relations through
+the existing Engine/CanonicalRepository/outbox/worker. All scopes applied 6/6.
+Fresh protected backup restored/verified on the existing dedicated test SQL server;
+all 14 table inventories and canonical structural checks passed. Production was
+not restored/migrated. Existing rows, identities, registry, six container IDs/images/
+start times/mounts/configuration, .env, realm and ports are unchanged. Demo data are
+retained. Real-stack OIDC/Chromium Alice/Bob/chat checks passed; personal Mac review
+is pending. No Mistral inference, new QH stack, application deployment or confirmation.
+PR #14 is still open; QH-13 is not DONE. UX QH-43 is created, not started.
+
 ## QH-12 closure / QH-13 source-only increment — 2026-10-17
 
 PR #13 merged with history preserved as

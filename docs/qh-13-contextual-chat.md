@@ -246,3 +246,22 @@ No new feature remains hidden behind a claimed DONE: live provider behavior is
 unmeasured, bounded retrieval is not semantic ranking, and references do not prove
 entailment. No populated persistent Alice demo, owner Mac session, human semantic
 review, merge or QH-13 Jira DONE is claimed.
+
+
+## Authorized persistent demo follow-through — 2026-10-18
+
+The owner authorized the [d90647a plan](qh-13-demo-a-plan.md) after its publication.
+[Execution report](qh-13-demo-a-execution.md): three new Alice-owned Spaces,
+18 proposed revisions, three sources, exact citations, atomic batches and existing
+worker 6/6; all historical rows unchanged. Real-stack Chromium/Keycloak checked
+all three populated Spaces, opt-in-off insufficiency, explicit proposed mock chat,
+five supplied versus three declared references, follow-up and 12 Bob API denials.
+All canonical table hashes stayed unchanged across chat/browser. This supersedes
+earlier **populated persistent demo NOT TESTED** statements as a later checkpoint;
+it does not rewrite the earlier execution archive or attest the owner's Mac session.
+
+[QH-43](https://contextlab.atlassian.net/browse/QH-43) was created, not started.
+The execution report quantifies lossless source deduplication as a **proposal only**
+for fitting six records before any later Mistral test. No application code, model,
+retrieval limit, policy, schema or original ledger was changed. Live Mistral remains
+unexecuted/separately gated; PR #14 and QH-13 remain open pending owner Mac review.

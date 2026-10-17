@@ -47,8 +47,9 @@ until separately authorized; no API key is exposed to the browser. See
 
 The [three-Space operational plan](docs/qh-13-demo-a-plan.md) reuses the original
 QH-8 project/health/personal fixtures: 18 proposed revisions, three sources and new
-Alice-owned Spaces. Offline rehearsal passes; persistent seed is **NOT EXECUTED**
-and needs explicit write approval. Even six fixture revisions can exceed the chat
+Alice-owned Spaces. The owner subsequently authorized the persistent seed: [execution on
+2026-10-18](docs/qh-13-demo-a-execution.md) passed canonical/worker and real-stack
+Alice/Bob/browser checks; all three populated Spaces are retained. Even six fixture revisions can exceed the chat
 byte budget; the mock returns excerpts, not an interpretation of the question.
 
 The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
@@ -56,8 +57,8 @@ sets the **next**, separately scoped UX increment: login to `Mon environnement`,
 Space overview, primary contextual chat, expandable `Explorer la compréhension`
 and supplied QH branding. The current QH-13 layout and OIDC flow are unchanged.
 The presentation's future Domain hierarchy creates no Domain model or sharing.
-The proposed UX ticket awaits scope confirmation and owner assets; no ticket was
-created. Real Mistral remains separately consented/budgeted, maximum EUR 5.
+The owner confirmed the scope; [QH-43](https://contextlab.atlassian.net/browse/QH-43)
+is created, **À faire**, awaiting QH-13 closure and owner assets before implementation. Real Mistral remains separately consented/budgeted, maximum EUR 5.
 
 ## Planned demo sequence — 2026-10-17
 
