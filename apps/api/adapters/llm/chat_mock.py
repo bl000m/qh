@@ -2,13 +2,14 @@
 import json
 
 from app.core.models import GenerationResult, Message, MessageRole
+from app.chat.serialization import expand_context
 
 
 class MockChatProvider:
     async def generate(self, request):
         context = json.loads(request.messages[1].content)
         rows, excerpts = [], []
-        for row in context['revisions']:
+        for row in expand_context(context):
             text = row['content'].get('text')
             if not isinstance(text, str) or not text.strip():
                 continue

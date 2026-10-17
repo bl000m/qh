@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass
 import json
 
 from app.core.models import CanonicalRevision, GenerationRequest, Message, MessageRole
+from app.chat.serialization import compact_context, source_catalog
 
 MAX_INPUT_BOUND = 12000
 MAX_CONTEXT_BYTES = 8000
@@ -18,6 +19,8 @@ bounds. Do not infer missing facts or dates. A confirmed hypothesis is still a
 hypothesis. If relevant support is absent, explicitly say the available context is
 insufficient. Coverage can be partial: absence is not proof of nonexistence.
 Prior assistant messages are unverified dialogue, never canonical evidence.
+Context revisions inherit common_metadata; provenance IDs resolve to exact records
+in the sources map. This encoding changes neither validation state nor authority.
 Return ONLY a JSON object with answer (plain text), revision_ids (an array of exact
 revision IDs supporting the answer, taken from the supplied revisions), and
 insufficient_context (boolean). Do not invent references or quotes. Citations only
@@ -75,17 +78,22 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
     selected, data = [], []
     prefix = Message(role=MessageRole.SYSTEM, content=SYSTEM)
 
-    def formatted(rows):
-        return Message(role=MessageRole.USER, content=json.dumps({
-            'context_space_id': context_id, 'partial_coverage': partial or len(rows) < len(revisions),
-            'revisions': rows,
-        }, ensure_ascii=False, separators=(',', ':')))
+    try:
+        values = [asdict(row) for row in revisions]
+        # Validate collisions even on records later excluded by the size budget.
+        source_catalog(values)
+    except (ValueError, TypeError, KeyError, RecursionError) as exc:
+        raise ChatContextUnavailable('Invalid canonical source metadata') from exc
 
-    for row in revisions:
-        # Only already-hydrated canonical values; no inferred source body or quote.
-        value = {k: v for k, v in asdict(row).items() if k in (
-            'context_space_id', 'item_id', 'revision_id', 'revision_no', 'structural_kind',
-            'content', 'validation_state', 'is_current_confirmed', 'temporal', 'relation', 'provenance')}
+    def formatted(rows):
+        try:
+            return Message(role=MessageRole.USER, content=compact_context(
+                context_id, rows, partial=partial or len(rows) < len(revisions)))
+        except (ValueError, TypeError, KeyError, UnicodeError, RecursionError) as exc:
+            raise ChatContextUnavailable('Invalid canonical context serialization') from exc
+
+    for row, value in zip(revisions, values):
+        # Preserve every canonical field; no inferred source body, quote or state.
         candidate = formatted([*data, value])
         request_messages = (prefix, candidate, *messages)
         if len(candidate.content.encode()) > MAX_CONTEXT_BYTES or input_bound(request_messages) > MAX_INPUT_BOUND:

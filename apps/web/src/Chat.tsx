@@ -45,7 +45,7 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   return <section className="context-chat" aria-labelledby="chat-title">
     <button className="secondary" aria-expanded={open} onClick={()=>{if(open)reset();setOpen(!open);}}>Discuter avec ce contexte</button>
     {open && <><h2 id="chat-title">Discuter avec ce contexte</h2>
-      <p>Réponses temporaires de l’IA, distinctes de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
+      <p>Échanges temporaires, distincts de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
       <p className="small muted">La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
       {!available && !error && <p role="status">Vérification du contexte disponible…</p>}
       {available && <>
@@ -55,7 +55,7 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
       </>}
       {answers.map((answer,i)=><article className="chat-turn" key={i} aria-label={'Échange '+(i+1)}>
         <h3>Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p>
-        <h3>Réponse de l’IA</h3><p className="small muted">Modèle : {answer.model}</p><p className="chat-text">{answer.answer}</p>
+        <h3>{answer.model==='qh-mock-extractive/1' ? 'Extraits de démonstration — sans compréhension de la question' : 'Réponse de l’IA'}</h3><p className="small muted">Modèle : {answer.model}</p><p className="chat-text">{answer.answer}</p>
         {answer.insufficient_context && <p className="notice">Le contexte disponible ne suffit pas à établir une réponse étayée.</p>}
         {answer.partial_coverage && <p className="notice">Couverture partielle : limites de pages ou de taille atteintes. Les éléments absents de cette réponse peuvent exister dans le Space.</p>}
         <details><summary>Sources utilisées ({answer.references.length} références déclarées)</summary>
