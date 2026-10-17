@@ -1,7 +1,8 @@
 """Authorize before metadata access; publication/retrieval remain separate work."""
 
 from app.core.models import (ContextId, ContextRequest, ContextResult, ContextSpace,
-                             ContextSpaceNotFound, ContextSpacePage, SubjectId)
+                             ContextSpaceNotFound, ContextSpacePage, SubjectId,
+                             ContextRetrievalUnavailable)
 from app.core.spaces import ContextSpaceRepository
 from app.policy.models import PolicyAction, PolicyRequest
 from app.policy.services import PolicyService
@@ -14,8 +15,10 @@ def validate_name(name: str) -> str:
 
 
 class ManagedContextService:
-    def __init__(self, *, repository: ContextSpaceRepository, policy: PolicyService):
+    def __init__(self, *, repository: ContextSpaceRepository, policy: PolicyService,
+                 retrieval_for=None):
         self.repository, self.policy = repository, policy
+        self.retrieval_for = retrieval_for
 
     async def _allow(self, subject_id, action, context_id=None):
         decision = await self.policy.evaluate(PolicyRequest(
@@ -59,4 +62,26 @@ class ManagedContextService:
         return value
 
     async def retrieve(self, request: ContextRequest) -> ContextResult:
-        raise NotImplementedError("Understanding retrieval belongs to QH-10")
+        decision = await self.policy.evaluate(PolicyRequest(
+            subject_id=request.subject_id, action=PolicyAction.READ_CONTEXT,
+            context_ids=request.query.context_ids,
+        ))
+        if not decision.allowed:
+            raise ContextSpaceNotFound("Context space not found")
+        if self.retrieval_for is None:
+            raise ContextRetrievalUnavailable("Context retrieval unavailable")
+        try:
+            result = await self.retrieval_for(request.subject_id).retrieve(request)
+        except PermissionError:
+            raise ContextSpaceNotFound("Context space not found") from None
+        if (any(h.context_id not in request.query.context_ids for h in result.hits)
+                or any(r.context_space_id not in request.query.context_ids for r in result.revisions)):
+            raise ContextRetrievalUnavailable("Context retrieval unavailable")
+        # Recheck the shared resource policy before disclosure, even on empty pages.
+        decision = await self.policy.evaluate(PolicyRequest(
+            subject_id=request.subject_id, action=PolicyAction.READ_CONTEXT,
+            context_ids=request.query.context_ids,
+        ))
+        if not decision.allowed:
+            raise ContextSpaceNotFound("Context space not found")
+        return result

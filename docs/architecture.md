@@ -79,7 +79,23 @@ independent of backend startup and has no DB credentials or data network access.
 
 ## Module boundaries
 
-### QH-9 Context Space management (candidate, not deployed)
+### QH-10 canonical Understanding retrieval (candidate, not deployed)
+
+QH-10 extends the same ContextService with structured, owner-authorized retrieval
+through the existing native ContextEngine; SQL selection, graph verification and
+canonical hydration stay in outbound adapters. `POST /context-spaces/query` adds
+no generation or new engine. The owner explicitly approved mandatory
+`view=current|proposed|history`, where history retains all revisions with explicit
+state/current markers, pagination after visibility filtering, and temporal metadata
+without temporal/as-of filtering. No validation or sharing permission is added.
+
+See [QH-10 REST contract and evidence](qh-10-scoped-retrieval.md). Core values
+carry canonical revision content and exact source references; public DTOs contain
+no SQLAlchemy, graph-driver or provider objects. Per-request freshness spans the
+final hydration; the shared policy is checked again before returning even an
+empty result. Physical relation anchors are verified for structured results.
+
+### QH-9 Context Space management (merged, not deployed)
 
 `app/context` implements the Core ContextService management operations, depending
 only on Core repository/value contracts and the existing PolicyService. Core keeps

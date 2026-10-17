@@ -29,20 +29,24 @@ ISSUER = os.environ.get("OIDC_ISSUER", "http://localhost:8080/realms/qh")
 INTERNAL = "http://keycloak:8080"
 IDENTITY_PATHS = {"/health", "/auth/me"}
 SPACE_PATHS = {"/context-spaces", "/context-spaces/{context_id}"}
+QUERY_PATHS = {"/context-spaces/query"}
 
 
 def check_business_paths(document, *, spaces_required):
     paths = document['paths']
-    expected = IDENTITY_PATHS | SPACE_PATHS
+    spaces = IDENTITY_PATHS | SPACE_PATHS
+    expected = spaces | QUERY_PATHS
     if spaces_required:
         assert set(paths) == expected
     else:
         # The read-only live verifier also supports the pinned c723d32 VPS.
         # Both versions are exact allowlists, never arbitrary added endpoints.
-        assert set(paths) in (IDENTITY_PATHS, expected)
+        assert set(paths) in (IDENTITY_PATHS, spaces, expected)
     if '/context-spaces' in paths:
         assert set(paths['/context-spaces']) == {'get', 'post'}
         assert set(paths['/context-spaces/{context_id}']) == {'get', 'patch'}
+    if '/context-spaces/query' in paths:
+        assert set(paths['/context-spaces/query']) == {'post'}
 
 
 class LoginForm(HTMLParser):

@@ -13,6 +13,7 @@ from app.main import create_app
 from app.policy.owner import OwnerPolicyService
 from app.context.service import ManagedContextService
 from app.composition import ApplicationServices
+from app.core.models import ContextRetrievalUnavailable
 
 
 def create_runtime_app():
@@ -26,6 +27,13 @@ def create_runtime_app():
         resolve_identity=reader.resolve_identity,
     )
     policy = OwnerPolicyService(owner_for=reader.owner_for)
+    running = {}
+
+    def retrieval_for(subject):
+        runtime = running.get("runtime")
+        if runtime is None:
+            raise ContextRetrievalUnavailable("Context retrieval unavailable")
+        return runtime.context_for(subject)
 
     @asynccontextmanager
     async def lifespan(application):
@@ -52,16 +60,19 @@ def create_runtime_app():
             )
             await asyncio.to_thread(runtime.start)
             application.state.native_context = runtime
+            running["runtime"] = runtime
         try:
             yield
         finally:
+            running.clear()
             if runtime is not None:
                 await asyncio.to_thread(runtime.stop)
                 application.state.native_context = None
 
     return create_app(
         services=ApplicationServices(
-            context=ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()), policy=policy),
+            context=ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()),
+                                          policy=policy, retrieval_for=retrieval_for),
             policy=policy,
         ),
         security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy),
