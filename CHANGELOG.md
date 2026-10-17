@@ -9,6 +9,11 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ### Status alignment — 2026-10-17
 
+- QH-10 owner-reviewed PR #11 merged with history preserved as
+  `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`; Jira QH-10 is DONE. Its final
+  head CI passed quality/OIDC and 503 native tests without skips. No activation.
+
+
 - QH-33 technical scope closed: PR #8 merged as
   `a7a2da3e43fca3fbcd54dd743956c14e0fa599e2`, Jira DONE with the approved scope
   addendum. Reproducible v2 benchmark, separate provisional metrics, offline
@@ -25,6 +30,14 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   status and the deployment register describe current activation.
 
 ### Added
+
+- QH-11 candidate `Mon environnement`: existing React/TypeScript/Vite client with
+  real OIDC Code + PKCE, ephemeral tokens, Space list/create/detail, bounded pages,
+  retry/empty/expired/denied states and keyboard/mobile navigation. Backend remains
+  the owner-policy enforcement point. Test-only Chromium/Keycloak/PostgreSQL proof
+  and CI reuse existing API/identity fixtures; no new production service or schema.
+  No Understanding UI, deployment or claim of complete Demo A.
+
 
 - QH-10 candidate canonical retrieval via `POST /context-spaces/query`: explicit
   owner-authorized scopes, mandatory current/proposed/history view, native substring

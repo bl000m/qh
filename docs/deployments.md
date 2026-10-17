@@ -15,6 +15,18 @@ application source mounts. Application image revision/mounts were rechecked
 read-only for this alignment; no new schema probe or activation was performed.
 The artifact identities and executed deployment records below are preserved.
 
+## QH-11 browser candidate — 2026-10-17 (not deployed)
+
+The existing frontend now has a candidate Space-management UI, tested with real
+Chromium/PKCE against temporary Keycloak/PostgreSQL and the QH-9/10 API. Test-only
+images and reproduction are in [QH-11](qh-11-mon-environnement.md). Its approved
+session stores tokens only in memory and adds no backend service, schema or realm
+change. This code is not on the VPS; the c723d32 frontend/API remain untouched.
+Demo A activation belongs to separately authorized QH-12 work.
+
+QH-10 PR #11 has since merged as `24c9f4f8c065bb78b7d62da46b33a2078ccecc6e`
+and Jira is DONE. Its preserved artifacts below still represent tests, not deployment.
+
 ## QH-10 scoped retrieval candidate — 2026-10-17 (not deployed)
 
 Final compatibility checkpoint: executable/test OCI revision

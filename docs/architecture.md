@@ -97,7 +97,7 @@ memory, then invokes OIDC end-session without expanding the realm redirect list.
 An unavailable IdP cannot prevent local logout; remote logout may then be incomplete.
 This bounded SPA choice adds no BFF or persistent session contract.
 
-### QH-10 canonical Understanding retrieval (candidate, not deployed)
+### QH-10 canonical Understanding retrieval (merged, not deployed)
 
 QH-10 extends the same ContextService with structured, owner-authorized retrieval
 through the existing native ContextEngine; SQL selection, graph verification and
@@ -152,7 +152,7 @@ test-only. Remote delegated MCP OAuth is outside QH-5.
 
 QH-29 formalizes `PolicyService` as the one logical resource-decision point,
 initially implemented by the backend's existing `OwnerPolicyService`, with
-replaceability through explicit injection. Merged metadata REST (QH-9), candidate
+replaceability through explicit injection. Merged metadata REST (QH-9), merged
 canonical retrieval (QH-10) and future MCP (QH-24)
 share that policy through the authenticated backend; MCP has no direct DB access,
 duplicate owner rules or unverified-identity bypass. Default deny precedes private
