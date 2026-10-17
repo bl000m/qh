@@ -49,6 +49,7 @@ def main():
         "tests/test_oidc_security.py", "tests/test_owner_policy.py",
         "tests/test_context_service.py", "tests/test_context_spaces_api.py", "tests/test_context_spaces_sql.py",
         "tests/test_context_architecture.py",
+        "tests/test_context_query_api.py", "tests/test_context_query_guards.py", "tests/test_context_query_pipeline.py",
     ], plugins=[RequireExecuted()])
 
 

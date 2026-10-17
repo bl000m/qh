@@ -282,7 +282,7 @@ class CanonicalRepository:
             return json_values(rows)
 
     def descriptor_candidates(self, context_ids, values, *, include_tentative=False,
-                              limit=20, after_revision_id=None):
+                              limit=20, after_revision_id=None, view=None):
         """Exact any-of descriptor selection, no text prerequisite or inferred aliases.
 
         Keyset pagination covers all historical revisions, not only selected heads.
@@ -293,8 +293,11 @@ class CanonicalRepository:
         values = tuple(values)
         if (not 1 <= len(values) <= 100 or
                 any(not isinstance(v, str) or not v for v in values) or
-                not 1 <= limit <= 100 or not isinstance(include_tentative, bool)):
+                not 1 <= limit <= (101 if view is not None else 100)
+                or not isinstance(include_tentative, bool)):
             raise ValueError("Explicit descriptor values and bounded limit required")
+        if view not in (None, "current", "proposed", "history"):
+            raise ValueError("Invalid revision view")
         after_revision_id = None if after_revision_id is None else str(UUID(str(after_revision_id)))
         certainty = ["asserted", "tentative"] if include_tentative else ["asserted"]
         with self.connect() as c:
@@ -302,15 +305,20 @@ class CanonicalRepository:
             scopes = self._authorize(c, context_ids)
             return json_values(c.execute("""
                 SELECT r.id, r.context_space_id FROM understanding_item_revisions r
+                JOIN understanding_items i ON i.id=r.item_id
                 WHERE r.context_space_id=ANY(%s::uuid[])
                   AND (%s::uuid IS NULL OR r.id>%s::uuid)
+                  AND (%s::text IS NULL OR %s='history'
+                       OR (%s='proposed' AND r.validation_state='proposed')
+                       OR (%s='current' AND r.id=i.current_revision_id AND r.validation_state='confirmed'))
                   AND EXISTS (
                     SELECT 1 FROM jsonb_array_elements(
                       CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
                            THEN r.content->'descriptors' ELSE '[]'::jsonb END) d
                     WHERE d->>'value'=ANY(%s::text[]) AND d->>'certainty'=ANY(%s::text[]))
                 ORDER BY r.id LIMIT %s
-                """, (scopes, after_revision_id, after_revision_id, list(values), certainty, limit)
+                """, (scopes, after_revision_id, after_revision_id, view, view, view, view,
+                      list(values), certainty, limit)
             ).fetchall())
 
     def read_snapshot(self, context_ids, revision_ids=None):

@@ -10,7 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from adapters.oidc import IdentityUnavailable
 from app.api.security import authenticated_subject
 from app.context.service import validate_name
-from app.core.models import ContextId, ContextSpaceNotFound, ContextStorageUnavailable, SubjectId
+from app.core.models import (ContextId, ContextSpaceNotFound, ContextStorageUnavailable,
+                             ContextRetrievalUnavailable, SubjectId)
 
 router = APIRouter(prefix="/context-spaces", tags=["context-spaces"])
 
@@ -61,7 +62,7 @@ async def call(operation):
         raise HTTPException(404, "Context space not found") from None
     except PermissionError:
         raise HTTPException(403, "Access denied") from None
-    except (ContextStorageUnavailable, IdentityUnavailable):
+    except (ContextStorageUnavailable, ContextRetrievalUnavailable, IdentityUnavailable):
         raise HTTPException(503, "Context service unavailable") from None
 
 

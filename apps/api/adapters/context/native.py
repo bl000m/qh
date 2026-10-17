@@ -250,16 +250,17 @@ class NativeContextEngine:
     async def search(self, query):
         return await self._search(query)
 
-    async def select_revisions(self, *, context_ids, revision_ids):
+    async def select_revisions(self, *, context_ids, revision_ids, view=None):
         """Internal exact-ID graph lookup for canonically selected descriptors."""
         revision_ids = tuple(map(str, revision_ids))
-        if not 1 <= len(revision_ids) <= 100:
+        if not 1 <= len(revision_ids) <= (101 if view is not None else 100):
             raise ValueError("Bounded incremental revision selection required")
-        query = ContextQuery(text="", context_ids=tuple(context_ids), limit=len(revision_ids))
+        query = ContextQuery(text="", context_ids=tuple(context_ids), limit=len(revision_ids), view=view)
         return await self._search(query, revision_ids=revision_ids)
 
     async def _search(self, query, revision_ids=None):
-        if (revision_ids is None and not query.text.strip()) or not 1 <= query.limit <= 100:
+        maximum = 101 if query.view is not None else 100
+        if (revision_ids is None and not query.text.strip()) or not 1 <= query.limit <= maximum:
             raise ValueError("Nonempty query and bounded limit required")
 
         def read():
@@ -272,10 +273,18 @@ class NativeContextEngine:
                     raise NativeContextError("Projection not ready")
                 return session.run(
                     """MATCH (r:QH30Revision {slice_id:$slice_id, generation:$generation})
+                    OPTIONAL MATCH (i:QH30Item {key:$slice_id+':'+$generation+':item:'+r.item_id})
+                    WITH r,i
                     WHERE r.context_id IN $scopes AND (($ids IS NOT NULL AND r.revision_id IN $ids)
                          OR ($ids IS NULL AND toLower(r.text) CONTAINS toLower($text)))
+                    AND ($after IS NULL OR r.revision_id>$after)
+                    AND ($view IS NULL OR $view='history'
+                         OR ($view='proposed' AND r.validation_state='proposed')
+                         OR ($view='current' AND r.validation_state='confirmed' AND i.current_revision_id=r.revision_id))
                     OPTIONAL MATCH (r)-[:EVIDENCED_BY]->(e:QH30Source)
                     RETURN r AS revision, collect(properties(e)) AS evidence,
+                        [(r)-[:SUBJECT]->(a) | {item_id:a.item_id, revision_id:a.revision_id, context_id:a.context_id}] AS subject_anchors,
+                        [(r)-[:OBJECT]->(b) | {item_id:b.item_id, revision_id:b.revision_id, context_id:b.context_id}] AS object_anchors,
                         ($ids IS NOT NULL OR toLower(r.text) CONTAINS toLower($text)) AS matches
                     ORDER BY r.revision_id LIMIT $limit""",
                     slice_id=self.slice_id,
@@ -284,6 +293,8 @@ class NativeContextEngine:
                     ids=revision_ids,
                     limit=query.limit,
                     generation=active["generation"],
+                    view=query.view,
+                    after=query.after_revision_id,
                 ).data()
 
         candidates = await asyncio.to_thread(read)
@@ -340,6 +351,16 @@ class NativeContextEngine:
                 raise NativeContextError(
                     "Stale, missing or cross-space graph/canonical evidence"
                 )
+            if query.view is not None:
+                detail = row["relation"]
+                for side, field in (("source", "subject_anchors"), ("target", "object_anchors")):
+                    expected = [] if detail is None else [dict(
+                        item_id=detail[side + "_item_id"],
+                        revision_id=detail[side + "_revision_id"],
+                        context_id=row["context_id"],
+                    )]
+                    if result[field] != expected:
+                        raise NativeContextError("Missing or inconsistent relation anchors")
             if not result["matches"] or len(hits) >= query.limit:
                 continue
             hits.append(

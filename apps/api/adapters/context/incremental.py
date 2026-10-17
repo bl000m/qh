@@ -13,7 +13,7 @@ from adapters.context.native import (
     NativeContextError,
     checked_rows,
 )
-from app.core.models import ContextResult
+from app.core.models import ContextResult, ContextRetrievalUnavailable
 
 
 def scope_key(scope, namespace="qh30-incremental"):
@@ -395,6 +395,41 @@ class IncrementalContextEngine:
         }
 
     async def search(self, query):
+        if query.view is not None:
+            try:
+                return await self._structured(query)
+            except PermissionError:
+                raise
+            except Exception:
+                raise ContextRetrievalUnavailable("Context retrieval unavailable") from None
+        return await self._text_search(query)
+
+    async def _structured(self, query):
+        from adapters.context.hydration import hydrate
+
+        if not 1 <= query.limit <= 100:
+            raise ValueError("Bounded result page required")
+        before = await asyncio.to_thread(self._ready, query.context_ids)
+        if query.descriptors:
+            result = await self.select_descriptors(
+                context_ids=query.context_ids, values=query.descriptors,
+                include_tentative=query.include_tentative, limit=query.limit + 1,
+                after_revision_id=query.after_revision_id, view=query.view,
+            )
+        else:
+            result = await self._text_search(replace(query, limit=query.limit + 1))
+        hits = result.hits[:query.limit]
+        ids = [h.item_revision.revision_id for h in hits]
+        revisions = await asyncio.to_thread(hydrate, self.repository, query, ids)
+        after = await asyncio.to_thread(self._ready, query.context_ids)
+        if before != after:
+            raise NativeContextError("Projection advanced during canonical hydration")
+        return ContextResult(
+            hits=hits, revisions=revisions,
+            next_after_revision_id=ids[-1] if len(result.hits) > query.limit else None,
+        )
+
+    async def _text_search(self, query):
         before = await asyncio.to_thread(self._ready, query.context_ids)
         hits = []
 
@@ -416,16 +451,18 @@ class IncrementalContextEngine:
         after = await asyncio.to_thread(self._ready, query.context_ids)
         if before != after:
             raise NativeContextError("Projection advanced during retrieval; retry read")
+        if query.view is not None:
+            hits.sort(key=lambda h: str(h.item_revision.revision_id))
         return ContextResult(hits=tuple(hits[: query.limit]))
 
     async def select_descriptors(self, *, context_ids, values, include_tentative=False,
-                                 limit=20, after_revision_id=None):
+                                 limit=20, after_revision_id=None, view=None):
         context_ids = tuple(dict.fromkeys(context_ids))
         before = await asyncio.to_thread(self._ready, context_ids)
         candidates = await asyncio.to_thread(
             self.repository.descriptor_candidates, context_ids, values,
             include_tentative=include_tentative, limit=limit,
-            after_revision_id=after_revision_id,
+            after_revision_id=after_revision_id, **({"view": view} if view is not None else {}),
         )
         hits = []
         for scope in context_ids:
@@ -437,7 +474,8 @@ class IncrementalContextEngine:
                 read_snapshot=lambda scopes, refs: immutable_snapshot(
                     self.repository.read_snapshot(scopes, refs)),
             )
-            result = await engine.select_revisions(context_ids=(scope,), revision_ids=ids)
+            result = await engine.select_revisions(context_ids=(scope,), revision_ids=ids,
+                                                   **({"view": view} if view is not None else {}))
             hits.extend(result.hits)
         after = await asyncio.to_thread(self._ready, context_ids)
         if before != after:
