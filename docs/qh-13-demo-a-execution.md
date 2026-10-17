@@ -156,3 +156,17 @@ again because the approved session is ephemeral.
 Mistral remains disabled; any synthetic transmission and maximum-EUR-5 experiment
 need new explicit consent, exact scopes/payload and verified pricing/FX/caps. QH-39
 is not started. PR #14 remains unmerged and QH-13 is not DONE pending owner review.
+
+## Later owner-review corrections — 2026-10-18
+
+The owner subsequently tested the demo on the Mac and reported duplicate React
+keys, misleading mock presentation and the context compaction request. The
+[correction report](qh-13-review-corrections.md) supersedes this checkpoint's
+**5/6 supplied** and **compaction NOT IMPLEMENTED** operational status. Its
+implemented full-canonical encoding is distinct from the earlier offline candidate
+measured above. All three retained Spaces now supply six revisions for the tested
+initial questions, with unchanged caps and three mock-declared references. The
+mock is labelled as excerpts without question understanding; no semantic ranking
+or live Mistral quality is claimed. This earlier evidence table remains unchanged.
+No further persistent import occurred, and acceptance of the corrections remains
+for the owner. The real-provider manifest is proposed and blocked, not executed.

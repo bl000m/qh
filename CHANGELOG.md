@@ -15,6 +15,20 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-13 owner-review corrections — 2026-10-18
+
+- Fix duplicate React sibling keys and verify reset of dialogue, draft, proposal
+  opt-in and understanding detail across all three Alice fixture Spaces.
+- Label mock results as demonstration excerpts without question understanding;
+  preserve the real-provider heading and exact canonical source panels.
+- Losslessly compact complete canonical context through shared source records and
+  identical administrative metadata, with collision/scope/JSON/round-trip guards.
+  Measured initial coverage increases from five to six revisions in each demo
+  Space under unchanged limits; no semantic ranking or comprehension improvement.
+- Seal three exact synthetic Mistral request proposals and pricing/budget checks,
+  separate blocked zero-call ledger and language-of-question candidate. No active
+  language change, paid request, deployment, data write, merge or Jira DONE.
+
 ### Authorized synthetic Demo A data — 2026-10-18
 
 - Retain three newly populated Alice-owned fixture Spaces and 18 proposed revisions;

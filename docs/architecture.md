@@ -430,3 +430,12 @@ and the limits of semantic/prompt-injection guarantees. Browsing stays primary
 under ADR 0005 in the current UI; the later owner amendment above changes future
 interaction priority. Exact source identity is not proof of answer
 entailment. Local-model substitution only changes the outbound adapter.
+
+The [review correction checkpoint](qh-13-review-corrections.md) introduces a pure,
+lossless internal `qh.chat.context/1` encoding: exact shared source records by
+source-revision ID and identical administrative metadata are stored once, then
+expanded into full canonical revision records. Content, validation state, temporal
+assertions and relation anchors are preserved. Collision/scope/JSON checks fail
+closed; existing canonical hydration, CHAT, selection freshness, whole-record
+budgeting and public DTOs are unchanged. This reduces repeated bytes, not retrieval
+semantics. The default mock UI explicitly says it does not understand the question.

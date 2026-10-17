@@ -265,3 +265,18 @@ The execution report quantifies lossless source deduplication as a **proposal on
 for fitting six records before any later Mistral test. No application code, model,
 retrieval limit, policy, schema or original ledger was changed. Live Mistral remains
 unexecuted/separately gated; PR #14 and QH-13 remain open pending owner Mac review.
+
+## Corrections after personal owner review — 2026-10-18
+
+The owner reported problems after testing the retained demo on the Mac.
+[Review corrections and measured comparison](qh-13-review-corrections.md) record
+distinct React sibling identities, Space-state reset regression tests, truthful
+mock-only excerpt headings and a lossless full-canonical internal context codec.
+For all three initial fixture questions, six records now fit instead of five;
+declared mock support remains three, with no semantic ranking or question analysis.
+Current French system wording stays active; language-following-question is a
+separate proposal in the blocked [Mistral manifest](evidence/qh13-mistral-chat-gate-20261018/README.md).
+The earlier checkpoints/captures/ledgers are preserved. No canonical data changes,
+paid requests, merge or Jira DONE follow from this correction. Executable correction
+commit: `35e6218690cb13b26de498ccb5dd951c25fead8a`; later documentation has no
+executable drift. Owner acceptance of the corrections is still pending.

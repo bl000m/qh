@@ -1,0 +1,146 @@
+{
+  "activation": "NOT PERFORMED. Owner must approve exact manifest, candidate prompt and scoped backend activation plan before any provider request; current VPS stays mock.",
+  "authenticated_model_workspace_check": "NOT EXECUTED; one metadata GET proposed after consent",
+  "chat_endpoint": "https://api.mistral.ai/v1/chat/completions",
+  "code_commit": "35e6218690cb13b26de498ccb5dd951c25fead8a",
+  "context_bytes_cap": 8000,
+  "disclosure_consent": false,
+  "eur_per_usd_upper_bound": "2.00",
+  "execution_date_timezone": "Europe/Rome",
+  "existing_absolute_attempt_cap": 8,
+  "expires_at": null,
+  "expiry_policy": "Set only after explicit consent; no later than 24 hours after refreshed pricing verification",
+  "freshness_gate": "Rebuild scoped canonical selection and exact request; stop on payload/source/state mismatch and present a new manifest. Existing CHAT and pre/post policy/readiness/fingerprint checks remain mandatory.",
+  "full_usd_sublimit_eur_at_upper_bound": "0.40",
+  "include_proposed": true,
+  "input_bound_cap": 12000,
+  "language": {
+    "active_system_file": "active-system.txt",
+    "active_system_sha256": "323e28a17ab636b3c4a20e725182de77f585e222215c5c705b24a17a12ac69c6",
+    "candidate_system_file": "candidate-system.txt",
+    "candidate_system_sha256": "db67ff730543009c80d6948ea6f360693f86a823bdb03af0a57b6129a4c73b65",
+    "interface_language_unchanged": "French",
+    "status": "PROPOSED_NOT_ACTIVE"
+  },
+  "ledger_file": "/home/ubuntu/qh/.local-archive/qh13-mistral-chat-trial-20261018/ledger.json",
+  "ledger_initial_blocked": true,
+  "ledger_initial_calls": 0,
+  "max_output_tokens": 1000,
+  "max_owner_eur": "5.00",
+  "max_total_attempts": 4,
+  "max_usd": "0.20",
+  "maximum_per_chat_reservation_usd": "0.0024",
+  "metadata_request": {
+    "expected_completion_chat": true,
+    "ledger_attempts": 1,
+    "method": "GET",
+    "url": "https://api.mistral.ai/v1/models/mistral-small-2603"
+  },
+  "model": "mistral-small-2603",
+  "model_documentation": "https://docs.mistral.ai/models/mistral-small-4-0-26-03",
+  "no_automatic_retries": true,
+  "observed_api_cost": null,
+  "observed_api_input_tokens": null,
+  "observed_api_output_tokens": null,
+  "one_space_per_request": true,
+  "owner_authorized": false,
+  "planned_eur_at_upper_bound": "0.0144",
+  "planned_paid_chat_requests": 3,
+  "planned_three_chat_reservation_usd": "0.0072",
+  "prices_usd_per_million": {
+    "cached_input_documented_but_not_discounted_in_budget": "0.015",
+    "input": "0.15",
+    "output": "0.60"
+  },
+  "pricing_documentation": "https://docs.mistral.ai/inference/pricing",
+  "pricing_documentation_checked_at_utc": "2026-10-17T22:53:40.584476+00:00",
+  "reference_fx": {
+    "date": "2026-10-16",
+    "not_a_card_conversion_rate_or_fee_guarantee": true,
+    "source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html",
+    "usd_per_eur": "1.1253"
+  },
+  "requests": [
+    {
+      "candidate_input_bound": 8679,
+      "canonical_payload_sha256": "419d18bd696a0a5d18e3ab88e7ca1c5e9eaec5ca49df1ebce1ce6921aa305941",
+      "canonical_records_sha256": "0a07d5f4cbff8abacad04cf8e99e0aa7327e16bdbcd74ad129933b9f533feb1d",
+      "context_bytes": 6439,
+      "context_id": "eb122625-1830-4557-b805-473d3b66132a",
+      "context_sha256": "bdcf03c85d0bd547e120c53c4782b88940d3a979ef064f36cc1717cc3a8adaa8",
+      "name": "project",
+      "payload_file": "project-request.json",
+      "question": "Di che cosa parla questo Context Space?",
+      "request_sha256": "2a6339263e66daed877d58effc332df579811e331d3eb8c18e8f532accc350a6",
+      "revision_ids": [
+        "03b72464-d157-550e-8eae-39431bdf2acb",
+        "06b29078-984f-5a4a-894e-b19b811f8227",
+        "285e1392-4a35-5beb-8e1b-8e4739659917",
+        "2bb9c6ea-6e50-56e8-9c88-7b79b521fd2e",
+        "8fbcd4e5-c974-5900-a083-e154611eab2f",
+        "ad227e63-c35f-562a-b9b8-a17953c89628"
+      ],
+      "source_revision_ids": [
+        "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+      ]
+    },
+    {
+      "candidate_input_bound": 8794,
+      "canonical_payload_sha256": "03a1a8675769fd44d2f5697ad9d1a158a30bd0f26e030047e6dcc1e2a687c545",
+      "canonical_records_sha256": "fa21fd10e8a71a33f61731d229390c234cfd5c35fb87763e6253cfe24759fe7f",
+      "context_bytes": 6499,
+      "context_id": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+      "context_sha256": "4c73f5e2351c8165bb8fa0c07e2b735f48da3c70a7c1bb18a06a7dfa09363672",
+      "name": "health",
+      "payload_file": "health-request.json",
+      "question": "Quali elementi sul benessere sono soltanto proposte e quali informazioni risultano confermate?",
+      "request_sha256": "bcde611c857fbcb42bf7b583df8e35c5d3e4c93b3541506d210af850c6214190",
+      "revision_ids": [
+        "243b644b-6e39-5434-a29b-cd8eaa000dc6",
+        "608c8fde-5915-53ff-9806-631c02064946",
+        "6ac7cbd6-770b-5574-8642-f60032b62e2a",
+        "b2b60798-b874-558d-97c0-d080e2e88a2e",
+        "d3ca2250-b3db-5d92-af3d-892f2bf8d28e",
+        "db345e4e-3b70-5d26-98ba-0981c3e80f88"
+      ],
+      "source_revision_ids": [
+        "1b72bae1-80d3-57aa-9c27-730735f46b66"
+      ]
+    },
+    {
+      "candidate_input_bound": 8765,
+      "canonical_payload_sha256": "d90dce1de3dfbc6b1b8458e96058dfc284712a6f78f781e23833e6947c8f3947",
+      "canonical_records_sha256": "f0e1c43fe4f7a83358214ebba2ee1635e157bd6deec2a7e679642a3bdcba8f11",
+      "context_bytes": 6468,
+      "context_id": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+      "context_sha256": "618c188e7a4e0a1620628147460552512f153078a0c753e18886725e088335f6",
+      "name": "personal",
+      "payload_file": "personal-request.json",
+      "question": "Quali preferenze e questioni aperte emergono, senza dare per certa la partecipazione di nessuno?",
+      "request_sha256": "b8842aaeace4bc099c967390daf3f90a1dd1b83539f4f3ed86017d39baf22a28",
+      "revision_ids": [
+        "a7e59fbf-a39f-504d-9f79-d844b20f708c",
+        "cd4ba2fb-4f7a-567d-8b89-8a2e125588e1",
+        "e1e4b6b8-1500-56ba-bfce-b028bb232f2c",
+        "e3b1f762-52ef-534c-ad91-f898d1b3cb26",
+        "f8875402-9a64-51b4-8d84-d8103d67dfe5",
+        "fab795e7-64e2-530b-ba96-3e7a31cb93bf"
+      ],
+      "source_revision_ids": [
+        "91a3cd92-ffa7-57e5-9ff5-0b737820dfc9"
+      ]
+    }
+  ],
+  "source": "only retained QH-8 project/health/personal synthetic Spaces; no historical owners or real personal data",
+  "status": "AWAITING_EXPLICIT_OWNER_MANIFEST_APPROVAL",
+  "stop_conditions": [
+    "HTTP 429",
+    "provider error or invalid/missing usage",
+    "unexpected model or scope",
+    "pending reservation, request/cost limit",
+    "changed source/selection/payload",
+    "loss of authorization/graph trust",
+    "invalid or unsupported declared references"
+  ],
+  "usage_costs": "List-price calculation from observed tokens, not an invoice; ignore cache discounts; verify account currency/tax/fees before execution"
+}

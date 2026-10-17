@@ -49,8 +49,14 @@ The [three-Space operational plan](docs/qh-13-demo-a-plan.md) reuses the origina
 QH-8 project/health/personal fixtures: 18 proposed revisions, three sources and new
 Alice-owned Spaces. The owner subsequently authorized the persistent seed: [execution on
 2026-10-18](docs/qh-13-demo-a-execution.md) passed canonical/worker and real-stack
-Alice/Bob/browser checks; all three populated Spaces are retained. Even six fixture revisions can exceed the chat
-byte budget; the mock returns excerpts, not an interpretation of the question.
+Alice/Bob/browser checks; all three populated Spaces are retained. The later
+[owner-review corrections](docs/qh-13-review-corrections.md) fix React sibling keys,
+label mock output as excerpts without question understanding and compact full
+canonical context losslessly: all six fixture revisions now fit for the measured
+initial questions. Larger contexts/dialogue can still exceed the unchanged caps.
+The [exact synthetic Mistral gate](docs/evidence/qh13-mistral-chat-gate-20261018/README.md)
+is prepared, blocked and awaiting specific consent; no paid call or language
+candidate activation has occurred.
 
 The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
 sets the **next**, separately scoped UX increment: login to `Mon environnement`,

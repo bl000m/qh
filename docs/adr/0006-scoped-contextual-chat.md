@@ -66,3 +66,20 @@ smoke need separate authorization and current verification. No human review,
 persistent demo import, live semantic quality or generalized model reliability is
 attested. Interactive validation, editing, conversation-to-understanding and local
 model hosting remain future tickets.
+
+## Implementation clarification — 2026-10-18
+
+The owner requested lossless compaction after the populated Demo A review.
+[The correction report](../qh-13-review-corrections.md) documents the internal
+provider-message encoding `qh.chat.context/1`, exact canonical round-trip and
+source collision/scope guards. Shared source records and identical administrative
+metadata are factored out; canonical/public contracts, validation state, relation
+anchors, quotes, authorization and caps are unchanged. Full duplicated records
+were the alternative; they omitted one of six fixture revisions under the same
+byte cap. No semantic summarization or inference is used to fit the budget.
+
+The mock heading now explicitly describes demonstration excerpts without question
+understanding. A separate sealed manifest proposes language-following-question
+wording for the future real-provider test; the current French instruction stays
+active pending specific owner approval. These are implementation clarification
+and an unexecuted proposal, not a new canonical model or disclosure permission.
