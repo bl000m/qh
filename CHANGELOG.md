@@ -15,6 +15,19 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-13 first authorized Mistral chat trial — 2026-10-18
+
+- Record exact-manifest GET plus one POST through the existing backend's temporary
+  FastAPI/ChatService binding, candidate Italian-language behavior and unchanged
+  public mock. Provider 200, QH 503: three item IDs supplied as revision IDs; strict
+  reference rejection and stop without retry, other two inferences not executed.
+- Preserve original response, six supplied records, ledger lineage, separate
+  provisional semantic assessment and mock comparison. Observed 3,251 input / 234
+  output tokens; list-price estimate USD 0.00062805, not an invoice. Proposal labels
+  were omitted despite relevant Italian raw text. Ledger blocked 2/4; all canonical
+  tables and runtime configurations unchanged. Future Mac activation requires a
+  new protocol/authorization; no new feature, merge or Jira DONE.
+
 ### QH-13 owner-review corrections — 2026-10-18
 
 - Fix duplicate React sibling keys and verify reset of dialogue, draft, proposal

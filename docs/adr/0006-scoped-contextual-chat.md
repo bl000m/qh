@@ -83,3 +83,13 @@ understanding. A separate sealed manifest proposes language-following-question
 wording for the future real-provider test; the current French instruction stays
 active pending specific owner approval. These are implementation clarification
 and an unexecuted proposal, not a new canonical model or disclosure permission.
+
+## Executed bounded provider check — 2026-10-18
+
+The owner later approved the sealed candidate and a specific three-question
+synthetic experiment. [One actual inference](../qh-13-mistral-chat-experiment.md)
+was rejected by the unchanged strict decoder for item IDs used as revision IDs;
+the remaining inferences were not run. Temporary language/provider binding was
+process-private in the existing backend, public browser chat remained mock, no
+architectural or public/canonical contract change. This scoped consent does not
+authorize further calls, arbitrary questions or an interactive live-provider window.

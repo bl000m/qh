@@ -6,6 +6,21 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — authorized first Mistral chat trial (no deployment)
+
+The [exact approved manifest](evidence/qh13-mistral-chat-gate-20261018/manifest.json)
+was exercised in a process-private FastAPI/ChatService binding inside the existing
+backend, with actual OIDC/CHAT/canonical/graph checks. Public chat remained mock;
+no container recreation/restart, source/config edit, worker start or migration.
+One GET succeeded; the first POST returned HTTP 200 but QH rejected three item IDs
+in `revision_ids` (route 503), so two remaining POSTs were not sent. No retry.
+The separate ledger is blocked 2/4; exact response and usage retained. All 14 QH
+table inventories, six container identities/configurations, private .env and realm
+are identical before/after; public mock checked on all three Spaces. The approved
+language candidate applied only in the temporary process. See
+[experiment and limits](qh-13-mistral-chat-experiment.md). No interactive Mistral
+browser session, merge or Jira DONE is implied.
+
 ## 2026-10-18 — authorized Demo A synthetic data import (no deployment)
 
 On the existing hot-reload stack, owner-approved [plan d90647a](qh-13-demo-a-plan.md)

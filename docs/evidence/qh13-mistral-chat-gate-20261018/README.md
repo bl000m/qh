@@ -95,3 +95,14 @@ python3 docs/evidence/qh13-mistral-chat-gate-20261018/audit.py
 The audit establishes file/record consistency and conservative arithmetic only.
 It does not attest live availability, approval, semantic quality, true tokenizer
 usage or a charge. No paid request is authorized by green tests or this archive.
+
+## Subsequent authorization and closed execution
+
+The owner later explicitly approved this exact manifest SHA, all three payloads
+and the language candidate. [Trial evidence](../qh13-mistral-chat-trial-20261018/README.md)
+records one GET plus one project POST; QH rejected wrong-kind references and the
+operator stopped without retry. The other two POSTs were not executed. Preparation
+flags above and inside manifest.json remain the immutable historical proposal,
+not the later consent receipt. The dated private authorization/ledger audit
+records that approval; the final ledger is blocked 2/4. Public provider is mock.
+No approval of different payloads or an interactive browser window follows.

@@ -138,3 +138,12 @@ Technical regressions and measurements support the corrections, not semantic
 correctness of a future model. The current ticket still needs owner review; real
 Mistral smoke remains separately gated. UX/branding QH-43 and conversational
 acquisition QH-39 are not started. No merge or Jira DONE is requested implicitly.
+
+## Subsequent owner-authorized trial
+
+After this correction checkpoint, the owner approved the exact manifest and
+language candidate. The [executed first trial](qh-13-mistral-chat-experiment.md)
+stopped after one inference: provider 200, QH 503 due to three item IDs in
+revision_ids. Two later inferences were not executed; ledger blocked 2/4. Current
+public provider is verified mock. This is subsequent evidence, not a rewrite of
+the correction measurements or an accepted live answer.

@@ -55,8 +55,11 @@ label mock output as excerpts without question understanding and compact full
 canonical context losslessly: all six fixture revisions now fit for the measured
 initial questions. Larger contexts/dialogue can still exceed the unchanged caps.
 The [exact synthetic Mistral gate](docs/evidence/qh13-mistral-chat-gate-20261018/README.md)
-is prepared, blocked and awaiting specific consent; no paid call or language
-candidate activation has occurred.
+was subsequently approved for a first bounded run: the
+[real trial](docs/qh-13-mistral-chat-experiment.md) stopped after one inference
+because three returned IDs were item IDs rather than revision IDs. QH rejected
+the answer; the other two inferences were not run. Public chat is verified mock,
+the ledger is blocked 2/4, and no general live-provider window is active.
 
 The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
 sets the **next**, separately scoped UX increment: login to `Mon environnement`,

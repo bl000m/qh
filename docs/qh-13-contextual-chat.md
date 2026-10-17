@@ -280,3 +280,17 @@ The earlier checkpoints/captures/ledgers are preserved. No canonical data change
 paid requests, merge or Jira DONE follow from this correction. Executable correction
 commit: `35e6218690cb13b26de498ccb5dd951c25fead8a`; later documentation has no
 executable drift. Owner acceptance of the corrections is still pending.
+
+## First authorized real-provider trial — later 2026-10-18 checkpoint
+
+The owner approved the exact sealed manifest and language candidate at 4f0f3b2.
+[Executed experiment](qh-13-mistral-chat-experiment.md): one metadata GET succeeded,
+one project inference returned Italian topic prose but three item IDs in the
+revision-ID field. QH rejected it (503); ledger blocked 2/4, no retry or remaining
+inferences. Raw prose also omitted explicit proposed/unconfirmed qualification.
+The response is evidence, not an accepted application answer. Public chat remained
+mock throughout, with its return verified on all three Spaces. All canonical data
+and runtime configurations remain unchanged. This supersedes earlier NOT TESTED
+real-provider statements only for that single failed-acceptance trial, not a live
+quality pass or DONE. No paid interactive session is active; future use needs new
+explicit authorization. No implementation beyond this evidence was introduced.
