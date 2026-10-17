@@ -21,8 +21,9 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  expect(data.references[0].provenance[0].source_revision_id).toBe(expected.source_revision_id);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});await expect(turn).toContainText('Mode mock');
  await turn.getByText('Sources utilisées (1 références déclarées)',{exact:true}).click();
- await expect(turn.locator('blockquote')).toBeVisible();
- await expect(turn.getByRole('article',{name:'Révision '+data.references[0].revision_id,exact:true}).first()).toBeVisible();
+ const sources=turn.locator('details').filter({has:page.locator('summary').filter({hasText:/^Sources utilisées/})});
+ await expect(sources.locator('blockquote')).toBeVisible();
+ await expect(sources.getByRole('article',{name:'Révision '+data.references[0].revision_id,exact:true})).toBeVisible();
  const next=await ask(page,'Et que savons-nous encore ?');expect(next.status()).toBe(200);
  const body=next.request().postDataJSON();expect(body.messages.map((m:any)=>m.role)).toEqual(['user','assistant','user']);
  await expect(page.getByRole('article',{name:'Échange 2',exact:true})).toBeVisible();
