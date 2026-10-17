@@ -121,6 +121,7 @@ jobs:
         run: |
           docker build -f apps/api/Dockerfile.dev -t qh11-api:ci .
           docker build -f apps/web/Dockerfile.browser -t qh11-browser:ci .
+          docker build -f apps/web/Dockerfile.dev -t qh12-web:ci .
       - name: Real browser PKCE and Alice/Bob REST acceptance
         run: |
-          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --output /tmp/qh11-browser-evidence
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --output /tmp/qh12-browser-evidence

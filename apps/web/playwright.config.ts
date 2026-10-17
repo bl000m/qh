@@ -9,5 +9,5 @@ export default defineConfig({
   reporter: [['list']],
   use: { baseURL: 'http://localhost:5173', browserName: 'chromium',
     trace: 'off', video: 'off', screenshot: 'off' },
-  webServer: { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: false, stdout: 'ignore', stderr: 'pipe' }
+  webServer: process.env.QH_BROWSER_EXTERNAL_SERVER === '1' ? undefined : { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: false, stdout: 'ignore', stderr: 'pipe' }
 });
