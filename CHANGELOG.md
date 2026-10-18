@@ -353,3 +353,14 @@ starts from the recorded native cutover and does not invent past release version
   separate disclosure/proposal consent, accounting/revocation and 300-second OIDC
   implications. Include offline contract wireframes; no application implementation,
   Mistral activation, new inference or canonical write is claimed.
+
+### QH-45 scoped provider sessions — 2026-10-18
+
+- Implement the owner-approved preview/consent/status/revoke flow with exact
+  token/snapshot/Space binding, fixed expiry, canonical QH-13 generation and
+  atomic per-session/aggregate accounting in the existing durable ledger.
+- Keep mock as default and interactive Mistral disabled on the VPS. Add separate
+  French provider/disclosure controls, proposal consent and lifecycle cleanup;
+  reuse isolated real OIDC/SQL/graph browser checks with HTTP-simulated Mistral.
+- Preserve canonical data, aliases and epistemic warnings. No real inference,
+  canonical migration, OIDC renewal, public activation or QH-39 ingestion.

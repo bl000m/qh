@@ -32,19 +32,30 @@ SPACE_PATHS = {"/context-spaces", "/context-spaces/{context_id}"}
 QUERY_PATHS = {"/context-spaces/query"}
 BROWSE_PATHS = {"/context-spaces/{context_id}/understanding"}
 CHAT_PATHS = {"/context-spaces/{context_id}/chat"}
+SESSION_METHODS = {
+    '/context-spaces/{context_id}/chat-sessions': {'get'},
+    '/context-spaces/{context_id}/chat-sessions/preview': {'post'},
+    '/context-spaces/{context_id}/chat-sessions/{session_id}/consent': {'post'},
+    '/context-spaces/{context_id}/chat-sessions/{session_id}': {'get', 'delete'},
+    '/context-spaces/{context_id}/chat-sessions/{session_id}/messages': {'post'},
+}
 
 
 def check_business_paths(document, *, spaces_required):
     paths = document['paths']
     spaces = IDENTITY_PATHS | SPACE_PATHS
     browse = spaces | QUERY_PATHS | BROWSE_PATHS
-    expected = browse | CHAT_PATHS
+    chat = browse | CHAT_PATHS
+    expected = chat | set(SESSION_METHODS)
     if spaces_required:
         assert set(paths) == expected
     else:
         # The read-only live verifier also supports the pinned c723d32 VPS.
         # Both versions are exact allowlists, never arbitrary added endpoints.
-        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, expected)
+        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, chat, expected)
+    for path, methods in SESSION_METHODS.items():
+        if path in paths:
+            assert set(paths[path]) == methods
     if '/context-spaces' in paths:
         assert set(paths['/context-spaces']) == {'get', 'post'}
         assert set(paths['/context-spaces/{context_id}']) == {'get', 'patch'}

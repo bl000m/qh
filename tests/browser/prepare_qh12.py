@@ -87,7 +87,7 @@ for case, name in zip(CASES, ('Projet pilote', 'Bien-être', 'Organisation perso
     demo_ids = asyncio.run(demo_usecase.publish(subject_id=owner,checkpoint=demo_cp))
     demo_spaces.append(dict(scope=demo_scope,name=name,revision_ids=demo_ids,source_revision_id=demo_source))
 
-print(json.dumps({'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces,
+print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces,
                   'original_ids': [r['id'] for r in original],
                   'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],
