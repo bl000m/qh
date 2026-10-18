@@ -1,8 +1,9 @@
+import {afterLogin,expandUnderstanding} from './navigation.browser';
 import { test, expect } from '@playwright/test';
 test('real graph outage is unavailable, never an empty Space', async ({page},info) => {
   const {scope}=JSON.parse(process.env.QH12_EXPECTED_JSON!);
   await page.goto('/context-spaces/'+scope); await page.getByRole('button',{name:'Se connecter',exact:true}).click();
-  await page.locator('#username').fill('alice'); await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!); await page.locator('#kc-login').click();
+  await page.locator('#username').fill('alice'); await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!); await page.locator('#kc-login').click();await afterLogin(page,scope);await expandUnderstanding(page);
   await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();
   await page.getByText('Rechercher dans ce contexte',{exact:true}).click();await page.getByRole('button',{name:'Propositions',exact:true}).click(); await page.getByLabel('Texte à rechercher').fill('pilot');
   const response=page.waitForResponse(r=>r.url().endsWith('/api/context-spaces/query'));

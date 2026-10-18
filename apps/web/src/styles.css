@@ -88,3 +88,28 @@ details { margin: 1rem 0; } summary { cursor: pointer; text-decoration: underlin
 .chat-opt-in { display: flex; align-items: center; gap: .6rem; }
 .chat-opt-in input { width: auto; }
 .context-chat textarea { width: 100%; max-width: 100%; resize: vertical; font: inherit; padding: .8rem; }
+
+/* QH-43 functional layout checkpoint. Original branding is not applied yet. */
+h1, h2, h3 { overflow-wrap: anywhere; }
+.detail { max-width: 920px; }
+.detail > h1 { font-size: clamp(1.65rem, 5vw, 2.5rem); margin-block: .5rem 1rem; }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: .4rem; font-size: .9rem; margin-bottom: 1.5rem; }
+.breadcrumbs [aria-current] { overflow-wrap: anywhere; }
+.space-card details { font-size: .85rem; }
+.space-lifecycle { font-size: .85rem; font-weight: 600; margin-bottom: .25rem; }
+.context-chat { margin-block: 1.5rem; }
+.context-chat > h2 { margin-bottom: .75rem; }
+.understanding-explorer { border-top: 1px solid #dedfd9; padding-block: 1.5rem; }
+.understanding-explorer > summary { font-size: 1.2rem; font-weight: 650; padding-block: .5rem; }
+.understanding-explorer .understanding { margin-top: 1rem; border-top: 0; padding-top: .5rem; }
+:focus-visible { outline: 3px solid #242622; outline-offset: 4px; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; transform: translateY(-200%); z-index: 10; background: #fff; padding: .75rem; }
+.skip-link:focus { transform: none; }
+.identity { margin-top: 2rem; }
+@media (max-width: 600px) { .actions > button { min-height: 44px; } .detail { padding: 1rem; } }
+
+/* Reflow stays usable at narrow widths and enlarged text; do not clip overflow. */
+.app-shell { overflow-wrap: anywhere; }
+.topbar { flex-wrap: wrap; gap: .75rem; }
+button { max-width: 100%; overflow-wrap: anywhere; }
+.chat-opt-in { min-width: 0; align-items: flex-start; }

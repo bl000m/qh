@@ -1,3 +1,4 @@
+import {afterLogin} from './navigation.browser';
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
@@ -10,7 +11,7 @@ async function login(page: Page, name = 'alice') {
   await page.locator('#password').fill(password);
   await page.locator('#kc-login').click();
   await expect(page.getByRole('button', {name:'Se déconnecter'})).toBeVisible();
-  await expect(page.getByText('Identité QH :', {exact:false})).toBeVisible();
+  await afterLogin(page);
 }
 async function create(page: Page, name: string) {
   await page.getByRole('button', {name:'Créer un Context Space',exact:true}).click();
@@ -31,25 +32,29 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   });
   await login(page);
   expect(pkce).toBe(true);
+  await page.getByText('Informations du compte QH',{exact:true}).click();
   await expect(page.getByText('Identité QH : ' + aliceId)).toBeVisible();
+  await page.getByText('Informations du compte QH',{exact:true}).click();
   await create(page,'Projet QH');
   await page.getByRole('link', {name:'Projet QH',exact:true}).click();
   await expect(page.getByRole('heading', {name:'Projet QH',exact:true})).toBeVisible();
   const path = new URL(page.url()).pathname;
   await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
-  await page.getByRole('link', {name:'← Mes Context Spaces'}).click();
+  await page.getByRole('link', {name:'Mon environnement'}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();
   await storageIsTokenFree(page);
   await page.screenshot({path:info.outputPath('alice-dashboard.png'),fullPage:true});
   const context = await browser.newContext({baseURL:'http://localhost:5173'});
   const bob = await context.newPage();
   try {
-    await bob.goto(path); // Direct deep link survives the real OIDC callback.
+    await bob.goto(path); // A protected deep link must now land at the environment after login.
     await login(bob,'bob');
+    await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
+    await bob.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},path);
     await expect(bob.getByRole('alert')).toHaveText('Ce Context Space est introuvable ou inaccessible.');
     await expect(bob.getByRole('heading', {name:'Projet QH',exact:true})).toHaveCount(0);
-    await bob.getByRole('link', {name:'← Mes Context Spaces'}).click();
+    await bob.getByRole('link', {name:'Mon environnement'}).click();
     await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
     await expect(bob.getByText('Votre premier contexte commence ici.')).toBeVisible();
     await storageIsTokenFree(bob);

@@ -1,3 +1,4 @@
+import {afterLogin,expandUnderstanding} from './navigation.browser';
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 const expected = JSON.parse(process.env.QH12_EXPECTED_JSON || '{}');
@@ -6,8 +7,8 @@ async function open(page:Page, name='alice') {
   await page.getByRole('button',{name:'Se connecter',exact:true}).click();
   await page.locator('#username').fill(name);
   await page.locator('#password').fill(process.env['QH_' + name.toUpperCase() + '_PASSWORD']!);
-  await page.locator('#kc-login').click();
-  if (name === 'alice') {await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await page.getByText('Rechercher dans ce contexte',{exact:true}).click();}
+  await page.locator('#kc-login').click();await afterLogin(page,expected.scope);
+  if (name === 'alice') {await expandUnderstanding(page);await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await page.getByText('Rechercher dans ce contexte',{exact:true}).click();}
 }
 async function search(page:Page, view:string, input:string, descriptors=false) {
   await page.getByRole('button',{name:view,exact:true}).click();

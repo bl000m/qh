@@ -50,7 +50,9 @@ export function createSession(): BrowserSession {
           await manager.clearStaleState();
           user = await manager.signinRedirectCallback(callback);
           if (user.expired || !user.access_token) throw new Error('Expired session');
-          window.history.replaceState(null, '', safeReturnPath(user.state));
+          // QH-43: orient every newly authenticated session at its environment.
+          // OIDC state/PKCE validation above is unchanged; no saved Space is restored.
+          window.history.replaceState(null, '', '/');
           window.dispatchEvent(new PopStateEvent('popstate'));
           set('authenticated');
         } catch { clear('error'); }

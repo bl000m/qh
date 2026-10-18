@@ -1,3 +1,4 @@
+import {afterLogin,expandUnderstanding} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import type {Page} from '@playwright/test';
 const expected=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
@@ -11,8 +12,8 @@ test.beforeEach(async({page})=>{
 test.afterEach(async({page})=>{expect(keyWarnings.get(page)||[],'React key warnings').toEqual([]);});
 async function open(page:Page,scope=expected.scope){
  await page.goto('/context-spaces/'+scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();
- await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();
- await page.getByRole('button',{name:'Discuter avec ce contexte',exact:true}).click();
+ await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page,scope);
+ await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();
  await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
 }
 async function ask(page:Page,question='Quelles décisions avons-nous prises pour ce projet ?'){
@@ -52,7 +53,7 @@ test('proposed-only Space needs explicit choice and empty context invents no evi
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Proposé, non confirmé');
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
- await page.getByRole('button',{name:'Discuter avec ce contexte',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
+ await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
  r=await ask(page);expect((await r.json()).references).toHaveLength(0);
 });
 test('provider failure is sanitized, never retried, and clears prior answers',async({page})=>{
@@ -67,13 +68,13 @@ test('late answer after navigation cannot populate a different Space',async({pag
  await page.route('**/chat',async route=>{await gate;await route.continue();});
  await page.getByLabel('Votre question sur ce contexte').fill('Question différée');await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
- release();await page.getByRole('button',{name:'Discuter avec ce contexte',exact:true}).click();
+ release();await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();
  await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
 });
 test('real Bob OIDC cannot chat with Alice Space, arbitrary IDs reveal no private data',async({page})=>{
  let authorization='';page.on('request',r=>{if(r.url().endsWith('/auth/me'))authorization=r.headers()['authorization']||'';});
  await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();
- await page.locator('#username').fill('bob');await page.locator('#password').fill(process.env.QH_BOB_PASSWORD!);await page.locator('#kc-login').click();
+ await page.locator('#username').fill('bob');await page.locator('#password').fill(process.env.QH_BOB_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page,expected.scope);
  await expect(page.getByText('Ce Context Space est introuvable ou inaccessible.',{exact:true})).toBeVisible();
  expect(authorization.startsWith('Bearer ')).toBe(true);
  const body={messages:[{role:'user',content:'Décisions privées ?'}]};
@@ -94,10 +95,10 @@ test('Alice navigates all three fixture Spaces without duplicate keys or retaine
   if(i){
    await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+demo.scope);
    await expect(page.getByRole('heading',{name:demo.name,exact:true})).toBeVisible();
-   await expect(page.getByRole('button',{name:'Discuter avec ce contexte',exact:true})).toHaveAttribute('aria-expanded','false');
-   await expect(page.getByRole('heading',{name:'Aperçu structuré',exact:true})).toBeVisible();
+   await expect(page.locator('details.understanding-explorer')).not.toHaveAttribute('open','');
+   await expect(page.getByRole('heading',{name:'Aperçu structuré',exact:true})).toHaveCount(0);
    await expect(page.locator('section[aria-label="Détail de l’élément"]')).toHaveCount(0);
-   await page.getByRole('button',{name:'Discuter avec ce contexte',exact:true}).click();
+   await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();
   }
   const field=page.getByLabel('Votre question sur ce contexte');
   await expect(field).toBeEnabled();await expect(field).toHaveValue('');
@@ -111,7 +112,7 @@ test('Alice navigates all three fixture Spaces without duplicate keys or retaine
   const turn=page.getByRole('article',{name:'Échange 1',exact:true});await expect(turn.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toBeVisible();
   await expect(turn.getByRole('heading',{name:'Réponse de l’IA',exact:true})).toHaveCount(0);
   await field.fill('Brouillon du Space précédent');
-  await page.getByRole('button',{name:'Explorer la compréhension',exact:true}).click();
+  await expandUnderstanding(page);await page.getByRole('button',{name:'Parcourir les éléments',exact:true}).click();
   await page.getByRole('button',{name:'Propositions à examiner',exact:true}).click();
   await page.getByRole('button',{name:'Entités canoniques',exact:true}).click();
   await expect(page.locator('.understanding-card')).toHaveCount(1);

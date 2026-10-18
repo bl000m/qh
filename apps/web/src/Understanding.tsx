@@ -71,7 +71,7 @@ export default function Understanding({api,scope}:{api:QhApi;scope:string}) {
     <h2 id="browse-title" ref={heading} tabIndex={-1}>Compréhension du contexte</h2>
     <p className="muted">Explorez ce que le contexte conserve. Les propositions restent distinctes de la compréhension confirmée.</p>
     <nav className="actions" aria-label="Navigation de la compréhension"><button className="secondary" onClick={()=>{setMode('overview');setSelected(null);}}>Vue d’ensemble</button>
-      <button className="secondary" onClick={()=>explore({view:'current',limit:20})}>Explorer la compréhension</button></nav>
+      <button className="secondary" onClick={()=>explore({view:'current',limit:20})}>Parcourir les éléments</button></nav>
     {overview && <section aria-label="Vue d’ensemble"><h3>Aperçu structuré</h3><p className="small muted">Extraits littéraux des éléments conservés, sans interprétation ni synthèse validée. Ordre technique stable, sans classement d’importance.</p>
       {overviewLoading ? <p role="status" className="notice">Chargement de l’aperçu…</p> : overviewFailed ? <><p role="alert" className="notice error">{overviewFailed}</p><button onClick={()=>{current.retry();proposed.retry();history.retry();}}>Réessayer l’aperçu</button></> : <>
         {!history.rows.length && <p role="status" className="empty">Ce Context Space ne contient pas encore d’éléments de compréhension.</p>}

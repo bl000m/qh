@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { FormEvent, MouseEvent, ReactNode } from 'react';
 import { apiMessage, QhApi, validName } from './api';
 import type { ContextSpace } from './api';
 import type { BrowserSession } from './auth';
-import Understanding from './Understanding';
 import Chat from './Chat';
+import UnderstandingExplorer from './UnderstandingExplorer';
 import { navigate, usePath } from './navigation';
 
 function Link({ to, children }: { to: string; children: ReactNode }) {
@@ -67,7 +67,8 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
     } catch (reason) { setCreateError(apiMessage(reason)); } finally { setCreating(false); }
   }
   return <section aria-labelledby="spaces-title">
-    <div className="section-heading"><div><p className="eyebrow">Votre espace personnel</p><h2 id="spaces-title">Mes Context Spaces</h2></div>
+    <div className="page-heading"><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Retrouvez vos Context Spaces et choisissez celui avec lequel discuter.</p></div>
+    <div className="section-heading"><div><h2 id="spaces-title">Mes Context Spaces</h2><p className="muted">Vos espaces de compréhension, sous votre contrôle.</p></div>
       <button onClick={() => { setForm(true); setSuccess(''); }} disabled={form}>Créer un Context Space</button></div>
     {form && <form className="create-panel" onSubmit={event => { void create(event); }}>
       <label htmlFor="space-name">Nom du Context Space</label>
@@ -81,7 +82,7 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
     {error && <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>}
     {loading && <Notice>Chargement des Context Spaces…</Notice>}
     {!loading && !error && items.length === 0 && !recent && <div className="empty"><h3>Votre premier contexte commence ici.</h3><p>Vous n’avez pas encore de Context Space. Créez-en un pour commencer.</p></div>}
-    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).map(item => <li key={item.id} className="space-card"><p className="eyebrow">Context Space</p>{recent?.id === item.id && <p className="muted">Créé récemment</p>}<h3><Link to={'/context-spaces/' + item.id}>{item.name}</Link></h3><Metadata space={item} /></li>)}</ul>
+    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).map(item => <li key={item.id} className="space-card"><p className="eyebrow">Context Space</p>{recent?.id === item.id && <p className="muted">Créé récemment</p>}<h3><Link to={'/context-spaces/' + item.id}>{item.name}</Link></h3><p className="space-lifecycle">{item.status === 'active' ? 'Space actif' : item.status}</p><p className="small muted">Modifié le <time dateTime={item.updated_at}>{new Date(item.updated_at).toLocaleDateString('fr-FR')}</time></p><details><summary>Métadonnées du Space</summary><Metadata space={item} /></details></li>)}</ul>
     {next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}
   </section>;
 }
@@ -89,15 +90,17 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   const [space, setSpace] = useState<ContextSpace | null>(null);
   const [error, setError] = useState('');
   const [refresh, setRefresh] = useState(0);
+  const title = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (space) title.current?.focus(); }, [space]);
   useEffect(() => {
     let active = true; setSpace(null); setError('');
     api.get(id).then(value => { if (active) setSpace(value); })
       .catch(reason => { if (active) setError(apiMessage(reason)); });
     return () => { active = false; };
   }, [id, api, refresh]);
-  return <section><Link to="/">← Mes Context Spaces</Link>
+  return <section><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">{space?.name ?? 'Context Space'}</span></nav>
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className="detail"><p className="eyebrow">Context Space</p><h2>{space.name}</h2><details><summary>Métadonnées du Space</summary><Metadata space={space} /></details><Understanding key={'understanding:'+space.id} api={api} scope={space.id} /><Chat key={'chat:'+space.id} api={api} scope={space.id} /></article> :
+      space ? <article className="detail"><p className="eyebrow">Context Space</p><h1 ref={title} tabIndex={-1}>{space.name}</h1><details><summary>Métadonnées du Space</summary><Metadata space={space} /></details><Chat key={'chat:'+space.id} api={api} scope={space.id} /><UnderstandingExplorer key={'understanding:'+space.id} api={api} scope={space.id} /></article> :
         <Notice>Chargement du Context Space…</Notice>}
   </section>;
 }
@@ -115,9 +118,10 @@ function Environment({ api }: { api: QhApi }) {
   if (error) return <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>;
   if (!identity) return <Notice>Vérification de votre identité QH…</Notice>;
   const match = /^\/context-spaces\/([^/]+)$/.exec(path);
-  return <><p className="identity muted">Identité QH : {identity}</p>
+  return <>
     {path === '/' ? <Spaces api={api} recent={recent} onCreated={setRecent} /> : match ? <Detail key={match[1]} id={match[1]} api={api} /> :
       <><Notice error>Cette page est introuvable.</Notice><Link to="/">Mes Context Spaces</Link></>}
+    <details className="identity small muted"><summary>Informations du compte QH</summary><p>Identité QH : {identity}</p></details>
   </>;
 }
 export default function App({ session }: { session: BrowserSession }) {
@@ -126,13 +130,13 @@ export default function App({ session }: { session: BrowserSession }) {
   useEffect(() => { void session.initialize(); }, [session]);
   return <div className="app-shell"><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand">QH<span>Votre contexte, sous votre contrôle.</span></a>
     {state === 'authenticated' && <button className="secondary" onClick={() => { void session.logout(); }}>Se déconnecter</button>}</header>
-    <main id="main-content"><div className="page-heading"><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Un lieu pour construire et retrouver vos contextes.</p></div>
+    <a className="skip-link" href="#main-content">Aller au contenu</a><main id="main-content" tabIndex={-1}>
       {state === 'authenticated' ? <Environment api={api} /> : <section className="signin">
         {state === 'starting' ? <Notice>Connexion en cours…</Notice> : <>
           {state === 'expired' && <Notice error>Votre session a expiré. Reconnectez-vous pour continuer.</Notice>}
           {state === 'error' && <Notice error>La connexion n’a pas abouti. Veuillez recommencer.</Notice>}
           {state === 'signed-out' && <Notice>Vous êtes déconnecté de QH.</Notice>}
-          <h2>Bienvenue dans votre environnement QH</h2><p>Connectez-vous pour accéder à vos Context Spaces.</p>
+          <h1>Bienvenue dans votre environnement QH</h1><p>Connectez-vous pour accéder à vos Context Spaces.</p>
           <button onClick={() => { void session.login(); }}>Se connecter</button></>}
       </section>}
     </main><footer>QH — Environnement souverain de contexte</footer></div>;

@@ -6,7 +6,6 @@ import {Revision} from './Revision';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
 export default function Chat({api,scope}:{api:QhApi;scope:string}) {
-  const [open,setOpen]=useState(false);
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
@@ -18,14 +17,12 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   const questionField=useRef<HTMLTextAreaElement>(null);
   useEffect(()=>{
     const n=++generation.current;
-    if(open){setAvailable(null);setError('');
+    setAvailable(null);setError('');
       Promise.all([api.browse(scope,{view:'current',limit:1}),api.browse(scope,{view:'proposed',limit:1})])
         .then(([current,proposed])=>{if(n===generation.current)setAvailable({current:current.items.length>0,proposed:proposed.items.length>0});})
         .catch(e=>{if(n===generation.current){setError(apiMessage(e));setMessages([]);setAnswers([]);}});
-    }
     return()=>{generation.current++;};
-  },[api,scope,open]);
-  useEffect(()=>{if(open && available)questionField.current?.focus();},[open,available]);
+  },[api,scope]);
   function reset(){generation.current++;setMessages([]);setAnswers([]);setQuestion('');setError('');setLoading(false);}
   async function submit(event:FormEvent){
     event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available)return;
@@ -43,8 +40,7 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
     }finally{if(n===generation.current)setLoading(false);}
   }
   return <section className="context-chat" aria-labelledby="chat-title">
-    <button className="secondary" aria-expanded={open} onClick={()=>{if(open)reset();setOpen(!open);}}>Discuter avec ce contexte</button>
-    {open && <><h2 id="chat-title">Discuter avec ce contexte</h2>
+    <h2 id="chat-title">Discuter avec ce contexte</h2>
       <p>Échanges temporaires, distincts de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
       <p className="small muted">La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
       {!available && !error && <p role="status">Vérification du contexte disponible…</p>}
@@ -81,6 +77,5 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
       <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Aucune écriture Understanding.</p>
-    </>}
   </section>;
 }
