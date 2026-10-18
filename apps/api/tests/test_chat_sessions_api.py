@@ -41,6 +41,7 @@ def test_signed_oidc_api_preview_consent_state_generate_revoke_and_no_bob_disclo
         for method,tail,payload in [('get','',None),('post','/consent',{'snapshot_sha256':v['snapshot_sha256'],'disclosure_consent':True}),('post','/messages',data),('delete','',None)]:
             r=c.request(method,path+tail,headers=foreign,json=payload)
             assert r.status_code==expected
+            if expected==401:assert r.headers['www-authenticate']=='Bearer'
     assert not calls
     assert c.post(path+'/messages',headers=auth,json=data).status_code==409
     assert c.post(path+'/consent',headers=auth,json={'snapshot_sha256':v['snapshot_sha256'],'disclosure_consent':False}).status_code==422

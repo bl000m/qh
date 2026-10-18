@@ -59,14 +59,14 @@ async def authenticated_chat_identity(request: Request,
     """Same OIDC verifier, exposing only verified expiry and a token binding hash."""
     from app.chat.sessions import ChatIdentity
     if credentials is None or len(request.headers.getlist('authorization')) != 1:
-        raise HTTPException(401, 'Invalid credentials')
+        raise HTTPException(401, 'Invalid credentials', headers={'WWW-Authenticate': 'Bearer'})
     security = request.app.state.security
     if security is None or security.authenticate_with_expiry is None:
         raise HTTPException(503, 'Verified identity expiry unavailable')
     try:
         subject, expiry = await security.authenticate_with_expiry(credentials.credentials)
     except InvalidCredentials:
-        raise HTTPException(401, 'Invalid credentials') from None
+        raise HTTPException(401, 'Invalid credentials', headers={'WWW-Authenticate': 'Bearer'}) from None
     except GeneralPermissionDenied:
         raise HTTPException(403, 'General access denied') from None
     except IdentityUnavailable:
