@@ -55,3 +55,46 @@ test('narrow mobile and 200 percent text resizing keep navigation and controls r
  await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('chat composer leads on mobile while technical details remain available and consent stays explicit',async({page},info)=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/');await login(page);
+ await afterLogin(page,expected.proposed_scope);
+ const field=page.getByLabel('Votre question sur ce contexte');await expect(field).toBeEnabled();
+ const help=page.locator('.chat-help');await expect(help).not.toHaveAttribute('open','');
+ await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:true})).toBeVisible();
+ const opt=page.getByLabel('Inclure explicitement les propositions non confirmées');await expect(opt).toBeVisible();await expect(opt).not.toBeChecked();
+ await expect(page.getByText(/La discussion utilise une sélection bornée/)).toBeHidden();
+ expect((await field.boundingBox())!.y).toBeLessThan(650);
+ await help.locator('summary').click();await expect(page.getByText(/La discussion utilise une sélection bornée/)).toBeVisible();
+ await help.locator('summary').click();await opt.check();await field.fill('Question en attente');
+ let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>release=resolve);
+ await page.route('**/chat',async route=>{await gate;await route.continue();});
+ await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
+ await expect(page.locator('.chat-pending .chat-question-message')).toContainText('Question en attente');
+ await expect(field).toBeDisabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
+ release();await expect(page.locator('.chat-turn')).toHaveCount(1);await expect(page.locator('.chat-pending')).toHaveCount(0);
+ await expect(page.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toBeVisible();
+ await expect(help).not.toHaveAttribute('open','');
+ await expect(page.locator('.chat-turn details[open]')).toHaveCount(0);
+ await page.screenshot({path:info.outputPath('qh43-conversation-mobile.png'),fullPage:true});
+});
+test('skip link is first keyboard stop, focuses main, then disappears without covering chat',async({page},info)=>{
+ await page.goto('/');const skip=page.getByRole('link',{name:'Aller au contenu',exact:true});
+ const clipped=()=>skip.evaluate(n=>getComputedStyle(n).clipPath);
+ expect(await clipped()).toBe('inset(50%)');await page.keyboard.press('Tab');await expect(skip).toBeFocused();expect(await clipped()).toBe('none');
+ await page.screenshot({path:info.outputPath('qh43-skip-focus-desktop.png')});
+ await page.keyboard.press('Enter');await expect(page.locator('#main-content')).toBeFocused();expect(await clipped()).toBe('inset(50%)');
+ await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeFocused();
+ await login(page);await afterLogin(page,expected.scope);const field=page.getByLabel('Votre question sur ce contexte');await expect(field).toBeEnabled();
+ await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('#main-content')).toBeFocused();expect(await clipped()).toBe('inset(50%)');
+ await field.focus();await expect(field).toBeFocused();
+ expect(await field.evaluate(n=>{const r=n.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===n;})).toBe(true);
+ expect(await field.evaluate(n=>{
+  const color=(s:string)=>s.match(/[\d.]+/g)!.slice(0,3).map(Number).map(x=>{const v=x/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+  const luminance=(s:string)=>color(s).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+  const style=getComputedStyle(n),b=luminance(style.backgroundColor);
+  return Math.min(...[style.color,getComputedStyle(n,'::placeholder').color].map(c=>{const a=luminance(c);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);}));
+ })).toBeGreaterThanOrEqual(4.5);
+ await field.blur();await page.screenshot({path:info.outputPath('qh43-unfocused-desktop.png'),fullPage:true});
+});

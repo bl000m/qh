@@ -103,8 +103,8 @@ h1, h2, h3 { overflow-wrap: anywhere; }
 .understanding-explorer > summary { font-size: 1.2rem; font-weight: 650; padding-block: .5rem; }
 .understanding-explorer .understanding { margin-top: 1rem; border-top: 0; padding-top: .5rem; }
 :focus-visible { outline: 3px solid #242622; outline-offset: 4px; }
-.skip-link { position: fixed; top: .5rem; left: .5rem; transform: translateY(-200%); z-index: 10; background: #fff; padding: .75rem; }
-.skip-link:focus { transform: none; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 10; background: #fff; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+.skip-link:focus { width: auto; height: auto; padding: .75rem; clip-path: none; }
 .identity { margin-top: 2rem; }
 @media (max-width: 600px) { .actions > button { min-height: 44px; } .detail { padding: 1rem; } }
 
@@ -113,3 +113,23 @@ h1, h2, h3 { overflow-wrap: anywhere; }
 .topbar { flex-wrap: wrap; gap: .75rem; }
 button { max-width: 100%; overflow-wrap: anywhere; }
 .chat-opt-in { min-width: 0; align-items: flex-start; }
+
+/* QH-43 iteration 2: conversation first; safeguards remain outside disclosures. */
+.detail > details:first-of-type { margin-block: .5rem; }
+.detail > h1 { margin-bottom: .5rem; }
+.breadcrumbs { margin-bottom: .75rem; }
+.context-chat { margin-block: 1rem; padding-block: 1rem; }
+.context-chat > h2 { font-size: 1.35rem; margin-bottom: .75rem; }
+.chat-availability { margin-block: .5rem; padding: .6rem .75rem; }
+.chat-opt-in { font-size: .9rem; font-weight: 500; margin-block: .75rem; }
+.chat-composer { background: #fff; border: 1px solid #858d7d; border-radius: 12px; padding: 1rem; margin-top: 1rem; }
+.chat-composer label { font-size: 1.1rem; }
+.chat-composer textarea { border: 0; background: #f7f7f4; border-radius: 8px; min-height: 100px; margin-bottom: .75rem; }
+.chat-composer textarea::placeholder { color: #62685d; opacity: 1; }
+.chat-turn { border: 0; padding: 0; margin-block: 1.5rem; }
+.chat-question-message { width: fit-content; max-width: 90%; margin-left: auto; padding: .85rem 1rem; background: #eceee8; border-radius: 14px 14px 0 14px; }
+.chat-answer-message { margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid #dedfd9; border-radius: 0 14px 14px 14px; }
+.chat-question-message h3, .chat-answer-message > h3 { font-size: .9rem; margin-block: 0 .5rem; }
+.chat-help { font-size: .85rem; margin-top: 1rem; }
+.chat-help > summary { padding-block: .35rem; }
+@media (max-width: 600px) { .detail { margin-top: .75rem; } main { padding-top: 1.25rem; } .chat-composer { padding: .75rem; } .chat-opt-in { font-size: .85rem; } .chat-question-message { max-width: 95%; } }

@@ -45,7 +45,7 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  expect((await proposed.json()).provided_revisions.some((r:any)=>r.validation_state==='proposed')).toBe(true);
 });
 test('proposed-only Space needs explicit choice and empty context invents no evidence',async({page})=>{
- await open(page,expected.proposed_scope);await expect(page.getByText('Ce Space contient uniquement des propositions utilisables après votre choix explicite.',{exact:false})).toBeVisible();
+ await open(page,expected.proposed_scope);await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:false})).toBeVisible();
  let r=await ask(page);expect((await r.json()).insufficient_context).toBe(true);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('insuffisant');
  await page.getByLabel('Inclure explicitement les propositions non confirmées').check();r=await ask(page);

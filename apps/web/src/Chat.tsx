@@ -41,16 +41,14 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   }
   return <section className="context-chat" aria-labelledby="chat-title">
     <h2 id="chat-title">Discuter avec ce contexte</h2>
-      <p>Échanges temporaires, distincts de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
-      <p className="small muted">La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
       {!available && !error && <p role="status">Vérification du contexte disponible…</p>}
       {available && <>
-        {!available.current && <p className="notice">Aucune compréhension confirmée courante.{available.proposed ? ' Ce Space contient uniquement des propositions utilisables après votre choix explicite.' : ' Aucune compréhension utilisable n’est disponible ; le Space peut être vide ou ne contenir que de l’historique.'}</p>}
+        {!available.current && <p className="notice chat-availability">{available.proposed ? 'Compréhension disponible : propositions non confirmées uniquement.' : 'Aucune compréhension utilisable n’est disponible ; le Space peut être vide ou ne contenir que de l’historique.'}</p>}
         <label className="chat-opt-in"><input type="checkbox" checked={includeProposed} disabled={loading} onChange={e=>{reset();setIncludeProposed(e.target.checked);}}/> Inclure explicitement les propositions non confirmées</label>
-        <p className="small muted">Les révisions historiques et refusées sont exclues. Changer ce choix efface la discussion temporaire.</p>
       </>}
       {answers.map((answer,i)=><article className="chat-turn" key={i} aria-label={'Échange '+(i+1)}>
-        <h3>Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p>
+        <div className="chat-question-message"><h3>Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p></div>
+        <div className="chat-answer-message">
         <h3>{answer.model==='qh-mock-extractive/1' ? 'Extraits de démonstration — sans compréhension de la question' : 'Réponse de l’IA'}</h3><p className="small muted">Modèle : {answer.model}</p>
         {answer.references.some(row=>row.validation_state==='proposed') && <p role="note" className="notice">Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.</p>}
         {answer.provided_revisions.length>0 && answer.provided_revisions.every(row=>row.validation_state==='proposed') && <p role="note" className="notice">Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.</p>}
@@ -66,16 +64,22 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
           <p>Éléments transmis, qui ne sont pas tous nécessairement utilisés. Borne d’entrée : {answer.input_bound} unités estimées (octets UTF-8 + marge), pas un relevé de tokens API. Contexte : {answer.context_bytes} octets.</p>
           {answer.provided_revisions.map(row=><Revision key={row.revision_id} row={row}/>)}
         </details>
+        </div>
       </article>)}
       {error && <p role="alert" className="notice error">{error}</p>}
-      {loading && <p role="status">Préparation de la réponse…</p>}
-      <form onSubmit={e=>{void submit(e);}}>
+      {loading && <div className="chat-pending"><div className="chat-question-message"><h3>Votre question</h3><p className="chat-text">{question}</p></div><p role="status">Préparation de la réponse…</p></div>}
+      <form className="chat-composer" onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
-        <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} disabled={loading || !available || messages.length>=8} rows={3}/>
+        <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} disabled={loading || !available || messages.length>=8} rows={3} placeholder="Que souhaitez-vous savoir ?"/>
         <div className="actions"><button disabled={loading || !available || !question.trim() || messages.length>=8}>Envoyer la question</button>
           <button type="button" className="secondary" disabled={loading} onClick={reset}>Nouvelle discussion</button></div>
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
+      <details className="chat-help"><summary>Fonctionnement et limites</summary>
+      <p>Échanges temporaires, distincts de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
+      <p>La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
+      <p>Les révisions historiques et refusées sont exclues. Changer le choix des propositions efface la discussion temporaire.</p>
       <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Aucune écriture Understanding.</p>
+      </details>
   </section>;
 }
