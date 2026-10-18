@@ -312,3 +312,21 @@ consent, exact scope/payload and a verified maximum **EUR 5** envelope with the
 prepared stricter request/token/USD limits. Existing ledgers and frozen outputs
 remain intact; no call, confirmation or persistent import is authorized by this
 amendment. A future local model remains replaceable through LLMProvider.
+
+## QH-43 presentation checkpoint — owner approval, 2026-10-18
+
+The owner approved the QH-43 plan (`41ee02f`) and independently authorized its
+asset-independent layout: every successful login lands at Mon environnement,
+owned Spaces remain discoverable, chat is primary inside a Space, and canonical
+exploration remains visible as an accessible disclosure before any question.
+This implements the earlier Demo A amendment without changing domain, ownership,
+policy, ephemeral chat, source/validation semantics or public contracts.
+
+The [checkpoint and original-asset proposal](../qh-43-visual-proposal.md) distinguish
+the working neutral layout from private design references. Final branding requires
+owner approval of selected original assets; the missing authoritative SVG is not
+reconstructed. Keycloak theme source preparation follows asset approval, and VPS
+activation still requires separate consent. Existing warnings derived from verified
+canonical proposed states remain mandatory even if generated prose omits them.
+No presentation mockup authorizes Domains, sharing/projections, provider selection,
+conversation ingestion, synthetic medical facts, paid inference or confirmation.

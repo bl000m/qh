@@ -84,9 +84,12 @@ and supplied QH branding. The current QH-13 layout and OIDC flow are unchanged.
 The presentation's future Domain hierarchy creates no Domain model or sharing.
 The owner confirmed the scope; [QH-43](https://contextlab.atlassian.net/browse/QH-43)
 now has a [concrete planning-only UX proposal](docs/qh-43-ux-branding-plan.md) on its
-own branch/PR from merged main. QH-13's closure gate is satisfied; owner review and
-original assets are pending, with no UX implementation or Keycloak activation.
-Jira QH-43 remains **À faire**. Real Mistral remains separately consented/budgeted,
+own [PR #15](https://github.com/bl000m/qh/pull/15) from merged main. The owner approved
+the plan and the asset-independent layout: environment landing, primary chat and
+expandable canonical explorer. The [first implementation/asset-selection checkpoint](docs/qh-43-visual-proposal.md)
+distinguishes working UI from the private branding proposal. Final asset selection,
+original SVG and Keycloak theme preparation/activation remain gated; no final
+branding is applied. Jira QH-43 remains **À faire** (no status transition requested). Real Mistral remains separately consented/budgeted,
 maximum EUR 5.
 
 ## Planned demo sequence — 2026-10-17

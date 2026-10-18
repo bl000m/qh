@@ -1,10 +1,24 @@
 # QH-43 — Demo A UX and original branding plan
 
-2026-10-18. **PLAN FOR OWNER REVIEW — no UX implementation or theme activation.**
+2026-10-18. **Initial plan at `41ee02f`, preserved below.** The owner has since
+approved asset-independent implementation; see the dated gates and current checkpoint.
 [Jira QH-43](https://contextlab.atlassian.net/browse/QH-43) is the sole next task;
 checkout `/home/ubuntu/qh`, branch `feat/QH-43-demo-a-ux-branding`, based on updated
 main `cc6f421b54966f0c1dd302a3da4958d1be6e245f`. Its dedicated PR initially contains
-this plan and documentation only. Jira QH-43 has not been transitioned.
+this plan and documentation only; it now includes the authorized functional checkpoint.
+Jira QH-43 has not been transitioned.
+
+## Owner-approved implementation gates — 2026-10-18
+
+The owner approved this plan at `41ee02f` and authorized asset-independent layout
+implementation in the same PR #15: environment landing, owned overview, primary
+chat, expandable explorer, navigation/reflow and canonical/epistemic preservation.
+Final branding needs approval of the original-asset selection and visual proposal;
+Keycloak theme sources follow that approval, with VPS activation separately gated.
+The initial planning text/NOT TESTED matrix below remains its historical checkpoint,
+not the current implementation result. See the [asset proposal and checkpoint](qh-43-visual-proposal.md)
+for actual files, executed evidence, remaining gates and explicit owner decisions.
+No merge, DONE, public Mistral, realm change or canonical write is authorized.
 
 ## Start gate and accepted QH-13 boundary
 

@@ -15,6 +15,18 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 functional UX and private visual proposal — 2026-10-18
+
+- Land validated OIDC sessions at Mon environnement; keep owned cards readable,
+  fold technical metadata, identify the selected Space and make chat primary.
+- Add lazy, keyboard-operable canonical exploration without a query; retain full
+  sources/history/anchors, proposal opt-in/warnings, dialogue isolation and mock
+  labeling. Correct narrow-screen enlarged-text reflow without clipping content.
+- Analyze the seven already-extracted owner reference files; preserve originals
+  privately and propose the standalone bubble as a compact decorative asset.
+  Requested ZIP and logo SVG are absent. No final branding, theme, public original
+  asset, Domain/sharing feature, inference, canonical write, merge or DONE.
+
 ### QH-13 POC closure / QH-43 UX planning — 2026-10-18
 
 - Close owner-reviewed QH-13 through history-preserving PR #14 merge `cc6f421`

@@ -54,14 +54,16 @@ Search is secondary. Canonical-summary selection, LLM synthesis, editing/human
 validation and advanced graph navigation remain outside this increment. See
 [verifiable QH-12 criteria](qh-12-context-understanding.md#owner-approved-acceptance-criteria).
 
-### Later Demo A interaction direction — planning only
+### Later Demo A interaction direction — QH-43 functional checkpoint
 
 The owner's [later Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
-sets chat-first in-Space interaction for the next UX increment, with a visible,
-expandable explorer and no mandatory query before access to understanding.
-Earlier ADR 0005/0006 decisions and the current exploration-first implementation
-remain historical/implemented checkpoints. Login-to-environment, refinement of the existing multi-Space overview
-and supplied branding are future client work, not a new Domain model or OIDC system.
+sets chat-first in-Space interaction, with a visible expandable explorer and no
+mandatory query before access to understanding. The owner-approved QH-43
+[functional/asset-selection checkpoint](qh-43-visual-proposal.md) implements
+login-to-environment, readable owned-Space cards, primary chat and expandable
+canonical exploration. Final branding and Keycloak theme preparation remain
+asset-approval gates; no theme is activated. Earlier ADR 0005/0006 implementation
+checkpoints remain historical evidence, not a new Domain model or OIDC system.
 The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 ephemeral
 chat, explicitly authorized synthetic import and QH-39 conversational acquisition.
 No change to Engine, canonical schema, public API, provider gate or runtime follows.

@@ -6,6 +6,24 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-43 asset-independent frontend checkpoint
+
+Owner approved plan `41ee02f` and the functional layout independently of final
+asset selection. Frontend source `20314d6197fed8d751af8802ec3a2d8bc74beadb` is
+active through existing Vite HMR: environment landing, primary chat and accessible
+canonical explorer. No image/container replacement, restart, new service, schema
+change, inference or original-branding publication. Backend/API/Core/provider
+configuration and Keycloak remain unchanged; public chat stays mock.
+
+Read-only before/after inventories match all fourteen QH tables and six container
+identities/configurations/start times. Existing demo Spaces, private configuration,
+realm and closed ledgers are preserved. The real VPS check used existing Alice/Bob
+identities, canonical reads and mock chat only; no create/rename/reseed. Isolated
+Chromium/OIDC/SQL/Neo4j/outage/restore checks are separate from this persistent stack.
+[Checkpoint, private visual proposal and remaining gates](qh-43-visual-proposal.md);
+[executed evidence](evidence/qh43-ux-checkpoint-20261018/README.md). Final branding and
+Keycloak theme sources await asset approval; no theme activation, merge or DONE.
+
 ## 2026-10-18 — QH-13 closure and QH-43 planning checkout
 
 Owner accepted the documented POC scope; [PR #14](https://github.com/bl000m/qh/pull/14)

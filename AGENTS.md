@@ -42,7 +42,11 @@ migrations or immutable historical bindings to force a new vocabulary.
 
 Read [ADR 0005](docs/adr/0005-browse-first-context-understanding.md) and the Product
 Contract's browse-first amendment before changing understanding UX or retrieval.
-Browsing is primary; search complements it. Preserve deterministic-preview versus
+The later owner-approved Demo A amendment makes chat primary inside the Space
+in QH-43, with a visible expandable explorer usable before any question. Search
+remains complementary; browsing never requires a query. See
+[QH-43 checkpoint](docs/qh-43-visual-proposal.md) for implemented layout versus gated
+branding/theme work. Preserve deterministic-preview versus
 validated/generative synthesis distinctions, open data-derived groups, epistemic
 states and progressive disclosure. No global counts from partial pages, semantic
 inference from descriptors, or SQL-only graph bypass. Search QH-10's selector
