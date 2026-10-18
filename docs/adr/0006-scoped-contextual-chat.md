@@ -93,3 +93,30 @@ the remaining inferences were not run. Temporary language/provider binding was
 process-private in the existing backend, public browser chat remained mock, no
 architectural or public/canonical contract change. This scoped consent does not
 authorize further calls, arbitrary questions or an interactive live-provider window.
+
+## Request-local reference protocol — 2026-10-18
+
+Owner-approved bounded response to the first reference failure:
+[protocol decision and verification](../qh-13-reference-aliases.md). The Context
+Builder assigns `R1…Rn` in sorted exact revision-ID order over only the records
+actually sent. Internal context v2 contains the bijection; model output uses
+`reference_aliases`. The decoder checks its exact sent map against the retained
+canonical snapshot and resolves only allowed distinct aliases into the existing
+public canonical citation DTOs. No UUID fallback or heuristic item-ID repair.
+Aliases are request-local, not new canonical IDs, types or permissions. The v1
+codec/archive remains preserved for offline history; active internal output is v2.
+
+Stronger UUID wording alone was the alternative; it retains the known namespace
+confusion risk observed in the first trial. Short aliases make the accepted output
+namespace explicit and avoid copying UUIDs, with a small payload overhead and no
+measured live-model success claim. Complete canonical/source/relation identities
+remain in the input for lossless reconstruction. LLMProvider signature, public
+API, repository, CHAT/readiness and budget contracts remain unchanged.
+
+The system explicitly qualifies proposed versus confirmed-current and normally
+follows the user's question language. French UI warnings independently derive
+from verified canonical references and the nonempty provided set, even when the
+model omits status. Generated prose, identity, provenance, validation and semantic
+entailment remain distinct. No alias or warning establishes truth/entailment or
+confirms Understanding. The newly sealed one-question manifest is a proposal with
+a linked blocked zero-call ledger, not renewed consent for the stopped experiment.

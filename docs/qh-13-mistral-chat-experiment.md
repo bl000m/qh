@@ -191,3 +191,12 @@ proposal qualification, **Sources utilisées** versus **Contexte fourni et limit
 A failed strict response must remain an error, not a repaired answer. Verify mock
 again at closure. Current browser access is still mock, not an interactive Mistral
 window. QH-39/QH-43 are not started; PR #14 remains open and QH-13 remains En cours.
+
+## Subsequent owner-requested offline correction
+
+The owner reviewed this stopped trial and requested explicit request-local aliases
+and deterministic proposal warnings. [The later implementation](qh-13-reference-aliases.md)
+replaces only the active internal UUID output protocol, preserving these original
+captures and the blocked ledger. A new one-question manifest is prepared but not
+authorized/executed. This later work supplies no replacement real answer, semantic
+quality pass, replayed paid attempt or rewritten result for this historical trial.

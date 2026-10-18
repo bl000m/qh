@@ -1,0 +1,19 @@
+{
+  "purpose": "QH-13 contextual chat",
+  "experiment": "qh13-project-aliases-20261018",
+  "max_calls": 1,
+  "max_usd": "0.01",
+  "calls": [],
+  "blocked": true,
+  "blocked_reason": "Await explicit owner approval of new alias manifest",
+  "manifest_sha256": "3f1141431d077faa2e2a93281552cda80f834236d86f7b354d1b2e38fa646d17",
+  "parent": {
+    "ledger_file": "../qh13-mistral-chat-trial-20261018/ledger-after.json",
+    "state_sha256": "885a27408a37118f6122cb35c9339430e8615b83f0bf217b2aa5c97c64b2bd4e",
+    "private_file_sha256": "f39818d7576fb69e474015dd509277050922b719d9a4ab8c05ba48288df17327",
+    "attempts": 2,
+    "blocked": true,
+    "estimated_spend_usd": "0.00062805",
+    "original_trial_manifest_sha256": "553b56c219e150bed675fa86c0960a124b2087a99b950098fc82794206cc76c1"
+  }
+}

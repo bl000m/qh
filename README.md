@@ -61,6 +61,13 @@ because three returned IDs were item IDs rather than revision IDs. QH rejected
 the answer; the other two inferences were not run. Public chat is verified mock,
 the ledger is blocked 2/4, and no general live-provider window is active.
 
+[The subsequent alias correction](docs/qh-13-reference-aliases.md) introduces only
+an internal request-local reference map and deterministic warnings for unconfirmed
+support; public citations and canonical data are unchanged. A
+[new one-question manifest](docs/evidence/qh13-mistral-alias-gate-20261018/README.md)
+is prepared with a separate blocked ledger and USD 0.01 proposed cap. No new
+inference is authorized or executed; aliases do not establish semantic support.
+
 The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
 sets the **next**, separately scoped UX increment: login to `Mon environnement`,
 Space overview, primary contextual chat, expandable `Explorer la compréhension`

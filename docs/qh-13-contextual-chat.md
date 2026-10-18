@@ -294,3 +294,18 @@ and runtime configurations remain unchanged. This supersedes earlier NOT TESTED
 real-provider statements only for that single failed-acceptance trial, not a live
 quality pass or DONE. No paid interactive session is active; future use needs new
 explicit authorization. No implementation beyond this evidence was introduced.
+
+## Internal reference protocol and deterministic proposal warnings — 2026-10-18
+
+The owner's subsequent request is implemented in
+[the alias protocol follow-up](qh-13-reference-aliases.md): model-facing context v2
+contains request-local R1…Rn aliases, strictly resolved to the same public canonical
+references. UUID/item-ID output remains rejected; the exact first-trial capture is
+a frozen regression. No public DTO, policy or storage change. French UI warnings
+derive independently from verified cited/provided canonical states. The active
+system now normally follows the question language and explicitly distinguishes
+proposed from confirmed-current. Mock remains default; no new inference.
+The [new single-question manifest](evidence/qh13-mistral-alias-gate-20261018/README.md)
+is independent, proposed only, with a new linked blocked zero-call ledger and
+USD 0.01 cap. Original ledgers/captures remain intact; prior consent does not
+authorize it. PR #14 remains open, QH-13 is not DONE.

@@ -337,3 +337,17 @@ the worktree-mounted activation: merge QH-30 and semantic foundation through the
 separate approval gates, then build/review final-main images and deploy the three
 app services without source mounts. The 95b3a8f candidate remains verified baseline
 evidence, not the final consolidated release. No new executed deployment is added.
+
+## QH-13 alias protocol source checkpoint — 2026-10-18 (no deployment)
+
+Source-mounted backend/frontend now use
+`47c1213149426c8a11228150883555d3e3cd5d7c` for
+[internal aliases and canonical proposal warnings](qh-13-reference-aliases.md).
+No environment edit, container recreation/restart, image substitution, migration
+or persistent write. The Dockerfile addition packages a frozen synthetic capture
+for CI; no rebuilt image is activated on the VPS. Mock-only Alice/Bob/browser
+checks passed, all 14 canonical inventories and six container/configuration
+identities remained unchanged. Private .env, realm and stopped Mistral ledger
+were byte-identical. Existing hot reload/ports remain; the newly prepared one-POST
+alias experiment ledger is blocked pending specific consent. No live call, merge
+or Jira DONE follows.

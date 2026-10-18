@@ -439,3 +439,12 @@ assertions and relation anchors are preserved. Collision/scope/JSON checks fail
 closed; existing canonical hydration, CHAT, selection freshness, whole-record
 budgeting and public DTOs are unchanged. This reduces repeated bytes, not retrieval
 semantics. The default mock UI explicitly says it does not understand the question.
+
+The subsequent [model reference protocol](qh-13-reference-aliases.md) uses internal
+context v2: deterministic request-local aliases over exactly the transmitted
+revisions, strict bijection/response validation and exact resolution into unchanged
+canonical citation DTOs. No item-ID repair, new port or public schema. Retained
+records snapshot the sent data; existing live freshness checks still apply.
+Deterministic French UI warnings derive proposed/confirmed information from those
+verified DTOs, independently of generated prose. Identity/provenance/validation
+are not semantic entailment; no new live inference or confirmation is implied.

@@ -15,6 +15,20 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-13 model reference aliases and proposal warnings — 2026-10-18
+
+- Add internal request-local `R1…Rn` aliases over exactly the transmitted canonical
+  revisions, strict map/output checks and deterministic resolution into unchanged
+  public citations; no UUID/item-ID repair. Preserve full source/time/relation/state
+  records and v1 archive, with a retained snapshot and unchanged freshness gates.
+- Clarify prompt validation state and question language; French UI independently
+  warns for cited proposals and entirely proposed provided context. No canonical
+  confirmation or generated-text interpretation supplies those warnings.
+- Regress the exact original failed Mistral capture, bad aliases/maps, provenance,
+  scope, budgets, Alice/Bob and UI omissions/contradictions. Prepare a separate
+  single-project alias manifest and linked blocked ledger, USD 0.01 proposed cap;
+  no new provider call, migration, deployment, merge or Jira DONE.
+
 ### QH-13 first authorized Mistral chat trial — 2026-10-18
 
 - Record exact-manifest GET plus one POST through the existing backend's temporary
