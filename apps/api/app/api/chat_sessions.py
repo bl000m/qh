@@ -1,8 +1,9 @@
 """Scoped QH-45 disclosure ingress; never accepts an owner, key, model or price."""
 from uuid import UUID
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, ConfigDict, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 
 from app.api.chat import ChatInput, ChatOutput
 from app.api.context_spaces import allowed_query, call
@@ -10,9 +11,46 @@ from app.api.security import authenticated_subject, authenticated_chat_identity
 from app.chat.context import ChatInputInvalid, ChatContextUnavailable, ChatProviderUnavailable
 from app.chat.models import ChatRequest
 from app.chat.sessions import SessionClosed
-from app.core.models import Message, MessageRole
+from app.core.models import CanonicalRevision, Message, MessageRole
 
 router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
+
+
+class CapabilityOutput(BaseModel):
+    enabled: bool
+    model: Literal['mistral-small-2603'] | None
+    max_seconds: Literal[300]
+    max_calls: int = Field(ge=1, le=8)
+    max_usd: str
+
+
+class AccountingOutput(BaseModel):
+    calls: int = Field(ge=0, le=8)
+    committed_usd: str
+    blocked: bool
+
+
+class SessionOutput(BaseModel):
+    session_id: UUID
+    context_id: UUID
+    model: Literal['mistral-small-2603']
+    state: Literal['preview', 'active', 'closed', 'revoked']
+    expires_at: float = Field(gt=0)
+    include_proposed: bool
+    snapshot_sha256: str
+    max_calls: int = Field(ge=1, le=8)
+    max_usd: str
+    accounting: AccountingOutput
+    provided_revisions: tuple[CanonicalRevision, ...]
+    provider_messages: tuple[Message, ...]
+    partial_coverage: bool
+    input_bound: int = Field(ge=0, le=12000)
+    context_bytes: int = Field(ge=0, le=8000)
+
+
+class RevokedOutput(BaseModel):
+    session_id: UUID
+    state: Literal['revoked']
 
 
 class ConsentInput(BaseModel):
@@ -52,32 +90,32 @@ async def execute(operation):
         raise HTTPException(503, 'Provider sessions unavailable') from None
 
 
-@router.get('/{context_id}/chat-sessions')
+@router.get('/{context_id}/chat-sessions', response_model=CapabilityOutput)
 async def capabilities(context_id: UUID, request: Request, response: Response,
                        subject=Depends(authenticated_subject)):
     return await execute(service(request, response).capabilities(chat_request(subject, context_id)))
 
 
-@router.post('/{context_id}/chat-sessions/preview')
+@router.post('/{context_id}/chat-sessions/preview', response_model=SessionOutput)
 async def preview(context_id: UUID, payload: ChatInput, request: Request, response: Response,
                   identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).preview(identity, chat_request(identity.subject_id, context_id, payload)))
 
 
-@router.post('/{context_id}/chat-sessions/{session_id}/consent')
+@router.post('/{context_id}/chat-sessions/{session_id}/consent', response_model=SessionOutput)
 async def consent(context_id: UUID, session_id: UUID, payload: ConsentInput,
                   request: Request, response: Response, identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).consent(identity, chat_request(identity.subject_id, context_id),
         str(session_id), snapshot_sha256=payload.snapshot_sha256, consent=payload.disclosure_consent))
 
 
-@router.get('/{context_id}/chat-sessions/{session_id}')
+@router.get('/{context_id}/chat-sessions/{session_id}', response_model=SessionOutput)
 async def status(context_id: UUID, session_id: UUID, request: Request, response: Response,
                  identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).status(identity, chat_request(identity.subject_id, context_id), str(session_id)))
 
 
-@router.delete('/{context_id}/chat-sessions/{session_id}')
+@router.delete('/{context_id}/chat-sessions/{session_id}', response_model=RevokedOutput)
 async def revoke(context_id: UUID, session_id: UUID, request: Request, response: Response,
                  identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).revoke(identity, chat_request(identity.subject_id, context_id), str(session_id)))
