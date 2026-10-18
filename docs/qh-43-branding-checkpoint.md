@@ -1,5 +1,9 @@
 # QH-43 — selected original identity and login preview
 
+Later final-verification record: [French isolated login, acceptance mapping and
+review readiness](qh-43-final-review.md). The dated draft checkpoint below is
+preserved; it does not override the later final-review status.
+
 2026-10-18 (Europe/Rome). PR #15 remains **OPEN / DRAFT**; no merge or Jira DONE.
 The owner selected the exact red-circle/black-H geometric mark in their message,
 closed the logo comparison and authorized minimal technical adaptations, frontend

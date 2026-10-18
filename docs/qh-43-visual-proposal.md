@@ -1,5 +1,8 @@
 # QH-43 — asset selection and functional UX checkpoints
 
+Current hand-off: [final technical review](qh-43-final-review.md). The checkpoints
+below preserve the earlier selection gates; logo comparison is now closed.
+
 2026-10-18. Owner approved plan commit `41ee02f` and authorized the asset-independent
 layout in PR #15. **Branding selection awaits review; no theme source or activation.**
 [Approved plan](qh-43-ux-branding-plan.md),

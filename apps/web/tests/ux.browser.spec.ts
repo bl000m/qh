@@ -102,8 +102,12 @@ test('skip link is first keyboard stop, focuses main, then disappears without co
 test('selected original mark and compact bubble load on welcome without external artwork',async({page},info)=>{
  await page.goto('/');const logo=page.locator('.brand img');await expect(logo).toHaveAttribute('alt','QH');
  await expect(logo).toHaveJSProperty('naturalWidth',876);
+ const logoBox=await logo.boundingBox();expect(logoBox).not.toBeNull();
+ expect(logoBox!.width/logoBox!.height).toBeCloseTo(876/768,2);
  await expect(page.locator('.signin .qh-bubble')).toHaveAttribute('aria-hidden','true');
  await expect(page.locator('.signin .qh-bubble')).toHaveJSProperty('naturalWidth',400);
+ const bubbleBox=await page.locator('.signin .qh-bubble').boundingBox();expect(bubbleBox).not.toBeNull();
+ expect(bubbleBox!.width/bubbleBox!.height).toBeCloseTo(4/3,2);
  const icon=await page.locator('link[rel="icon"]').getAttribute('href');expect(icon).toBeTruthy();
  expect((await page.request.get(icon!)).status()).toBe(200);
  await page.screenshot({path:info.outputPath('qh43-branded-welcome-desktop.png'),fullPage:true});
@@ -125,10 +129,16 @@ test('one approved identity spans environment and Space without decorative clutt
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
  }
 });
-if(process.env.QH43_LOGIN_THEME_TEST==='1')test('source-only QH login theme preserves the real Keycloak form and PKCE completion',async({page},info)=>{
+if(process.env.QH43_LOGIN_THEME_TEST==='1')test.describe('French QH login preview',()=>{
+test.use({locale:'fr-FR'});
+test('source-only QH login theme preserves the real Keycloak form and PKCE completion',async({page},info)=>{
  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('#username')).toBeVisible();
  const url=new URL(page.url());expect(url.origin).toBe('http://localhost:8080');expect(url.searchParams.get('code_challenge_method')).toBe('S256');
  await expect(page.locator('link[href*="css/qh.css"]')).toHaveCount(1);await expect(page.locator('#password')).toHaveAttribute('type','password');
+ await expect(page.locator('html')).toHaveAttribute('lang','fr');
+ await expect(page.getByRole('heading',{name:'Connectez-vous à votre compte',exact:true})).toBeVisible();
+ await expect(page.getByLabel('Mot de passe',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Connexion',exact:true})).toBeVisible();
  expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundImage)).toContain('qh-logo.png');
  expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundSize)).toBe('contain');
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
@@ -138,4 +148,5 @@ if(process.env.QH43_LOGIN_THEME_TEST==='1')test('source-only QH login theme pres
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page);
  await expect(page.getByRole('heading',{name:'Mon environnement',exact:true})).toBeVisible();
+});
 });

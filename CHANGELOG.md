@@ -15,6 +15,14 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 final review preparation — 2026-10-18
+
+- Verify the inherited login theme in French on a disposable realm copy, including
+  real Code+PKCE completion, responsive rendering and selected asset proportions.
+- Record final acceptance mapping, immutable prior evidence and POC/future limits;
+  prepare the existing PR for owner review. No app redesign, VPS theme activation,
+  paid call, persistent write, merge or Jira transition.
+
 ### QH-43 selected original identity — 2026-10-18
 
 - Integrate the owner's selected geometric mark as the sole client identity;

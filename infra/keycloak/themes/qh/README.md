@@ -18,11 +18,14 @@ python3 scripts/test_qh11_browser.py --sudo-docker \
   --understanding --qh-login-theme --output /tmp/qh43-branding-fresh
 ```
 
-It copies the public realm fixture into its temporary directory, changes only
-`loginTheme` in that disposable copy and mounts this theme read-only on its own
+It copies the public realm fixture into its temporary directory, selects
+`loginTheme=qh` and enables French/English with French as the default in that
+disposable copy, and mounts this theme read-only on its own
 Keycloak. Real credentials remain generated test environment values. Without the
 flag the original fixture/theme path is unchanged. The hosted browser job enables
-this preview; the separate OIDC job also retains the original unthemed regressions.
+this preview; its French login test requests browser locale `fr-FR` (browser language
+otherwise takes precedence over the realm default). The separate OIDC job also
+retains the original unthemed regressions.
 
 Logo/bubble PNGs must be byte-identical to the frontend's selected assets. The ICO
 contains the same 64×64 PNG as the client favicon. No original deck, font download,

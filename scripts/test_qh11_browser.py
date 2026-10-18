@@ -120,9 +120,12 @@ def main():
         theme_mounts = []
         if args.qh_login_theme:
             # Copy, never rewrite the readonly persistent realm import. Only the test
-            # realm's presentation choice differs; credentials/client/PKCE are intact.
+            # realm's theme/locale differ; credentials/client/PKCE are intact.
             realm = json.loads(realm_path.read_text())
             realm['loginTheme'] = 'qh'
+            realm['internationalizationEnabled'] = True
+            realm['supportedLocales'] = ['fr', 'en']
+            realm['defaultLocale'] = 'fr'
             realm_path = Path(private) / 'qh-preview-realm.json'
             realm_path.write_text(json.dumps(realm))
             # This is the public fixture with environment placeholders, not resolved
@@ -249,6 +252,7 @@ def main():
                 'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'PASS',
                 'native_graph_enabled': args.understanding,
                 'qh_login_theme_preview': args.qh_login_theme,
+                'qh_login_theme_locale': 'fr' if args.qh_login_theme else None,
                 'browser_filter': args.browser_grep,
                 'real_graph_outage': 'PASS' if args.understanding else None,
                 'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,

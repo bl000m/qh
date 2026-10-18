@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-18",
+  "files": {
+    "README.md": "633007661f66176714a1d63c3b4203d1b78ba43c8f91ce73ffe38a637730764b",
+    "audit.py": "7893fed0ad8a5657cdb3c91a87b5c5103fd43f009002161c84f033bad3827b3f",
+    "results.json": "528965dc6e8927efdafbeead2b2e3c272df84bfed622695660cdcf5dc1c80bdf",
+    "screenshots/keycloak-fr-desktop.png": "e3aad4d3b116751136d486213e6f75795fa1ed0a866b458dc99ae5eb752dfbf5",
+    "screenshots/keycloak-fr-mobile.png": "bc20a8fda06b7e5c1b9746d4c684eb0c5b1d68f9a09881b07aefa0bc70596a8f",
+    "screenshots/welcome-desktop.png": "f090870974b0caa0085c3187190feb079166b9472d93d4f8f344f440035ef8d0",
+    "screenshots/welcome-mobile.png": "357401cd6d9339c19449b4fe85a69bfada3a8b5597edaf7d8a781b6996811db2"
+  }
+}
