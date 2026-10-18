@@ -1,0 +1,126 @@
+{
+  "persistent_writes": false,
+  "network_calls": 0,
+  "simulation_ids_are_not_persistent_targets": true,
+  "fixture_file_sha256": "26fd712e4c23aea05bc6c5bbb6f7f35697631a31a2e359bf09f3f7d753c244ec",
+  "created_at_placeholder": "2026-10-17T00:00:00.000000+00:00",
+  "cases": [
+    {
+      "name": "project",
+      "conversation_sha256": "c884930253d22d4084999af088277757528e7ffc9b2c1d9519af894f209eb6b2",
+      "fixture_items_sha256": "556c388f4eedf589eafa52a4785d59092e4de83f8ec658057671db31f7e6d118",
+      "simulation_space_id": "bd172fd5-5f67-5479-91e7-2022bcd0dec8",
+      "simulation_source_id": "06478b8b-71c7-5ef4-b29d-2eab867bbb6b",
+      "simulation_source_revision_id": "3530c591-a210-59b6-aaaf-df3ba36ea810",
+      "simulation_input_sha256": "adb25aac31db0670a6cc4381326d9998c233b820c61839de890e7fdc3b22e10e",
+      "original_output_sha256": "322d32a728f14a9613ec9b8d9a5ef67055f74d75d55529b246841035c4b169e9",
+      "derived_output_sha256": "322d32a728f14a9613ec9b8d9a5ef67055f74d75d55529b246841035c4b169e9",
+      "resolver_changed_output": false,
+      "resolver_version": "qh-citation-resolver/1",
+      "strict_valid_proposed_revisions": 6,
+      "same_checkpoint_replay_ids_match": true,
+      "simulation_revision_ids": [
+        "ad863af4-4a87-5ceb-9372-f80a06687036",
+        "17ef949e-9af8-57e4-a01b-36aa287aea63",
+        "c5a0a9c4-ae28-5ff6-bdc7-a694be0c820b",
+        "1d0fedb8-70df-52db-915b-eee357816476",
+        "3f8f5899-01e3-56f2-b7c5-ab13f31a6d35",
+        "47c4e82d-80fc-5d87-be45-e29179f661a2"
+      ],
+      "chat_omitted_local_ids": [
+        "question"
+      ],
+      "chat": {
+        "provided_revisions": 5,
+        "declared_reference_ids": [
+          "17ef949e-9af8-57e4-a01b-36aa287aea63",
+          "1d0fedb8-70df-52db-915b-eee357816476",
+          "3f8f5899-01e3-56f2-b7c5-ab13f31a6d35"
+        ],
+        "partial": true,
+        "context_bytes": 6975,
+        "input_bound_not_observed_tokens": 8904,
+        "question": "Quelles décisions avons-nous prises ?",
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] The pilot may reduce waiting.\n[Proposé, non confirmé] We can take a reversible pause.\n[Proposé, non confirmé] Alex"
+      }
+    },
+    {
+      "name": "health",
+      "conversation_sha256": "208fdd2c842fa0bf79d4dee1c4b4d86cd5f9452ea77659b90650b791aa4ce579",
+      "fixture_items_sha256": "035877be856712300aa4ea1e635fca92c69aec86548ce30f937591ad8a10c219",
+      "simulation_space_id": "c388ee67-83d3-5ec8-94a6-f999c5a431ac",
+      "simulation_source_id": "95508094-7aa3-5d7e-ab03-174186c8ba00",
+      "simulation_source_revision_id": "a8bc5d88-0334-5eab-90da-0a025d370d4c",
+      "simulation_input_sha256": "38c36baad90f6f6c1a9681840bb77042035750cc1abecb177a353f9ef8a3187c",
+      "original_output_sha256": "a6f9e1c182398978d8780ba530d41bf128d1740ebf6e367678233e5870a013c0",
+      "derived_output_sha256": "a6f9e1c182398978d8780ba530d41bf128d1740ebf6e367678233e5870a013c0",
+      "resolver_changed_output": false,
+      "resolver_version": "qh-citation-resolver/1",
+      "strict_valid_proposed_revisions": 6,
+      "same_checkpoint_replay_ids_match": true,
+      "simulation_revision_ids": [
+        "d3fb48c4-52e1-548d-a627-62cb42f5f448",
+        "55a37b5f-836d-53a4-b461-8dfcd7bf7b1f",
+        "fb7e3033-608d-5487-9031-1f47fece9b4c",
+        "64c1682e-10c8-5b5a-bc19-46822318b926",
+        "22ef33cc-48c1-5d94-b486-a42eb7646253",
+        "eeb53250-12c8-5fac-a831-a836ba2465ab"
+      ],
+      "chat_omitted_local_ids": [
+        "question"
+      ],
+      "chat": {
+        "provided_revisions": 5,
+        "declared_reference_ids": [
+          "22ef33cc-48c1-5d94-b486-a42eb7646253",
+          "55a37b5f-836d-53a4-b461-8dfcd7bf7b1f",
+          "64c1682e-10c8-5b5a-bc19-46822318b926"
+        ],
+        "partial": true,
+        "context_bytes": 7010,
+        "input_bound_not_observed_tokens": 8939,
+        "question": "Quelles décisions avons-nous prises ?",
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] Alex\n[Proposé, non confirmé] A quiet evening might help me rest.\n[Proposé, non confirmé] I prefer a reversible pause in training."
+      }
+    },
+    {
+      "name": "personal",
+      "conversation_sha256": "e58e5328c197506b85d60e43981b145a25630d6e048d8a13c938252c57fb9366",
+      "fixture_items_sha256": "f3c0563881e9efb606aa940b2d5ae530619b6102374fee9ceeb8f3df2150208f",
+      "simulation_space_id": "60253d1f-0706-5ebc-91ff-95cbee0d30d4",
+      "simulation_source_id": "3df7040f-a189-5c20-9ab7-a5e4a0c17ac1",
+      "simulation_source_revision_id": "4dc64a8d-44b1-593c-be79-1591d701d328",
+      "simulation_input_sha256": "2db6275ea59b611c35ab5b9bc8d74f1663b47670ade2b080dcd8544a3cd9469a",
+      "original_output_sha256": "5135bf0046c7817f167ae32e44c79f1d2852ae45e35ea1963f09c9e9d1948abd",
+      "derived_output_sha256": "5135bf0046c7817f167ae32e44c79f1d2852ae45e35ea1963f09c9e9d1948abd",
+      "resolver_changed_output": false,
+      "resolver_version": "qh-citation-resolver/1",
+      "strict_valid_proposed_revisions": 6,
+      "same_checkpoint_replay_ids_match": true,
+      "simulation_revision_ids": [
+        "35bff515-57ee-5893-88d0-cd6b0afe26e9",
+        "7c335ec5-b8ef-5c48-9609-8f254dfaabb0",
+        "062e4e73-549f-52d4-bdca-bab4f60c4064",
+        "0ee22fc9-9b61-5e10-af80-abac4aa3629a",
+        "b6a54acc-e82b-5583-84e2-86f2d452e0f7",
+        "89081277-4100-5dba-87d9-9b8505b5a410"
+      ],
+      "chat_omitted_local_ids": [
+        "participant"
+      ],
+      "chat": {
+        "provided_revisions": 5,
+        "declared_reference_ids": [
+          "062e4e73-549f-52d4-bdca-bab4f60c4064",
+          "0ee22fc9-9b61-5e10-af80-abac4aa3629a",
+          "35bff515-57ee-5893-88d0-cd6b0afe26e9"
+        ],
+        "partial": true,
+        "context_bytes": 7119,
+        "input_bound_not_observed_tokens": 9048,
+        "question": "Quelles décisions avons-nous prises ?",
+        "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] Who can join?\n[Proposé, non confirmé] We can take a reversible pause in planning.\n[Proposé, non confirmé] We choose a quiet family dinner 🥣."
+      }
+    }
+  ]
+}

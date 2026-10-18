@@ -5,6 +5,59 @@ It summarizes retained evidence, not a fresh VPS inventory. No deployment is
 performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
+
+## 2026-10-18 — authorized first Mistral chat trial (no deployment)
+
+The [exact approved manifest](evidence/qh13-mistral-chat-gate-20261018/manifest.json)
+was exercised in a process-private FastAPI/ChatService binding inside the existing
+backend, with actual OIDC/CHAT/canonical/graph checks. Public chat remained mock;
+no container recreation/restart, source/config edit, worker start or migration.
+One GET succeeded; the first POST returned HTTP 200 but QH rejected three item IDs
+in `revision_ids` (route 503), so two remaining POSTs were not sent. No retry.
+The separate ledger is blocked 2/4; exact response and usage retained. All 14 QH
+table inventories, six container identities/configurations, private .env and realm
+are identical before/after; public mock checked on all three Spaces. The approved
+language candidate applied only in the temporary process. See
+[experiment and limits](qh-13-mistral-chat-experiment.md). No interactive Mistral
+browser session, merge or Jira DONE is implied.
+
+## 2026-10-18 — authorized Demo A synthetic data import (no deployment)
+
+On the existing hot-reload stack, owner-approved [plan d90647a](qh-13-demo-a-plan.md)
+was [executed](qh-13-demo-a-execution.md): three new Alice-owned Spaces,
+three source revisions, 18 proposed revisions and three anchored relations through
+the existing Engine/CanonicalRepository/outbox/worker. All scopes applied 6/6.
+Fresh protected backup restored/verified on the existing dedicated test SQL server;
+all 14 table inventories and canonical structural checks passed. Production was
+not restored/migrated. Existing rows, identities, registry, six container IDs/images/
+start times/mounts/configuration, .env, realm and ports are unchanged. Demo data are
+retained. Real-stack OIDC/Chromium Alice/Bob/chat checks passed; personal Mac review
+is pending. No Mistral inference, new QH stack, application deployment or confirmation.
+PR #14 is still open; QH-13 is not DONE. UX QH-43 is created, not started.
+
+## QH-12 closure / QH-13 source-only increment — 2026-10-17
+
+PR #13 merged with history preserved as
+`92dc300c03147a7fb7978203d97f2320c8c3051f`; Jira QH-12 DONE verified. Before the
+single-checkout switch, guarded `dev-stop` stopped only frontend/backend; main
+fast-forwarded to the merge, branch `feat/QH-13-context-chat` was created and
+`dev-up` restored hot reload on the same ports. All six container IDs, images and
+mounts remain unchanged; PostgreSQL/Neo4j/Keycloak/MCP start times, readonly realm
+and private `.env` are preserved. The dependency images and schema 0005 below
+remain unchanged; source-mounted code follows this branch and local edits.
+
+The QH-13 application source now supplies scoped ephemeral chat with the explicit
+deterministic mock. Mistral is not activated, no paid request, canonical demo import,
+migration, new persistent container/volume or Understanding write is part of this
+increment. [Verification and limits](qh-13-contextual-chat.md). No claim of a live
+Mistral demo, populated persistent Alice chat or personal Mac verification.
+
+The QH-13 executable source `f88e690c27db553d02bcca269744ebb25ddd53da` passed all
+four hosted jobs in [run 39060747371](https://github.com/bl000m/qh/actions/runs/39060747371):
+599 native tests without skips and 36 browser/contract checks, plus reused OIDC,
+real graph-outage and restored-ID cases. This is source/test evidence, not activation
+of Mistral or a new immutable production image. [QH-13 evidence](evidence/qh13-chat-20261017/README.md).
+
 ## QH-12 browse-first source update — 2026-10-17
 
 Owner-approved ADR 0005 adds no-selector canonical browsing and a deterministic
@@ -284,3 +337,17 @@ the worktree-mounted activation: merge QH-30 and semantic foundation through the
 separate approval gates, then build/review final-main images and deploy the three
 app services without source mounts. The 95b3a8f candidate remains verified baseline
 evidence, not the final consolidated release. No new executed deployment is added.
+
+## QH-13 alias protocol source checkpoint — 2026-10-18 (no deployment)
+
+Source-mounted backend/frontend now use
+`47c1213149426c8a11228150883555d3e3cd5d7c` for
+[internal aliases and canonical proposal warnings](qh-13-reference-aliases.md).
+No environment edit, container recreation/restart, image substitution, migration
+or persistent write. The Dockerfile addition packages a frozen synthetic capture
+for CI; no rebuilt image is activated on the VPS. Mock-only Alice/Bob/browser
+checks passed, all 14 canonical inventories and six container/configuration
+identities remained unchanged. Private .env, realm and stopped Mistral ledger
+were byte-identical. Existing hot reload/ports remain; the newly prepared one-POST
+alias experiment ledger is blocked pending specific consent. No live call, merge
+or Jira DONE follows.

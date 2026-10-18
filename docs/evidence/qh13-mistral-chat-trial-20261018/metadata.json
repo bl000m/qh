@@ -1,0 +1,35 @@
+{
+  "id": "mistral-small-2603",
+  "object": "model",
+  "created": 1792279095,
+  "owned_by": "mistralai",
+  "capabilities": {
+    "completion_chat": true,
+    "function_calling": true,
+    "reasoning": true,
+    "completion_fim": false,
+    "fine_tuning": false,
+    "vision": true,
+    "ocr": false,
+    "classification": false,
+    "moderation": false,
+    "audio": false,
+    "audio_transcription": false,
+    "audio_transcription_realtime": false,
+    "audio_speech": false,
+    "unified_resources": false
+  },
+  "name": "mistral-small-2603",
+  "description": "Mistral Small 4.",
+  "max_context_length": 262144,
+  "aliases": [
+    "mistral-small-latest",
+    "mistral-vibe-cli-fast",
+    "magistral-small-latest"
+  ],
+  "deprecation": null,
+  "deprecation_replacement_model": null,
+  "default_model_temperature": 0.3,
+  "billing_model_name": "mistral-small-2603",
+  "type": "base"
+}

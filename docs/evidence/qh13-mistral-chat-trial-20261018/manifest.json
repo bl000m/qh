@@ -1,0 +1,19 @@
+{
+  "approved_manifest_sha256": "553b56c219e150bed675fa86c0960a124b2087a99b950098fc82794206cc76c1",
+  "files": {
+    "assessment.json": "60f8eafceac7d30fbac216289edb520b337839bee05fb8f15a6540cd0b353ef0",
+    "ledger-after.json": "c776c3bb230eb3fdce22f7bd50ca5996e66a8f8421556c4871d4034ad50e7acf",
+    "ledger-before.json": "d2ce0da6fba65cfc9d5202b65034cdba361837cbe60b1fadb8161ee50c497b2e",
+    "metadata.json": "add1fc697778d22ab3be71b24c1785854568286ff05a5453f7d658e16dfb1a9b",
+    "preservation.json": "2951d58d225385cf5b0f39403ebc939ea9ec849c32ee3ad69937030e9ed3ab16",
+    "project/declared-reference-audit.json": "2621768c97a9e3846296c4249f0148da2ab947c491328f44ad4b3224bbcf7651",
+    "project/mock-comparison.json": "357a1fd3148fdf9d168ba12e79dd6ca68c93cfdcaab05b2b347252eec0db00cd",
+    "project/output.json": "1b75a4d7e10f7133e9fa8d74ac83e14538bf87aa1a4fd19856e97b282393c39c",
+    "project/provided-revisions.json": "9f1fbf550a903e3c6537e20c043c0fb090f7014da958aef407c3fd1bb61ce579",
+    "project/qh-response.json": "998acb800354f0d8652455d102705d3266e51f7a312a853078a0d661c66d29a6",
+    "project/raw-response.json": "9ddaa2691a29601ca029b1d25f367dafbda8c1e789c47b95a5a8e472bf222bfe",
+    "project/request.json": "628312eaef6a2aee6fcfd8f2864f8c85d532d4747c35336c669395b86038d354",
+    "results.json": "0128572757068b4806ba06417167d817b32de97218ea70b30a32bbb20049fc52"
+  },
+  "note": "Hashes seal original trial captures and provisional assessment; report/README/audit are navigation/tools, not provider output."
+}

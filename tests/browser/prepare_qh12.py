@@ -75,7 +75,19 @@ for id,state in [(proposed_scope,'proposed'),(historical_scope,'rejected')]:
     if state=='rejected':copy_row.update(validated_by=owner,validated_at='2026-10-17T12:00:00Z')
     repo.save(sources=[copy_source],revisions=[copy_row])
 
-print(json.dumps({'scope': scope, 'source_revision_id': source_ref,
+# Three original proposed-only conversations for QH-13 navigation/compaction guards.
+# This script is gated to the disposable harness above, never the persistent VPS.
+demo_spaces = []
+for case, name in zip(CASES, ('Projet pilote', 'Bien-être', 'Organisation personnelle')):
+    demo_scope = str(uuid4())
+    with repo.connect() as connection:
+        connection.execute('INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,%s)', (demo_scope,owner,name))
+    demo_p = {'repo':repo, 'scope':demo_scope, 'service':SimpleNamespace(policy=policy)}
+    demo_usecase, _, demo_source, demo_cp = import_extract(demo_p,case,key='qh13-navigation-control')
+    demo_ids = asyncio.run(demo_usecase.publish(subject_id=owner,checkpoint=demo_cp))
+    demo_spaces.append(dict(scope=demo_scope,name=name,revision_ids=demo_ids,source_revision_id=demo_source))
+
+print(json.dumps({'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces,
                   'original_ids': [r['id'] for r in original],
                   'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],

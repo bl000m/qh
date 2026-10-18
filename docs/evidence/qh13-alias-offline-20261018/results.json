@@ -1,0 +1,164 @@
+{
+  "code_commit": "47c1213149426c8a11228150883555d3e3cd5d7c",
+  "offline_tests": {
+    "passed": 101,
+    "seconds": 0.87,
+    "network": "disabled"
+  },
+  "live_targeted_playwright": {
+    "passed": 3,
+    "seconds": 39.4,
+    "provider": "mock; non-mock prose is HTTP stub"
+  },
+  "browser_real_oidc": {
+    "duplicate_key_warnings": 0,
+    "result": "PASS",
+    "cases": [
+      {
+        "name": "project",
+        "context_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "current": 0,
+        "entity_navigation": "PASS",
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS",
+        "opt_in_off": "insufficient/no generation",
+        "provided": 6,
+        "declared": 3,
+        "partial": false,
+        "context_bytes": 6733,
+        "input_bound": 9593,
+        "follow_up": "PASS"
+      },
+      {
+        "name": "health",
+        "context_id": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "current": 0,
+        "entity_navigation": "PASS",
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS",
+        "opt_in_off": "insufficient/no generation",
+        "provided": 6,
+        "declared": 3,
+        "partial": false,
+        "context_bytes": 6793,
+        "input_bound": 9653,
+        "follow_up": "PASS"
+      },
+      {
+        "name": "personal",
+        "context_id": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "browse": 6,
+        "canonical_citations_checked": 6,
+        "current": 0,
+        "entity_navigation": "PASS",
+        "relation_anchor_navigation": "PASS",
+        "revision_history": "PASS",
+        "opt_in_off": "insufficient/no generation",
+        "provided": 6,
+        "declared": 3,
+        "partial": false,
+        "context_bytes": 6762,
+        "input_bound": 9622,
+        "follow_up": "PASS"
+      }
+    ],
+    "bob_denials": [
+      {
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "operation": "metadata",
+        "status": 404
+      },
+      {
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "operation": "browse",
+        "status": 404
+      },
+      {
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "operation": "revision",
+        "status": 404
+      },
+      {
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "operation": "chat",
+        "status": 404
+      },
+      {
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "operation": "metadata",
+        "status": 404
+      },
+      {
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "operation": "browse",
+        "status": 404
+      },
+      {
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "operation": "revision",
+        "status": 404
+      },
+      {
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "operation": "chat",
+        "status": 404
+      },
+      {
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "operation": "metadata",
+        "status": 404
+      },
+      {
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "operation": "browse",
+        "status": 404
+      },
+      {
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "operation": "revision",
+        "status": 404
+      },
+      {
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "operation": "chat",
+        "status": 404
+      }
+    ],
+    "bob_owned_list_excludes_all_demo": true,
+    "missing_token": 401,
+    "invalid_token": 401,
+    "local_storage_keys": 0,
+    "paid_calls": 0,
+    "new_canonical_writes": 0,
+    "personal_mac_session": "not attested"
+  },
+  "preservation": {
+    "all_14_tables_identical": true,
+    "schema_0005": true,
+    "six_container_configuration_identities_identical": true,
+    "env_realm_old_ledger_byte_identical": true,
+    "public_provider": "mock",
+    "new_inference_requests": 0
+  },
+  "new_private_ledger": {
+    "blocked": true,
+    "calls": 0,
+    "max_calls": 1,
+    "max_usd": "0.01"
+  },
+  "manifest_sha256": "3f1141431d077faa2e2a93281552cda80f834236d86f7b354d1b2e38fa646d17",
+  "new_mistral_requests": 0,
+  "new_model_semantic_quality": "NOT TESTED",
+  "human_validation_claimed": false,
+  "full_isolated_integration": {
+    "passed": 665,
+    "skipped": 0,
+    "seconds": 796.83,
+    "command": "python -u /workspace/scripts/run_qh30_integration.py",
+    "paid_provider_requests": 0
+  }
+}

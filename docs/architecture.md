@@ -54,6 +54,18 @@ Search is secondary. Canonical-summary selection, LLM synthesis, editing/human
 validation and advanced graph navigation remain outside this increment. See
 [verifiable QH-12 criteria](qh-12-context-understanding.md#owner-approved-acceptance-criteria).
 
+### Later Demo A interaction direction — planning only
+
+The owner's [later Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
+sets chat-first in-Space interaction for the next UX increment, with a visible,
+expandable explorer and no mandatory query before access to understanding.
+Earlier ADR 0005/0006 decisions and the current exploration-first implementation
+remain historical/implemented checkpoints. Login-to-environment, refinement of the existing multi-Space overview
+and supplied branding are future client work, not a new Domain model or OIDC system.
+The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 ephemeral
+chat, explicitly authorized synthetic import and QH-39 conversational acquisition.
+No change to Engine, canonical schema, public API, provider gate or runtime follows.
+
 ## Current code and planned product flows — 2026-10-17
 
 QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via
@@ -396,3 +408,43 @@ not a prefix of another offset/token; this proves lexical support only. Unknown
 bounds, proposed state, whole-batch publication and human governance remain intact.
 The candidate prompt is documentary/opt-in future experiment input, not the live
 default. See [QH-33](qh33-semantic-evaluation.md) for measured limits and review gates.
+
+## Scoped contextual chat — QH-13
+
+Owner-approved [ADR 0006](adr/0006-scoped-contextual-chat.md) implements the chat
+path without a second Context Engine or LLMProvider contract. Authentication →
+ChatService → separate single-Space CHAT policy → existing ContextService browse/
+canonical and graph verification → pure bounded Context Builder → replaceable
+LLMProvider. The default is an explicitly labelled offline extractive mock;
+Mistral configuration remains separately authorized and disabled on the VPS.
+
+Confirmed-current is default, proposals require explicit opt-in and keep their
+state, canonical history is excluded. Browser-memory dialogue is untrusted and
+not persisted. Generated responses never change Understanding State; QH-39 remains
+separate. The service rechecks selection and policy before/after generation;
+no transaction spans inference. Source records are data, not executable instructions.
+
+The [QH-13 report](qh-13-contextual-chat.md) records bounded UUID enumeration,
+input/output caps, partial coverage, reference-membership checks, paid-call gates
+and the limits of semantic/prompt-injection guarantees. Browsing stays primary
+under ADR 0005 in the current UI; the later owner amendment above changes future
+interaction priority. Exact source identity is not proof of answer
+entailment. Local-model substitution only changes the outbound adapter.
+
+The [review correction checkpoint](qh-13-review-corrections.md) introduces a pure,
+lossless internal `qh.chat.context/1` encoding: exact shared source records by
+source-revision ID and identical administrative metadata are stored once, then
+expanded into full canonical revision records. Content, validation state, temporal
+assertions and relation anchors are preserved. Collision/scope/JSON checks fail
+closed; existing canonical hydration, CHAT, selection freshness, whole-record
+budgeting and public DTOs are unchanged. This reduces repeated bytes, not retrieval
+semantics. The default mock UI explicitly says it does not understand the question.
+
+The subsequent [model reference protocol](qh-13-reference-aliases.md) uses internal
+context v2: deterministic request-local aliases over exactly the transmitted
+revisions, strict bijection/response validation and exact resolution into unchanged
+canonical citation DTOs. No item-ID repair, new port or public schema. Retained
+records snapshot the sent data; existing live freshness checks still apply.
+Deterministic French UI warnings derive proposed/confirmed information from those
+verified DTOs, independently of generated prose. Identity/provenance/validation
+are not semantic entailment; no new live inference or confirmation is implied.

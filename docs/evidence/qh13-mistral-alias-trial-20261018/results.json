@@ -1,0 +1,78 @@
+{
+  "date_utc": "2026-10-18",
+  "approved_head": "178dd1db9e866851f226da9be51559ed19d77bef",
+  "executable_commit": "47c1213149426c8a11228150883555d3e3cd5d7c",
+  "approved_manifest_sha256": "3f1141431d077faa2e2a93281552cda80f834236d86f7b354d1b2e38fa646d17",
+  "actual_attempts": 1,
+  "get_requests": 0,
+  "post_requests": 1,
+  "automatic_retries": 0,
+  "provider_http_status": 200,
+  "qh_http_status": 200,
+  "model": "mistral-small-2603",
+  "usage": {
+    "prompt_tokens": 3609,
+    "total_tokens": 3710,
+    "completion_tokens": 101,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "service_tier": "standard"
+  },
+  "observed_prompt_tokens": 3609,
+  "observed_completion_tokens": 101,
+  "http_latency_seconds": 1.0551683260127902,
+  "generation_seconds": 1.069156193989329,
+  "estimated_list_price_usd": "0.00060195",
+  "observed_invoice_charge": null,
+  "price_input_usd_per_million": "0.15",
+  "price_output_usd_per_million": "0.60",
+  "pricing_verified_at": "2026-10-18T05:22:37.514194+00:00",
+  "pricing_source": "https://docs.mistral.ai/inference/pricing",
+  "maximum_reserved_usd": "0.0024",
+  "maximum_authorized_usd": "0.01",
+  "previous_trial_estimate_usd": "0.00062805",
+  "cumulative_estimated_list_price_usd": "0.00123000",
+  "cumulative_historical_attempts": 3,
+  "all_six_provided": true,
+  "partial_coverage": false,
+  "all_six_proposed": true,
+  "returned_aliases": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+  ],
+  "ledger_blocked": true,
+  "temporary_binding_restored_mock": true,
+  "public_model": "qh-mock-extractive/1",
+  "public_live_provider_session": false,
+  "safe_provider_headers": {},
+  "preflight": [
+    {
+      "name": "Projet pilote",
+      "scope": "eb122625-1830-4557-b805-473d3b66132a",
+      "exact_payload": "PASS",
+      "full_canonical_records": "PASS",
+      "bob_status": 404,
+      "model": "qh-mock-extractive/1",
+      "provided": 6
+    }
+  ],
+  "postflight": [
+    {
+      "name": "Projet pilote",
+      "scope": "eb122625-1830-4557-b805-473d3b66132a",
+      "exact_payload": "PASS",
+      "full_canonical_records": "PASS",
+      "bob_status": 404,
+      "model": "qh-mock-extractive/1",
+      "provided": 6
+    }
+  ]
+}

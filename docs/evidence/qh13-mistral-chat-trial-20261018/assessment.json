@@ -1,0 +1,57 @@
+{
+  "assessor": "assistant; provisional manual assessment, not independent human review",
+  "case": "project",
+  "dimensions": [
+    {
+      "dimension": "answers_question",
+      "judgment": "PASS_FOR_RAW_TEXT_ONLY",
+      "reason": "Italian paragraph explains subject/pilot/possible effect/open measurement/pause rather than listing unrelated excerpts. QH did not accept it."
+    },
+    {
+      "dimension": "scope_and_content_support",
+      "judgment": "SUPPORTED_WITH_LIMITS",
+      "reason": "Alex/Sam are identified in source-turn locators; Team Cedar, possible waiting reduction, measurement question and reversible pause appear in supplied quotes. Evaluation purpose is a plausible explanatory paraphrase, not an explicit source statement."
+    },
+    {
+      "dimension": "proposed_vs_confirmed",
+      "judgment": "FAIL_EXPLICIT_DISTINCTION",
+      "reason": "All six records are proposed, but the answer never says unconfirmed/proposed; no explicit false claim of human confirmation either."
+    },
+    {
+      "dimension": "hypotheses_uncertainty",
+      "judgment": "PRESERVED_FOR_EXPRESSED_MODAL_CLAUSES",
+      "reason": "possibili riduzioni and possibilità di prendere una pausa preserve modality; governance uncertainty remains omitted."
+    },
+    {
+      "dimension": "negation",
+      "judgment": "NOT_EXERCISED",
+      "reason": "This project answer does not test explicit source negation; health/personal were not executed."
+    },
+    {
+      "dimension": "attribution",
+      "judgment": "SUPPORTED_AS_CONVERSATION_PARTICIPANTS",
+      "reason": "Source locators identify Alex and Sam; answer does not attribute the collective choice solely to Alex."
+    },
+    {
+      "dimension": "temporality",
+      "judgment": "LIMITED_NOT_FULLY_TESTED",
+      "reason": "No new dates asserted. Report/acquisition timestamps are not presented as fact validity. No test of evolving decisions."
+    },
+    {
+      "dimension": "canonical_reference_membership",
+      "judgment": "FAIL",
+      "reason": "Only one of four declared IDs is a supplied revision ID; three are supplied item IDs. They cannot anchor immutable exact revisions."
+    },
+    {
+      "dimension": "semantic_entailment_vs_reference",
+      "judgment": "TEXT_SUPPORTED_BUT_SUPPORT_SET_INVALID",
+      "reason": "Literal supplied quotes support the main topic; that does not make the three wrong-kind IDs valid citations. No mapping applied."
+    },
+    {
+      "dimension": "italian",
+      "judgment": "PASS",
+      "reason": "Answer is in Italian with proper names retained."
+    }
+  ],
+  "other_cases": "All semantic dimensions NOT TESTED for health and personal; experiment stopped as authorized."
+}

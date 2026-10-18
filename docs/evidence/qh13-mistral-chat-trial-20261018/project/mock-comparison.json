@@ -1,0 +1,787 @@
+{
+  "name": "project",
+  "http_status": 200,
+  "response": {
+    "context_id": "eb122625-1830-4557-b805-473d3b66132a",
+    "answer": "Mode mock : extraits conservés, sans analyse de votre question.\n[Proposé, non confirmé] We can take a reversible pause.\n[Proposé, non confirmé] Alex\n[Proposé, non confirmé] The choice was stated by Alex.",
+    "model": "qh-mock-extractive/1",
+    "references": [
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "02d9fcd8-796a-5bb0-af54-040f98dd9846",
+        "revision_id": "03b72464-d157-550e-8eae-39431bdf2acb",
+        "revision_no": 1,
+        "structural_kind": "item",
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "content": {
+          "text": "We can take a reversible pause.",
+          "citations": [
+            {
+              "end": 182,
+              "quote": "We can take a reversible pause. Report timestamp 2026-10-01T12:00:00Z.",
+              "start": 112,
+              "turn_id": "project-t3",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "reversible_pause",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "91e1a1b2-31cc-519b-921b-b399c907bf69",
+        "revision_id": "06b29078-984f-5a4a-894e-b19b811f8227",
+        "revision_no": 1,
+        "structural_kind": "entity",
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "content": {
+          "text": "Alex",
+          "citations": [
+            {
+              "end": 48,
+              "quote": "We choose a small pilot with Team Cedar 🌱.",
+              "start": 6,
+              "turn_id": "project-t1",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "764e0d77-4236-5eee-8720-d291836e3db6",
+        "revision_id": "285e1392-4a35-5beb-8e1b-8e4739659917",
+        "revision_no": 1,
+        "structural_kind": "relation",
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "content": {
+          "text": "The choice was stated by Alex.",
+          "citations": [
+            {
+              "end": 48,
+              "quote": "We choose a small pilot with Team Cedar 🌱.",
+              "start": 6,
+              "turn_id": "project-t1",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "stated_by",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": {
+          "predicate": "stated_by",
+          "source_item_id": "d8141c7a-4d1b-5424-9c9f-93b391ae6767",
+          "source_revision_id": "8fbcd4e5-c974-5900-a083-e154611eab2f",
+          "target_item_id": "91e1a1b2-31cc-519b-921b-b399c907bf69",
+          "target_revision_id": "06b29078-984f-5a4a-894e-b19b811f8227"
+        },
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      }
+    ],
+    "provided_revisions": [
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "02d9fcd8-796a-5bb0-af54-040f98dd9846",
+        "revision_id": "03b72464-d157-550e-8eae-39431bdf2acb",
+        "revision_no": 1,
+        "structural_kind": "item",
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "content": {
+          "text": "We can take a reversible pause.",
+          "citations": [
+            {
+              "end": 182,
+              "quote": "We can take a reversible pause. Report timestamp 2026-10-01T12:00:00Z.",
+              "start": 112,
+              "turn_id": "project-t3",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "reversible_pause",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "91e1a1b2-31cc-519b-921b-b399c907bf69",
+        "revision_id": "06b29078-984f-5a4a-894e-b19b811f8227",
+        "revision_no": 1,
+        "structural_kind": "entity",
+        "type_id": "qh.generic.entity",
+        "type_version": 1,
+        "content": {
+          "text": "Alex",
+          "citations": [
+            {
+              "end": 48,
+              "quote": "We choose a small pilot with Team Cedar 🌱.",
+              "start": 6,
+              "turn_id": "project-t1",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          }
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "764e0d77-4236-5eee-8720-d291836e3db6",
+        "revision_id": "285e1392-4a35-5beb-8e1b-8e4739659917",
+        "revision_no": 1,
+        "structural_kind": "relation",
+        "type_id": "qh.generic.relation",
+        "type_version": 1,
+        "content": {
+          "text": "The choice was stated by Alex.",
+          "citations": [
+            {
+              "end": 48,
+              "quote": "We choose a small pilot with Team Cedar 🌱.",
+              "start": 6,
+              "turn_id": "project-t1",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "stated_by",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": {
+          "predicate": "stated_by",
+          "source_item_id": "d8141c7a-4d1b-5424-9c9f-93b391ae6767",
+          "source_revision_id": "8fbcd4e5-c974-5900-a083-e154611eab2f",
+          "target_item_id": "91e1a1b2-31cc-519b-921b-b399c907bf69",
+          "target_revision_id": "06b29078-984f-5a4a-894e-b19b811f8227"
+        },
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "b84ab369-8a74-57ab-853d-00a4990617dc",
+        "revision_id": "2bb9c6ea-6e50-56e8-9c88-7b79b521fd2e",
+        "revision_no": 1,
+        "structural_kind": "item",
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "content": {
+          "text": "The pilot may reduce waiting.",
+          "citations": [
+            {
+              "end": 105,
+              "quote": "The pilot may reduce waiting. What will we measure?",
+              "start": 54,
+              "turn_id": "project-t2",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "tentative interpretation"
+          },
+          "descriptors": [
+            {
+              "value": "hypothesis",
+              "certainty": "asserted"
+            },
+            {
+              "value": "expected_effect",
+              "certainty": "tentative"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "d8141c7a-4d1b-5424-9c9f-93b391ae6767",
+        "revision_id": "8fbcd4e5-c974-5900-a083-e154611eab2f",
+        "revision_no": 1,
+        "structural_kind": "item",
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "content": {
+          "text": "We choose a small pilot with Team Cedar 🌱.",
+          "citations": [
+            {
+              "end": 48,
+              "quote": "We choose a small pilot with Team Cedar 🌱.",
+              "start": 6,
+              "turn_id": "project-t1",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "decision",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      },
+      {
+        "context_space_id": "eb122625-1830-4557-b805-473d3b66132a",
+        "item_id": "436fdb87-93ea-535c-a425-f3449d17d0e9",
+        "revision_id": "ad227e63-c35f-562a-b9b8-a17953c89628",
+        "revision_no": 1,
+        "structural_kind": "item",
+        "type_id": "qh.generic.item",
+        "type_version": 1,
+        "content": {
+          "text": "What will we measure?",
+          "citations": [
+            {
+              "end": 105,
+              "quote": "The pilot may reduce waiting. What will we measure?",
+              "start": 54,
+              "turn_id": "project-t2",
+              "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd"
+            }
+          ],
+          "extraction": {
+            "key": "demo-a-fixture-v1-resolved",
+            "input_sha256": "38cfa776e2da7c42993a1fa644f982e025844bcfff42c8b536ee111b311f7723"
+          },
+          "properties": {
+            "basis": "reported statement"
+          },
+          "descriptors": [
+            {
+              "value": "open_question",
+              "certainty": "asserted"
+            }
+          ]
+        },
+        "origin_kind": "ai",
+        "validation_state": "proposed",
+        "validated_by": null,
+        "validated_at": null,
+        "current_revision_id": null,
+        "is_current_confirmed": false,
+        "based_on_revision_id": null,
+        "created_at": "2026-10-17T22:18:58.157499+00:00",
+        "temporal": {
+          "fact_from": null,
+          "fact_to": null,
+          "valid_from": null,
+          "valid_to": null
+        },
+        "relation": null,
+        "provenance": [
+          {
+            "source_id": "cc01b572-3678-566e-a07a-02afe6ee514f",
+            "source_revision_id": "9675cf4c-7601-5dad-9043-ebe0e3018dbd",
+            "revision_no": 1,
+            "origin": {
+              "kind": "conversation",
+              "turns": [
+                {
+                  "end": 48,
+                  "start": 6,
+                  "speaker": "Alex",
+                  "turn_id": "project-t1"
+                },
+                {
+                  "end": 105,
+                  "start": 54,
+                  "speaker": "Sam",
+                  "turn_id": "project-t2"
+                },
+                {
+                  "end": 182,
+                  "start": 112,
+                  "speaker": "Alex",
+                  "turn_id": "project-t3"
+                }
+              ],
+              "metadata": {
+                "domain": "project",
+                "synthetic": true
+              },
+              "acquired_at": "2026-10-15T08:00:00Z",
+              "conversation_id": "synthetic-project"
+            }
+          }
+        ]
+      }
+    ],
+    "insufficient_context": false,
+    "partial_coverage": false,
+    "input_bound": 8534,
+    "context_bytes": 6439,
+    "generation_seconds": 0.001194835000205785
+  }
+}

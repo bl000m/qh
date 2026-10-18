@@ -246,3 +246,69 @@ decisione, esiste una contraddizione o cambia una responsabilità strutturale.
 Esporre alternative, conseguenze, vantaggi, rischi e raccomandazione, poi attendere
 approvazione per la parte coinvolta. Un ticket non autorizza implicitamente a
 risolvere queste scelte o a derogare al contratto.
+
+## Scoped ephemeral contextual chat — owner amendment, 2026-10-17
+
+The owner approves QH-13's distinct single-Space owner CHAT operation, not a
+promotion of READ_CONTEXT to disclosure authority. Confirmed-current is default;
+proposals need explicit opt-in, retain unconfirmed state, and canonical history is
+excluded. Browser dialogue and model answers remain temporary/untrusted, never
+canonical understanding or confirmation. Browsing remains primary. See
+[ADR 0006](../adr/0006-scoped-contextual-chat.md) and the
+[implementation/verification record](../qh-13-contextual-chat.md).
+
+Mock is the default. External inference requires separate explicit authorization,
+private backend configuration and a bounded budget; key presence is not consent.
+Semantic correctness and robustness of a live model are not established by canonical
+reference checks. Conversation-to-understanding remains QH-39, local-model hosting
+remains QH-35, and no second engine, canonical store or automatic confirmation follows.
+
+## Demo A experience — owner amendment, 2026-10-17
+
+This later owner decision sets the **next UX increment**, not an implemented change
+in QH-13 / PR #14. Earlier browse-first and scoped-chat sections retain the decisions
+and implemented placement at their checkpoints. ADRs 0003/0004/0005/0006 and their
+historical evidence are preserved. The owner now chooses chat as the primary
+in-Space interaction, with understanding exploration accessible without a query.
+This updates interaction priority, not canonical responsibilities or epistemic rules.
+
+The durable principle is that QH never requires users to know what to search for
+before revealing what their Space understands. Search remains complementary;
+chat-first placement must not hide the existence or state of canonical understanding.
+The expandable explorer must be visible and usable before sending a question.
+
+### Product decisions and rationale
+
+| Adopted decision | Rationale / alternative considered | UX and architectural consequences / limits |
+| --- | --- | --- |
+| After login, open `Mon environnement` | Establish orientation and owner overview instead of automatically reopening the last Space | Future client routing change; retain Code+PKCE and in-memory tokens. Current QH-11 return-path behavior is not claimed changed here |
+| Dashboard presents the owner's Spaces; evolve toward `Mon environnement → Domaine → Context Space` | Express a personal environment instead of a flat document-search entry point | Presentation direction only. No Domain entity, storage, fake grouping or sharing capability is approved by the hierarchy; a real Domain model needs a separate decision |
+| Inside a Space, `Discuter avec ce contexte` is primary | Let owners ask about their authorized understanding; prefer conversational entry over the current exploration-first layout | Future UI reordering, not a second engine. QH-13 answers remain ephemeral; proposal inclusion requires explicit choice and visible unconfirmed state |
+| `Explorer la compréhension` is a visible expandable section | Progressive disclosure preserves orientation without making IDs/JSON the main experience | Reuse overview, open data-derived descriptors, items/entities/relations, provenance and revision history. No mandatory search query, taxonomy, editing or automatic confirmation |
+| QH visual identity extends to login while Keycloak hosts OIDC | Avoid a disconnected experience; reject a custom replacement login/authentication system | Use supported presentation/theme mechanisms. Preserve issuer, redirect, state/verifier, token boundaries and owner policy; activation needs separate runtime approval |
+| Start with the owner's logo and presentation identity: white, black, red, glass sphere, restrained iridescence | Coherence with supplied product references; reject an invented logo or a general redesign in this PR | Assets are not assumed available. Confirm source/licence, light/dark readability, contrast and keyboard use; effects never obscure epistemic labels. Public asset selection and typography await owner references |
+
+A deterministic preview, an explicitly validated canonical synthesis and a future
+LLM-generated proposal remain different. Chat does not silently create any of them
+or confirm content. Descriptor certainty, confirmation, revision history and source
+support remain separate. Reordering UI does not authorize a new public contract,
+Domain model, provider disclosure, registry entry, migration or deployment.
+
+The [operational plan and proposed small UX ticket](../qh-13-demo-a-plan.md)
+record fixture selection, write inventory, source/ID fingerprints, create-receipt
+reconciliation, backup/failure controls, asset hand-off and Mac checks. The next UX
+ticket must be confirmed before creation; no ticket or UI implementation follows
+from this documentation alone. Asset details and Domain semantics remain open.
+
+Keep three capabilities distinct: **QH-13** reads bounded authorized understanding
+and produces ephemeral answers; **demo seed** is a separately authorized synthetic
+publication using QH-8/QH-32 and CanonicalRepository/outbox/worker; **QH-39** will
+connect an authorized conversation to a source revision and new proposed understanding.
+No seed is executed here. A script materializing fixture expectations is not LLM
+comprehension; current retrieval is bounded UUID enumeration, not semantic ranking.
+
+Any real Mistral demo needs separate explicit synthetic-only transmission/spending
+consent, exact scope/payload and a verified maximum **EUR 5** envelope with the
+prepared stricter request/token/USD limits. Existing ledgers and frozen outputs
+remain intact; no call, confirmation or persistent import is authorized by this
+amendment. A future local model remains replaceable through LLMProvider.

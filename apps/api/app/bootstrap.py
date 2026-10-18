@@ -1,9 +1,12 @@
 """Runtime composition root: concrete adapters stay outside the inner modules."""
 
 import os
+import time
 import asyncio
 from contextlib import asynccontextmanager
 
+from adapters.llm.chat_config import configured_chat_provider
+from app.chat.implementation import ContextualChatService
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
 from adapters.postgres.config import database_url
 from adapters.postgres.security import PostgresSecurityReader
@@ -69,10 +72,14 @@ def create_runtime_app():
                 await asyncio.to_thread(runtime.stop)
                 application.state.native_context = None
 
+    provider, model = configured_chat_provider()
+    context = ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()),
+                                    policy=policy, retrieval_for=retrieval_for)
     return create_app(
         services=ApplicationServices(
-            context=ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()),
-                                          policy=policy, retrieval_for=retrieval_for),
+            context=context,
+            chat=ContextualChatService(context=context, policy=policy,
+                                       provider=provider, model=model, clock=time.perf_counter),
             policy=policy,
         ),
         security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy),

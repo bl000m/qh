@@ -1,0 +1,17 @@
+{
+  "fourteen_tables_identical": true,
+  "table_count": 14,
+  "nonready_outbox_before": 0,
+  "nonready_outbox_after": 0,
+  "env_realm_identical": true,
+  "six_container_configuration_identities_identical": true,
+  "historical_private_ledger_byte_identical": true,
+  "historical_private_ledger_sha256": "f39818d7576fb69e474015dd509277050922b719d9a4ab8c05ba48288df17327",
+  "canonical_writes": 0,
+  "worker_started_by_trial": false,
+  "new_listener": false,
+  "backend_restart": false,
+  "private_config_modified": false,
+  "temporary_secret_links_removed": true,
+  "public_provider_always_mock": true
+}

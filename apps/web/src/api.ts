@@ -1,3 +1,5 @@
+import {chatAnswer} from './chat';
+import type {ChatAnswer,DialogueMessage} from './chat';
 import { revisionPage } from './understanding';
 import type { BrowseQuery, RevisionPage, RevisionQuery } from './understanding';
 // QH-9 wire contract; never import backend implementation or accept a UI owner.
@@ -30,6 +32,11 @@ export class QhApi {
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
+    if(!isUuid(scope))throw new ApiError(404);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{
+      messages,include_proposed:includeProposed}),scope,includeProposed);
   }
   async query(query: RevisionQuery): Promise<RevisionPage> {
     return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);
