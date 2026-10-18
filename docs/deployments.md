@@ -450,3 +450,19 @@ Owner-approved horizontal bubble centring updates only the existing installed
 container restart/recreation, mounts, images or volumes change. Actual desktop/mobile
 login and centring pass; canonical tables, identities, configuration and ledgers
 remain equal. See [sealed supplemental receipt](evidence/qh43-centering-20261018/README.md).
+
+### QH-45 development-source checkpoint — 2026-10-18
+
+The existing frontend/backend source binds expose QH-45's new provider-selection
+UI and scoped session ingress in the authorized single-checkout HMR POC. **The
+provider remains mock and real sessions remain disabled**; no private environment,
+image pin, service command/mount/port, schema, realm or volume is changed. There is
+no live Mistral activation, inference or new provider authorization. Alice's three
+synthetic Spaces remain unchanged and Bob is denied. Only the already documented
+app-only stop/up for the QH-43 → QH-45 branch transition changed app start times;
+QH-45 implementation adds no further runtime lifecycle operation.
+
+[QH-45 evidence](evidence/qh45-provider-sessions-20261018/README.md) separates local
+isolated tests and actual VPS read-only verification. Future real activation needs
+a separately approved manifest/private receipt/ledger and backend configuration
+window. Keycloak theme distribution stays QH-49; no recreation is performed.

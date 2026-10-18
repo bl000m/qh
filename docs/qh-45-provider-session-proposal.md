@@ -139,3 +139,22 @@ Architecture references: [Product Contract](product/QH_PRODUCT_CONTRACT.md),
 [QH-13](qh-13-contextual-chat.md) and [QH-43 activation](qh-43-keycloak-activation.md).
 This document proposes new session ingress; it does not silently amend those
 approved contracts. There is no QH-42 session redesign or QH-39 write workflow.
+
+### Operational prerequisite for the later live gate
+
+The current host `.env` and Compose/runtime configuration are unchanged. Setting a
+new host variable alone is **not** activation of an existing container. A separately
+reviewed backend-only configuration window must explicitly supply
+`QH_CHAT_SESSIONS_ENABLED=true`, `QH_CHAT_SESSION_AUTHORIZATION_FILE`,
+`QH_CHAT_SESSION_LEDGER_FILE` and the server-only key, make the exact protected files
+available to that backend, and verify guarded dev-management compatibility/rollback.
+Keep `QH_CHAT_PROVIDER=mock`: the runtime now rejects the legacy global real mode.
+No new mount/Compose change/restart is prepared as an executable authorization here;
+freeze and review that concrete diff/manifest before applying it. Do not alter data,
+IdP/MCP, volumes or ports to enable a session.
+
+At the pinned (not newly reverified) QH-13 prices, a 12000-input/1000-output bound
+reserves at most 0.0024 USD per POST, 0.0072 USD for three. Reverify actual
+model/workspace/prices/FX and remaining aggregate allowance before a real gate;
+changed conditions require an updated manifest. This arithmetic is a planning
+ceiling, not observed tokens, a bill or authorization to spend.
