@@ -6,6 +6,28 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-13 closure and QH-43 planning checkout
+
+Owner accepted the documented POC scope; [PR #14](https://github.com/bl000m/qh/pull/14)
+merged without squash/rebase as `cc6f421b54966f0c1dd302a3da4958d1be6e245f`,
+then QH-13 DONE was verified on Jira. Reviewed HEAD `f543dcb` had all four CI jobs
+green (665 native tests, zero skips). The accepted limit remains visible:
+[second-trial](qh-13-mistral-alias-experiment.md) alias validity and QH 200 do not
+prove semantic correctness; canonical-state proposal warnings stay mandatory.
+
+Guarded `dev-stop` stopped only the two source-mounted apps before main was
+fast-forwarded and `feat/QH-43-demo-a-ux-branding` created. `dev-up` restored the
+same containers/images/mounts on ports 5173/8000; IdP discovery on 8080 is healthy.
+All fourteen QH tables, retained Alice demo Spaces, private `.env`/realm and
+experiment ledgers are unchanged. PostgreSQL/Neo4j/Keycloak/MCP container identities,
+configuration and start times are identical; only app start times changed. No
+image replacement, migration, new inference, public Mistral session or theme change.
+Private preservation evidence: `.local-archive/qh13-closure-20261018/`.
+
+[QH-43](qh-43-ux-branding-plan.md) is **planning only** pending owner review and
+original graphics. Its branch/PR changes documentation, not UX or runtime behavior.
+Earlier deployment/trial entries below retain their historical checkpoint status.
+
 ## 2026-10-18 — authorized first Mistral chat trial (no deployment)
 
 The [exact approved manifest](evidence/qh13-mistral-chat-gate-20261018/manifest.json)

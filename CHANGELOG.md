@@ -15,6 +15,17 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-13 POC closure / QH-43 UX planning — 2026-10-18
+
+- Close owner-reviewed QH-13 through history-preserving PR #14 merge `cc6f421`
+  and verified Jira DONE. Keep deterministic proposal warnings mandatory and
+  general model semantic correctness unproven; public provider remains mock.
+- Prepare the QH-43 screen/component/asset/acceptance plan on a dedicated branch
+  from updated main. Original branding and owner review are pending; no UX,
+  theme activation, Domain feature, paid inference or canonical write implemented.
+- Preserve all three demo Spaces, QH tables, ledgers, configuration and infrastructure
+  through the guarded app-only checkout switch; existing hot reload/ports retained.
+
 ### QH-13 second authorized Mistral chat trial — 2026-10-18
 
 - Record the exact authorized one-POST alias experiment: six aliases resolved to
