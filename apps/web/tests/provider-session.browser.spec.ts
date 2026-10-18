@@ -77,9 +77,12 @@ if(enabled)test('QH-45 logout revokes before clearing tokens, without changing r
  const consented=page.waitForResponse(r=>r.url().endsWith('/consent'));
  await consent(page);const receipt=await consented;const grant=await receipt.json();
  const authorization=receipt.request().headers()['authorization'];
- const revoked=page.waitForResponse(r=>r.request().method()==='DELETE'&&r.url().includes('/chat-sessions/'));
  await page.getByRole('button',{name:'Se déconnecter',exact:true}).click();
- expect((await revoked).status()).toBe(200);
+ // keepalive can finish after navigation: assert server state, not a detached page's response event.
+ await expect.poll(async()=>{
+  const status=await page.request.get('/api/context-spaces/'+expected.scope+'/chat-sessions/'+grant.session_id,{headers:{Authorization:authorization}});
+  return status.status()===200?(await status.json()).state:'unavailable';
+ }).toBe('revoked');
  // Even this still-valid signed access token cannot reuse its explicitly revoked grant.
  const r=await page.request.post('/api/context-spaces/'+expected.scope+'/chat-sessions/'+grant.session_id+'/messages',{
   headers:{Authorization:authorization},data:{messages:[{role:'user',content:'x'}]}});
