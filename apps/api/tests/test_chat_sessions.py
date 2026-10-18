@@ -275,3 +275,13 @@ def test_changed_system_prompt_cannot_reuse_exact_payload_consent(tmp_path,monke
         monkeypatch.setattr(formatting,'SYSTEM',formatting.SYSTEM+'Changed instructions')
         with pytest.raises(ChatProviderUnavailable):await s.respond(who,request(),p['session_id'])
     asyncio.run(run());assert not calls
+
+
+def test_legacy_global_mistral_mode_cannot_bypass_interactive_consent(monkeypatch):
+    from app.bootstrap import create_runtime_app
+    from adapters.llm.chat_config import ChatConfigurationError
+    monkeypatch.setenv('QH_CHAT_PROVIDER','mistral')
+    # Rejected before database/provider initialization, independently of key or receipt presence.
+    monkeypatch.delenv('POSTGRES_PASSWORD',raising=False)
+    with pytest.raises(ChatConfigurationError,match='Runtime default must be mock'):
+        create_runtime_app()

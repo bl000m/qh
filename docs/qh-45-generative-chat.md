@@ -25,6 +25,10 @@ method intact. Grants bind the SHA-256 of the actual verified bearer; they never
 store its plaintext or accept browser expiry claims. No PKCE/state/nonce, issuer,
 role/client/redirect, session lifetime, renewal or token storage changes occur.
 
+Runtime startup rejects `QH_CHAT_PROVIDER=mistral`: the legacy global switch cannot
+turn the public mock route into disclosure without session consent. Its standalone
+QH-13 adapter remains available for historical offline tests.
+
 `GET .../chat-sessions` is denied/disabled by default for real sessions; UI keeps
 mock selected. Choosing Mistral without a separate server grant displays unavailable
 and cannot infer. Where enabled **only in tests for this checkpoint**, preview

@@ -5,7 +5,7 @@ import time
 import asyncio
 from contextlib import asynccontextmanager
 
-from adapters.llm.chat_config import configured_chat_provider
+from adapters.llm.chat_config import ChatConfigurationError, configured_chat_provider
 from adapters.llm.session_config import configured_session_factory
 from app.chat.sessions import ProviderSessions
 from app.chat.implementation import ContextualChatService
@@ -22,6 +22,9 @@ from app.core.models import ContextRetrievalUnavailable
 
 
 def create_runtime_app():
+    # The public mock route must never become an implicit provider-disclosure path.
+    if os.environ.get('QH_CHAT_PROVIDER', 'mock') != 'mock':
+        raise ChatConfigurationError('Runtime default must be mock; use scoped provider sessions')
     reader = PostgresSecurityReader(url=database_url())
     authenticator = OIDCAuthenticator(
         settings=OIDCSettings(
