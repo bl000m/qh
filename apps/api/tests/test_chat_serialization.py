@@ -6,7 +6,7 @@ import json
 import pytest
 
 from app.chat.context import ChatContextUnavailable, MAX_CONTEXT_BYTES, MAX_INPUT_BOUND
-from app.chat.serialization import compact_context, expand_context
+from app.chat.references import encode_model_context as compact_context, expand_model_context as expand_context
 from app.core.models import CanonicalSource, RevisionRelation, RevisionTime
 from tests.test_chat_context import built, revision
 

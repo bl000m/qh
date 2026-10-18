@@ -55,7 +55,10 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
       </>}
       {answers.map((answer,i)=><article className="chat-turn" key={i} aria-label={'Échange '+(i+1)}>
         <h3>Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p>
-        <h3>{answer.model==='qh-mock-extractive/1' ? 'Extraits de démonstration — sans compréhension de la question' : 'Réponse de l’IA'}</h3><p className="small muted">Modèle : {answer.model}</p><p className="chat-text">{answer.answer}</p>
+        <h3>{answer.model==='qh-mock-extractive/1' ? 'Extraits de démonstration — sans compréhension de la question' : 'Réponse de l’IA'}</h3><p className="small muted">Modèle : {answer.model}</p>
+        {answer.references.some(row=>row.validation_state==='proposed') && <p role="note" className="notice">Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.</p>}
+        {answer.provided_revisions.length>0 && answer.provided_revisions.every(row=>row.validation_state==='proposed') && <p role="note" className="notice">Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.</p>}
+        <p className="chat-text">{answer.answer}</p>
         {answer.insufficient_context && <p className="notice">Le contexte disponible ne suffit pas à établir une réponse étayée.</p>}
         {answer.partial_coverage && <p className="notice">Couverture partielle : limites de pages ou de taille atteintes. Les éléments absents de cette réponse peuvent exister dans le Space.</p>}
         <details><summary>Sources utilisées ({answer.references.length} références déclarées)</summary>

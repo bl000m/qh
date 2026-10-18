@@ -2,14 +2,14 @@
 import json
 
 from app.core.models import GenerationResult, Message, MessageRole
-from app.chat.serialization import expand_context
+from app.chat.references import expand_model_context
 
 
 class MockChatProvider:
     async def generate(self, request):
         context = json.loads(request.messages[1].content)
         rows, excerpts = [], []
-        for row in expand_context(context):
+        for row in expand_model_context(context):
             text = row['content'].get('text')
             if not isinstance(text, str) or not text.strip():
                 continue
@@ -23,7 +23,8 @@ class MockChatProvider:
         answer = 'Mode mock : extraits conservés, sans analyse de votre question.\n' + '\n'.join(excerpts)
         if not rows:
             answer = 'Le contexte disponible est insuffisant pour répondre.'
+        aliases = {ref: alias for alias, ref in context['allowed_reference_aliases'].items()}
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT, content=json.dumps({
-            'answer': answer, 'revision_ids': [r['revision_id'] for r in rows],
+            'answer': answer, 'reference_aliases': [aliases[r['revision_id']] for r in rows],
             'insufficient_context': not bool(rows),
         }, ensure_ascii=False)))

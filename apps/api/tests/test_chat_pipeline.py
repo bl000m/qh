@@ -10,7 +10,7 @@ from tests.test_context_query_pipeline import generic as generic, empty_database
 from tests.test_context_query_pipeline import real_engine as real_engine, dedicated_server_only as dedicated_server_only
 from tests.test_context_spaces_api import headers
 from adapters.llm.chat_mock import MockChatProvider
-from app.chat.serialization import expand_context
+from app.chat.references import expand_model_context as expand_context
 
 
 def post(client,scope,**kwargs):
@@ -52,9 +52,30 @@ def test_compact_provider_records_roundtrip_exact_public_canonical_dtos(retrieve
     data=response.json()
     packet=json.loads(provider.request.messages[1].content)
     assert expand_context(packet)==data['provided_revisions']
+    assert packet['format']=='qh.chat.context/2'
+    assert list(packet['allowed_reference_aliases'].values())==sorted(r['revision_id'] for r in data['provided_revisions'])
     assert {r['validation_state'] for r in data['provided_revisions']}=={'confirmed','proposed'}
     assert len(packet['sources']) < sum(len(r['provenance']) for r in data['provided_revisions'])
     assert p['repo'].read_snapshot((p['scope'],))==before
+
+
+@pytest.mark.parametrize('aliases',[['R999'],['R1','R1'],['foreign-item']])
+def test_real_api_alias_failure_is_atomic_sanitized_and_never_retried(retrieved,aliases):
+    from app.core.models import GenerationResult,Message,MessageRole
+    p,c=retrieved
+    class BadProvider:
+        calls=0
+        async def generate(self,request):
+            self.calls+=1
+            return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps({
+                'answer':'untrusted-answer-must-not-leak','reference_aliases':aliases,'insufficient_context':False})))
+    provider=BadProvider();c.app.state.services.chat.provider=provider
+    before=p['repo'].read_snapshot((p['scope'],))
+    response=post(c,p['scope'],include_proposed=True)
+    assert response.status_code==503 and response.json()=={'detail':'Chat unavailable; no automatic retry'}
+    assert provider.calls==1 and p['repo'].read_snapshot((p['scope'],))==before
+    assert post(c,p['scope'],auth=headers('external-bob')).status_code==404
+    assert provider.calls==1
 
 
 @pytest.mark.parametrize('change',[{'owner_id':'spoof'},{'context_ids':['foreign']},{'view':'history'},

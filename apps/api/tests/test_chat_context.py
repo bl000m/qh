@@ -70,11 +70,11 @@ def test_empty_context_is_insufficient():
     assert insufficient and not refs and 'insuffisant' in answer
 
 
-@pytest.mark.parametrize('data',[{'answer':'invented','revision_ids':['foreign'],'insufficient_context':False},
-    {'answer':'unsupported','revision_ids':[],'insufficient_context':False},
-    {'answer':'x','revision_ids':['revision','revision'],'insufficient_context':False},
-    {'answer':'x','revision_ids':['revision'],'insufficient_context':'false'},
-    {'answer':'x','revision_ids':['revision'],'insufficient_context':False,'owner':'forged'}])
+@pytest.mark.parametrize('data',[{'answer':'invented','reference_aliases':['foreign'],'insufficient_context':False},
+    {'answer':'unsupported','reference_aliases':[],'insufficient_context':False},
+    {'answer':'x','reference_aliases':['R1','R1'],'insufficient_context':False},
+    {'answer':'x','reference_aliases':['R1'],'insufficient_context':'false'},
+    {'answer':'x','reference_aliases':['R1'],'insufficient_context':False,'owner':'forged'}])
 def test_invalid_provider_answer_is_not_repaired(data):
     with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(data)),built((revision(),)))
 
@@ -95,7 +95,7 @@ def test_huge_dialogue_rejected_instead_of_silent_history_drop():
 
 
 def test_duplicate_json_fields_fail_closed():
-    text='{"answer":"a","answer":"b","revision_ids":["revision"],"insufficient_context":false}'
+    text='{"answer":"a","answer":"b","reference_aliases":["R1"],"insufficient_context":false}'
     with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=text),built((revision(),)))
 
 

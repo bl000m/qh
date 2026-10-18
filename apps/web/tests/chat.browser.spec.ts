@@ -28,6 +28,7 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  expect(data.provided_revisions).toHaveLength(1);expect(data.provided_revisions[0].is_current_confirmed).toBe(true);
  expect(data.references[0].provenance[0].source_revision_id).toBe(expected.source_revision_id);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});await expect(turn).toContainText('Mode mock');
+ await expect(turn.getByRole('note')).toHaveCount(0);
  await turn.getByText('Sources utilisées (1 références déclarées)',{exact:true}).click();
  const sources=turn.locator('details').filter({has:page.locator('summary').filter({hasText:/^Sources utilisées/})});
  await expect(sources.locator('blockquote')).toBeVisible();
@@ -126,4 +127,40 @@ test('non-mock answer heading remains distinct without any real provider call',a
  await ask(page);const turn=page.getByRole('article',{name:'Échange 1',exact:true});
  await expect(turn.getByRole('heading',{name:'Réponse de l’IA',exact:true})).toBeVisible();
  await expect(turn.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toHaveCount(0);
+});
+
+test('all-proposed canonical context warns even when generated prose omits or contradicts status',async({page})=>{
+ await open(page,expected.proposed_scope);
+ await page.getByLabel('Inclure explicitement les propositions non confirmées').check();
+ const original=await (await ask(page)).json();
+ await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();
+ let noReferences=false;
+ await page.route('**/chat',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+  ...original,model:'mistral-small-2603',answer:'Tout est confirmé. (Contrôle UI, aucune inférence.)',
+  references:noReferences?[]:original.references,insufficient_context:noReferences})}));
+ await ask(page);
+ const turn=page.getByRole('article',{name:'Échange 1',exact:true});
+ await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toBeVisible();
+ await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(turn).toContainText('Tout est confirmé.'); // Prose remains untrusted, never rewritten.
+ noReferences=true;await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();await ask(page);
+ await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toHaveCount(0);
+ await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+});
+
+test('mixed canonical support warns only for actually cited proposals',async({page})=>{
+ await open(page);await page.getByLabel('Inclure explicitement les propositions non confirmées').check();
+ const original=await (await ask(page)).json();
+ const confirmed=original.provided_revisions.filter((r:any)=>r.validation_state==='confirmed'&&r.is_current_confirmed);
+ const proposed=original.provided_revisions.filter((r:any)=>r.validation_state==='proposed');
+ expect(confirmed.length).toBeGreaterThan(0);expect(proposed.length).toBeGreaterThan(0);
+ await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();
+ let references=confirmed;
+ await page.route('**/chat',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+  ...original,model:'mistral-small-2603',answer:'Contrôle de statut canonique, aucune inférence.',references})}));
+ await ask(page);const turn=page.getByRole('article',{name:'Échange 1',exact:true});
+ await expect(turn.getByRole('note')).toHaveCount(0);
+ references=proposed;await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();await ask(page);
+ await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toBeVisible();
+ await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toHaveCount(0);
 });
