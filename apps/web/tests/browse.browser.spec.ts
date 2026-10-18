@@ -1,7 +1,8 @@
+import {afterLogin,expandUnderstanding} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import type {Page} from '@playwright/test';
 const expected=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
-async function open(page:Page){await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();}
+async function open(page:Page){await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page,expected.scope);await expandUnderstanding(page);await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();}
 const browseUrl=(r:any)=>r.url().includes('/understanding?');
 test('opens without search, separates current/proposed, and browses every retained revision',async({page},info)=>{
  let searches=0;page.on('request',r=>{if(r.url().endsWith('/context-spaces/query'))searches++;});await open(page);
@@ -22,7 +23,7 @@ test('opens without search, separates current/proposed, and browses every retain
  await page.screenshot({path:info.outputPath('qh12-browse-history.png'),fullPage:true});
 });
 test('dynamic exact descriptors, unclassified entities, relation anchors and item history',async({page},info)=>{
- await open(page);await page.getByRole('button',{name:'Explorer la compréhension',exact:true}).click();
+ await open(page);await page.getByRole('button',{name:'Parcourir les éléments',exact:true}).click();
  const e=page.getByRole('region',{name:'Explorer les éléments'});
  await e.getByRole('button',{name:'Propositions à examiner',exact:true}).click();
  await e.getByRole('button',{name:'reversible_pause',exact:true}).click();await expect(e.locator('.understanding-card')).toHaveCount(1);
@@ -37,7 +38,7 @@ test('dynamic exact descriptors, unclassified entities, relation anchors and ite
 });
 test('late browse pages and failed pagination cannot leave stale results; mobile keyboard works',async({page})=>{
  await page.setViewportSize({width:375,height:812});await open(page);
- const go=page.getByRole('button',{name:'Explorer la compréhension',exact:true});await go.focus();await page.keyboard.press('Enter');
+ const go=page.getByRole('button',{name:'Parcourir les éléments',exact:true});await go.focus();await page.keyboard.press('Enter');
  const e=page.getByRole('region',{name:'Explorer les éléments'});await expect(e.locator('.understanding-card')).toHaveCount(1);
  await e.getByRole('button',{name:'Historique complet',exact:true}).click();await e.getByLabel('Éléments par page').selectOption('5');await expect(e.locator('.understanding-card')).toHaveCount(5);
  await page.route('**/understanding?*',async route=>{if(new URL(route.request().url()).searchParams.has('after_revision_id'))await route.fulfill({status:503,body:'private-diagnostic'});else await route.continue();});
@@ -56,7 +57,7 @@ test('truly empty, proposed-only and historical-only Spaces have distinct honest
  for(const [scope,label] of [[expected.empty_scope,'empty'],[expected.proposed_scope,'proposed'],[expected.historical_scope,'history']]){
   // SPA navigation preserves the approved ephemeral session; no full page reload.
   await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+scope);
-  const o=page.getByRole('region',{name:'Vue d’ensemble'});
+  await expandUnderstanding(page);const o=page.getByRole('region',{name:'Vue d’ensemble'});
   await expect(o.getByText('Chargement de l’aperçu…')).toHaveCount(0);
   if(label==='empty')await expect(o.getByRole('status')).toHaveText('Ce Context Space ne contient pas encore d’éléments de compréhension.');
   else {

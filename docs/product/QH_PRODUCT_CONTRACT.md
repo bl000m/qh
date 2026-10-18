@@ -312,3 +312,110 @@ consent, exact scope/payload and a verified maximum **EUR 5** envelope with the
 prepared stricter request/token/USD limits. Existing ledgers and frozen outputs
 remain intact; no call, confirmation or persistent import is authorized by this
 amendment. A future local model remains replaceable through LLMProvider.
+
+## QH-43 presentation checkpoint — owner approval, 2026-10-18
+
+The owner approved the QH-43 plan (`41ee02f`) and independently authorized its
+asset-independent layout: every successful login lands at Mon environnement,
+owned Spaces remain discoverable, chat is primary inside a Space, and canonical
+exploration remains visible as an accessible disclosure before any question.
+This implements the earlier Demo A amendment without changing domain, ownership,
+policy, ephemeral chat, source/validation semantics or public contracts.
+
+The [checkpoint and original-asset proposal](../qh-43-visual-proposal.md) distinguish
+the working neutral layout from private design references. Final branding requires
+owner approval of selected original assets; the missing authoritative SVG is not
+reconstructed. Keycloak theme source preparation follows asset approval, and VPS
+activation still requires separate consent. Existing warnings derived from verified
+canonical proposed states remain mandatory even if generated prose omits them.
+No presentation mockup authorizes Domains, sharing/projections, provider selection,
+conversation ingestion, synthetic medical facts, paid inference or confirmation.
+
+
+## QH-43 second UX checkpoint — owner direction, 2026-10-18
+
+The owner accepts the functional layout as a base rather than final UX. Make the
+question and actual question/answer sequence visually primary; place implementation
+explanations in a secondary disclosure. Explicit proposal inclusion and applicable
+warnings derived from canonical states must remain visible, independent of provider
+prose or disclosure state. Mock output remains explicitly extractive, not generative
+comprehension. Keep the full explorer discoverable before a question; technical IDs,
+JSON and extended provenance remain inspectable without dominating initial reading.
+
+The owner confirms the seven files in `QH-design 2/` as the intended references;
+no ZIP is needed. Approved direction: original compact decorative bubble on
+Mon environnement/welcome, white/black, red accents and discreet iridescence.
+No portraits or future-feature mockups as product controls. A private, traceable
+comparison of existing logo variants precedes public asset selection. Simple
+crops are derivatives, not supplied logo masters. Logo choice and public usage
+rights still require owner confirmation; do not invent/redraw the mark. Keycloak
+theme preparation waits for that approval and activation needs separate consent.
+See the [dated checkpoint](../qh-43-visual-proposal.md). No new domain, capability,
+AI inference, canonical write, provider disclosure or confirmation follows.
+
+
+## QH-43 selected identity — owner approval, 2026-10-18
+
+The owner selects the precise original geometric red-circle/black-H mark shown
+in their approval message. Logo comparison is closed: do not offer alternate UI
+marks, rotate/reinterpret it or generate creative variants. Minimal faithful crops,
+responsive placement and whole-mark icon resampling are authorized for QH product
+preview/frontend integration and source-only login preparation. This is not a
+claim of a general artwork licence or final UX acceptance.
+
+Use the selected mark as the common identity on welcome, Mon environnement and
+Space headers. Keep the original iridescent bubble compact/decorative on welcome
+and environment only; never displace the in-Space question. White/black, restrained
+red, visible proposal consent and canonical epistemic warnings remain mandatory.
+Full explorer/provenance/history stays accessible. No new product capability or
+AI behavior follows from the visual references.
+
+The [selected identity checkpoint](../qh-43-branding-checkpoint.md) records source
+hashes/crop provenance, raster limitations and actual screenshots/tests. Keycloak
+inherits its existing credential/validation/OIDC forms; sources and isolated preview
+are authorized, **persistent VPS activation is not**. Realm, identities, permission,
+session and Code+PKCE contracts remain unchanged. Merge and Jira DONE require
+separate owner approval.
+
+## QH-43 hero/capsule iteration — owner correction, 2026-10-18
+
+The owner requests a wider immersive welcome with a large **central** original
+bubble, a more prominent central environment bubble, and owned-Space capsules with
+that same original artwork. This supersedes the earlier compact/side-decoration
+choice **on those surfaces**; the chosen mark, image bytes and Keycloak preparation
+are unchanged. No bubble hero is introduced ahead of the in-Space question.
+
+| Decision | Rationale / alternative | Consequences and limits |
+| --- | --- | --- |
+| Full-width centered welcome and central environment artwork | Replace the narrow card/side ornament with a clearer QH environment identity | Responsive CSS, original proportional image only; no animation, new illustration, Domain or graph meaning |
+| One bubble per owned Space, centered title above its capsule | Show navigable context objects rather than administrative rows | Same decorative asset for every Space; it encodes no status, category, count, sharing or unique generated identity |
+| Shorten overview titles after ten user-perceived characters, adding `…` | Keep captions consistent without renaming canonical Spaces | Grapheme-safe display only; complete accessible link name, tooltip, metadata and detail heading remain intact. Navigation/React identity uses the Space UUID, never the truncated label |
+| Give chat a larger primary panel/composer | Make the conversation visually dominant | Existing provider behavior, explicit opt-in, epistemic warnings and ephemeral state remain unchanged. Explorer and Space metadata stay visible disclosures below chat |
+| Explain excluded proposals separately from missing active support | An empty answer must not imply no understanding exists | Use authorized current/proposed availability; explicitly explain unchecked proposal inclusion before and after an insufficient answer. Never select it automatically |
+| Distinguish no retained understanding revisions from history-only | No current/proposed hit alone proves neither an empty Space nor absent sources | Only when both active views are empty, read one authorized graph-verified history row. On error stay unavailable; never fall back to SQL or call missing data empty. History remains excluded from chat |
+
+The empty state describes **understanding revisions**, not absence of source-only
+records or other Space metadata. Insufficiency for a particular question remains
+different from overall Space completeness. UI explanations are deterministic;
+no textual rules invent model answers or semantic relevance. No new persistence,
+API, policy, real provider activation, confirmation or Keycloak realm change.
+
+
+## QH-43 real branded login — owner decision, 2026-10-18
+
+The owner now requires the actual VPS redirect login to use the selected original
+QH mark/bubble, light white/black/red presentation and French text. This explicitly
+supersedes the earlier preparation-only gate **for theme activation in the demo
+qh realm**, after preflight, narrow backup, rollback and live verification.
+[Controlled operation and evidence](../qh-43-keycloak-activation.md).
+
+| Decision | Rationale / alternative | Consequences / boundary |
+| --- | --- | --- |
+| Activate the existing inherited Keycloak QH theme | Isolated screenshots alone do not satisfy the real user experience | Only static theme files and four realm presentation/language fields; preserve upstream forms and OIDC security |
+| Send standard `ui_locales=fr` from the QH client, enable fr/en/default fr in the realm | Browser English can override only setting the realm default | Presentation hint only; no issuer/client/redirect/scope, token storage, session lifetime or identity change |
+| Keep real Keycloak-hosted credential entry and redirect | Avoid React password forwarding, ROPC and iframe embedding | Keycloak URL remains visible; this is not a same-origin/native React auth claim |
+| Verify actual VPS authentication and reversible theme selection | Show actual desktop/mobile and existing Alice/Bob security behavior | Wrong password and state/nonce/PKCE controls are expected failures, not silent exceptions; real regressions roll back |
+
+QH-42 retains any future BFF/same-origin architecture and threat model. QH-45
+(real LLM chat) is not started here. No credential export, new auth/provider system,
+canonical write, paid inference, automatic confirmation, merge or Jira DONE.

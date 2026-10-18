@@ -32,7 +32,14 @@ query contract; no semantic ranking is implied. The sole development checkout is
 task branch at a time. Frontend/backend now follow that branch: stop the apps
 before switching. The frozen image-only bundle is retained for rollback.
 
-## Contextual chat — QH-13 review candidate
+## Contextual chat — QH-13 merged
+
+**Closed for the owner-accepted POC scope on 2026-10-18:** [PR #14](https://github.com/bl000m/qh/pull/14)
+merged with history preserved as `cc6f421b54966f0c1dd302a3da4958d1be6e245f`;
+Jira QH-13 is DONE. The [second single-call trial](docs/qh-13-mistral-alias-experiment.md)
+returned provider/QH 200 with exact aliases. Generated prose still omits the
+unconfirmed qualification in that sample; canonical-state UI warnings are mandatory.
+General semantic correctness is not demonstrated. Public chat remains mock.
 
 [QH-13](docs/qh-13-contextual-chat.md) adds the complementary **Discuter avec ce
 contexte** action to the browse-first Space page. The default provider is a clearly
@@ -65,8 +72,10 @@ the ledger is blocked 2/4, and no general live-provider window is active.
 an internal request-local reference map and deterministic warnings for unconfirmed
 support; public citations and canonical data are unchanged. A
 [new one-question manifest](docs/evidence/qh13-mistral-alias-gate-20261018/README.md)
-is prepared with a separate blocked ledger and USD 0.01 proposed cap. No new
-inference is authorized or executed; aliases do not establish semantic support.
+was subsequently approved and exercised in the separate
+[second trial](docs/qh-13-mistral-alias-experiment.md): one POST, six valid aliases,
+QH 200, new ledger closed 1/1. The first ledger remains unchanged and blocked 2/4.
+Neither experiment authorizes another inference; aliases do not establish semantic support.
 
 The owner-approved [Product Contract amendment](docs/product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
 sets the **next**, separately scoped UX increment: login to `Mon environnement`,
@@ -74,7 +83,14 @@ Space overview, primary contextual chat, expandable `Explorer la compréhension`
 and supplied QH branding. The current QH-13 layout and OIDC flow are unchanged.
 The presentation's future Domain hierarchy creates no Domain model or sharing.
 The owner confirmed the scope; [QH-43](https://contextlab.atlassian.net/browse/QH-43)
-is created, **À faire**, awaiting QH-13 closure and owner assets before implementation. Real Mistral remains separately consented/budgeted, maximum EUR 5.
+now has a [concrete planning-only UX proposal](docs/qh-43-ux-branding-plan.md) on its
+own [PR #15](https://github.com/bl000m/qh/pull/15) from merged main. The owner approved
+the plan and the asset-independent layout: environment landing, primary chat and
+expandable canonical explorer. The [first implementation/asset-selection checkpoint](docs/qh-43-visual-proposal.md)
+distinguishes working UI from the private branding proposal. Final asset selection,
+original SVG and Keycloak theme preparation/activation remain gated; no final
+branding is applied. Jira QH-43 remains **À faire** (no status transition requested). Real Mistral remains separately consented/budgeted,
+maximum EUR 5.
 
 ## Planned demo sequence — 2026-10-17
 

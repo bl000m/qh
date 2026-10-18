@@ -1,0 +1,110 @@
+{
+  "ticket": "QH-43",
+  "date": "2026-10-18",
+  "baseline": "9b5f9c1adb241db68703e9101cafa8f0aae256e2",
+  "receipt": {
+    "ticket": "QH-12",
+    "browser": "Chromium",
+    "oidc": "Keycloak 26.4.7",
+    "api": "production bootstrap",
+    "postgres": "16.8 tmpfs test-only",
+    "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+    "frontend_image": null,
+    "browser_image": "sha256:778341089e9503f42524fe114e57beb82d21c905ffb7c1e75b0ae7edc09abb5c",
+    "browser_and_contract_checks": "PASS",
+    "existing_real_oidc_regression": "PASS",
+    "native_graph_enabled": true,
+    "qh_login_theme_preview": true,
+    "qh_login_theme_locale": "fr",
+    "browser_filter": null,
+    "real_graph_outage": "PASS",
+    "synthetic_backup_restore_rebuild_browser": "PASS",
+    "published_ports": [],
+    "live_qh_access": false,
+    "paid_calls": 0
+  },
+  "full_browser_count": 51,
+  "full_browser_duration": "3.6m",
+  "full_oidc": {
+    "passed": 1,
+    "deselected": 1,
+    "seconds": 13.16
+  },
+  "full_outage": {
+    "passed": 4,
+    "seconds": 8.0
+  },
+  "full_restore_browser": {
+    "passed": 1,
+    "seconds": 15.8
+  },
+  "capture_receipt": {
+    "ticket": "QH-12",
+    "browser": "Chromium",
+    "oidc": "Keycloak 26.4.7",
+    "api": "production bootstrap",
+    "postgres": "16.8 tmpfs test-only",
+    "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+    "frontend_image": null,
+    "browser_image": "sha256:b1f5e46be2852c7965cae7452537145f48f94ea6bced98b00f6b234a298e1171",
+    "browser_and_contract_checks": "PASS",
+    "existing_real_oidc_regression": "PASS",
+    "native_graph_enabled": true,
+    "qh_login_theme_preview": true,
+    "qh_login_theme_locale": "fr",
+    "browser_filter": "one approved identity",
+    "real_graph_outage": "PASS",
+    "synthetic_backup_restore_rebuild_browser": "PASS",
+    "published_ports": [],
+    "live_qh_access": false,
+    "paid_calls": 0
+  },
+  "capture_count": 1,
+  "capture_seconds": 19.9,
+  "capture_oidc": {
+    "passed": 1,
+    "deselected": 1,
+    "seconds": 13.63
+  },
+  "capture_outage": {
+    "passed": 4,
+    "seconds": 7.6
+  },
+  "capture_restore_browser": {
+    "passed": 1,
+    "seconds": 17.0
+  },
+  "counts_overlap_not_summed": true,
+  "both_images_have_identical_client_executables_and_assets": true,
+  "source_hashes": {
+    "apps/web/src/App.tsx": "d62da4e1d651be25d0df557c792d5229b7e6202935186793198cee9646d205f5",
+    "apps/web/src/Chat.tsx": "58a459431b53a11c4bfe3533d4b412459a7c1999adf18492574ddc1ed5abb87e",
+    "apps/web/src/styles.css": "35019d1ff05d6f66d201f254c0159c9e9a8288648fce6ce7a08ec49c70cbb270",
+    "apps/web/src/presentation.ts": "564eed0e5b5d7a73b9fbed7c3a7232054dce4a283beda09742e9026ccfb55760",
+    "apps/web/index.html": "5ee856dfc9850fa3ad783e6922f3aa324060221df3cc48e991aa2675b06d7696",
+    "apps/web/src/brand/qh-logo.png": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+    "apps/web/src/brand/qh-bubble.png": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+    "apps/web/src/brand/qh-icon.png": "a81809aecf736272cd2bd4d2290843b8c93e747e779d9ea805c5a56fdc9021bc",
+    "apps/web/tests/ux.browser.spec.ts": "cb6e7ef2bf5f85943a7764ec353236eadfde40d544682fe74cd4340fa6cb7198",
+    "apps/web/tests/chat.browser.spec.ts": "ff0814f2ecf6fb08a1fe197f53028f282165176a2f4353fc192b696862616324",
+    "apps/web/tests/presentation.spec.ts": "f663fb7c56ac5d53dbee3a9adeff78a543751154bdfd61e8f56206833f7cc8ca"
+  },
+  "prior_manifest_hashes": {
+    "qh43-ux-checkpoint-20261018": "67c0207d7d3f51d0d8802ac678621b68386f18105591ea3a084c005df8167d6b",
+    "qh43-ux-iteration2-20261018": "1cadf457012e9f1673accb7a842f0683c4b926561a12744bc6b187ea2707ae77",
+    "qh43-branding-checkpoint-20261018": "e19fb0437111e541b706011ab67d897ef51656d3a4b0489eb541d195878fe328",
+    "qh43-final-review-20261018": "07fb4c34cd1b2d00c8e88fe532293d8363b0a1e8d4a3db7eb90da0380185e350"
+  },
+  "capture_list_fixture": "exact API records filtered to three synthetic demo UUIDs only; no production filter/invented data",
+  "preservation": {
+    "canonical_14_tables_equal": true,
+    "six_runtime_containers_configuration_start_times_equal": true,
+    "private_env_and_readonly_realm_equal": true,
+    "two_closed_ledgers_equal": true,
+    "seven_original_references_equal": true
+  },
+  "live_visual_check": "PASS; authorized reads only, private owner dashboard retained privately",
+  "merge_or_jira_write": false,
+  "vps_theme_activation": false,
+  "owner_new_visual_review_complete": false
+}

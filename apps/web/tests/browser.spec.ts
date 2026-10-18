@@ -1,3 +1,4 @@
+import {afterLogin} from './navigation.browser';
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
@@ -10,7 +11,7 @@ async function login(page: Page, name = 'alice') {
   await page.locator('#password').fill(password);
   await page.locator('#kc-login').click();
   await expect(page.getByRole('button', {name:'Se déconnecter'})).toBeVisible();
-  await expect(page.getByText('Identité QH :', {exact:false})).toBeVisible();
+  await afterLogin(page);
 }
 async function create(page: Page, name: string) {
   await page.getByRole('button', {name:'Créer un Context Space',exact:true}).click();
@@ -27,29 +28,33 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   let pkce = false;
   page.on('request', request => {
     const url = new URL(request.url());
-    if (url.pathname.endsWith('/auth')) pkce = url.searchParams.get('code_challenge_method') === 'S256' && !!url.searchParams.get('state') && !url.searchParams.has('client_secret');
+    if (url.pathname.endsWith('/auth')) pkce = url.searchParams.get('code_challenge_method') === 'S256' && !!url.searchParams.get('state') && !!url.searchParams.get('nonce') && url.searchParams.get('ui_locales') === 'fr' && !url.searchParams.has('client_secret');
   });
   await login(page);
   expect(pkce).toBe(true);
+  await page.getByText('Informations du compte QH',{exact:true}).click();
   await expect(page.getByText('Identité QH : ' + aliceId)).toBeVisible();
+  await page.getByText('Informations du compte QH',{exact:true}).click();
   await create(page,'Projet QH');
   await page.getByRole('link', {name:'Projet QH',exact:true}).click();
   await expect(page.getByRole('heading', {name:'Projet QH',exact:true})).toBeVisible();
   const path = new URL(page.url()).pathname;
   await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
-  await page.getByRole('link', {name:'← Mes Context Spaces'}).click();
+  await page.getByRole('link', {name:'Mon environnement'}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();
   await storageIsTokenFree(page);
   await page.screenshot({path:info.outputPath('alice-dashboard.png'),fullPage:true});
   const context = await browser.newContext({baseURL:'http://localhost:5173'});
   const bob = await context.newPage();
   try {
-    await bob.goto(path); // Direct deep link survives the real OIDC callback.
+    await bob.goto(path); // A protected deep link must now land at the environment after login.
     await login(bob,'bob');
+    await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
+    await bob.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},path);
     await expect(bob.getByRole('alert')).toHaveText('Ce Context Space est introuvable ou inaccessible.');
     await expect(bob.getByRole('heading', {name:'Projet QH',exact:true})).toHaveCount(0);
-    await bob.getByRole('link', {name:'← Mes Context Spaces'}).click();
+    await bob.getByRole('link', {name:'Mon environnement'}).click();
     await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
     await expect(bob.getByText('Votre premier contexte commence ici.')).toBeVisible();
     await storageIsTokenFree(bob);
@@ -84,6 +89,23 @@ test('tampering with callback state prevents token exchange', async ({page}) => 
   expect(exchanges).toBe(0);
   expect(await page.evaluate(() => sessionStorage.getItem('test.callback.tampered'))).toBe('yes');
   await storageIsTokenFree(page);
+});
+test('tampered transaction nonce rejects the real ID token before private API access', async ({page}) => {
+  let apiCalls=0;
+  page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))apiCalls++;});
+  await page.addInitScript(()=>{
+    if(location.pathname!=='/oidc/callback')return;
+    for(const key of Object.keys(sessionStorage))if(key.startsWith('qh.oidc.')){
+      const raw=sessionStorage.getItem(key);if(!raw)continue;
+      const state=JSON.parse(raw);if(state.nonce){state.nonce='invalid-test-nonce';sessionStorage.setItem(key,JSON.stringify(state));}
+    }
+  });
+  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+  await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);
+  const token=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/token'));
+  await page.locator('#kc-login').click();expect((await token).status()).toBe(200);
+  await expect(page.getByRole('alert')).toContainText('La connexion n’a pas abouti');
+  expect(apiCalls).toBe(0);await storageIsTokenFree(page);
 });
 test('API failure is sanitized, recoverable; invalid name and failed creation preserve the form', async ({page}) => {
   await page.goto('/'); await login(page);

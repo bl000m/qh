@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-18",
+  "verified_baseline": "6305b5ba291ab3bb283f2b8d6e703c8961973835",
+  "receipt": {
+    "ticket": "QH-12",
+    "browser": "Chromium",
+    "oidc": "Keycloak 26.4.7",
+    "api": "production bootstrap",
+    "postgres": "16.8 tmpfs test-only",
+    "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+    "frontend_image": null,
+    "browser_image": "sha256:f7e8458a4c12d71fbab28bb10a68927597afd2aafa46bdd30ae30130ef1d2077",
+    "browser_and_contract_checks": "PASS",
+    "existing_real_oidc_regression": "PASS",
+    "native_graph_enabled": true,
+    "qh_login_theme_preview": true,
+    "qh_login_theme_locale": "fr",
+    "browser_filter": "source-only QH login theme|selected original mark",
+    "real_graph_outage": "PASS",
+    "synthetic_backup_restore_rebuild_browser": "PASS",
+    "published_ports": [],
+    "live_qh_access": false,
+    "paid_calls": 0
+  },
+  "targeted_browser_count": 2,
+  "targeted_browser_seconds": 15.3,
+  "oidc": {
+    "passed": 1,
+    "deselected": 1,
+    "seconds": 13.34
+  },
+  "graph_outage": {
+    "passed": 3,
+    "seconds": 7.3
+  },
+  "restored_browser": {
+    "passed": 1,
+    "seconds": 17.6
+  },
+  "counts_overlap_not_summed": true,
+  "preservation": {
+    "canonical_14_tables_equal": true,
+    "six_runtime_container_identities_configuration_start_times_equal": true,
+    "private_env_and_readonly_realm_equal": true,
+    "two_closed_mistral_ledgers_equal": true,
+    "seven_original_reference_files_equal": true
+  },
+  "unchanged_runtime_source_hashes": {
+    "apps/web/src/App.tsx": "969a8ccb4c11b99bd3b8b3a3a781fc3813c78de9b3a85b388b948714be977b0b",
+    "apps/web/src/styles.css": "127ab32a117e1eea525614c561c18862b008869ac5f56f416b948e47311a24c0",
+    "apps/web/index.html": "5ee856dfc9850fa3ad783e6922f3aa324060221df3cc48e991aa2675b06d7696",
+    "apps/web/src/brand/qh-logo.png": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+    "apps/web/src/brand/qh-bubble.png": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+    "apps/web/src/brand/qh-icon.png": "a81809aecf736272cd2bd4d2290843b8c93e747e779d9ea805c5a56fdc9021bc"
+  },
+  "theme_activated_on_vps": false,
+  "merge_or_jira_write": false,
+  "owner_final_review_complete": false,
+  "paid_calls": 0
+}

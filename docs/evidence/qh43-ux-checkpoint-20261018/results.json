@@ -1,0 +1,106 @@
+{
+  "source_commit": "20314d6197fed8d751af8802ec3a2d8bc74beadb",
+  "images": {
+    "qh43-api:checkpoint": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+    "qh43-browser:checkpoint": "sha256:1f97b4ef408649f0182d185dcaf26508e9bb8e297736483d92ef8bc915886e9c"
+  },
+  "browser_image_source_hashes": {
+    "apps/web/playwright.config.ts": "620ed766b379612ad368c7ea3ae67a005359bc981960a1aae529ac5f7c703daf",
+    "apps/web/src/App.tsx": "99300806b112bed68f24fea3b9e3e24b60ed5fe1c55a7d550a8a18b66212306a",
+    "apps/web/src/Chat.tsx": "b8145b66d739b4d37d9a79cedc9ae02e775ec51b59b19e2473890c7e1204c9ae",
+    "apps/web/src/Revision.tsx": "ed4ed04489b53e57f20480f8fdc54c9e9a8772bc9bc034c382d11cbe675a6779",
+    "apps/web/src/SearchUnderstanding.tsx": "3249fb3becc77786010d373da832baf023c03f104c925c740ab915bcd324fb5a",
+    "apps/web/src/Understanding.tsx": "3bf884875154f93d24e77d7a43d5f771c5aefdbfbf9b4390b120e3c44a6c2e86",
+    "apps/web/src/UnderstandingExplorer.tsx": "9cbc1e9a14e4bea0e156ba38e981bf2b272ea4b2ac8bcde600668f63567ad440",
+    "apps/web/src/api.ts": "a29b9da1bdf8c52de9288fdf7799a59e4e857df931cfabc72d7ed77c7272c5f1",
+    "apps/web/src/auth.ts": "b8da2d0612fea124662846708565c36b700e8447014d0eed9f4e45eb3c9bc1da",
+    "apps/web/src/chat.ts": "393187abea87ccdc35c68313a20f266c8b7bc9469ac88a3227a95a1046dde135",
+    "apps/web/src/main.tsx": "2eac8844c913ef2c7a0ab2dfcae3747d4e158488f9e93b7f2b20b5e14d12bb0e",
+    "apps/web/src/navigation.ts": "177753cea0ce19c820bd86d408a1eed4dbdfad046ff95e377269274661ff9120",
+    "apps/web/src/styles.css": "9f84c134ee2d8ae3f44ebedf08b6fba01363148c748a6a51448f2adab3b356df",
+    "apps/web/src/transport.ts": "d198644a6f0ef96be0d34ae9e3302ed6d6e4088594b1928322b005c9d76c08e2",
+    "apps/web/src/understanding.ts": "68e3c605f208c60d08e1f4d99ddba2086016f39824608acebc8666c537d62753",
+    "apps/web/tests/browse.browser.spec.ts": "cbd5b20a5ae30d845c7501a9ce6e373eb560cae8eb598e152160ec4f5d337a48",
+    "apps/web/tests/browser.spec.ts": "d3fcef38807041bd94d41cae85feb11b57a6962ab389bf430652dbdd9e0ba908",
+    "apps/web/tests/chat.browser.spec.ts": "bcbd61f05d8a25ea63d7611dfb59704b2a3f32a7dee4ea37df3436cf20d612ee",
+    "apps/web/tests/chat.spec.ts": "85e20c9c93d6abfae1c6dbc2f8879a49e0df45890f83f2d98195f8ed3c14c538",
+    "apps/web/tests/contracts.spec.ts": "d77304c1ed0986488c5fca1e96ce8997d698c00a057157bc2f8b6ecccab5666e",
+    "apps/web/tests/graph-outage.spec.ts": "aa32d58522d968a749dde0d0471c2cdead73d562be39510dba7e9d76b5b4c72c",
+    "apps/web/tests/navigation.browser.ts": "b793dbc2d87fedd75f3c310d62b3e0e77bb97afad0cf37c9769c73d1ea818c94",
+    "apps/web/tests/understanding.browser.spec.ts": "b5878ce188a8145493ef03c7f37fd3c1cf8e849cdeb6268502f2f6a1c8b3513d",
+    "apps/web/tests/understanding.spec.ts": "3385c6881021733657f10b7ac3e907b6e446474281f38c624678b742c2225d59",
+    "apps/web/tests/ux.browser.spec.ts": "f203f5f0b588fb8399bf9f44e8fe19e81f37e02c6e55fa4cc459501aa8280002"
+  },
+  "initial_run": {
+    "passed": 41,
+    "failed": 2,
+    "causes": [
+      "SSO reauthentication helper assumed password form",
+      "actual 320px/200-percent-text layout overflow"
+    ]
+  },
+  "final_isolated_run": {
+    "frontend_browser_contracts_passed": 43,
+    "duration_reported": "3.1m",
+    "oidc_passed": 1,
+    "oidc_deselected": 1,
+    "oidc_duration_seconds": 12.74,
+    "graph_outage_run_passed": 3,
+    "graph_outage_duration_seconds": 6.2,
+    "restored_browser_run_passed": 1,
+    "restored_browser_duration_seconds": 16.3,
+    "counts_overlap_do_not_sum": true,
+    "dump_restore_tables_match": true,
+    "graph_rebuild_canonical_tables_match": true,
+    "harness_exit_code": 0
+  },
+  "live": {
+    "result": "PASS",
+    "cases": [
+      {
+        "name": "Projet pilote",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Bien-être",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Organisation personnelle",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      }
+    ],
+    "bob_denials": 6,
+    "key_warnings": 0,
+    "paid_calls": 0
+  },
+  "live_reflow": {
+    "reflow": "PASS",
+    "width": 320,
+    "text_percent": 200,
+    "offscreen_elements": []
+  },
+  "branding_applied": false,
+  "theme_prepared": false,
+  "theme_activated": false,
+  "paid_provider_calls": 0,
+  "remaining_gates": [
+    "Owner asset-selection/composition approval",
+    "Original authoritative SVG and variants; palette/font rights",
+    "Branding implementation and visual acceptance",
+    "Theme-source preparation after approval; live activation separately authorized",
+    "Full ticket owner review/merge/Jira closure"
+  ]
+}

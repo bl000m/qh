@@ -1,0 +1,12 @@
+{
+  "fourteen_qh_tables_identical": true,
+  "six_container_identities_configurations_and_start_times_identical": true,
+  "env_realm_ledgers_identical": true,
+  "three_alice_demo_spaces_retained": true,
+  "original_asset_hashes_unchanged": true,
+  "paid_provider_calls": 0,
+  "canonical_writes": 0,
+  "public_asset_imports": 0,
+  "theme_changes": 0,
+  "public_provider": "mock"
+}

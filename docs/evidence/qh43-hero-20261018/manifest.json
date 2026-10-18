@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-18",
+  "files": {
+    "README.md": "cf3ee5f5943547b2d26ddf60a008b87ab7c8ea299aadca782838e856f24dad46",
+    "audit.py": "8df020c76d949a55ce71cae2ac6f8c742ecef9349e2c5b78573ee98a6092d9a2",
+    "results.json": "95a27b03b0496ae03936175decb201c9e7ac23af454cd1e45b02c60e2840fffe",
+    "screenshots/environment-desktop.png": "abfe20997f374992d952470df88df43699fc733af1113ea1de31e2d123e8a5cf",
+    "screenshots/environment-mobile.png": "3512e28da008970988dbe958c297538a568dd8bb6883f7090cde75112a68d870",
+    "screenshots/space-desktop.png": "5ce4e49bc0af1bb09110c053fbf391a9027af3137ba08ce1a6d1763b669575aa",
+    "screenshots/space-mobile.png": "d370629491f989bfabbc48f53b622a92b9fc91dad56282e1ef9ed9902f38e2ec",
+    "screenshots/spaces-desktop.png": "1454c2ccb71fa3e242e03bb98f70d2317578f33cf61ef312f16a0c0c7d9f7e0a",
+    "screenshots/spaces-mobile.png": "399ef0ac524c3d75b909dfc9d5bc22ad4039dd2bbebb50468a93dfa373392613",
+    "screenshots/welcome-desktop.png": "65e0d50608af1f2d756a8142e1777682251b25cbdc80ab5b6693ef49ab92af10",
+    "screenshots/welcome-mobile.png": "45ff668419ab90b4cd9cb0663a52143a932fa486642a78728744f454349d2e28"
+  }
+}

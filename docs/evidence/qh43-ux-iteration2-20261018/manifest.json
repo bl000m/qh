@@ -1,0 +1,14 @@
+{
+  "files": {
+    "README.md": "85dd99edae35631924047ccd7d3d0b5cafb32f1265f46fa28c0829f3ea2f982c",
+    "audit.py": "98254d226126721d6ee27558c5ee0b8d07128381a825fa9e717fdc1506a1ceeb",
+    "results.json": "b0fffbd1f4bf02ee4b2c68b49cf3591a0b8eff814e50a19a10a75b701c0fc82d",
+    "screenshots/after-desktop.png": "a7af1b2c471ef23e094857ce5eb8d1a58fdff164bbcd09f998f82d5b23155385",
+    "screenshots/after-mobile.png": "a1aa0f992a7511dd36671bdac9c50d0fa02459f98be8f9540b1e145e9ef14643",
+    "screenshots/before-desktop.png": "7ee0aefc667d0d4282429c05c45b916fa141ef233dc0ad2f6db781c2ec70d9f5",
+    "screenshots/before-mobile.png": "3854d636a340c4f69094feb6a5ba1cf93a48b0c2ef101cbcae3684e592537f6b",
+    "screenshots/conversation-desktop.png": "02f58065021166965643173f486674a742a51b1b61dda0e89ca2492fbb8156c5",
+    "screenshots/conversation-mobile.png": "6be828763dc4862be9d658f91c40f20e9a363f97d84eef432ed3ed922f160523",
+    "screenshots/skip-focused-desktop.png": "d233a1875ebfdae5133a2d0f1d156d7a2dae40109ff70695b2dfd47fef21264f"
+  }
+}

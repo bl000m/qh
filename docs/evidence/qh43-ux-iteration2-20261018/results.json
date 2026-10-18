@@ -1,0 +1,173 @@
+{
+  "baseline_commit": "28e82004b69267cc304ce729ccc5ce63ecb765dc",
+  "source_commit": "6857ea2274358ebad48d256dd4f78a9fd43a4275",
+  "browser_image_source_hashes": {
+    "apps/web/src/App.tsx": "341196c7d885f36de880ff86a45a650381e55dc6f8bec5f3b33b5f4fc5609ca6",
+    "apps/web/src/Chat.tsx": "446577c22fc316bd7d7529409382c8b32dacbf569d15fc361d07da831903d16e",
+    "apps/web/src/styles.css": "8151a289dda6f04de741de3ab9cf2637567efc3a5627157ace7812c175230ec8",
+    "apps/web/tests/chat.browser.spec.ts": "7bd01c06b90838673e9436453c55d8dd0287b324b9517449f007d5d914ade8f6",
+    "apps/web/tests/ux.browser.spec.ts": "3f91027df0ca6924cf2f788ed182c7c32c642acd2380f5337d0402cf7d948c96"
+  },
+  "final_isolated_run": {
+    "ticket": "QH-12",
+    "browser": "Chromium",
+    "oidc": "Keycloak 26.4.7",
+    "api": "production bootstrap",
+    "postgres": "16.8 tmpfs test-only",
+    "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+    "frontend_image": null,
+    "browser_image": "sha256:f0563ff570cd711573bc9a74cfd3e468e78824ab1d19b2dc0c63aec0d0d1ee9d",
+    "browser_and_contract_checks": "PASS",
+    "existing_real_oidc_regression": "PASS",
+    "native_graph_enabled": true,
+    "real_graph_outage": "PASS",
+    "synthetic_backup_restore_rebuild_browser": "PASS",
+    "published_ports": [],
+    "live_qh_access": false,
+    "paid_calls": 0
+  },
+  "test_counts": {
+    "browser_contracts": 45,
+    "duration_reported": "3.5m",
+    "oidc": 1,
+    "oidc_deselected": 1,
+    "graph_outage": 3,
+    "restored_browser": 1,
+    "overlapping_counts_not_summed": true
+  },
+  "layout": {
+    "before": {
+      "desktop": {
+        "question_y": 741.59375,
+        "chat_y": 379.25,
+        "scroll_width": 1280,
+        "viewport": 1280,
+        "skip_focused": false,
+        "skip_rect": {
+          "x": 8,
+          "y": -91.1875,
+          "width": 137.09375,
+          "height": 49.59375,
+          "top": -91.1875,
+          "right": 145.09375,
+          "bottom": -41.59375,
+          "left": 8
+        }
+      },
+      "mobile": {
+        "question_y": 897.859375,
+        "chat_y": 307.75,
+        "scroll_width": 390,
+        "viewport": 390,
+        "skip_focused": false,
+        "skip_rect": {
+          "x": 8,
+          "y": -91.1875,
+          "width": 137.09375,
+          "height": 49.59375,
+          "top": -91.1875,
+          "right": 145.09375,
+          "bottom": -41.59375,
+          "left": 8
+        }
+      }
+    },
+    "after": {
+      "desktop": {
+        "question_y": 571.921875,
+        "chat_y": 363.25,
+        "scroll_width": 1280,
+        "viewport": 1280,
+        "skip_focused": false,
+        "skip_rect": {
+          "x": 8,
+          "y": 8,
+          "width": 1,
+          "height": 1,
+          "top": 8,
+          "right": 9,
+          "bottom": 9,
+          "left": 8
+        }
+      },
+      "mobile": {
+        "question_y": 518.46875,
+        "chat_y": 267.75,
+        "scroll_width": 390,
+        "viewport": 390,
+        "skip_focused": false,
+        "skip_rect": {
+          "x": 8,
+          "y": 8,
+          "width": 1,
+          "height": 1,
+          "top": 8,
+          "right": 9,
+          "bottom": 9,
+          "left": 8
+        }
+      }
+    }
+  },
+  "live": {
+    "result": "PASS",
+    "cases": [
+      {
+        "name": "Projet pilote",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Bien-\u00eatre",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Organisation personnelle",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      }
+    ],
+    "bob_denials": 6,
+    "key_warnings": 0,
+    "paid_calls": 0
+  },
+  "live_accessibility": {
+    "result": "PASS",
+    "textarea_and_placeholder_contrast": [
+      19.56546782383518,
+      5.349377163200645
+    ],
+    "skip_focus_main": "PASS",
+    "composer_hit_test": "PASS"
+  },
+  "live_reflow": {
+    "reflow": "PASS",
+    "width": 320,
+    "text_percent": 200,
+    "offscreen_elements": []
+  },
+  "preservation": {
+    "fourteen_qh_tables_identical": true,
+    "six_container_ids_configs_and_start_times_identical": true,
+    "env_realm_closed_ledgers_unchanged": true,
+    "seven_original_asset_hashes_unchanged": true
+  },
+  "public_brand_derivatives": 0,
+  "paid_calls": 0,
+  "canonical_writes": 0,
+  "theme_prepared": false,
+  "theme_activated": false,
+  "logo_selected": false,
+  "public_asset_rights_confirmed": false,
+  "hosted_ci": "Check latest PR #15 HEAD separately; local counts are not hosted counts"
+}

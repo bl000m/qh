@@ -28,7 +28,12 @@ The sole development checkout is /home/ubuntu/qh;
 use one active task branch there under the Single Checkout Development Policy
 below. Runtime management uses guarded `make dev-*` commands and private .env;
 /home/ubuntu/qh-runtime/current remains the preserved image-only rollback bundle.
-Keep the readonly root Keycloak realm import file unchanged. Future planning does
+Keep the readonly root Keycloak realm import file unchanged. The owner later authorized
+QH-43 demo-realm theme/French activation on 2026-10-18; consult
+[the activation/rollback record](docs/qh-43-keycloak-activation.md). This preserves
+the readonly import, OIDC/security/session contracts and other infrastructure.
+Installed static theme files are not a source bind and must be reinstalled before
+any separately authorized future Keycloak recreation. Future planning does
 not authorize further persistent writes/deployment/retirement.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
 approved three generic profiles, open descriptor contract, authorized structured selection and
@@ -42,7 +47,11 @@ migrations or immutable historical bindings to force a new vocabulary.
 
 Read [ADR 0005](docs/adr/0005-browse-first-context-understanding.md) and the Product
 Contract's browse-first amendment before changing understanding UX or retrieval.
-Browsing is primary; search complements it. Preserve deterministic-preview versus
+The later owner-approved Demo A amendment makes chat primary inside the Space
+in QH-43, with a visible expandable explorer usable before any question. Search
+remains complementary; browsing never requires a query. See
+[QH-43 checkpoint](docs/qh-43-visual-proposal.md) for implemented layout versus gated
+branding/theme work. Preserve deterministic-preview versus
 validated/generative synthesis distinctions, open data-derived groups, epistemic
 states and progressive disclosure. No global counts from partial pages, semantic
 inference from descriptors, or SQL-only graph bypass. Search QH-10's selector

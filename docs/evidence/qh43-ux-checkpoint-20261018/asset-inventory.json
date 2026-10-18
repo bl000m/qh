@@ -1,0 +1,87 @@
+{
+  "delivery": "seven already-extracted files under private incoming/QH-design 2; requested qh-design-references.zip absent",
+  "zip_crc_verification": "NOT TESTED: no ZIP present",
+  "original_files": [
+    {
+      "name": "01-mobile-mon-environnement.png",
+      "bytes": 2539784,
+      "sha256": "d9cfc30641f72819220ba05397d69352ff961b32e798e53477fb20ac26db2883",
+      "format": "PNG",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "color_type": 6
+    },
+    {
+      "name": "02-chat-projection-sante.png",
+      "bytes": 2306879,
+      "sha256": "c365c388914772935d949bd135a47d30f841b1122a2e565c4837c2a64d97f8f8",
+      "format": "PNG",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "color_type": 6
+    },
+    {
+      "name": "03-projection-autorisations.png",
+      "bytes": 1398015,
+      "sha256": "c05520317d4f3036122347a38a8c7c8a3d7825fa13b0900e17b2a9ab1650e23c",
+      "format": "PNG",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "color_type": 6
+    },
+    {
+      "name": "04-illustration-bulles.png",
+      "bytes": 2839447,
+      "sha256": "0abf0dd0261b3371cad3f1e86563881e2728ec823d5ec31c7c084d5a0cd1d237",
+      "format": "PNG",
+      "dimensions": [
+        1122,
+        1402
+      ],
+      "color_type": 6
+    },
+    {
+      "name": "05-presentation-reference.pdf",
+      "bytes": 4533183,
+      "sha256": "7e1efe2631050504cf6923f43ee70c9fa000fd051529eba2293b4b773a3db7f3",
+      "format": "PDF"
+    },
+    {
+      "name": "Bulle de savon irisée transparente.png",
+      "bytes": 1108285,
+      "sha256": "046928db09708381a83fa4868a318f4c722966630c97ba3a3d29c9a8c1743055",
+      "format": "PNG",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "color_type": 6
+    },
+    {
+      "name": "README.md",
+      "bytes": 1742,
+      "sha256": "69e5b6c2e6a824d166009a3f945d9f5dc5878ef9ae7835a0c0b6e7014f8d8b76",
+      "format": "other"
+    }
+  ],
+  "png_crc": "PASS: five PNGs, every chunk CRC and IEND boundary valid",
+  "pdf": {
+    "pages": 24,
+    "page_size_points": [
+      1440,
+      810
+    ],
+    "encrypted": false,
+    "inspection": "All page text read; pages 1,9-12,19-21 rendered privately; supplied PNGs visually inspected"
+  },
+  "svg_logo_present": false,
+  "public_asset_imported": false,
+  "theme_prepared": false,
+  "rights": "Owner-supplied design references; selection and public derivative permission pending owner review. No original deck/mockup distributed in this archive."
+}

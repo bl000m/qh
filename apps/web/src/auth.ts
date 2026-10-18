@@ -20,6 +20,8 @@ export function oidcSettings(origin: string, authority = 'http://localhost:8080/
   return {
     authority, client_id: 'qh-web', redirect_uri: origin + '/oidc/callback',
     response_type: 'code', disablePKCE: false, scope: 'openid qh:api', loadUserInfo: false,
+    // Presentation hint only: the realm's default locale loses to browser English.
+    ui_locales: 'fr',
     automaticSilentRenew: false, monitorSession: false, staleStateAgeInSeconds: 300,
     userStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
     stateStore: new WebStorageStateStore({ store: window.sessionStorage, prefix: 'qh.oidc.' })
@@ -50,7 +52,9 @@ export function createSession(): BrowserSession {
           await manager.clearStaleState();
           user = await manager.signinRedirectCallback(callback);
           if (user.expired || !user.access_token) throw new Error('Expired session');
-          window.history.replaceState(null, '', safeReturnPath(user.state));
+          // QH-43: orient every newly authenticated session at its environment.
+          // OIDC state/PKCE validation above is unchanged; no saved Space is restored.
+          window.history.replaceState(null, '', '/');
           window.dispatchEvent(new PopStateEvent('popstate'));
           set('authenticated');
         } catch { clear('error'); }

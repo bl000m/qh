@@ -15,6 +15,77 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 actual branded French VPS login — 2026-10-18
+
+- Activate the existing inherited QH theme with only seven static files/four realm
+  presentation fields; retain all containers, mounts, images and auth contracts.
+- Add standard French OIDC presentation hint, nonce regression and explicit manual
+  read-only VPS acceptance: real desktop/mobile, wrong password, logout, Alice/Bob,
+  state/nonce/PKCE and natural signed-token expiry. Verify old-theme rollback.
+- Preserve QH data/ledgers/private configuration; no credential export, paid call,
+  migration, merge/Jira closure or QH-45/BFF work.
+
+### QH-43 hero/capsule correction — 2026-10-18
+
+- Expand welcome/environment with central original artwork, add owned-Space
+  capsules with accessible ten-grapheme captions, and strengthen primary chat.
+- Explain excluded proposals, no understanding revisions and history-only states
+  using existing authorized bounded views; preserve opt-in and all warning text.
+  No canonical name/data, API, provider, asset bytes or VPS realm change.
+
+### QH-43 final review preparation — 2026-10-18
+
+- Verify the inherited login theme in French on a disposable realm copy, including
+  real Code+PKCE completion, responsive rendering and selected asset proportions.
+- Record final acceptance mapping, immutable prior evidence and POC/future limits;
+  prepare the existing PR for owner review. No app redesign, VPS theme activation,
+  paid call, persistent write, merge or Jira transition.
+
+### QH-43 selected original identity — 2026-10-18
+
+- Integrate the owner's selected geometric mark as the sole client identity;
+  use the original compact bubble on welcome/environment and keep Space chat-first.
+  Add only faithful crop/resampling and a whole-mark favicon, with asset provenance.
+- Prepare a source-only Keycloak theme inheriting the existing forms/scripts;
+  verify it on a disposable realm copy, preserving the VPS realm and OIDC contract.
+  Add branded desktop/mobile screenshots, image/focus/reflow and login regressions.
+- Close the logo comparison; preserve its private history. No theme activation,
+  paid inference, canonical write, new feature, merge or Jira DONE.
+
+### QH-43 second UX checkpoint — 2026-10-18
+
+- Put the composer ahead of technical explanations; distinguish pending questions
+  and actual extractive/provider output visually. Keep proposal consent, canonical
+  epistemic warnings, source/context disclosures and full exploration intact.
+- Make keyboard skip navigation first, focus main explicitly and hide the link
+  off-focus. Check mobile/enlarged-text reflow and unchanged OIDC/Alice–Bob isolation.
+- Confirm the seven supplied references need no ZIP; prepare a private original-
+  region logo comparison, pending owner logo selection and public usage rights.
+  No public branding derivative or Keycloak theme is prepared/activated.
+
+### QH-43 functional UX and private visual proposal — 2026-10-18
+
+- Land validated OIDC sessions at Mon environnement; keep owned cards readable,
+  fold technical metadata, identify the selected Space and make chat primary.
+- Add lazy, keyboard-operable canonical exploration without a query; retain full
+  sources/history/anchors, proposal opt-in/warnings, dialogue isolation and mock
+  labeling. Correct narrow-screen enlarged-text reflow without clipping content.
+- Analyze the seven already-extracted owner reference files; preserve originals
+  privately and propose the standalone bubble as a compact decorative asset.
+  Requested ZIP and logo SVG are absent. No final branding, theme, public original
+  asset, Domain/sharing feature, inference, canonical write, merge or DONE.
+
+### QH-13 POC closure / QH-43 UX planning — 2026-10-18
+
+- Close owner-reviewed QH-13 through history-preserving PR #14 merge `cc6f421`
+  and verified Jira DONE. Keep deterministic proposal warnings mandatory and
+  general model semantic correctness unproven; public provider remains mock.
+- Prepare the QH-43 screen/component/asset/acceptance plan on a dedicated branch
+  from updated main. Original branding and owner review are pending; no UX,
+  theme activation, Domain feature, paid inference or canonical write implemented.
+- Preserve all three demo Spaces, QH tables, ledgers, configuration and infrastructure
+  through the guarded app-only checkout switch; existing hot reload/ports retained.
+
 ### QH-13 second authorized Mistral chat trial — 2026-10-18
 
 - Record the exact authorized one-POST alias experiment: six aliases resolved to
@@ -271,3 +342,7 @@ runtime transition. The immutable bundle/images remain preserved for rollback.
 
 Earlier milestones retain their original dated reports and ADRs; this changelog
 starts from the recorded native cutover and does not invent past release versions.
+
+### QH-43 final centring correction — 2026-10-18
+
+- Centre the original bubble across the full Keycloak header grid and mobile welcome/environment; preserve authentication and frozen previous evidence. See [actual VPS checks](docs/evidence/qh43-centering-20261018/README.md).

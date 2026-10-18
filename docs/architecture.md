@@ -54,14 +54,22 @@ Search is secondary. Canonical-summary selection, LLM synthesis, editing/human
 validation and advanced graph navigation remain outside this increment. See
 [verifiable QH-12 criteria](qh-12-context-understanding.md#owner-approved-acceptance-criteria).
 
-### Later Demo A interaction direction — planning only
+### Later Demo A interaction direction — QH-43 functional checkpoint
 
 The owner's [later Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#demo-a-experience--owner-amendment-2026-10-17)
-sets chat-first in-Space interaction for the next UX increment, with a visible,
-expandable explorer and no mandatory query before access to understanding.
-Earlier ADR 0005/0006 decisions and the current exploration-first implementation
-remain historical/implemented checkpoints. Login-to-environment, refinement of the existing multi-Space overview
-and supplied branding are future client work, not a new Domain model or OIDC system.
+sets chat-first in-Space interaction, with a visible expandable explorer and no
+mandatory query before access to understanding. The owner-approved QH-43
+[functional/asset-selection checkpoint](qh-43-visual-proposal.md) implements
+login-to-environment, readable owned-Space cards, primary chat and expandable
+canonical exploration. The [second UX checkpoint](qh-43-visual-proposal.md#second-checkpoint--owner-direction-and-private-logo-gate-2026-10-18)
+puts technical explanations behind a disclosure while keeping proposal consent and
+canonical epistemic warnings visible. This changes presentation, not retrieval,
+provider contracts, persistence or authorization. The later owner-selected
+[original identity checkpoint](qh-43-branding-checkpoint.md) closes logo comparison,
+adds the selected original mark/compact bubble to the client and prepares an
+inherited Keycloak login theme with an actual disposable-only preview. No theme
+is activated on the VPS; persistent realm/auth/session configuration is unchanged. Earlier ADR 0005/0006 implementation
+checkpoints remain historical evidence, not a new Domain model or OIDC system.
 The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 ephemeral
 chat, explicitly authorized synthetic import and QH-39 conversational acquisition.
 No change to Engine, canonical schema, public API, provider gate or runtime follows.
@@ -448,3 +456,29 @@ records snapshot the sent data; existing live freshness checks still apply.
 Deterministic French UI warnings derive proposed/confirmed information from those
 verified DTOs, independently of generated prose. Identity/provenance/validation
 are not semantic entailment; no new live inference or confirmation is implied.
+
+### QH-43 later hero/capsule correction — 2026-10-18
+
+The owner's [later presentation amendment](product/QH_PRODUCT_CONTRACT.md#qh-43-herocapsule-iteration--owner-correction-2026-10-18)
+supersedes the compact bubble placement on welcome/environment and adds decorative
+Space capsules. Full names/UUIDs remain authoritative despite ten-grapheme visual
+captions. Larger chat presentation preserves all canonical warnings and opt-in.
+When neither current nor proposed revisions exist, the client uses the existing
+authorized graph-verified `history` view with `limit=1` to distinguish retained
+history from no understanding revisions; failures remain unavailable. This is
+presentation/availability guidance, not a new retrieval engine, public contract,
+source-emptiness guarantee or transmission of history to providers. See the
+[checkpoint and executed evidence](qh-43-hero-checkpoint.md).
+
+
+### QH-43 actual VPS login — later owner authorization, 2026-10-18
+
+The [latest Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#qh-43-real-branded-login--owner-decision-2026-10-18)
+authorizes activating the existing inherited QH theme in the demo realm after
+backup/rollback and live checks. Standard `ui_locales=fr` supplies a presentation
+hint; Authorization Code+PKCE, state/nonce, issuer/client/redirect/scopes, in-memory
+tokens and owner policy are unchanged. Keycloak still hosts credentials through
+normal redirects; no password-forwarding React form, ROPC, iframe or BFF.
+[Activation and recoverability](qh-43-keycloak-activation.md) distinguish actual
+VPS evidence from historical isolated previews. QH-42 retains future authentication
+architecture decisions, and QH-45 is not started.

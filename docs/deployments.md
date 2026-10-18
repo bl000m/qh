@@ -6,6 +6,97 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-43 actual QH login on the existing VPS
+
+The owner explicitly authorized the later Jira/theme decision. Seven frozen,
+verified QH theme files are installed in the existing Keycloak container; only
+`loginTheme`, internationalization, supported fr/en and default fr change in the
+qh realm. The client adds standard `ui_locales=fr` for reliable French presentation
+with an English browser. **Zero container restart/recreation, zero new mounts,
+volumes, images or services.** The directory is dynamically recognized.
+
+Actual VPS desktop/mobile auth, wrong password, logout, state/nonce/PKCE negative
+controls, Alice's three retained synthetic Spaces, six Bob denials and natural
+client/server access-token expiry PASS (305 real elapsed seconds; no clock shift).
+The old presentation was restored and observed during rollback rehearsal, then
+QH/French reapplied. Issuer/client/redirect/scopes, in-memory tokens, credentials,
+identity mapping, policy, session lifetimes, root readonly import and QH data
+remain unchanged. [Operation, recovery and exact limits](qh-43-keycloak-activation.md),
+[live evidence](evidence/qh43-keycloak-live-20261018/README.md).
+
+Installed static files survive ordinary container restart, not recreation. Any
+future authorized Keycloak replacement must reinstall the retained exact frozen
+files before serving the realm. Earlier source-only records below remain historical.
+No Mistral call, canonical migration/write, merge, Jira DONE or QH-45 start.
+
+## 2026-10-18 — QH-43 selected identity through existing HMR
+
+The owner approved the exact original geometric mark and compact original bubble
+for frontend/product preview and source-only login preparation. Executable unit
+`a3a046f` uses existing frontend source binds; Vite serves selected PNG imports and
+the favicon without a new mount, container replacement/restart or configuration
+change. Welcome/environment include decorative artwork; Space stays chat-first.
+
+The inherited QH Keycloak theme is **prepared and previewed on the disposable test
+IdP only**. No persistent realm/theme selection, IdP restart or configuration write.
+The committed readonly realm import, identities, client/issuer/PKCE/session contract,
+all QH data, three demo Spaces and closed ledgers remain preserved. Test theme
+selection changes only a temporary copy of the public realm fixture. Locale is
+inherited rather than changing the VPS realm to match preview text.
+[Selected identity and actual evidence](qh-43-branding-checkpoint.md). PR #15 remains
+OPEN / DRAFT; this source checkpoint authorizes no merge, Jira DONE or activation.
+
+## 2026-10-18 — QH-43 second frontend UX checkpoint
+
+The owner requested a second asset-independent iteration on the same QH-43 branch:
+compact chat entry, distinct question/output surfaces, secondary technical help and
+first-stop keyboard skip navigation. Changes run through the existing source HMR;
+no image replacement, container recreation/restart, configuration change or realm
+activation. Public chat remains the extractive mock. All three synthetic demo Spaces
+are retained. [Second checkpoint and evidence](evidence/qh43-ux-iteration2-20261018/README.md).
+Logo comparisons are private derivatives for owner review, not published branding;
+selection/rights and Keycloak theme source preparation remain pending.
+
+## 2026-10-18 — QH-43 asset-independent frontend checkpoint
+
+Owner approved plan `41ee02f` and the functional layout independently of final
+asset selection. Frontend source `20314d6197fed8d751af8802ec3a2d8bc74beadb` is
+active through existing Vite HMR: environment landing, primary chat and accessible
+canonical explorer. No image/container replacement, restart, new service, schema
+change, inference or original-branding publication. Backend/API/Core/provider
+configuration and Keycloak remain unchanged; public chat stays mock.
+
+Read-only before/after inventories match all fourteen QH tables and six container
+identities/configurations/start times. Existing demo Spaces, private configuration,
+realm and closed ledgers are preserved. The real VPS check used existing Alice/Bob
+identities, canonical reads and mock chat only; no create/rename/reseed. Isolated
+Chromium/OIDC/SQL/Neo4j/outage/restore checks are separate from this persistent stack.
+[Checkpoint, private visual proposal and remaining gates](qh-43-visual-proposal.md);
+[executed evidence](evidence/qh43-ux-checkpoint-20261018/README.md). Final branding and
+Keycloak theme sources await asset approval; no theme activation, merge or DONE.
+
+## 2026-10-18 — QH-13 closure and QH-43 planning checkout
+
+Owner accepted the documented POC scope; [PR #14](https://github.com/bl000m/qh/pull/14)
+merged without squash/rebase as `cc6f421b54966f0c1dd302a3da4958d1be6e245f`,
+then QH-13 DONE was verified on Jira. Reviewed HEAD `f543dcb` had all four CI jobs
+green (665 native tests, zero skips). The accepted limit remains visible:
+[second-trial](qh-13-mistral-alias-experiment.md) alias validity and QH 200 do not
+prove semantic correctness; canonical-state proposal warnings stay mandatory.
+
+Guarded `dev-stop` stopped only the two source-mounted apps before main was
+fast-forwarded and `feat/QH-43-demo-a-ux-branding` created. `dev-up` restored the
+same containers/images/mounts on ports 5173/8000; IdP discovery on 8080 is healthy.
+All fourteen QH tables, retained Alice demo Spaces, private `.env`/realm and
+experiment ledgers are unchanged. PostgreSQL/Neo4j/Keycloak/MCP container identities,
+configuration and start times are identical; only app start times changed. No
+image replacement, migration, new inference, public Mistral session or theme change.
+Private preservation evidence: `.local-archive/qh13-closure-20261018/`.
+
+[QH-43](qh-43-ux-branding-plan.md) is **planning only** pending owner review and
+original graphics. Its branch/PR changes documentation, not UX or runtime behavior.
+Earlier deployment/trial entries below retain their historical checkpoint status.
+
 ## 2026-10-18 — authorized first Mistral chat trial (no deployment)
 
 The [exact approved manifest](evidence/qh13-mistral-chat-gate-20261018/manifest.json)
@@ -351,3 +442,11 @@ identities remained unchanged. Private .env, realm and stopped Mistral ledger
 were byte-identical. Existing hot reload/ports remain; the newly prepared one-POST
 alias experiment ledger is blocked pending specific consent. No live call, merge
 or Jira DONE follows.
+
+### QH-43 final presentation correction — 2026-10-18
+
+Owner-approved horizontal bubble centring updates only the existing installed
+`qh/login/resources/css/qh.css` and frontend CSS. No realm settings, OIDC flow,
+container restart/recreation, mounts, images or volumes change. Actual desktop/mobile
+login and centring pass; canonical tables, identities, configuration and ledgers
+remain equal. See [sealed supplemental receipt](evidence/qh43-centering-20261018/README.md).

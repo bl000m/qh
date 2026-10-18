@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-18",
+  "owner_approval": "Selected exact original mark; comparison closed; QH preview/frontend integration and source-only login preparation authorized",
+  "attachment_is_visual_reference_not_local_binary": true,
+  "general_artwork_license": null,
+  "logo_source": {
+    "source": "05-presentation-reference.pdf",
+    "source_sha256": "7e1efe2631050504cf6923f43ee70c9fa000fd051529eba2293b4b773a3db7f3",
+    "page": 1,
+    "crop_points": [
+      842,
+      225,
+      1134,
+      481
+    ],
+    "scale": 3,
+    "renderer": "PyMuPDF 1.26.5",
+    "alpha": "native PDF transparency, no color-keying or redraw",
+    "width": 876,
+    "height": 768,
+    "background": "original light background retained; no color-key transparency removal"
+  },
+  "bubble_source": {
+    "file": "Bulle de savon iris\u00e9e transparente.png",
+    "sha256": "046928db09708381a83fa4868a318f4c722966630c97ba3a3d29c9a8c1743055",
+    "original_size": [
+      1448,
+      1086
+    ],
+    "derived_size": [
+      400,
+      300
+    ],
+    "operation": "proportional high-quality downsample with alpha; no creative alteration"
+  },
+  "icon_operation": "whole mark fit inside 64x64 with two-pixel padding, no cropped glyph; same PNG embedded in ICO",
+  "dominant_original_red": "#ff3131",
+  "files": [
+    {
+      "path": "apps/web/src/brand/qh-logo.png",
+      "sha256": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+      "bytes": 22198,
+      "width": 876,
+      "height": 768
+    },
+    {
+      "path": "apps/web/src/brand/qh-bubble.png",
+      "sha256": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+      "bytes": 114921,
+      "width": 400,
+      "height": 300
+    },
+    {
+      "path": "apps/web/src/brand/qh-icon.png",
+      "sha256": "a81809aecf736272cd2bd4d2290843b8c93e747e779d9ea805c5a56fdc9021bc",
+      "bytes": 1756,
+      "width": 64,
+      "height": 64
+    },
+    {
+      "path": "infra/keycloak/themes/qh/login/resources/img/qh-logo.png",
+      "sha256": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+      "bytes": 22198,
+      "width": 876,
+      "height": 768
+    },
+    {
+      "path": "infra/keycloak/themes/qh/login/resources/img/qh-bubble.png",
+      "sha256": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+      "bytes": 114921,
+      "width": 400,
+      "height": 300
+    },
+    {
+      "path": "infra/keycloak/themes/qh/login/resources/img/favicon.ico",
+      "sha256": "1af8fa192125cd78ac281a1dff54aae71dfdb81fedfdf5fb28f8b949685d6baf",
+      "bytes": 1778
+    }
+  ],
+  "full_pdf_or_mockups_published": false,
+  "theme_activated_on_vps": false
+}
