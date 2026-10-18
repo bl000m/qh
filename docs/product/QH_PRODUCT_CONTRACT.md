@@ -352,3 +352,27 @@ rights still require owner confirmation; do not invent/redraw the mark. Keycloak
 theme preparation waits for that approval and activation needs separate consent.
 See the [dated checkpoint](../qh-43-visual-proposal.md). No new domain, capability,
 AI inference, canonical write, provider disclosure or confirmation follows.
+
+
+## QH-43 selected identity — owner approval, 2026-10-18
+
+The owner selects the precise original geometric red-circle/black-H mark shown
+in their approval message. Logo comparison is closed: do not offer alternate UI
+marks, rotate/reinterpret it or generate creative variants. Minimal faithful crops,
+responsive placement and whole-mark icon resampling are authorized for QH product
+preview/frontend integration and source-only login preparation. This is not a
+claim of a general artwork licence or final UX acceptance.
+
+Use the selected mark as the common identity on welcome, Mon environnement and
+Space headers. Keep the original iridescent bubble compact/decorative on welcome
+and environment only; never displace the in-Space question. White/black, restrained
+red, visible proposal consent and canonical epistemic warnings remain mandatory.
+Full explorer/provenance/history stays accessible. No new product capability or
+AI behavior follows from the visual references.
+
+The [selected identity checkpoint](../qh-43-branding-checkpoint.md) records source
+hashes/crop provenance, raster limitations and actual screenshots/tests. Keycloak
+inherits its existing credential/validation/OIDC forms; sources and isolated preview
+are authorized, **persistent VPS activation is not**. Realm, identities, permission,
+session and Code+PKCE contracts remain unchanged. Merge and Jira DONE require
+separate owner approval.

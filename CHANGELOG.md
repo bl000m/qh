@@ -15,6 +15,17 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 selected original identity — 2026-10-18
+
+- Integrate the owner's selected geometric mark as the sole client identity;
+  use the original compact bubble on welcome/environment and keep Space chat-first.
+  Add only faithful crop/resampling and a whole-mark favicon, with asset provenance.
+- Prepare a source-only Keycloak theme inheriting the existing forms/scripts;
+  verify it on a disposable realm copy, preserving the VPS realm and OIDC contract.
+  Add branded desktop/mobile screenshots, image/focus/reflow and login regressions.
+- Close the logo comparison; preserve its private history. No theme activation,
+  paid inference, canonical write, new feature, merge or Jira DONE.
+
 ### QH-43 second UX checkpoint — 2026-10-18
 
 - Put the composer ahead of technical explanations; distinguish pending questions

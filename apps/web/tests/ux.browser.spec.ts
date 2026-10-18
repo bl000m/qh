@@ -98,3 +98,44 @@ test('skip link is first keyboard stop, focuses main, then disappears without co
  })).toBeGreaterThanOrEqual(4.5);
  await field.blur();await page.screenshot({path:info.outputPath('qh43-unfocused-desktop.png'),fullPage:true});
 });
+
+test('selected original mark and compact bubble load on welcome without external artwork',async({page},info)=>{
+ await page.goto('/');const logo=page.locator('.brand img');await expect(logo).toHaveAttribute('alt','QH');
+ await expect(logo).toHaveJSProperty('naturalWidth',876);
+ await expect(page.locator('.signin .qh-bubble')).toHaveAttribute('aria-hidden','true');
+ await expect(page.locator('.signin .qh-bubble')).toHaveJSProperty('naturalWidth',400);
+ const icon=await page.locator('link[rel="icon"]').getAttribute('href');expect(icon).toBeTruthy();
+ expect((await page.request.get(icon!)).status()).toBe(200);
+ await page.screenshot({path:info.outputPath('qh43-branded-welcome-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('qh43-branded-welcome-mobile.png'),fullPage:true});
+ await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('one approved identity spans environment and Space without decorative clutter before chat',async({page},info)=>{
+ await page.goto('/');await login(page);
+ await expect(page.getByRole('link',{name:'Démo QH-8',exact:true})).toBeVisible();
+ await expect(page.locator('.environment-heading .qh-bubble')).toHaveJSProperty('naturalWidth',400);
+ for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
+  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
+ }
+ await page.getByRole('link',{name:'Démo QH-8',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
+ await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.qh-bubble')).toHaveCount(0);
+ await expect(page.locator('.chat-help')).not.toHaveAttribute('open','');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
+ for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
+  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
+ }
+});
+if(process.env.QH43_LOGIN_THEME_TEST==='1')test('source-only QH login theme preserves the real Keycloak form and PKCE completion',async({page},info)=>{
+ await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('#username')).toBeVisible();
+ const url=new URL(page.url());expect(url.origin).toBe('http://localhost:8080');expect(url.searchParams.get('code_challenge_method')).toBe('S256');
+ await expect(page.locator('link[href*="css/qh.css"]')).toHaveCount(1);await expect(page.locator('#password')).toHaveAttribute('type','password');
+ expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundImage)).toContain('qh-logo.png');
+ expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundSize)).toBe('contain');
+ for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
+  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-keycloak-preview-'+name+'.png'),fullPage:true});
+ }
+ await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page);
+ await expect(page.getByRole('heading',{name:'Mon environnement',exact:true})).toBeVisible();
+});

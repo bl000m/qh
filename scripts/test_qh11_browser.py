@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 from pathlib import Path
 import secrets
 import subprocess
@@ -33,6 +34,9 @@ def main():
     parser.add_argument('--browser-image', required=True)
     parser.add_argument('--frontend-image', help='Serve the exact packaged candidate, with no source mounts')
     parser.add_argument('--understanding', action='store_true', help='QH-12 native retrieval and backup/restore acceptance')
+    parser.add_argument('--qh-login-theme', action='store_true',
+                        help='Preview source-only QH theme on this disposable IdP; never alters the VPS realm')
+    parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     docker = ['sudo', '-n', 'docker'] if args.sudo_docker else ['docker']
@@ -87,6 +91,7 @@ def main():
             'OIDC_JWKS_URL': 'http://keycloak:8080/realms/qh/protocol/openid-connect/certs',
             'OIDC_AUDIENCE': 'qh-api', 'QH_NATIVE_CONTEXT_ENABLED': 'false',
             'QH11_BROWSER_TEST': '1', 'QH12_BROWSER_TEST': '1' if args.understanding else '0', 'QH_RUN_OIDC': '1', 'PYTHONPATH': '/workspace/apps/api',
+            'QH43_LOGIN_THEME_TEST': '1' if args.qh_login_theme else '0',
         }
         if args.understanding:
             values.update(NEO4J_AUTH='neo4j/' + secrets.token_hex(24), NEO4J_URI='bolt://neo4j:7687',
@@ -111,14 +116,29 @@ def main():
         idp_env = restricted_env('idp.env', ['KC_BOOTSTRAP_ADMIN_USERNAME', 'KC_BOOTSTRAP_ADMIN_PASSWORD',
                                            'KC_HOSTNAME', 'KC_DB', 'FRONTEND_PORT',
                                            'QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD'])
+        realm_path = ROOT / 'infra/keycloak/qh-realm.json'
+        theme_mounts = []
+        if args.qh_login_theme:
+            # Copy, never rewrite the readonly persistent realm import. Only the test
+            # realm's presentation choice differs; credentials/client/PKCE are intact.
+            realm = json.loads(realm_path.read_text())
+            realm['loginTheme'] = 'qh'
+            realm_path = Path(private) / 'qh-preview-realm.json'
+            realm_path.write_text(json.dumps(realm))
+            # This is the public fixture with environment placeholders, not resolved
+            # credentials. Keycloak's UID differs from the hosted runner's UID.
+            realm_path.chmod(0o644)
+            theme_mounts = ['--mount', 'type=bind,src=' + str(ROOT / 'infra/keycloak/themes/qh') +
+                            ',dst=/opt/keycloak/themes/qh,readonly']
         try:
             run('network', 'create', '--label', 'qh.test.run=' + run_id, run_id)
             network = True
             pg = start('postgres', '--network', run_id, '--network-alias', 'postgres', '--env-file', str(pg_env),
                        '--tmpfs', '/var/lib/postgresql/data:rw', 'postgres:16.8-alpine3.21')
             kc = start('keycloak', '--network', run_id, '--network-alias', 'keycloak', '--env-file', str(idp_env),
-                       '--memory', '1g', '--mount', 'type=bind,src=' + str(ROOT / 'infra/keycloak/qh-realm.json') +
+                       '--memory', '1g', '--mount', 'type=bind,src=' + str(realm_path) +
                        ',dst=/opt/keycloak/data/import/qh-realm.json,readonly',
+                       *theme_mounts,
                        'quay.io/keycloak/keycloak:26.4.7', 'start-dev', '--import-realm')
             wait(['exec', pg, 'pg_isready', '-U', 'qh', '-d', 'qh'], 'Disposable PostgreSQL')
             run('run', '--rm', '-i', '--network', run_id, '--env-file', str(env), '--entrypoint', 'python',
@@ -148,6 +168,7 @@ def main():
             values['QH_BROWSER_EXTERNAL_SERVER'] = '1' if args.frontend_image else '0'
             browser_env = restricted_env('browser.env', ['QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD',
                                                        'QH12_BROWSER_TEST', 'QH12_EXPECTED_JSON',
+                                                       'QH43_LOGIN_THEME_TEST',
                                                        'QH_BROWSER_EXTERNAL_SERVER'])
             with env.open('a') as stream:
                 stream.write('QH_BROWSER_EXTERNAL_SERVER=' + ('1' if args.frontend_image else '0') + '\n')
@@ -158,11 +179,14 @@ def main():
                       "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"],
                      'Packaged frontend')
             print('Running real Chromium → Keycloak → production API → disposable PostgreSQL', flush=True)
+            browser_command = 'npm run build:web && npm run typecheck && npm run test --workspace apps/web'
+            if args.browser_grep:
+                browser_command += ' -- --grep ' + shlex.quote(args.browser_grep)
             run('run', '--rm', '--network', 'container:' + kc, '--env-file', str(browser_env),
                 '-e', 'QH_WEB_API_TARGET=http://backend:8000', '-e', 'QH_BROWSER_OUTPUT=/results',
                 '--mount', 'type=bind,src=' + str(output) + ',dst=/results',
                 args.browser_image, 'sh', '-c',
-                'npm run build:web && npm run typecheck && npm run test --workspace apps/web', capture=False)
+                browser_command, capture=False)
             # Reuse the existing real OIDC/Core/persistence regression, not a duplicate.
             run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
                 '-k', 'test_real_oidc_login_mapping_and_owner_isolation', capture=False)
@@ -224,6 +248,8 @@ def main():
                 'browser_image': run('image', 'inspect', args.browser_image, '--format', '{{.Id}}').strip(),
                 'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'PASS',
                 'native_graph_enabled': args.understanding,
+                'qh_login_theme_preview': args.qh_login_theme,
+                'browser_filter': args.browser_grep,
                 'real_graph_outage': 'PASS' if args.understanding else None,
                 'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,
             }, indent=2) + '\n')

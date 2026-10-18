@@ -6,6 +6,23 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-43 selected identity through existing HMR
+
+The owner approved the exact original geometric mark and compact original bubble
+for frontend/product preview and source-only login preparation. Executable unit
+`a3a046f` uses existing frontend source binds; Vite serves selected PNG imports and
+the favicon without a new mount, container replacement/restart or configuration
+change. Welcome/environment include decorative artwork; Space stays chat-first.
+
+The inherited QH Keycloak theme is **prepared and previewed on the disposable test
+IdP only**. No persistent realm/theme selection, IdP restart or configuration write.
+The committed readonly realm import, identities, client/issuer/PKCE/session contract,
+all QH data, three demo Spaces and closed ledgers remain preserved. Test theme
+selection changes only a temporary copy of the public realm fixture. Locale is
+inherited rather than changing the VPS realm to match preview text.
+[Selected identity and actual evidence](qh-43-branding-checkpoint.md). PR #15 remains
+OPEN / DRAFT; this source checkpoint authorizes no merge, Jira DONE or activation.
+
 ## 2026-10-18 — QH-43 second frontend UX checkpoint
 
 The owner requested a second asset-independent iteration on the same QH-43 branch:

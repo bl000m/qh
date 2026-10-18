@@ -209,3 +209,17 @@ confirmation, generated synthesis, QH-39 ingestion, QH-34/QH-44 Context Delta/ex
 work, local models, semantic retrieval or paid/public Mistral activation. No new
 service, public API, migration, canonical write or automatic confirmation. QH-44's
 roadmap note is acknowledged only; no work or ticket changes are performed on it.
+
+
+## Selected logo implementation — later owner approval, 2026-10-18
+
+The owner selected the exact geometric red-circle/black-H mark; comparison is
+closed and must not be reopened as UI alternatives. Minimal faithful technical
+adaptations, frontend integration and source-only login preparation are authorized.
+Use the original compact iridescent bubble on welcome/environment. Existing source
+binds serve imported assets; no new public mount or runtime restart is required.
+[Current selected identity checkpoint](qh-43-branding-checkpoint.md) records original
+crop/source hashes, actual client/login screenshots and executed test boundaries.
+The earlier absent-master/selection gates are superseded for this approved raster
+preview, not converted into a general artwork licence or final owner UX acceptance.
+Keycloak activation, merge and Jira DONE remain separately gated.

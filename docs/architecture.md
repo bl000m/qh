@@ -64,8 +64,11 @@ login-to-environment, readable owned-Space cards, primary chat and expandable
 canonical exploration. The [second UX checkpoint](qh-43-visual-proposal.md#second-checkpoint--owner-direction-and-private-logo-gate-2026-10-18)
 puts technical explanations behind a disclosure while keeping proposal consent and
 canonical epistemic warnings visible. This changes presentation, not retrieval,
-provider contracts, persistence or authorization. Final branding and Keycloak theme preparation remain
-asset-approval gates; no theme is activated. Earlier ADR 0005/0006 implementation
+provider contracts, persistence or authorization. The later owner-selected
+[original identity checkpoint](qh-43-branding-checkpoint.md) closes logo comparison,
+adds the selected original mark/compact bubble to the client and prepares an
+inherited Keycloak login theme with an actual disposable-only preview. No theme
+is activated on the VPS; persistent realm/auth/session configuration is unchanged. Earlier ADR 0005/0006 implementation
 checkpoints remain historical evidence, not a new Domain model or OIDC system.
 The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 ephemeral
 chat, explicitly authorized synthetic import and QH-39 conversational acquisition.

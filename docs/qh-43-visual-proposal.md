@@ -7,6 +7,15 @@ layout in PR #15. **Branding selection awaits review; no theme source or activat
 [PR #15](https://github.com/bl000m/qh/pull/15).
 
 
+## Selected identity — later owner decision, 2026-10-18
+
+The owner has now selected the precise geometric original mark and **closed the
+comparison**. Do not propose L1–L8 again. Minimal technical derivatives, frontend
+preview and source-only Keycloak preparation are authorized; the following review
+gates are historical checkpoints, superseded for that preview by the
+[selected identity record](qh-43-branding-checkpoint.md). No general artwork licence,
+VPS theme activation, final UX acceptance, merge or DONE is inferred.
+
 ## Second checkpoint — owner direction and private logo gate, 2026-10-18
 
 The owner accepted the first functional layout as a **working base, not final UX**.

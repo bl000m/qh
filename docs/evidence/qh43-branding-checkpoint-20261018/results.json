@@ -1,0 +1,122 @@
+{
+  "runtime_commit": "a3a046f",
+  "runtime_source_hashes": {
+    "apps/web/src/App.tsx": "969a8ccb4c11b99bd3b8b3a3a781fc3813c78de9b3a85b388b948714be977b0b",
+    "apps/web/src/styles.css": "127ab32a117e1eea525614c561c18862b008869ac5f56f416b948e47311a24c0",
+    "apps/web/index.html": "5ee856dfc9850fa3ad783e6922f3aa324060221df3cc48e991aa2675b06d7696",
+    "apps/web/src/brand/qh-logo.png": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+    "apps/web/src/brand/qh-bubble.png": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+    "apps/web/src/brand/qh-icon.png": "a81809aecf736272cd2bd4d2290843b8c93e747e779d9ea805c5a56fdc9021bc"
+  },
+  "full_run": {
+    "browser_count": 48,
+    "browser_duration": "3.6m",
+    "oidc_passed": 1,
+    "oidc_deselected": 1,
+    "oidc_seconds": 13.79,
+    "outage_passed": 3,
+    "outage_seconds": 6.0,
+    "restore_browser_passed": 1,
+    "restore_browser_seconds": 18.7,
+    "receipt": {
+      "ticket": "QH-12",
+      "browser": "Chromium",
+      "oidc": "Keycloak 26.4.7",
+      "api": "production bootstrap",
+      "postgres": "16.8 tmpfs test-only",
+      "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+      "frontend_image": null,
+      "browser_image": "sha256:c00cb59bf4e89a02e34625ac5960015af2a58d154b1516a1ce13e0c1881084d5",
+      "browser_and_contract_checks": "PASS",
+      "existing_real_oidc_regression": "PASS",
+      "native_graph_enabled": true,
+      "qh_login_theme_preview": true,
+      "real_graph_outage": "PASS",
+      "synthetic_backup_restore_rebuild_browser": "PASS",
+      "published_ports": [],
+      "live_qh_access": false,
+      "paid_calls": 0
+    }
+  },
+  "ready_capture_run": {
+    "browser_count": 1,
+    "browser_seconds": 18.8,
+    "change": "Wait for the actual owned fixture link before environment screenshots; no application change",
+    "oidc_passed": 1,
+    "oidc_deselected": 1,
+    "outage_passed": 3,
+    "restore_browser_passed": 1,
+    "receipt": {
+      "ticket": "QH-12",
+      "browser": "Chromium",
+      "oidc": "Keycloak 26.4.7",
+      "api": "production bootstrap",
+      "postgres": "16.8 tmpfs test-only",
+      "backend_image": "sha256:6012d32a107f831497a77f23184481ede8d09f46af33082a0b8e9efe7f85b868",
+      "frontend_image": null,
+      "browser_image": "sha256:064b0c6d4fc7df7c8a8c9918096697590e3212798aff6b983cd22194f81f6134",
+      "browser_and_contract_checks": "PASS",
+      "existing_real_oidc_regression": "PASS",
+      "native_graph_enabled": true,
+      "qh_login_theme_preview": true,
+      "browser_filter": "one approved identity",
+      "real_graph_outage": "PASS",
+      "synthetic_backup_restore_rebuild_browser": "PASS",
+      "published_ports": [],
+      "live_qh_access": false,
+      "paid_calls": 0
+    }
+  },
+  "counts_overlap_not_summed": true,
+  "live": {
+    "result": "PASS",
+    "cases": [
+      {
+        "name": "Projet pilote",
+        "scope": "eb122625-1830-4557-b805-473d3b66132a",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Bien-\u00eatre",
+        "scope": "780888ef-6ca6-4eba-b6f9-f1d192795b7f",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      },
+      {
+        "name": "Organisation personnelle",
+        "scope": "a0e43025-aad1-457e-86f1-6a813fcd14c4",
+        "provided": 6,
+        "model": "qh-mock-extractive/1",
+        "provenance": "PASS",
+        "mock_status": 200
+      }
+    ],
+    "bob_denials": 6,
+    "key_warnings": 0,
+    "paid_calls": 0
+  },
+  "preservation": {
+    "all_fourteen_qh_tables_identical": true,
+    "six_container_ids_configs_start_times_identical": true,
+    "env_readonly_realm_ledgers_unchanged": true,
+    "seven_original_reference_hashes_unchanged": true
+  },
+  "live_visual_checks": {
+    "logo_http": 200,
+    "logo_natural_width": 876,
+    "bubble_natural_width": 400,
+    "space_bubble_count": 0,
+    "space_320px_text200_reflow": "PASS"
+  },
+  "paid_calls": 0,
+  "canonical_writes": 0,
+  "realm_changes_on_vps": 0,
+  "theme_active_on_vps": false,
+  "human_final_ux_review": false,
+  "hosted_ci": "Verify latest PR #15 HEAD separately; not inferred from local receipts"
+}
