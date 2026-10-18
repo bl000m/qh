@@ -51,10 +51,12 @@ def build_auth(*, mapping=None, handler=None, settings=SETTINGS, resolver=None):
 
 @pytest.mark.parametrize("changes", [
     {"iss": "https://wrong.example"}, {"aud": "other-api"}, {"exp": 1},
-    {"nbf": int(time.time()) + 600}, {"iat": int(time.time()) + 600},
+    {"nbf": lambda: int(time.time()) + 600}, {"iat": lambda: int(time.time()) + 600},
     {"sub": ""}, {"sub": 123}, {"exp": None}, {"aud": None},
 ])
 def test_invalid_claims_fail_before_identity_lookup(changes):
+    # A long full-suite run must not age a collection-time future claim into validity.
+    changes = {key: value() if callable(value) else value for key, value in changes.items()}
     auth, calls = build_auth()
     with pytest.raises(InvalidCredentials):
         asyncio.run(auth.authenticate(token(**changes)))
