@@ -158,12 +158,12 @@ button { max-width: 100%; overflow-wrap: anywhere; }
 /* QH-43 owner-requested hero/capsule iteration. Same original artwork and contracts. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .signin { max-width: none; width: 100%; border: 0; border-radius: 28px; padding: 1rem 2rem 2.5rem; text-align: center; background: radial-gradient(ellipse at 50% 34%, #faf8fb 0%, #fff 65%); }
-.welcome-heading { display: flex; flex-direction: column; gap: 0; }
+.welcome-heading { display: flex; flex-direction: column; align-items: center; gap: 0; }
 .welcome-heading > div { max-width: 50rem; }
 .welcome-heading .qh-bubble { width: min(100%, 480px); height: auto; }
 .welcome-heading h1 { max-width: 23ch; margin-inline: auto; font-size: clamp(2.2rem, 4.8vw, 3.7rem); }
 .signin > button { min-width: 200px; min-height: 52px; margin-top: 1.1rem; }
-.environment-heading { flex-direction: column; text-align: center; gap: 0; margin-bottom: 1rem; }
+.environment-heading { flex-direction: column; align-items: center; text-align: center; gap: 0; margin-bottom: 1rem; }
 .environment-heading .qh-bubble { width: min(100%, 400px); height: auto; }
 .environment-heading > div { max-width: 48rem; }
 .space-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 2rem; }

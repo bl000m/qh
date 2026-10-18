@@ -102,3 +102,15 @@ and test-selector failures were corrected and are disclosed in the evidence.
 
 Final owner review, merge and Jira closure remain separate gates. QH-42 retains
 future BFF/same-origin decisions; QH-45 is not started.
+
+## Final owner acceptance and centring — 2026-10-18
+
+The owner accepts this baseline and authorizes merge/Jira closure after final
+checks, with a final horizontal-centering correction. The existing container
+receives only the corrected theme CSS: full-width header grid, no realm update,
+restart or recreation. Mobile welcome/environment also remain centred. The
+[new actual VPS receipt](evidence/qh43-centering-20261018/README.md) supplements,
+and never rewrites, the sealed earlier screenshots/results. Run its lineage audit
+for the later CSS revision; the original audit describes the original snapshot.
+Backup/rollback remains available. Reproducible theme delivery before a future
+container recreation is separately tracked; no recreation is performed now.

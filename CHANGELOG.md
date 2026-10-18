@@ -342,3 +342,7 @@ runtime transition. The immutable bundle/images remain preserved for rollback.
 
 Earlier milestones retain their original dated reports and ADRs; this changelog
 starts from the recorded native cutover and does not invent past release versions.
+
+### QH-43 final centring correction — 2026-10-18
+
+- Centre the original bubble across the full Keycloak header grid and mobile welcome/environment; preserve authentication and frozen previous evidence. See [actual VPS checks](docs/evidence/qh43-centering-20261018/README.md).

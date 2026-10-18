@@ -1,0 +1,27 @@
+{
+  "actual_vps": true,
+  "checks": [
+    {
+      "viewport": "desktop",
+      "welcome_centered": true,
+      "environment_centered": true,
+      "login_bubble_full_grid": true,
+      "actual_login": "PASS"
+    },
+    {
+      "viewport": "mobile",
+      "welcome_centered": true,
+      "environment_centered": true,
+      "login_bubble_full_grid": true,
+      "actual_login": "PASS"
+    }
+  ],
+  "realm_writes": 0,
+  "qh_writes": 0,
+  "paid_calls": 0,
+  "source_hashes": {
+    "infra/keycloak/themes/qh/login/resources/css/qh.css": "9871a0caadd4ff48715ef3266adee7d50ba44b98f66c40e3908d46092c9d6edb",
+    "apps/web/src/styles.css": "a5ba1fe439dbd39094306af9b32220ace0e774626d1b0e495be41fdb36ac7134",
+    "apps/web/tests/ux.browser.spec.ts": "0613d31d30e4c63e7c0d77d70691c271c1fef4ea9884c4b07536f3191357ecd0"
+  }
+}

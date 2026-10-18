@@ -114,7 +114,10 @@ test('selected original mark and central hero bubble load on welcome without ext
  const icon=await page.locator('link[rel="icon"]').getAttribute('href');expect(icon).toBeTruthy();
  expect((await page.request.get(icon!)).status()).toBe(200);
  await page.screenshot({path:info.outputPath('qh43-branded-welcome-desktop.png'),fullPage:true});
- await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('qh43-branded-welcome-mobile.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ const mobileBubble=await page.locator('.signin .qh-bubble').boundingBox();
+ expect(Math.abs(mobileBubble!.x+mobileBubble!.width/2-195)).toBeLessThan(2);
+ await page.screenshot({path:info.outputPath('qh43-branded-welcome-mobile.png'),fullPage:true});
  await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -134,7 +137,10 @@ test('one approved identity spans environment and Space without decorative clutt
  expect((await page.locator('.environment-heading .qh-bubble').boundingBox())!.width).toBeGreaterThanOrEqual(380);
  await expect(page.locator('.space-card .qh-bubble')).toHaveCount(await page.locator('.space-card').count());
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
-  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
+  await page.setViewportSize({width,height});
+  const bubble=await page.locator('.environment-heading .qh-bubble').boundingBox();
+  expect(Math.abs(bubble!.x+bubble!.width/2-width/2)).toBeLessThan(2);
+  await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
@@ -174,7 +180,12 @@ test('source-only QH login theme preserves the real Keycloak form and PKCE compl
  expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundImage)).toContain('qh-logo.png');
  expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundSize)).toBe('contain');
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
-  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-keycloak-preview-'+name+'.png'),fullPage:true});
+  await page.setViewportSize({width,height});
+  const layout=await page.locator('.pf-v5-c-login__main-header').evaluate(n=>{
+   const s=getComputedStyle(n),bubble=getComputedStyle(n,'::after');
+   return {span:bubble.gridColumn,width:parseFloat(bubble.width),available:n.getBoundingClientRect().width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)};
+  });expect(layout.span).toBe('1 / -1');expect(Math.abs(layout.width-layout.available)).toBeLessThan(2);
+  await page.screenshot({path:info.outputPath('qh43-keycloak-preview-'+name+'.png'),fullPage:true});
  }
  await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

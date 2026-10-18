@@ -442,3 +442,11 @@ identities remained unchanged. Private .env, realm and stopped Mistral ledger
 were byte-identical. Existing hot reload/ports remain; the newly prepared one-POST
 alias experiment ledger is blocked pending specific consent. No live call, merge
 or Jira DONE follows.
+
+### QH-43 final presentation correction — 2026-10-18
+
+Owner-approved horizontal bubble centring updates only the existing installed
+`qh/login/resources/css/qh.css` and frontend CSS. No realm settings, OIDC flow,
+container restart/recreation, mounts, images or volumes change. Actual desktop/mobile
+login and centring pass; canonical tables, identities, configuration and ledgers
+remain equal. See [sealed supplemental receipt](evidence/qh43-centering-20261018/README.md).
