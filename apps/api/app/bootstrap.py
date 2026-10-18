@@ -6,6 +6,8 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from adapters.llm.chat_config import configured_chat_provider
+from adapters.llm.session_config import configured_session_factory
+from app.chat.sessions import ProviderSessions
 from app.chat.implementation import ContextualChatService
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
 from adapters.postgres.config import database_url
@@ -75,13 +77,16 @@ def create_runtime_app():
     provider, model = configured_chat_provider()
     context = ManagedContextService(repository=PostgresContextSpaceRepository(url=database_url()),
                                     policy=policy, retrieval_for=retrieval_for)
+    chat = ContextualChatService(context=context, policy=policy,
+                                 provider=provider, model=model, clock=time.perf_counter)
+    sessions = ProviderSessions(chat=chat, factory=configured_session_factory(), clock=time.time)
     return create_app(
         services=ApplicationServices(
             context=context,
-            chat=ContextualChatService(context=context, policy=policy,
-                                       provider=provider, model=model, clock=time.perf_counter),
+            chat=chat, chat_sessions=sessions,
             policy=policy,
         ),
-        security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy),
+        security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy,
+                                  authenticate_with_expiry=authenticator.authenticate_with_expiry),
         lifespan=lifespan,
     )

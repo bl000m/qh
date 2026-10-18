@@ -98,8 +98,12 @@ class ExperimentBudget:
 
         self._change(update)
 
-    def reserve(self, kind, maximum):
+    def reserve(self, kind, maximum, *, session_id=None, session_max_calls=None, session_max_usd=None):
         def update(state):
+            amounts = [maximum, *(Decimal(c[k]) for c in state['calls']
+                for k in ('reserved_usd', 'observed_usd') if k in c)]
+            if any(not value.is_finite() or value < 0 for value in amounts):
+                raise MistralError('Invalid ledger amounts')
             spent = sum(
                 Decimal(c.get("observed_usd", c["reserved_usd"]))
                 for c in state["calls"]
@@ -111,9 +115,15 @@ class ExperimentBudget:
                 or spent + maximum > min(Decimal(state["max_usd"]), Decimal("0.20"))
             ):
                 raise MistralError("Experiment call/budget gate closed")
-            state["calls"].append(
-                dict(kind=kind, reserved_usd=str(maximum), status="pending")
-            )
+            if session_id is not None:
+                records = [c for c in state['calls'] if c.get('session_id') == session_id]
+                committed = sum(Decimal(c.get('observed_usd', c['reserved_usd'])) for c in records)
+                if len(records) >= session_max_calls or committed + maximum > Decimal(session_max_usd):
+                    raise MistralError('Session call/budget gate closed')
+            record = dict(kind=kind, reserved_usd=str(maximum), status="pending")
+            if session_id is not None:
+                record['session_id'] = session_id
+            state["calls"].append(record)
             return len(state["calls"]) - 1
 
         return self._change(update)

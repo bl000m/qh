@@ -61,7 +61,7 @@ class ContextualChatService:
             raise ChatContextUnavailable('Duplicate retrieval revision')
         return tuple(rows), partial
 
-    async def respond(self, request: ChatRequest) -> ChatResponse:
+    async def prepare(self, request: ChatRequest):
         if not request.context_id or request.context_query is not None:
             raise ChatInputInvalid('One explicit Space required')
         # Validate dialogue before any private read or provider invocation.
@@ -75,13 +75,17 @@ class ContextualChatService:
         if fingerprint(await self._collect(request)) != expected:
             raise ChatContextUnavailable('Context changed before generation')
         await self._authorize(request)  # Separate CHAT gate immediately before disclosure.
+        return built, expected
+
+    async def respond(self, request: ChatRequest, *, provider=None, model=None) -> ChatResponse:
+        built, expected = await self.prepare(request)
         elapsed = None
         if not built.revisions:
             answer, references, insufficient = 'Le contexte disponible est insuffisant pour répondre.', (), True
         else:
             started = self.clock() if self.clock else None
             try:
-                generated = await self.provider.generate(built.request)
+                generated = await (provider or self.provider).generate(built.request)
                 answer, references, insufficient = decode_answer(generated.message, built)
             except Exception:
                 # Never disclose provider bodies, prompts, URLs or credential-bearing errors.
@@ -92,7 +96,7 @@ class ContextualChatService:
             raise ChatContextUnavailable('Context changed during generation')
         await self._authorize(request)
         return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=answer),
-            context_ids=(request.context_id,), model=self.model, references=references,
+            context_ids=(request.context_id,), model=model or self.model, references=references,
             provided_revisions=built.revisions, insufficient_context=insufficient,
             partial_coverage=built.partial, input_bound=built.input_bound,
             context_bytes=built.context_bytes, generation_seconds=elapsed)

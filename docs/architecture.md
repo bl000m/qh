@@ -482,3 +482,26 @@ normal redirects; no password-forwarding React form, ROPC, iframe or BFF.
 [Activation and recoverability](qh-43-keycloak-activation.md) distinguish actual
 VPS evidence from historical isolated previews. QH-42 retains future authentication
 architecture decisions, and QH-45 is not started.
+
+### QH-45 owner-approved interactive disclosure sessions — 2026-10-18
+
+[ADR 0007](adr/0007-scoped-provider-sessions.md) adds ephemeral application-level
+provider grants inside `app/chat`, using the same `ContextualChatService.prepare`
+and `respond` path, PolicyService CHAT, native canonical selection/graph checks,
+pure builder, alias decoder and outbound LLMProvider. A per-request provider binding
+avoids mutating a shared global provider or creating another RAG/Understanding Engine.
+
+FastAPI supplies verified identity/expiry/token hash through the existing OIDC
+adapter; its identity-only authentication method and browser Code+PKCE/session
+contract remain compatible. UI/API previews disclose no provider data until exact
+snapshot consent; temporary grants have fixed token-bounded expiry and explicit
+revocation. Adapters enforce both session and aggregate reservations in the existing
+flock/fsync ledger. Restart loses grants but cannot reset accounting. No canonical
+schema/table, transcript storage or new infrastructure service is added.
+
+Default runtime binds mock and session-disabled capability. Only a separately
+reviewed private backend receipt/ledger may authorize a real owner/Space/model;
+key presence and client payloads cannot activate it. The isolated browser helper
+injects `httpx.MockTransport` only under its disposable harness guard; production
+startup never selects that helper. See [QH-45](qh-45-generative-chat.md) for executed
+checks, 300-second UX limits and the unexecuted, separately authorized live gate.

@@ -1,5 +1,14 @@
 # QH-45 — interactive provider session contract for owner review
 
+**Later owner approval — 2026-10-18:** “Approvo il contratto proposto”. The
+single-Space/session/public-ingress proposal below is approved for implementation
+and offline tests, not paid inference or live activation. See the current
+[implementation and verification report](qh-45-generative-chat.md) and
+[ADR 0007](adr/0007-scoped-provider-sessions.md). The initial draft checkpoint and
+its pending/not-implemented matrix below are retained as historical evidence,
+superseded by the implementation report; they are not the current delivery verdict.
+
+
 2026-10-18 (Europe/Rome). Implementation starts from the verified QH-43 merge.
 This proposal does not enable Mistral or authorize disclosure/spending. The Jira
 activity explicitly requires approval of this session/public-ingress contract

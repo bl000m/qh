@@ -419,3 +419,36 @@ qh realm**, after preflight, narrow backup, rollback and live verification.
 QH-42 retains any future BFF/same-origin architecture and threat model. QH-45
 (real LLM chat) is not started here. No credential export, new auth/provider system,
 canonical write, paid inference, automatic confirmation, merge or Jira DONE.
+
+## QH-45 scoped provider session — owner-approved contract, 2026-10-18
+
+The owner explicitly approves a single authenticated owner/Space/model/snapshot
+session for contextual chat, with disclosure consent **separate** from proposed
+revision inclusion. This is approval to implement/test offline, not transmission,
+spending, live provider configuration, canonical writes or a new OIDC contract.
+
+Mock remains default and available. A real session additionally requires a private
+server allowlist/authorization/ledger and explicit browser consent after preview
+of the exact authorized context, current question and temporary dialogue. CHAT
+policy and graph-backed canonical verification apply before disclosure; immutable
+revision aliases/provenance and canonical epistemic warnings remain mandatory.
+Context changes require renewed consent. No historical/rejected data is added.
+
+The grant binds owner, Space, model, token and exact context; at most five minutes,
+never beyond verified access-token/private-authorization expiry. Revocation,
+logout, changing Space/proposal choice/provider, new discussion, reload or backend
+restart must not silently resume it. Local cleanup cannot recall already transmitted
+data; unacknowledged offline revocation relies on the short expiry. Default is
+three requests/0.01 USD, configurable server limits within the aggregate existing
+eight attempts/0.20 USD and owner-approved EUR ceiling. Opening new sessions cannot
+reset durable accounting. No retry, fallback or silent renewal. Pending/unknown
+spend and errors stop further automatic work.
+
+The 300-second OIDC lifetime is unchanged: late consent may leave only seconds.
+QH-42 owns any future renewal/BFF/session redesign. Generated prose, canonical
+reference identity, source provenance, validation state and semantic support are
+distinct. No model response becomes Understanding State (QH-39 remains separate).
+[ADR 0007](../adr/0007-scoped-provider-sessions.md) records rationale and alternatives;
+[implementation/evidence](../qh-45-generative-chat.md) separates measured offline
+checks from the unexecuted real-session experiment. QH-49 tracks reproducible
+Keycloak theme delivery and is required before its future ordinary recreation.
