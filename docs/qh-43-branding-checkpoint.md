@@ -1,5 +1,8 @@
 # QH-43 — selected original identity and login preview
 
+Later owner correction: [central artwork, capsules and primary chat](qh-43-hero-checkpoint.md).
+Earlier screenshots/readiness below are dated checkpoints, not acceptance of this iteration.
+
 Later final-verification record: [French isolated login, acceptance mapping and
 review readiness](qh-43-final-review.md). The dated draft checkpoint below is
 preserved; it does not override the later final-review status.

@@ -1,5 +1,8 @@
 # QH-43 — final technical review
 
+Later owner correction: [central artwork, capsules and primary chat](qh-43-hero-checkpoint.md).
+Earlier screenshots/readiness below are dated checkpoints, not acceptance of this iteration.
+
 2026-10-18. [PR #15](https://github.com/bl000m/qh/pull/15), branch
 `feat/QH-43-demo-a-ux-branding`, sole checkout `/home/ubuntu/qh`.
 The owner accepts the branding direction and requests final verification, with no

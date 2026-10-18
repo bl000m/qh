@@ -46,15 +46,32 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
 });
 test('proposed-only Space needs explicit choice and empty context invents no evidence',async({page})=>{
  await open(page,expected.proposed_scope);await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:false})).toBeVisible();
+ const help='Des éléments sont disponibles, mais ils ne sont pas confirmés. Pour en discuter, cochez « Inclure explicitement les propositions non confirmées ».';
+ await expect(page.getByText(help,{exact:true})).toBeVisible();
+ await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
  let r=await ask(page);expect((await r.json()).insufficient_context).toBe(true);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('insuffisant');
+ await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText(help);
  await page.getByLabel('Inclure explicitement les propositions non confirmées').check();r=await ask(page);
  const data=await r.json();expect(data.provided_revisions).toHaveLength(1);expect(data.provided_revisions[0].validation_state).toBe('proposed');
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Proposé, non confirmé');
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
+ await expect(page.getByRole('heading',{name:'Ce Space attend sa première compréhension.',exact:true})).toBeVisible();
  r=await ask(page);expect((await r.json()).references).toHaveLength(0);
+});
+
+test('history-only Space is not labelled empty; history verification errors fail closed',async({page})=>{
+ await open(page,expected.historical_scope);
+ await expect(page.getByText('Une histoire à explorer, aucun élément actif pour discuter.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Ce Space attend sa première compréhension.',{exact:true})).toHaveCount(0);
+ await page.route('**/understanding?*',route=>new URL(route.request().url()).searchParams.get('view')==='history'
+  ?route.fulfill({status:503,contentType:'application/json',body:'{"detail":"unavailable"}'}) :route.continue());
+ await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
+ await expect(page.getByRole('alert')).toBeVisible();
+ await expect(page.getByText('Ce Space attend sa première compréhension.',{exact:true})).toHaveCount(0);
+ await expect(page.getByLabel('Votre question sur ce contexte')).toBeDisabled();
 });
 test('provider failure is sanitized, never retried, and clears prior answers',async({page})=>{
  await open(page);await ask(page);await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();

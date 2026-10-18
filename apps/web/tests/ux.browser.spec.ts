@@ -99,7 +99,7 @@ test('skip link is first keyboard stop, focuses main, then disappears without co
  await field.blur();await page.screenshot({path:info.outputPath('qh43-unfocused-desktop.png'),fullPage:true});
 });
 
-test('selected original mark and compact bubble load on welcome without external artwork',async({page},info)=>{
+test('selected original mark and central hero bubble load on welcome without external artwork',async({page},info)=>{
  await page.goto('/');const logo=page.locator('.brand img');await expect(logo).toHaveAttribute('alt','QH');
  await expect(logo).toHaveJSProperty('naturalWidth',876);
  const logoBox=await logo.boundingBox();expect(logoBox).not.toBeNull();
@@ -108,6 +108,9 @@ test('selected original mark and compact bubble load on welcome without external
  await expect(page.locator('.signin .qh-bubble')).toHaveJSProperty('naturalWidth',400);
  const bubbleBox=await page.locator('.signin .qh-bubble').boundingBox();expect(bubbleBox).not.toBeNull();
  expect(bubbleBox!.width/bubbleBox!.height).toBeCloseTo(4/3,2);
+ expect(bubbleBox!.width).toBeGreaterThanOrEqual(450);
+ expect(Math.abs(bubbleBox!.x+bubbleBox!.width/2-(await page.locator('.signin').boundingBox())!.x-(await page.locator('.signin').boundingBox())!.width/2)).toBeLessThan(2);
+ expect((await page.locator('.signin').boundingBox())!.width).toBeGreaterThan(1000);
  const icon=await page.locator('link[rel="icon"]').getAttribute('href');expect(icon).toBeTruthy();
  expect((await page.request.get(icon!)).status()).toBe(200);
  await page.screenshot({path:info.outputPath('qh43-branded-welcome-desktop.png'),fullPage:true});
@@ -116,18 +119,47 @@ test('selected original mark and compact bubble load on welcome without external
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('one approved identity spans environment and Space without decorative clutter before chat',async({page},info)=>{
+ // A clean owner-review fixture: retain exact API records for the three real
+ // synthetic demo Spaces; exclude unrelated acceptance/security controls only
+ // in this capture's list response. No production filter or invented cards.
+ await page.route('**/api/context-spaces?*',async route=>{
+  const response=await route.fetch();const data=await response.json();
+  const ids=new Set(expected.demo_spaces.map((demo:{scope:string})=>demo.scope));
+  const items=data.items.filter((item:{id:string})=>ids.has(item.id));expect(items).toHaveLength(3);
+  await route.fulfill({response,json:{...data,items,next_after_id:null}});
+ });
  await page.goto('/');await login(page);
- await expect(page.getByRole('link',{name:'Démo QH-8',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();
  await expect(page.locator('.environment-heading .qh-bubble')).toHaveJSProperty('naturalWidth',400);
+ expect((await page.locator('.environment-heading .qh-bubble').boundingBox())!.width).toBeGreaterThanOrEqual(380);
+ await expect(page.locator('.space-card .qh-bubble')).toHaveCount(await page.locator('.space-card').count());
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
+  await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
- await page.getByRole('link',{name:'Démo QH-8',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
+ await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
  await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.qh-bubble')).toHaveCount(0);
  await expect(page.locator('.chat-help')).not.toHaveAttribute('open','');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
  }
+});
+
+test('capsule captions truncate visually while full names and distinct IDs remain keyboard-accessible',async({page})=>{
+ const names=['Organisation personnelle','Organisation alternative','123456789👩🏽‍🔬suite'];
+ await page.route('**/api/context-spaces?*',async route=>{
+  const response=await route.fetch();const data=await response.json();
+  await route.fulfill({response,json:{...data,items:expected.demo_spaces.map((demo:{scope:string},i:number)=>({...data.items[0],id:demo.scope,name:names[i]}))}});
+ });
+ await page.goto('/');await login(page);
+ const cards=page.locator('.space-card');await expect(cards).toHaveCount(3);
+ for(let i=0;i<3;i++){
+  const link=cards.nth(i).getByRole('link',{name:names[i],exact:true});
+  await expect(link).toHaveAttribute('title',names[i]);await expect(link).toHaveAttribute('href','/context-spaces/'+expected.demo_spaces[i].scope);
+  await expect(link.locator('h3 > span[aria-hidden]')).toHaveText(i===2?'123456789👩🏽‍🔬…':'Organisati…');
+ }
+ const last=cards.nth(2).getByRole('link');await last.focus();await expect(last).toBeFocused();await page.keyboard.press('Enter');
+ await expect(page.getByRole('heading',{level:1,name:expected.demo_spaces[2].name,exact:true})).toBeVisible();
 });
 if(process.env.QH43_LOGIN_THEME_TEST==='1')test.describe('French QH login preview',()=>{
 test.use({locale:'fr-FR'});

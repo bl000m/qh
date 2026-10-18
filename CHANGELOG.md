@@ -15,6 +15,14 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 hero/capsule correction — 2026-10-18
+
+- Expand welcome/environment with central original artwork, add owned-Space
+  capsules with accessible ten-grapheme captions, and strengthen primary chat.
+- Explain excluded proposals, no understanding revisions and history-only states
+  using existing authorized bounded views; preserve opt-in and all warning text.
+  No canonical name/data, API, provider, asset bytes or VPS realm change.
+
 ### QH-43 final review preparation — 2026-10-18
 
 - Verify the inherited login theme in French on a disposable realm copy, including

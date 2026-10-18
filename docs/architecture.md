@@ -456,3 +456,16 @@ records snapshot the sent data; existing live freshness checks still apply.
 Deterministic French UI warnings derive proposed/confirmed information from those
 verified DTOs, independently of generated prose. Identity/provenance/validation
 are not semantic entailment; no new live inference or confirmation is implied.
+
+### QH-43 later hero/capsule correction — 2026-10-18
+
+The owner's [later presentation amendment](product/QH_PRODUCT_CONTRACT.md#qh-43-herocapsule-iteration--owner-correction-2026-10-18)
+supersedes the compact bubble placement on welcome/environment and adds decorative
+Space capsules. Full names/UUIDs remain authoritative despite ten-grapheme visual
+captions. Larger chat presentation preserves all canonical warnings and opt-in.
+When neither current nor proposed revisions exist, the client uses the existing
+authorized graph-verified `history` view with `limit=1` to distinguish retained
+history from no understanding revisions; failures remain unavailable. This is
+presentation/availability guidance, not a new retrieval engine, public contract,
+source-emptiness guarantee or transmission of history to providers. See the
+[checkpoint and executed evidence](qh-43-hero-checkpoint.md).

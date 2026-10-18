@@ -376,3 +376,26 @@ inherits its existing credential/validation/OIDC forms; sources and isolated pre
 are authorized, **persistent VPS activation is not**. Realm, identities, permission,
 session and Code+PKCE contracts remain unchanged. Merge and Jira DONE require
 separate owner approval.
+
+## QH-43 hero/capsule iteration — owner correction, 2026-10-18
+
+The owner requests a wider immersive welcome with a large **central** original
+bubble, a more prominent central environment bubble, and owned-Space capsules with
+that same original artwork. This supersedes the earlier compact/side-decoration
+choice **on those surfaces**; the chosen mark, image bytes and Keycloak preparation
+are unchanged. No bubble hero is introduced ahead of the in-Space question.
+
+| Decision | Rationale / alternative | Consequences and limits |
+| --- | --- | --- |
+| Full-width centered welcome and central environment artwork | Replace the narrow card/side ornament with a clearer QH environment identity | Responsive CSS, original proportional image only; no animation, new illustration, Domain or graph meaning |
+| One bubble per owned Space, centered title above its capsule | Show navigable context objects rather than administrative rows | Same decorative asset for every Space; it encodes no status, category, count, sharing or unique generated identity |
+| Shorten overview titles after ten user-perceived characters, adding `…` | Keep captions consistent without renaming canonical Spaces | Grapheme-safe display only; complete accessible link name, tooltip, metadata and detail heading remain intact. Navigation/React identity uses the Space UUID, never the truncated label |
+| Give chat a larger primary panel/composer | Make the conversation visually dominant | Existing provider behavior, explicit opt-in, epistemic warnings and ephemeral state remain unchanged. Explorer and Space metadata stay visible disclosures below chat |
+| Explain excluded proposals separately from missing active support | An empty answer must not imply no understanding exists | Use authorized current/proposed availability; explicitly explain unchecked proposal inclusion before and after an insufficient answer. Never select it automatically |
+| Distinguish no retained understanding revisions from history-only | No current/proposed hit alone proves neither an empty Space nor absent sources | Only when both active views are empty, read one authorized graph-verified history row. On error stay unavailable; never fall back to SQL or call missing data empty. History remains excluded from chat |
+
+The empty state describes **understanding revisions**, not absence of source-only
+records or other Space metadata. Insufficiency for a particular question remains
+different from overall Space completeness. UI explanations are deterministic;
+no textual rules invent model answers or semantic relevance. No new persistence,
+API, policy, real provider activation, confirmation or Keycloak realm change.

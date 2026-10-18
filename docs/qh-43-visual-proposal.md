@@ -1,5 +1,8 @@
 # QH-43 — asset selection and functional UX checkpoints
 
+Later owner correction: [central artwork, capsules and primary chat](qh-43-hero-checkpoint.md).
+Earlier screenshots/readiness below are dated checkpoints, not acceptance of this iteration.
+
 Current hand-off: [final technical review](qh-43-final-review.md). The checkpoints
 below preserve the earlier selection gates; logo comparison is now closed.
 

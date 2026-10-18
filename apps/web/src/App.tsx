@@ -8,18 +8,19 @@ import UnderstandingExplorer from './UnderstandingExplorer';
 import { navigate, usePath } from './navigation';
 import qhLogo from './brand/qh-logo.png';
 import qhBubble from './brand/qh-bubble.png';
+import {spaceTitle} from './presentation';
 
 function DecorativeBubble() {
   return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
 }
 
-function Link({ to, children }: { to: string; children: ReactNode }) {
+function Link({ to, children, label, title }: { to: string; children: ReactNode; label?: string; title?: string }) {
   function follow(event: MouseEvent<HTMLAnchorElement>) {
     if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
       event.preventDefault(); navigate(to);
     }
   }
-  return <a href={to} onClick={follow}>{children}</a>;
+  return <a href={to} onClick={follow} aria-label={label} title={title}>{children}</a>;
 }
 function Notice({ error, children }: { error?: boolean; children: ReactNode }) {
   return <p className={error ? 'notice error' : 'notice'} role={error ? 'alert' : 'status'}>{children}</p>;
@@ -88,7 +89,13 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
     {error && <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>}
     {loading && <Notice>Chargement des Context Spaces…</Notice>}
     {!loading && !error && items.length === 0 && !recent && <div className="empty"><h3>Votre premier contexte commence ici.</h3><p>Vous n’avez pas encore de Context Space. Créez-en un pour commencer.</p></div>}
-    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).map(item => <li key={item.id} className="space-card"><p className="eyebrow">Context Space</p>{recent?.id === item.id && <p className="muted">Créé récemment</p>}<h3><Link to={'/context-spaces/' + item.id}>{item.name}</Link></h3><p className="space-lifecycle">{item.status === 'active' ? 'Space actif' : item.status}</p><p className="small muted">Modifié le <time dateTime={item.updated_at}>{new Date(item.updated_at).toLocaleDateString('fr-FR')}</time></p><details><summary>Métadonnées du Space</summary><Metadata space={item} /></details></li>)}</ul>
+    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).map(item => <li key={item.id} className="space-card">
+      <Link to={'/context-spaces/' + item.id} label={item.name} title={item.name}>
+        <h3><span aria-hidden="true">{spaceTitle(item.name)}</span><span className="sr-only">{item.name}</span></h3>
+        <div className="space-capsule"><DecorativeBubble/><span className="capsule-action">Ouvrir ce contexte <span aria-hidden="true">↗</span></span></div>
+      </Link>
+      <div className="space-card-caption">{recent?.id === item.id && <p className="muted">Créé récemment</p>}<p className="space-lifecycle">{item.status === 'active' ? 'Space actif' : item.status}</p><p className="small muted">Modifié le <time dateTime={item.updated_at}>{new Date(item.updated_at).toLocaleDateString('fr-FR')}</time></p><details><summary>Métadonnées du Space</summary><p>{item.name}</p><Metadata space={item} /></details></div>
+    </li>)}</ul>
     {next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}
   </section>;
 }
@@ -106,7 +113,7 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   }, [id, api, refresh]);
   return <section><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">{space?.name ?? 'Context Space'}</span></nav>
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className="detail"><p className="eyebrow">Context Space</p><h1 ref={title} tabIndex={-1}>{space.name}</h1><details><summary>Métadonnées du Space</summary><Metadata space={space} /></details><Chat key={'chat:'+space.id} api={api} scope={space.id} /><UnderstandingExplorer key={'understanding:'+space.id} api={api} scope={space.id} /></article> :
+      space ? <article className="detail"><p className="eyebrow">Context Space</p><h1 ref={title} tabIndex={-1}>{space.name}</h1><Chat key={'chat:'+space.id} api={api} scope={space.id} /><UnderstandingExplorer key={'understanding:'+space.id} api={api} scope={space.id} /><details className="space-metadata"><summary>Métadonnées du Space</summary><Metadata space={space} /></details></article> :
         <Notice>Chargement du Context Space…</Notice>}
   </section>;
 }
@@ -142,7 +149,7 @@ export default function App({ session }: { session: BrowserSession }) {
           {state === 'expired' && <Notice error>Votre session a expiré. Reconnectez-vous pour continuer.</Notice>}
           {state === 'error' && <Notice error>La connexion n’a pas abouti. Veuillez recommencer.</Notice>}
           {state === 'signed-out' && <Notice>Vous êtes déconnecté de QH.</Notice>}
-          <div className="welcome-heading"><div><h1>Bienvenue dans votre environnement QH</h1><p>Connectez-vous pour accéder à vos Context Spaces.</p></div><DecorativeBubble/></div>
+          <div className="welcome-heading"><DecorativeBubble/><div><h1>Bienvenue dans votre environnement QH</h1><p>Connectez-vous pour accéder à vos Context Spaces.</p></div></div>
           <button onClick={() => { void session.login(); }}>Se connecter</button></>}
       </section>}
     </main><footer>QH — Environnement souverain de contexte</footer></div>;
