@@ -6,6 +6,17 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-43 second frontend UX checkpoint
+
+The owner requested a second asset-independent iteration on the same QH-43 branch:
+compact chat entry, distinct question/output surfaces, secondary technical help and
+first-stop keyboard skip navigation. Changes run through the existing source HMR;
+no image replacement, container recreation/restart, configuration change or realm
+activation. Public chat remains the extractive mock. All three synthetic demo Spaces
+are retained. [Second checkpoint and evidence](evidence/qh43-ux-iteration2-20261018/README.md).
+Logo comparisons are private derivatives for owner review, not published branding;
+selection/rights and Keycloak theme source preparation remain pending.
+
 ## 2026-10-18 — QH-43 asset-independent frontend checkpoint
 
 Owner approved plan `41ee02f` and the functional layout independently of final

@@ -61,7 +61,10 @@ sets chat-first in-Space interaction, with a visible expandable explorer and no
 mandatory query before access to understanding. The owner-approved QH-43
 [functional/asset-selection checkpoint](qh-43-visual-proposal.md) implements
 login-to-environment, readable owned-Space cards, primary chat and expandable
-canonical exploration. Final branding and Keycloak theme preparation remain
+canonical exploration. The [second UX checkpoint](qh-43-visual-proposal.md#second-checkpoint--owner-direction-and-private-logo-gate-2026-10-18)
+puts technical explanations behind a disclosure while keeping proposal consent and
+canonical epistemic warnings visible. This changes presentation, not retrieval,
+provider contracts, persistence or authorization. Final branding and Keycloak theme preparation remain
 asset-approval gates; no theme is activated. Earlier ADR 0005/0006 implementation
 checkpoints remain historical evidence, not a new Domain model or OIDC system.
 The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 ephemeral

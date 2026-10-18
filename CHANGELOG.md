@@ -15,6 +15,17 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 second UX checkpoint — 2026-10-18
+
+- Put the composer ahead of technical explanations; distinguish pending questions
+  and actual extractive/provider output visually. Keep proposal consent, canonical
+  epistemic warnings, source/context disclosures and full exploration intact.
+- Make keyboard skip navigation first, focus main explicitly and hide the link
+  off-focus. Check mobile/enlarged-text reflow and unchanged OIDC/Alice–Bob isolation.
+- Confirm the seven supplied references need no ZIP; prepare a private original-
+  region logo comparison, pending owner logo selection and public usage rights.
+  No public branding derivative or Keycloak theme is prepared/activated.
+
 ### QH-43 functional UX and private visual proposal — 2026-10-18
 
 - Land validated OIDC sessions at Mon environnement; keep owned cards readable,

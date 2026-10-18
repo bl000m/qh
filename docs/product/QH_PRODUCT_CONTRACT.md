@@ -330,3 +330,25 @@ activation still requires separate consent. Existing warnings derived from verif
 canonical proposed states remain mandatory even if generated prose omits them.
 No presentation mockup authorizes Domains, sharing/projections, provider selection,
 conversation ingestion, synthetic medical facts, paid inference or confirmation.
+
+
+## QH-43 second UX checkpoint — owner direction, 2026-10-18
+
+The owner accepts the functional layout as a base rather than final UX. Make the
+question and actual question/answer sequence visually primary; place implementation
+explanations in a secondary disclosure. Explicit proposal inclusion and applicable
+warnings derived from canonical states must remain visible, independent of provider
+prose or disclosure state. Mock output remains explicitly extractive, not generative
+comprehension. Keep the full explorer discoverable before a question; technical IDs,
+JSON and extended provenance remain inspectable without dominating initial reading.
+
+The owner confirms the seven files in `QH-design 2/` as the intended references;
+no ZIP is needed. Approved direction: original compact decorative bubble on
+Mon environnement/welcome, white/black, red accents and discreet iridescence.
+No portraits or future-feature mockups as product controls. A private, traceable
+comparison of existing logo variants precedes public asset selection. Simple
+crops are derivatives, not supplied logo masters. Logo choice and public usage
+rights still require owner confirmation; do not invent/redraw the mark. Keycloak
+theme preparation waits for that approval and activation needs separate consent.
+See the [dated checkpoint](../qh-43-visual-proposal.md). No new domain, capability,
+AI inference, canonical write, provider disclosure or confirmation follows.

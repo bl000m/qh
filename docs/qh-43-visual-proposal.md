@@ -1,10 +1,55 @@
-# QH-43 — asset selection and first functional UX checkpoint
+# QH-43 — asset selection and functional UX checkpoints
 
 2026-10-18. Owner approved plan commit `41ee02f` and authorized the asset-independent
 layout in PR #15. **Branding selection awaits review; no theme source or activation.**
 [Approved plan](qh-43-ux-branding-plan.md),
 [Jira QH-43](https://contextlab.atlassian.net/browse/QH-43),
 [PR #15](https://github.com/bl000m/qh/pull/15).
+
+
+## Second checkpoint — owner direction and private logo gate, 2026-10-18
+
+The owner accepted the first functional layout as a **working base, not final UX**.
+The seven files in `QH-design 2/` are confirmed as the intended reference delivery;
+there is **no remaining ZIP prerequisite**. Earlier archive observations below are
+historical evidence, not a request to supply or reconstruct an archive.
+
+The approved visual direction is the original standalone bubble as compact
+noninteractive decoration in Mon environnement/welcome, white/black structure,
+red accents and restrained iridescence. Portrait illustrations and future-feature
+mockups must not become product controls. Final public branding is still gated:
+**select the actual logo variant and confirm public usage rights first**. Keycloak
+theme source preparation waits for that selection; no realm/theme activation.
+
+The private comparison board is
+`/home/ubuntu/qh/.local-archive/branding/logo-review-20261018/logo-board.html`
+(and `logo-board.png` beside it). Options L1–L3 show the mockup wordmarks, L4–L7
+the presentation's construction/orientation variants, and L8 the chat mockup's
+small application. Each is explicitly labelled a **simple crop**, with original
+file SHA, region, PDF page where applicable and derived hash in `logo-options.json`.
+No mark is redrawn, retyped, rotated or heuristically reconstructed. PDF crops are
+rasterized, not standalone original masters. All 24 pages are privately available
+as a contact sheet; repeated embedded applications are not treated as new brands.
+The original seven files remain unchanged and private. Missing: an authoritative
+standalone SVG/master, official variants/spacing, palette/typography and usage
+rights. No crop, board, PDF or original image enters Git or the client bundle.
+
+### Second iteration: adopted decisions and rationale
+
+| Decision | Rationale / alternative | Consequences and limits |
+| --- | --- | --- |
+| Put the question ahead of implementation explanations | Reduce the first-screen reading burden instead of requiring technical onboarding | Bounded/unranked retrieval, ephemeral dialogue, history exclusion and reset behavior remain in `Fonctionnement et limites`, after the composer |
+| Keep consent and applicable canonical warnings visible | Disclosure must not obscure authorization or epistemic state | Proposal inclusion stays unchecked; unconfirmed availability and both deterministic response warnings stay outside collapsed sections |
+| Distinguish the user's question and provider output visually | Establish conversational rhythm instead of an administrative form | Pending state shows the actual submitted question plus loading status, never a simulated response; exact extractive mock label remains |
+| Make technical sources secondary, but inspectable | Readable dialogue should lead without losing auditability | Declared references and provided context retain separate disclosures and the existing complete canonical renderer; explorer stays visible before any question |
+| Make the skip link first in keyboard order and explicitly transfer focus | A screenshot of focused UI must not imply a permanent overlay | Clipped off-focus, visible on focus, activation focuses main and removes the overlay; no token/session/navigation contract changes |
+
+[Second-iteration evidence, comparisons and test boundaries](evidence/qh43-ux-iteration2-20261018/README.md).
+This remains **IN PROGRESS / owner checkpoint**, with PR #15 OPEN and DRAFT.
+Branding selection/rights, final visual approval and theme source preparation are
+not implemented or verified; merge and Jira DONE are not authorized.
+
+## First checkpoint — historical record
 
 ## Actual delivery and integrity
 
@@ -115,7 +160,7 @@ and theme-source preparation are pending. Live theme activation requires separat
 explicit authorization. General accessibility certification or live model semantic
 correctness is not claimed by layout tests or by the owner's QH-13 POC acceptance.
 
-### Current Jira acceptance mapping
+### First-checkpoint Jira acceptance mapping (historical)
 
 | Jira criterion | Checkpoint classification / evidence | Missing portion |
 | --- | --- | --- |
