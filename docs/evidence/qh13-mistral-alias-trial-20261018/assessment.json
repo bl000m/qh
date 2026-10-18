@@ -1,0 +1,71 @@
+{
+  "assessor": "assistant; provisional, not independent human validation",
+  "human_validation": false,
+  "question_answered": {
+    "verdict": "PASS in this single sample",
+    "reason": "A concise topic overview replaces the previous mock excerpt list."
+  },
+  "italian": {
+    "verdict": "PASS"
+  },
+  "alias_membership": {
+    "verdict": "PASS",
+    "reason": "All six exact distinct allowed aliases resolve into six sent canonical revisions; this does not establish entailment."
+  },
+  "proposed_confirmed": {
+    "verdict": "PARTIAL",
+    "reason": "All six canonical records remain proposed and no confirmed-current support was sent. The generated text does not explicitly disclose unconfirmed status. Deterministic UI warnings independently apply to both the provided set and cited set; no automatic confirmation."
+  },
+  "claim_checks": [
+    {
+      "claim": "discussione di progetto / piccolo pilota con Team Cedar",
+      "support_aliases": [
+        "R5"
+      ],
+      "verdict": "Supported topic summary; less specific than the recorded choice, no assertion of execution"
+    },
+    {
+      "claim": "possibili riduzioni dei tempi di attesa",
+      "support_aliases": [
+        "R4"
+      ],
+      "verdict": "Supported; preserves hypothetical effect, not a measured result"
+    },
+    {
+      "claim": "domande su cosa misurare",
+      "support_aliases": [
+        "R6"
+      ],
+      "verdict": "Supported; no measure is invented"
+    },
+    {
+      "claim": "possibilità di prendere una pausa reversibile",
+      "support_aliases": [
+        "R1"
+      ],
+      "verdict": "Supported possibility, not asserted implemented pause"
+    }
+  ],
+  "unsupported_claims_detected": [],
+  "attribution": {
+    "verdict": "No personal decision-maker inferred",
+    "limit": "Alex is not mentioned in the answer; returned R2/R3 add no explicit claim support"
+  },
+  "negation": {
+    "verdict": "NOT TESTED by this answer",
+    "reason": "No material negated proposition is exercised; cannot generalize to other fixtures"
+  },
+  "temporal": {
+    "verdict": "No unsupported time inferred",
+    "limit": "No explicit temporal claim/date; not a demonstration of temporal reasoning"
+  },
+  "reference_usefulness": {
+    "verdict": "PARTIAL",
+    "reason": "R2 (Alex) and R3 (stated_by) are returned although not used explicitly in prose. The answer has a global reference list without clause-specific links."
+  },
+  "limits": [
+    "One topic question, one synthetic Space, one sample; other two Spaces and arbitrary questions not tested with this alias protocol.",
+    "Valid aliases and QH HTTP 200 demonstrate protocol acceptance, not general semantic reliability, injection resistance, or human validation.",
+    "No graph/retrieval semantic ranking added; bounded UUID selection remains unchanged."
+  ]
+}

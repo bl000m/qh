@@ -1,0 +1,18 @@
+{
+  "approved_manifest_sha256": "3f1141431d077faa2e2a93281552cda80f834236d86f7b354d1b2e38fa646d17",
+  "files": {
+    "assessment.json": "db33b34e7cfd42554a3bac953c6add5aff1aa6e6096353ae0662f382ff49c608",
+    "ledger-after.json": "ad152c260914ce0ba5403f4b4c2b33e4e1ff87ca16fa7b2f21c0ae60b0ccf233",
+    "ledger-before.json": "01c61c815734f4e83ccbc57000d8bf9ac2ac4fc90d35c92b4be4f2017d1d19da",
+    "preservation.json": "fae938c77cb9e87aaaf04473d954d423e1445dc85a43f853ab5430bef8dd42c5",
+    "project/alias-resolution.json": "a618573059f2f2275c31787adb41cce228cac131a6c5d4c095d5553cd3171af8",
+    "project/mock-comparison.json": "f449cf696a2b7705af867abceb602a3ba5256291177be67f8555838dcab3ab87",
+    "project/output.json": "a64629ebc3d44af9d5bf97ee7330f3f08f6793fb45fdba8bdfeea00fd1cd15e2",
+    "project/provided-revisions.json": "6eb60aeafd6f946b991b7c7d6ddd648378d848db9b7a4ce660d3ad1e746c841f",
+    "project/qh-response.json": "7cae9b5020394768633a5bd44de79f21387481ceabf17ecc43409f6793a81606",
+    "project/raw-response.json": "b614dd011c744108420e35247c73d8622579611d612461f83de32c4ecbf3bc0a",
+    "project/request.json": "0fc6167742083fe43e342549c3e4ca75aaf7c4bd0fa4f2902d48af8702b36202",
+    "results.json": "4266b093b68136c7b11f8b892ace4f097c3594a5ac3d51d9e3934e43fea673c0"
+  },
+  "note": "Original decoded response text and exact assistant content string are preserved, not an HTTP byte-stream capture. Receipt, session tokens, protected inventories and runner remain private. No human validation inferred."
+}

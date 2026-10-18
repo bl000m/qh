@@ -15,6 +15,19 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-13 second authorized Mistral chat trial — 2026-10-18
+
+- Record the exact authorized one-POST alias experiment: six aliases resolved to
+  the six transmitted proposed revisions, provider/QH 200, pertinent Italian topic
+  answer. Preserve raw output, payload, canonical references and linked ledger.
+- Keep the model's missing unconfirmed qualification and redundant actor/relation
+  references visible; deterministic UI warnings remain required. Observed usage
+  3,609 input / 101 output tokens, list-price estimate USD 0.00060195 (not invoice).
+  Ledger closed 1/1; historical ledger unchanged, public provider always mock and
+  all fourteen QH tables/six container identities/configurations unchanged.
+- Results only: no app change, additional inference, merge, Jira DONE, deployment
+  or QH-39/QH-43 work. Owner closure review remains pending.
+
 ### QH-13 model reference aliases and proposal warnings — 2026-10-18
 
 - Add internal request-local `R1…Rn` aliases over exactly the transmitted canonical

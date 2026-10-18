@@ -151,3 +151,14 @@ Only a specific owner approval of the new sealed manifest can open that gate.
 Recheck actual selection/source/payload/freshness/price hashes before any later
 request; stop/reseal on drift. No retry or broad browser activation is implied.
 PR #14 remains open for review, QH-13 is not DONE; QH-39/QH-43 are not started.
+
+## Executed owner-authorized single inference — 2026-10-18
+
+The owner subsequently approved this exact gate. The separate
+[second-trial report](qh-13-mistral-alias-experiment.md) and
+[capture archive](evidence/qh13-mistral-alias-trial-20261018/README.md) record one
+POST, zero GETs/retries, six exact alias resolutions and QH 200. The Italian topic
+answer still omits explicit proposed status; deterministic UI warnings remain
+necessary. All state/records are unchanged, the dedicated ledger is closed 1/1,
+and public chat remains mock. The sealed proposal above is preserved as history;
+no further inference, merge or Jira DONE follows.
