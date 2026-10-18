@@ -6,6 +6,12 @@ import type { BrowserSession } from './auth';
 import Chat from './Chat';
 import UnderstandingExplorer from './UnderstandingExplorer';
 import { navigate, usePath } from './navigation';
+import qhLogo from './brand/qh-logo.png';
+import qhBubble from './brand/qh-bubble.png';
+
+function DecorativeBubble() {
+  return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
+}
 
 function Link({ to, children }: { to: string; children: ReactNode }) {
   function follow(event: MouseEvent<HTMLAnchorElement>) {
@@ -67,7 +73,7 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
     } catch (reason) { setCreateError(apiMessage(reason)); } finally { setCreating(false); }
   }
   return <section aria-labelledby="spaces-title">
-    <div className="page-heading"><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Retrouvez vos Context Spaces et choisissez celui avec lequel discuter.</p></div>
+    <div className="page-heading environment-heading"><div><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Retrouvez vos Context Spaces et choisissez celui avec lequel discuter.</p></div><DecorativeBubble/></div>
     <div className="section-heading"><div><h2 id="spaces-title">Mes Context Spaces</h2><p className="muted">Vos espaces de compréhension, sous votre contrôle.</p></div>
       <button onClick={() => { setForm(true); setSuccess(''); }} disabled={form}>Créer un Context Space</button></div>
     {form && <form className="create-panel" onSubmit={event => { void create(event); }}>
@@ -128,7 +134,7 @@ export default function App({ session }: { session: BrowserSession }) {
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
   const api = useMemo(() => new QhApi(session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
-  return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand">QH<span>Votre contexte, sous votre contrôle.</span></a>
+  return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Votre contexte, sous votre contrôle.</span></a>
     {state === 'authenticated' && <button className="secondary" onClick={() => { void session.logout(); }}>Se déconnecter</button>}</header>
     <main id="main-content" tabIndex={-1}>
       {state === 'authenticated' ? <Environment api={api} /> : <section className="signin">
@@ -136,7 +142,7 @@ export default function App({ session }: { session: BrowserSession }) {
           {state === 'expired' && <Notice error>Votre session a expiré. Reconnectez-vous pour continuer.</Notice>}
           {state === 'error' && <Notice error>La connexion n’a pas abouti. Veuillez recommencer.</Notice>}
           {state === 'signed-out' && <Notice>Vous êtes déconnecté de QH.</Notice>}
-          <h1>Bienvenue dans votre environnement QH</h1><p>Connectez-vous pour accéder à vos Context Spaces.</p>
+          <div className="welcome-heading"><div><h1>Bienvenue dans votre environnement QH</h1><p>Connectez-vous pour accéder à vos Context Spaces.</p></div><DecorativeBubble/></div>
           <button onClick={() => { void session.login(); }}>Se connecter</button></>}
       </section>}
     </main><footer>QH — Environnement souverain de contexte</footer></div>;
