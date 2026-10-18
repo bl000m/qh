@@ -34,7 +34,8 @@ export class QhApi {
     try {
       response = await fetch('/api' + path, {
         method, headers: { Authorization: 'Bearer ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) },
-        body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error'
+        body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error',
+        keepalive: method === 'DELETE'
       });
     } catch { throw new ApiError(503); }
     if (response.status === 401) this.expired();
