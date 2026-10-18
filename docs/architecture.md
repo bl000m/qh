@@ -469,3 +469,16 @@ history from no understanding revisions; failures remain unavailable. This is
 presentation/availability guidance, not a new retrieval engine, public contract,
 source-emptiness guarantee or transmission of history to providers. See the
 [checkpoint and executed evidence](qh-43-hero-checkpoint.md).
+
+
+### QH-43 actual VPS login — later owner authorization, 2026-10-18
+
+The [latest Product Contract amendment](product/QH_PRODUCT_CONTRACT.md#qh-43-real-branded-login--owner-decision-2026-10-18)
+authorizes activating the existing inherited QH theme in the demo realm after
+backup/rollback and live checks. Standard `ui_locales=fr` supplies a presentation
+hint; Authorization Code+PKCE, state/nonce, issuer/client/redirect/scopes, in-memory
+tokens and owner policy are unchanged. Keycloak still hosts credentials through
+normal redirects; no password-forwarding React form, ROPC, iframe or BFF.
+[Activation and recoverability](qh-43-keycloak-activation.md) distinguish actual
+VPS evidence from historical isolated previews. QH-42 retains future authentication
+architecture decisions, and QH-45 is not started.

@@ -28,7 +28,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   let pkce = false;
   page.on('request', request => {
     const url = new URL(request.url());
-    if (url.pathname.endsWith('/auth')) pkce = url.searchParams.get('code_challenge_method') === 'S256' && !!url.searchParams.get('state') && !url.searchParams.has('client_secret');
+    if (url.pathname.endsWith('/auth')) pkce = url.searchParams.get('code_challenge_method') === 'S256' && !!url.searchParams.get('state') && !!url.searchParams.get('nonce') && url.searchParams.get('ui_locales') === 'fr' && !url.searchParams.has('client_secret');
   });
   await login(page);
   expect(pkce).toBe(true);
@@ -89,6 +89,23 @@ test('tampering with callback state prevents token exchange', async ({page}) => 
   expect(exchanges).toBe(0);
   expect(await page.evaluate(() => sessionStorage.getItem('test.callback.tampered'))).toBe('yes');
   await storageIsTokenFree(page);
+});
+test('tampered transaction nonce rejects the real ID token before private API access', async ({page}) => {
+  let apiCalls=0;
+  page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))apiCalls++;});
+  await page.addInitScript(()=>{
+    if(location.pathname!=='/oidc/callback')return;
+    for(const key of Object.keys(sessionStorage))if(key.startsWith('qh.oidc.')){
+      const raw=sessionStorage.getItem(key);if(!raw)continue;
+      const state=JSON.parse(raw);if(state.nonce){state.nonce='invalid-test-nonce';sessionStorage.setItem(key,JSON.stringify(state));}
+    }
+  });
+  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+  await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);
+  const token=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/token'));
+  await page.locator('#kc-login').click();expect((await token).status()).toBe(200);
+  await expect(page.getByRole('alert')).toContainText('La connexion n’a pas abouti');
+  expect(apiCalls).toBe(0);await storageIsTokenFree(page);
 });
 test('API failure is sanitized, recoverable; invalid name and failed creation preserve the form', async ({page}) => {
   await page.goto('/'); await login(page);

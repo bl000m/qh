@@ -1,5 +1,8 @@
 # QH-43 — asset selection and functional UX checkpoints
 
+Later owner-authorized runtime change: [actual VPS QH/French login and rollback](qh-43-keycloak-activation.md).
+Earlier source-only/unchanged-IdP statements below describe their dated checkpoints.
+
 Later owner correction: [central artwork, capsules and primary chat](qh-43-hero-checkpoint.md).
 Earlier screenshots/readiness below are dated checkpoints, not acceptance of this iteration.
 

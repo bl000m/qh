@@ -1,4 +1,4 @@
-# QH login theme — source-only owner preview
+# QH login theme — inherited presentation and controlled activation
 
 For Keycloak 26.4.7, inherit `keycloak.v2`; retain all upstream templates, credential
 fields, validation, scripts, errors and Code+PKCE flows. The child adds only local
@@ -6,9 +6,12 @@ CSS, the selected original mark/bubble, a whole-mark favicon and QH header text.
 It uses a light background, dark text/buttons and the logo's red accent; no custom
 login endpoint, password collector, session or authentication behavior.
 
-**Not activated on the VPS.** Do not change the persistent realm, readonly realm
-import, IdP container/configuration or theme selection without separate owner
-permission. Preparation and isolated testing are not activation authorization.
+The owner authorized controlled VPS activation on 2026-10-18, superseding the
+previous source-only gate for this demo realm. See the [activation/rollback record](../../../../docs/qh-43-keycloak-activation.md)
+for executed evidence and current status. Other environments or further realm,
+container/authentication changes still require separate permission. The readonly
+root realm import remains unchanged; source preparation never activates a realm
+by itself.
 
 The existing browser harness has an explicit disposable-only opt-in:
 

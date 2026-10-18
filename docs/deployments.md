@@ -6,6 +6,29 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-18 — QH-43 actual QH login on the existing VPS
+
+The owner explicitly authorized the later Jira/theme decision. Seven frozen,
+verified QH theme files are installed in the existing Keycloak container; only
+`loginTheme`, internationalization, supported fr/en and default fr change in the
+qh realm. The client adds standard `ui_locales=fr` for reliable French presentation
+with an English browser. **Zero container restart/recreation, zero new mounts,
+volumes, images or services.** The directory is dynamically recognized.
+
+Actual VPS desktop/mobile auth, wrong password, logout, state/nonce/PKCE negative
+controls, Alice's three retained synthetic Spaces, six Bob denials and natural
+client/server access-token expiry PASS (305 real elapsed seconds; no clock shift).
+The old presentation was restored and observed during rollback rehearsal, then
+QH/French reapplied. Issuer/client/redirect/scopes, in-memory tokens, credentials,
+identity mapping, policy, session lifetimes, root readonly import and QH data
+remain unchanged. [Operation, recovery and exact limits](qh-43-keycloak-activation.md),
+[live evidence](evidence/qh43-keycloak-live-20261018/README.md).
+
+Installed static files survive ordinary container restart, not recreation. Any
+future authorized Keycloak replacement must reinstall the retained exact frozen
+files before serving the realm. Earlier source-only records below remain historical.
+No Mistral call, canonical migration/write, merge, Jira DONE or QH-45 start.
+
 ## 2026-10-18 — QH-43 selected identity through existing HMR
 
 The owner approved the exact original geometric mark and compact original bubble

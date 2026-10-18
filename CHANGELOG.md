@@ -15,6 +15,16 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   QH-13 report; deployment/merge remain separate.
 
 
+### QH-43 actual branded French VPS login — 2026-10-18
+
+- Activate the existing inherited QH theme with only seven static files/four realm
+  presentation fields; retain all containers, mounts, images and auth contracts.
+- Add standard French OIDC presentation hint, nonce regression and explicit manual
+  read-only VPS acceptance: real desktop/mobile, wrong password, logout, Alice/Bob,
+  state/nonce/PKCE and natural signed-token expiry. Verify old-theme rollback.
+- Preserve QH data/ledgers/private configuration; no credential export, paid call,
+  migration, merge/Jira closure or QH-45/BFF work.
+
 ### QH-43 hero/capsule correction — 2026-10-18
 
 - Expand welcome/environment with central original artwork, add owned-Space

@@ -1,0 +1,78 @@
+{
+  "ticket": "QH-43",
+  "date": "2026-10-18",
+  "baseline": "4a6edc26ba7b12f054c89f93f587c486068c7e12",
+  "live_acceptance": {
+    "target": "existing VPS stack",
+    "paid_calls": 0,
+    "qh_writes": 0,
+    "realm_writes": 0,
+    "checks": {
+      "alice_code_pkce_state_nonce_memory": "PASS",
+      "alice_three_retained_spaces": "PASS",
+      "bob_six_foreign_scope_denials": "PASS",
+      "french_wrong_password": "PASS",
+      "mobile_authentication": "PASS",
+      "logout_and_fresh_server_login": "PASS",
+      "state_negative_control": "PASS",
+      "nonce_negative_control": "PASS",
+      "pkce_negative_control": "PASS",
+      "natural_client_and_server_expiry": "PASS",
+      "anonymous_denial": "PASS"
+    },
+    "natural_expiry_wait_seconds": 305,
+    "clock_acceleration": false
+  },
+  "final_realm_settings": {
+    "loginTheme": "qh",
+    "internationalizationEnabled": true,
+    "supportedLocales": [
+      "en",
+      "fr"
+    ],
+    "defaultLocale": "fr"
+  },
+  "previous_realm_settings": {
+    "loginTheme": null,
+    "internationalizationEnabled": false,
+    "supportedLocales": [],
+    "defaultLocale": null
+  },
+  "non_presentation_configuration_equal": true,
+  "restart_count": 0,
+  "restarts": 0,
+  "recreations": 0,
+  "installed_theme_files": 7,
+  "realm_put_attempts_during_controlled_operation": 8,
+  "verified_administrative_receipts": 6,
+  "representation_diagnostic_attempts": 2,
+  "rollback_live_render_verified": true,
+  "rollback_available": true,
+  "credential_records_exported": false,
+  "root_realm_import_changed": false,
+  "readonly_vps_scope": "demo realm presentation and static files; no QH mutation",
+  "source_hashes": {
+    "apps/web/src/auth.ts": "e2d291502c570f49813a26c5ec9066a22714c62f6562e87f8596d30c8c95a1ea",
+    "apps/web/tests/browser.spec.ts": "9a707d34954a2c76007e3e1c048f16c9652a53a292da48ccbafa779974470aba",
+    "tests/browser/verify_qh43_live_login.cjs": "95b473c9933df335e8a530f68d90280570228c1577d33ce781a4afe1b2c2561a"
+  },
+  "theme_files": {
+    "login/theme.properties": "c40f0a2ed4fd0e1b6e1ce358acf624a184a3fbd085310194d44d9945e1593096",
+    "login/messages/messages_en.properties": "8c951cd0d39163642b917825728a4310aeab5b5a9c1e9a6bd924b83529e639e4",
+    "login/messages/messages_fr.properties": "8c951cd0d39163642b917825728a4310aeab5b5a9c1e9a6bd924b83529e639e4",
+    "login/resources/css/qh.css": "aa70095100c4453ac594beed2c0ab7536fd3e43effde7fbe4c772404e3e8fe7a",
+    "login/resources/img/favicon.ico": "1af8fa192125cd78ac281a1dff54aae71dfdb81fedfdf5fb28f8b949685d6baf",
+    "login/resources/img/qh-logo.png": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+    "login/resources/img/qh-bubble.png": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850"
+  },
+  "preservation": {
+    "canonical_14_tables_equal": true,
+    "six_container_ids_images_config_mounts_start_times_equal": true,
+    "non_presentation_realm_client_identity_settings_equal": true,
+    "private_env_readonly_import_equal": true,
+    "both_closed_mistral_ledgers_equal": true,
+    "seven_original_assets_equal": true
+  },
+  "merge_or_jira_write": false,
+  "owner_final_review_complete": false
+}

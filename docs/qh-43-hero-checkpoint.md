@@ -1,5 +1,8 @@
 # QH-43 — central artwork, Space capsules and primary chat
 
+Later owner-authorized runtime change: [actual VPS QH/French login and rollback](qh-43-keycloak-activation.md).
+Earlier source-only/unchanged-IdP statements below describe their dated checkpoints.
+
 2026-10-18. Owner-requested correction on the existing
 [PR #15](https://github.com/bl000m/qh/pull/15), branch
 `feat/QH-43-demo-a-ux-branding`, sole checkout `/home/ubuntu/qh`.

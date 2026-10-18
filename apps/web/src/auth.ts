@@ -20,6 +20,8 @@ export function oidcSettings(origin: string, authority = 'http://localhost:8080/
   return {
     authority, client_id: 'qh-web', redirect_uri: origin + '/oidc/callback',
     response_type: 'code', disablePKCE: false, scope: 'openid qh:api', loadUserInfo: false,
+    // Presentation hint only: the realm's default locale loses to browser English.
+    ui_locales: 'fr',
     automaticSilentRenew: false, monitorSession: false, staleStateAgeInSeconds: 300,
     userStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
     stateStore: new WebStorageStateStore({ store: window.sessionStorage, prefix: 'qh.oidc.' })

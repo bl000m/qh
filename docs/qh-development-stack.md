@@ -30,6 +30,17 @@ non la logica API o React. In questa modalità **l'immagine da sola non identifi
 il codice eseguito**: annotare sempre HEAD e modifiche locali. Il registro e la PR
 documentano anche il commit della configurazione operativa.
 
+## Later QH-43 login presentation operation — 2026-10-18
+
+The owner explicitly authorized [QH theme/French activation](qh-43-keycloak-activation.md)
+in the existing demo realm. Its operation/evidence supersedes the earlier unchanged-
+IdP presentation statements below for **only those four language/theme fields and
+installed static files**. Root realm import, issuer/client/PKCE, identities, session
+lifetimes, ports, mounts, volumes and ordinary app-only dev commands stay unchanged.
+Frozen theme files are installed in the existing container rather than source-bound;
+future Keycloak replacement must reinstall them before serving the selected theme.
+No generic Compose operation or automatic startup migration is authorized.
+
 ## Comandi ordinari
 
 Da `/home/ubuntu/qh`, con accesso Docker; su questo VPS:

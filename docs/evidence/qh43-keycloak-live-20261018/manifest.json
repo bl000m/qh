@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-18",
+  "files": {
+    "README.md": "8ad821b2ecb32e0f6863ea9c1a0f998642ffda14e554922edec8ec5cdaa38d9d",
+    "audit.py": "1e6495e18086930c96a8459cf221b760b372fa6d5a1a05e4869e20d38c24569a",
+    "results.json": "b798123a538739010ed4fc90a58765681c69877f95f9c1f297c62e95fd4ba509",
+    "screenshots/before-desktop.png": "4f34c3fa0bdcf9dcab4c4425a3b6a2f0ec1d87f845e1ef7284d8f89ed1c0d843",
+    "screenshots/before-mobile.png": "658abd5b5bb9eade56e0f3366ef667e38b6b51bb77ec32776768d7cf0ff0f3c1",
+    "screenshots/login-desktop.png": "e3aad4d3b116751136d486213e6f75795fa1ed0a866b458dc99ae5eb752dfbf5",
+    "screenshots/login-mobile.png": "bc20a8fda06b7e5c1b9746d4c684eb0c5b1d68f9a09881b07aefa0bc70596a8f"
+  }
+}

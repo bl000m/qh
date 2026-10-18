@@ -399,3 +399,23 @@ records or other Space metadata. Insufficiency for a particular question remains
 different from overall Space completeness. UI explanations are deterministic;
 no textual rules invent model answers or semantic relevance. No new persistence,
 API, policy, real provider activation, confirmation or Keycloak realm change.
+
+
+## QH-43 real branded login — owner decision, 2026-10-18
+
+The owner now requires the actual VPS redirect login to use the selected original
+QH mark/bubble, light white/black/red presentation and French text. This explicitly
+supersedes the earlier preparation-only gate **for theme activation in the demo
+qh realm**, after preflight, narrow backup, rollback and live verification.
+[Controlled operation and evidence](../qh-43-keycloak-activation.md).
+
+| Decision | Rationale / alternative | Consequences / boundary |
+| --- | --- | --- |
+| Activate the existing inherited Keycloak QH theme | Isolated screenshots alone do not satisfy the real user experience | Only static theme files and four realm presentation/language fields; preserve upstream forms and OIDC security |
+| Send standard `ui_locales=fr` from the QH client, enable fr/en/default fr in the realm | Browser English can override only setting the realm default | Presentation hint only; no issuer/client/redirect/scope, token storage, session lifetime or identity change |
+| Keep real Keycloak-hosted credential entry and redirect | Avoid React password forwarding, ROPC and iframe embedding | Keycloak URL remains visible; this is not a same-origin/native React auth claim |
+| Verify actual VPS authentication and reversible theme selection | Show actual desktop/mobile and existing Alice/Bob security behavior | Wrong password and state/nonce/PKCE controls are expected failures, not silent exceptions; real regressions roll back |
+
+QH-42 retains any future BFF/same-origin architecture and threat model. QH-45
+(real LLM chat) is not started here. No credential export, new auth/provider system,
+canonical write, paid inference, automatic confirmation, merge or Jira DONE.
