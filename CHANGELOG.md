@@ -346,3 +346,10 @@ starts from the recorded native cutover and does not invent past release version
 ### QH-43 final centring correction — 2026-10-18
 
 - Centre the original bubble across the full Keycloak header grid and mobile welcome/environment; preserve authentication and frozen previous evidence. See [actual VPS checks](docs/evidence/qh43-centering-20261018/README.md).
+
+### QH-45 session contract proposal — 2026-10-18
+
+- Start from merged QH-43 with a reviewable proposal for scoped provider sessions,
+  separate disclosure/proposal consent, accounting/revocation and 300-second OIDC
+  implications. Include offline contract wireframes; no application implementation,
+  Mistral activation, new inference or canonical write is claimed.
