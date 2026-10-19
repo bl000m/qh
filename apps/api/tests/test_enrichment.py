@@ -193,3 +193,20 @@ def test_inflight_same_operation_has_one_provider_call_without_automatic_retry()
         release.set();await first
         assert provider.calls == 1 and repo.calls == 1
     asyncio.run(scenario())
+
+
+def test_selected_intake_preserves_original_three_turn_serialization_and_ids():
+    from app.understanding.selected import selected_source
+    from app.understanding.extractor import UnderstandingExtractor
+    from tests.test_understanding import MemoryRepository
+    repository=MemoryRepository();scope=str(uuid4())
+    conversation=dict(id='serializer-equivalence',revision_no=1,acquired_at='2026-10-19T00:00:00Z',
+        turns=[dict(id=str(uuid4()),speaker='user (owner-declared)',text=text) for text in ('Une hypothèse 🌱.', 'Pas de commande.', 'Une question ouverte ?')],
+        metadata=dict(submission_kind='owner_selected_browser_segment'))
+    policy=Mock(evaluate=AsyncMock(return_value=PolicyDecision(allowed=True)))
+    old=UnderstandingExtractor(repository=repository,policy=policy,provider=LiteralSegmentProvider())
+    ref=asyncio.run(old.import_conversation(subject_id=repository.subject_id,context_id=scope,conversation=conversation))
+    assert selected_source(scope,conversation)==repository.sources[ref]
+    single=deepcopy(conversation);single['turns']=single['turns'][:1]
+    with pytest.raises(ValueError):asyncio.run(old.import_conversation(subject_id=repository.subject_id,context_id=scope,conversation=single))
+    assert len(selected_source(scope,single)['origin']['turns'])==1

@@ -131,17 +131,6 @@ class UnderstandingExtractor:
     async def import_conversation(self, *, subject_id, context_id, conversation):
         """Preserve original turn text and exact locators before any interpretation."""
         await self._authorize(subject_id, context_id)
-        source = self.conversation_source(context_id, conversation)
-        self.repository.save(sources=[source])
-        return source["id"]
-
-    @staticmethod
-    def conversation_source(context_id, conversation, *, minimum_turns=3):
-        """Pure original-text preparation; no write or provider call.
-
-        QH-39 explicitly selected segments may contain one turn. The historical
-        QH-8 import keeps its three-turn minimum and identical serialization/IDs.
-        """
         object_fields(
             conversation, ("id", "revision_no", "acquired_at", "turns"), ("metadata",)
         )
@@ -151,8 +140,8 @@ class UnderstandingExtractor:
         if type(number) is not int or number < 1:
             raise ValueError("Positive conversation revision required")
         turns = conversation["turns"]
-        if not isinstance(turns, list) or not minimum_turns <= len(turns) <= 100:
-            raise ValueError("Conversation requires bounded identified turns")
+        if not isinstance(turns, list) or not 3 <= len(turns) <= 100:
+            raise ValueError("Conversation requires 3-100 turns")
         metadata = conversation.get("metadata", {})
         if not isinstance(metadata, dict):
             raise ValueError("Conversation metadata must be an object")
@@ -194,38 +183,8 @@ class UnderstandingExtractor:
         )
         if len(canonical_json(source).encode()) > MAX_JSON:
             raise ValueError("Conversation metadata too large")
-        return source
-
-    async def propose_conversation(self, *, subject_id, context_id, conversation, extraction_key):
-        """QH-39 trusted caller: validate an unsaved source/batch before atomic save.
-
-        Operation/write/disclosure authorization belongs to the application caller;
-        this additional owner-read check does not grant it. No repository write.
-        """
-        await self._authorize(subject_id, context_id)
-        source = self.conversation_source(context_id, conversation, minimum_turns=1)
-        request = self.generation_request(source)
-        result = await self.provider.generate(request)
-        if result.message.role != MessageRole.ASSISTANT:
-            raise ValueError("Extractor must return an assistant JSON message")
-        output = decode_output(result.message.content)
-        # Explicit successful absence, never silently dropping invalid siblings.
-        if output == {"items": []}:
-            return source, ()
-        output, _audit = resolve_output_citations(output, source=source)
-        checkpoint = dict(version=1, context_space_id=str(context_id),
-            source_revision_id=source["id"], input_sha256=self.source_hash(source),
-            extraction_key=extraction_key, output=output)
-        return source, tuple(self._resolve(checkpoint, source))
-
-    @classmethod
-    def generation_request(cls, source):
-        return GenerationRequest(messages=(
-            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS),
-            Message(role=MessageRole.USER, content=canonical_json(dict(
-                source_revision_id=source["id"], input_sha256=cls.source_hash(source),
-                text=source["content"], turns=source["origin"]["turns"]))))
-        )
+        self.repository.save(sources=[source])
+        return source["id"]
 
     async def _source(self, subject_id, context_id, source_revision_id):
         await self._authorize(subject_id, context_id)
@@ -253,7 +212,22 @@ class UnderstandingExtractor:
         source = await self._source(subject_id, context_id, source_revision_id)
         nonempty(extraction_key)
         # Only this exact authorized source is disclosed. No history/full scope scan.
-        request = self.generation_request(source)
+        request = GenerationRequest(
+            messages=(
+                Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS),
+                Message(
+                    role=MessageRole.USER,
+                    content=canonical_json(
+                        dict(
+                            source_revision_id=source["id"],
+                            input_sha256=self.source_hash(source),
+                            text=source["content"],
+                            turns=source["origin"]["turns"],
+                        )
+                    ),
+                ),
+            )
+        )
         result = await self.provider.generate(request)
         if result.message.role != MessageRole.ASSISTANT:
             raise ValueError("Extractor must return an assistant JSON message")

@@ -11,7 +11,8 @@ from uuid import UUID, uuid5
 
 from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound
 from app.policy.models import PolicyAction, PolicyRequest
-from app.understanding.extractor import UnderstandingExtractor, digest, canonical_json, timestamp
+from app.understanding.extractor import digest, canonical_json, timestamp
+from app.understanding.selected import propose_selected_conversation
 
 EXTRACTION_KEY = 'qh39-selected-segment/1-resolved'
 
@@ -81,7 +82,6 @@ class ConversationEnrichment:
             raise EnrichmentUnavailable('An enrichment is already in progress; no automatic retry')
         self._busy.add(key)
         try:
-            engine = UnderstandingExtractor(repository=repository, policy=self.policy, provider=self.provider)
             conversation = dict(id=conversation_id, revision_no=1, acquired_at=self.clock(),
                 turns=[dict(id=t['id'], speaker='user (owner-declared)' if t['role']=='user' else 'assistant (unverified dialogue)', text=t['content']) for t in turns],
                 metadata=dict(submission_kind='owner_selected_browser_segment', submitted_by=str(subject),
@@ -91,9 +91,11 @@ class ConversationEnrichment:
                     turn_declarations=[dict(turn_id=t['id'], role=t['role'], captured_at=t['captured_at'],
                         timestamp_authority='browser-declared') for t in turns]))
             try:
-                source, revisions = await engine.propose_conversation(subject_id=subject, context_id=scope,
-                    conversation=conversation, extraction_key=EXTRACTION_KEY)
-            except (ValueError, PermissionError):
+                source, revisions = await propose_selected_conversation(subject_id=subject, context_id=scope,
+                    conversation=conversation, extraction_key=EXTRACTION_KEY, policy=self.policy, provider=self.provider)
+            except PermissionError:
+                raise ContextSpaceNotFound('Context space not found') from None
+            except ValueError:
                 raise
             except Exception:
                 raise EnrichmentUnavailable('Extraction unavailable; nothing published, no automatic retry') from None

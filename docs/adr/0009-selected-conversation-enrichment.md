@@ -30,15 +30,18 @@ or that every user-role assertion was independently authored/verified by that us
 Assistant dialogue is explicitly unverified and never relabelled as human evidence.
 Factual time, source acquisition time and human validation remain separate.
 
-Source preparation and provider request construction are factored from the existing
-QH-8 extractor. The QH-39 path prepares an unsaved selected source, calls the same
+The source intake keeps QH-8’s text/locator representation; the original QH-8
+extractor file and request construction stay byte-identical to the sealed QH-33
+baseline. A request-local prepared-source/revision buffer feeds its existing
+`extract` and `publish` methods without committing a source first. This is transient
+working input, not a second persistence system or candidate staging lifecycle. The QH-39 path prepares an unsaved selected source, calls the same
 LLMProvider port, applies QH-32 exact/unique citation resolution and the unchanged
 whole-batch validator, then publishes source and all proposals through the existing
 CanonicalRepository transaction/outbox. A failed provider/429/timeout, locator,
 sibling or SQL constraint leaves no source or partial proposal batch. An exact
 successful empty result may retain the explicitly authorized source with zero
 Understanding revisions and an honest UI result. The historical QH-8 source-first
-internal import and three-turn minimum are preserved.
+internal import and three-turn minimum are preserved; no invented padding turns.
 
 ## Provider boundary
 

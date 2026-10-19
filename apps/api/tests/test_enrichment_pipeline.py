@@ -21,7 +21,7 @@ from app.main import create_app
 from app.policy.owner import OwnerPolicyService
 from app.review.service import ReviewService
 from app.understanding.enrichment import ConversationEnrichment, EnrichmentConflict
-from app.understanding.extractor import UnderstandingExtractor
+from app.understanding.selected import propose_selected_conversation
 from tests.test_enrichment import payload
 from tests.test_generic_semantics import generic as generic
 from tests.test_canonical_graph_pipeline import drain
@@ -112,8 +112,7 @@ def test_failed_batch_and_database_constraints_leave_no_source_or_outbox(generic
     # profile binding to prove the actual transaction rolls back source + items.
     conversation=dict(id='synthetic-invalid',revision_no=1,acquired_at='2026-10-19T00:00:00Z',
         turns=[dict(id=data['turns'][0]['id'],speaker='user (owner-declared)',text='Bounded test.')],metadata={})
-    engine=UnderstandingExtractor(repository=p['repo'],policy=p['service'].policy,provider=LiteralSegmentProvider())
-    source,rows=asyncio.run(engine.propose_conversation(subject_id=p['repo'].subject_id,
+    source,rows=asyncio.run(propose_selected_conversation(policy=p['service'].policy,provider=LiteralSegmentProvider(),subject_id=p['repo'].subject_id,
         context_id=p['scope'],conversation=conversation,extraction_key='test'))
     rows[0]['type_id']='unregistered.invalid'
     repo=PostgresEnrichmentRepository(url=p['repo'].url,subject_id=p['repo'].subject_id)
@@ -125,8 +124,8 @@ def test_failed_batch_and_database_constraints_leave_no_source_or_outbox(generic
 
 def test_concurrent_duplicate_publication_is_single_immutable_batch(generic):
     p=generic;data=payload();service,_,_=setup(p)
-    source,rows=asyncio.run(UnderstandingExtractor(repository=p['repo'],policy=p['service'].policy,
-        provider=LiteralSegmentProvider()).propose_conversation(subject_id=p['repo'].subject_id,
+    source,rows=asyncio.run(propose_selected_conversation(policy=p['service'].policy,
+        provider=LiteralSegmentProvider(),subject_id=p['repo'].subject_id,
         context_id=p['scope'],extraction_key='qh39-selected-segment/1-resolved',
         conversation=dict(id='same-segment',revision_no=1,acquired_at='2026-10-19T00:00:00Z',
             turns=[dict(id=data['turns'][0]['id'],speaker='user (owner-declared)',text='Unique decision.')],

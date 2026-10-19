@@ -35,9 +35,10 @@ parameters, owner/profile/state/IDs/revision counters, duplicate turn IDs, empty
 NUL text and naive timestamps are rejected. Output names the exact scope,
 SourceRevision, proposed revision IDs, replay flag and offline provider mode.
 
-No new schema/migration/service, second Engine or direct graph writer. Source
-preparation reuses QH-8 serialization/IDs with the explicit selected-segment path
-allowing one turn; historical QH-8 import retains its three-turn behavior. QH-32
+No new schema/migration/service, second Engine or direct graph writer. Selected-source
+intake retains QH-8 serialization/IDs while allowing one selected turn. Its private
+request-local buffer reuses the unchanged Engine’s `extract`/`publish` methods; the
+sealed extractor file and original three-turn importer remain byte-identical. QH-32
 exact unique locators and the strict batch validator run before publication.
 CanonicalRepository saves source and the whole batch/outbox in one transaction.
 Owner policy, graph verification and SQL ownership/readiness checks fail closed.
@@ -89,8 +90,13 @@ Targeted executed evidence before publication:
 
 Tests are included in the existing native runner and browser campaign, not another
 infrastructure. Local targeted browser runs use the existing harness's explicitly
-focused mode; they are not represented as a full campaign. The one complete final
+focused mode; they are not represented as a full campaign. The complete final
 campaign is the mandatory four-job GitHub workflow on the final published commit.
+Its first attempt caught QH-33’s sealed extractor fingerprint: the original file
+is now restored byte-for-byte, and the new selected-source intake feeds its existing
+methods via a request-local buffer. No historical manifest/audit or required gate
+is weakened. The source-representation equivalence and sealed v1/v2 audit pass;
+only changed/failed checks are rerun locally before the required updated-HEAD CI.
 Actual run/result and any necessary affected failure rechecks are recorded in PR/Jira.
 Counts overlap across tests/suites and must not be summed into a larger score.
 
