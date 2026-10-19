@@ -124,3 +124,11 @@ to 0005. A historic image-only rollback that rejects 0006 requires a reviewed
 compatibility patch first. The current hot-reload runtime explicitly accepts the
 additive version. Restoring the protected pre-upgrade backup is a separately
 reviewed recovery operation, never an automatic way to discard later owner data.
+
+The corrected browser campaign executed 64 checks successfully before the existing
+OIDC verifier rejected the newly approved routes. Its exact path/method allowlist
+is now extended to the five organization/review paths, with negative tests for an
+unknown endpoint and an extra method. This changes no issuer, token, permission or
+realm behavior. Local domain creation/multi-membership/order/editing and the chat
+scroll/source/reflow scenarios have passed separately; omitted full gates in these
+focused runs remain explicitly NOT TESTED until the required CI jobs complete.
