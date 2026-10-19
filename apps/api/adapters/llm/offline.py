@@ -68,3 +68,25 @@ class ReplayLLMProvider:
         return GenerationResult(
             message=Message(role=MessageRole.ASSISTANT, content=self.response_json)
         )
+
+
+class LiteralSegmentProvider:
+    """Honest no-network control: copy selected user turns, no semantic inference.
+
+    Assistant turns may be preserved as explicitly selected source context, but
+    never become human claims or automatic proposals in this demonstration mode.
+    This is an LLMProvider substitute, not a new extraction/validation engine.
+    """
+    async def generate(self, request):
+        source = json.loads(request.messages[-1].content)
+        items = []
+        for turn in source['turns']:
+            if turn['speaker'] != 'user (owner-declared)':
+                continue
+            quote = source['text'][turn['start']:turn['end']]
+            items.append(dict(local_id=turn['turn_id'], shape='item', text=quote,
+                properties={'basis': 'literal owner-submitted utterance; no semantic inference'},
+                evidence=[dict(source_revision_id=source['source_revision_id'],
+                    start=turn['start'], end=turn['end'], quote=quote)]))
+        return GenerationResult(message=Message(role=MessageRole.ASSISTANT,
+            content=json.dumps({'items': items}, ensure_ascii=False)))

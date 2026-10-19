@@ -40,6 +40,8 @@ SESSION_METHODS = {
     '/context-spaces/{context_id}/chat-sessions/{session_id}/messages': {'post'},
 }
 
+ENRICHMENT_METHODS = {'/context-spaces/{context_id}/enrichments': {'post'}}
+
 UX_V2_METHODS = {
     '/environment': {'get','put'},
     '/environment/spaces': {'get','post'},
@@ -55,14 +57,15 @@ def check_business_paths(document, *, spaces_required):
     browse = spaces | QUERY_PATHS | BROWSE_PATHS
     chat = browse | CHAT_PATHS
     sessions = chat | set(SESSION_METHODS)
-    expected = sessions | set(UX_V2_METHODS)
+    ux_v2 = sessions | set(UX_V2_METHODS)
+    expected = ux_v2 | set(ENRICHMENT_METHODS)
     if spaces_required:
         assert set(paths) == expected
     else:
         # The read-only live verifier also supports the pinned c723d32 VPS.
         # Both versions are exact allowlists, never arbitrary added endpoints.
-        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, chat, sessions, expected)
-    for path, methods in (SESSION_METHODS | UX_V2_METHODS).items():
+        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, chat, sessions, ux_v2, expected)
+    for path, methods in (SESSION_METHODS | UX_V2_METHODS | ENRICHMENT_METHODS).items():
         if path in paths:
             assert set(paths[path]) == methods
     if '/context-spaces' in paths:
