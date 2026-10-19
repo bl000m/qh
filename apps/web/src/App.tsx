@@ -52,13 +52,15 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
   const [success, setSuccess] = useState('');
   useEffect(() => {
     let active = true;
+    // Initial metadata hydration must not reset a page the owner already paginated.
+    if(!organization.value&&!organization.error){setLoading(true);return;}
     if(domain&&domain!=='unclassified'&&!activeDomain){setLoading(false);setItems([]);return;}
     setLoading(true); setError('');setNext(null);
     api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setNext(page.next_after_id); } })
       .catch(reason => { if (active) setError(apiMessage(reason)); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [api, refresh,sort,domain,organization.value?.version,activeDomain?.id]);
+  }, [api, refresh,sort,domain,organization.value?.version,organization.error,activeDomain?.id]);
   async function more() {
     if (!next || loading) return;
     setLoading(true); setError('');

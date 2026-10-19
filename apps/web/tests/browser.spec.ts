@@ -42,7 +42,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   const path = new URL(page.url()).pathname;
   await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
-  await page.getByRole('link', {name:'Mon environnement'}).click();
+  await page.getByRole('link', {name:'Mon environnement',exact:true}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();
   await storageIsTokenFree(page);
   await page.screenshot({path:info.outputPath('alice-dashboard.png'),fullPage:true});
@@ -55,7 +55,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
     await bob.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},path);
     await expect(bob.getByRole('alert')).toHaveText('Ce Context Space est introuvable ou inaccessible.');
     await expect(bob.getByRole('heading', {name:'Projet QH',exact:true})).toHaveCount(0);
-    await bob.getByRole('link', {name:'Mon environnement'}).click();
+    await bob.getByRole('link', {name:'Mon environnement',exact:true}).click();
     await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
     await expect(bob.getByText('Votre premier contexte commence ici.')).toBeVisible();
     await storageIsTokenFree(bob);
@@ -180,6 +180,10 @@ test('wrong PKCE verifier is rejected by real Keycloak without API disclosure', 
 test('loading and bounded pagination render explicitly (UI fault/response simulation)', async ({page}) => {
   let release: () => void = () => {};
   const gate = new Promise<void>(resolve => { release = resolve; });
+  let releaseOrganization:()=>void=()=>{};
+  const organizationGate=new Promise<void>(resolve=>{releaseOrganization=resolve;});
+  await page.route('**/api/environment',async route=>{if(route.request().method()==='GET')await organizationGate;await route.continue();});
+  let firstPageRequests=0;
   const first = '00000000-0000-0000-0000-000000000001';
   const second = '00000000-0000-0000-0000-000000000002';
   const item = (id:string,name:string) => ({id,name,owner_id:aliceId,status:'active',created_at:'2026-10-17T12:00:00Z',updated_at:'2026-10-17T12:00:00Z'});
@@ -187,6 +191,7 @@ test('loading and bounded pagination render explicitly (UI fault/response simula
     const params = new URL(route.request().url()).searchParams;
     expect(params.get('limit')).toBe('20');
     if (!params.has('after_id')) {
+      firstPageRequests++;
       await gate;
       await route.fulfill({json:{items:[item(first,'Page A')],next_after_id:first}});
     } else {
@@ -196,7 +201,8 @@ test('loading and bounded pagination render explicitly (UI fault/response simula
   });
   await page.goto('/'); await login(page);
   await expect(page.getByRole('status').filter({hasText:'Chargement des Context Spaces'})).toBeVisible();
-  release();
+  expect(firstPageRequests).toBe(0);releaseOrganization();
+  await expect.poll(()=>firstPageRequests).toBe(1);release();
   await expect(page.getByRole('link',{name:'Page A',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Afficher plus'}).click();
   await expect(page.getByRole('link',{name:'Page B',exact:true})).toBeVisible();

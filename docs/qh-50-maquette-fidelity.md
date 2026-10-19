@@ -127,3 +127,21 @@ owner data rather than the reference's sample profile/answers. Layout/type spaci
 refined after viewing the original and actual captures. The exact original bubble stays
 unchanged; CSS tint cannot reproduce a different photographic source/lighting, and no
 replacement brand image was generated. These limits remain for owner visual review.
+
+### Required-CI regression correction
+
+The first updated-HEAD CI (`09e1fe0`, run `39260364922`) passed quality, OIDC and
+745 native integration tests with zero skips, but its browser phase correctly failed
+three checks (65 passed). Two tests needed exact breadcrumb matching and attachment
+synchronization before selecting the mobile support view. A real initial organization
+hydration race could also reset the first Space page after pagination: initial listing
+now waits for that metadata read. The regression explicitly holds/releases both requests,
+requires exactly one initial page request, preserves both pages and verifies cursor exhaustion.
+No timeout was raised and no assertion/job was dropped.
+
+The four affected/recovery browser checks then passed locally, **4 PASS / 33.9s**,
+with production TypeScript/build checks, real isolated OIDC/SQL/graph, mobile browse,
+Alice/Bob and sanitized API failures. Artifacts are retained in
+`.local-archive/qh50-maquette-ci-regressions/`. No layout/asset/canonical/backend change
+follows this correction; the final visual captures above remain representative.
+Only the final published HEAD's complete mandatory rollup can establish CI readiness.

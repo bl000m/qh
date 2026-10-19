@@ -11,7 +11,8 @@ export async function showSupport(page:Page){
  if(await toggle.isVisible())await toggle.click();
 }
 export async function expandUnderstanding(page:Page) {
-  await showSupport(page);
   const panel=page.locator('details.understanding-explorer');
+  await panel.waitFor({state:'attached'});
+  await showSupport(page);
   if(!await panel.evaluate((node:HTMLDetailsElement)=>node.open))await panel.locator(':scope > summary').click();
 }
