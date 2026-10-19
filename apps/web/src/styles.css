@@ -283,3 +283,28 @@ button { max-width: 100%; overflow-wrap: anywhere; }
 .chat-composer {position:static;}
 .chat-composer.composer-persistent {position:sticky;}
 .provider-choice select {max-width:100%;width:100%;}
+/* QH-50 refinement: one view, one purpose; stable domain navigation. */
+.environment-home .environment-topline {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.environment-home h1 {font-size:clamp(1.8rem,4vw,2.5rem);margin-block:0 .5rem;}
+.environment-home .section-heading {margin:.8rem 0 .3rem;flex-direction:row;align-items:center;flex-wrap:wrap;gap:.6rem;}
+.environment-home .domain-grid.horizontal-carousel>li {flex-basis:9rem;}
+.domain-orb {text-decoration:none;min-height:100%;line-height:1.35;}
+.environment-home .domain-orb img {max-width:9rem;}
+.environment-home .horizontal-carousel {padding-block:.4rem .8rem;gap:1rem;}
+.environment-home .space-card {padding:.4rem;}
+.environment-home .space-grid.horizontal-carousel>.space-card {flex-basis:12rem;}
+.environment-home .space-card h3 {margin:.5rem 0;font-size:1rem;}
+.environment-home .space-capsule .qh-bubble {max-width:10rem;}
+.environment-home .capsule-action {font-size:.75rem;}
+.environment-home .resume-controls {display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:.3rem 0;flex-wrap:wrap;}
+.resume-controls label {font-size:.85rem;font-weight:400;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.carousel-controls .carousel-arrow {min-width:44px;min-height:44px;border-color:transparent;padding:0;font-size:1.6rem;line-height:1;}
+.domain-heading {display:flex;align-items:center;gap:1rem;margin:1rem 0;}
+.domain-heading .qh-bubble {width:clamp(6rem,18vw,12rem);height:auto;}
+.domain-heading h1 {font-size:clamp(1.8rem,4vw,2.7rem);}
+.compact-empty {padding:1rem;border:0;background:transparent;}
+.secondary-navigation {display:flex;gap:1.5rem;flex-wrap:wrap;margin:1.5rem 0;}
+@media(max-width:480px){.environment-home .domain-grid.horizontal-carousel>li{flex-basis:8rem;}.environment-home .space-grid.horizontal-carousel>.space-card{flex-basis:10rem;}.environment-topline>a{font-size:.85rem;}.domain-heading{gap:.5rem;}}
+
+main:has(>.environment-home) {padding-top:2rem;}
+.environment-home .space-capsule {min-height:180px;}

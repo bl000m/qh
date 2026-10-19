@@ -1,4 +1,5 @@
 import { InMemoryWebStorage, UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import {parseRoute} from './navigation';
 import type { User } from 'oidc-client-ts';
 
 export type SessionState = 'starting' | 'anonymous' | 'authenticated' | 'expired' | 'error' | 'signed-out';
@@ -28,7 +29,9 @@ export function oidcSettings(origin: string, authority = 'http://localhost:8080/
   };
 }
 export function safeReturnPath(value: unknown): string {
-  return typeof value === 'string' && /^\/context-spaces\/[0-9a-f-]{36}$/i.test(value) ? value : '/';
+  if(typeof value!=='string')return '/';
+  const route=parseRoute(value);
+  return route.kind==='domain'||route.kind==='space'?value:'/';
 }
 export function createSession(): BrowserSession {
   const manager = new UserManager(oidcSettings(window.location.origin, import.meta.env.VITE_OIDC_ISSUER));
@@ -52,9 +55,10 @@ export function createSession(): BrowserSession {
           await manager.clearStaleState();
           user = await manager.signinRedirectCallback(callback);
           if (user.expired || !user.access_token) throw new Error('Expired session');
-          // QH-43: orient every newly authenticated session at its environment.
-          // OIDC state/PKCE validation above is unchanged; no saved Space is restored.
-          window.history.replaceState(null, '', '/');
+          // QH-50: an explicitly requested domain URL survives reauthentication.
+          // Ordinary login still lands home; never restore an implicit last Space.
+          const target=safeReturnPath(user.state);
+          window.history.replaceState(null, '', target.startsWith('/domains/')?target:'/');
           window.dispatchEvent(new PopStateEvent('popstate'));
           set('authenticated');
         } catch { clear('error'); }

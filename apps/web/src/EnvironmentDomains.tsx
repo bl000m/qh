@@ -1,4 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
+import type {RefObject} from 'react';
+import Link from './NavLink';
+import {domainPath} from './navigation';
 import type {QhApi,ContextSpace} from './api';
 import {apiMessage} from './api';
 import type {Organization} from './environment';
@@ -9,19 +12,23 @@ export function useOrganization(api:QhApi){
  async function save(next:Organization){const previous=value;setValue(next);setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setValue(previous);setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Rechargez avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
  return {value,error,busy,save,reload:()=>{setValue(null);setRefresh(n=>n+1);}};
 }
-export default function EnvironmentDomains({state,selected,onSelect,onCreate}:{state:ReturnType<typeof useOrganization>;selected:string|null;onSelect:(id:string|null)=>void;onCreate:()=>void}){
- const carousel=useRef<HTMLUListElement>(null);
- const [editing,setEditing]=useState(false),[draft,setDraft]=useState<Organization|null>(null),[newName,setNewName]=useState('');
- const {value,error,busy}=state;
- async function submit(){if(!draft)return;try{await state.save(draft);setEditing(false);if(selected&&!draft.domains.some(d=>d.id===selected))onSelect(null);}catch{/* error is shown below */}}
- const active=value?.domains.find(d=>d.id===selected);
- return <section aria-labelledby="domains-title" className="personal-domains"><div className="section-heading"><div><h2 id="domains-title">Mes domaines</h2><p className="muted">Des repères personnels pour organiser vos Context Spaces. Un même Space peut apparaître dans plusieurs domaines.</p></div><button type="button" className="secondary" disabled={!value||busy} onClick={()=>{setDraft(structuredClone(value));setEditing(true);}}>Organiser mes domaines</button></div>
+export function CarouselArrows({target,name}:{target:RefObject<HTMLUListElement>;name:string}){
+ function scroll(direction:number){target.current?.scrollBy({left:direction*320,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+ return <div className="carousel-controls" role="group" aria-label={'Navigation des '+name}><button type="button" className="secondary carousel-arrow" aria-label={name+' précédents'} onClick={()=>scroll(-1)}><span aria-hidden="true">‹</span></button><button type="button" className="secondary carousel-arrow" aria-label={name+' suivants'} onClick={()=>scroll(1)}><span aria-hidden="true">›</span></button></div>;
+}
+export default function EnvironmentDomains({state}:{state:ReturnType<typeof useOrganization>}){
+ const carousel=useRef<HTMLUListElement>(null);const {value,error}=state;
+ return <section aria-labelledby="domains-title" className="personal-domains"><div className="section-heading"><h2 id="domains-title">Mes domaines</h2><CarouselArrows target={carousel} name="Domaines"/></div>
  {error&&<div role="alert"><p>{error}</p><button type="button" onClick={state.reload}>Recharger l’organisation</button></div>}
  {!value&&!error&&<p role="status">Chargement de votre organisation…</p>}
- {value&&<><div className="carousel-controls" role="group" aria-label="Navigation des domaines"><button type="button" className="secondary" onClick={()=>carousel.current?.scrollBy({left:-320,behavior:'smooth'})}>Domaines précédents</button><button type="button" className="secondary" onClick={()=>carousel.current?.scrollBy({left:320,behavior:'smooth'})}>Domaines suivants</button></div><ul ref={carousel} className="domain-grid horizontal-carousel" aria-label="Carrousel Mes domaines">{value.domains.map(domain=><li key={domain.id}><button type="button" className={'domain-orb'+(selected===domain.id?' selected':'')} aria-pressed={selected===domain.id} onClick={()=>onSelect(selected===domain.id?null:domain.id)}><img src={bubble} alt="" width={400} height={300}/><span>{domain.name}</span></button></li>)}</ul>
- <div className="domain-navigation"><button type="button" className="secondary" aria-pressed={selected===null} onClick={()=>onSelect(null)}>Tous les domaines</button><button type="button" className="secondary" aria-pressed={selected==='unclassified'} onClick={()=>onSelect('unclassified')}>Non classés</button>{active&&<p role="status">Domaine ouvert : <strong>{active.name}</strong></p>}</div>
- {active&&<p>Les Spaces de ce domaine apparaissent ci-dessous. Pour commencer, <button type="button" className="text-button" onClick={onCreate}>créer un Space dans ce domaine</button> ou associer un Space existant.</p>}
- <details className="profile-preferences"><summary>Mon profil & mes préférences</summary><p>Un repère transversal, distinct des sept domaines. Vous pouvez personnaliser votre organisation ci-dessus. Le profil de compréhension personnel et les préférences partagées ne sont pas encore implémentés.</p></details></>}
+ {value&&<ul ref={carousel} className="domain-grid horizontal-carousel" aria-label="Carrousel Mes domaines">{value.domains.map(domain=><li key={domain.id}><Link to={domainPath(domain.id)} className="domain-orb"><img src={bubble} alt="" width={400} height={300}/><span>{domain.name}</span></Link></li>)}</ul>}
+ </section>;
+}
+export function OrganizationEditor({state}:{state:ReturnType<typeof useOrganization>}){
+ const [editing,setEditing]=useState(false),[draft,setDraft]=useState<Organization|null>(null),[newName,setNewName]=useState('');
+ const {value,error,busy}=state;
+ async function submit(){if(!draft)return;try{await state.save(draft);setEditing(false);}catch{/* shown below */}}
+ return <section><h2>Mes domaines</h2><button type="button" className="secondary" disabled={!value||busy} onClick={()=>{setDraft(structuredClone(value));setEditing(true);}}>Organiser mes domaines</button>{error&&<p role="alert">{error}</p>}
  {editing&&draft&&<form className="organization-editor" aria-label="Organisation des domaines" onSubmit={e=>{e.preventDefault();void submit();}}><p>Modifier ces repères ne change ni le contenu ni les droits des Spaces.</p>
  {draft.domains.map((d,i)=><div className="domain-edit" key={d.id}><label htmlFor={'domain-'+d.id}>Nom du domaine {i+1}</label><input id={'domain-'+d.id} required maxLength={100} value={d.name} disabled={busy} onChange={e=>setDraft({...draft,domains:draft.domains.map(v=>v.id===d.id?{...v,name:e.target.value}:v)})}/><button type="button" className="secondary" disabled={busy} onClick={()=>setDraft({...draft,domains:draft.domains.filter(v=>v.id!==d.id),memberships:Object.fromEntries(Object.entries(draft.memberships).map(([s,ids])=>[s,ids.filter(id=>id!==d.id)])),primary_domains:Object.fromEntries(Object.entries(draft.memberships).flatMap(([s,ids])=>{const rest=ids.filter(id=>id!==d.id);return rest.length?[[s,draft.primary_domains[s]===d.id?rest[0]:draft.primary_domains[s]]]:[];}))})}>Retirer le domaine {i+1}</button></div>)}
  <label htmlFor="new-domain">Nouveau domaine</label><input id="new-domain" value={newName} maxLength={100} onChange={e=>setNewName(e.target.value)}/><button type="button" disabled={busy||!newName.trim()||draft.domains.length>=50} onClick={()=>{setDraft({...draft,domains:[...draft.domains,{id:crypto.randomUUID(),name:newName}]});setNewName('');}}>Ajouter le domaine</button>

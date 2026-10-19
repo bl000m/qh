@@ -502,3 +502,21 @@ review and historical proposed retrieval are distinct. Neither a descriptor nor
 a quote establishes semantic correctness. Presentation of lineage does not imply
 automatic reconciliation. [ADR 0008](../adr/0008-personal-organization-and-owner-review.md)
 records the approved contracts and limits; [QH-50](../qh-50-ux-v2.md) tracks execution.
+
+### Later UX V2 navigation/login refinement — 2026-10-19
+
+Mon environnement is a destination chooser: two compact independent shelves, not a
+persistent domain filter. A domain opens its own stable-ID view and only its associated
+Spaces; an explicit nested route preserves the actual entry domain when opening a
+Space. Resume/direct Space links never invent domain provenance. Editable organization,
+profile and all/unclassified collections remain secondary. A missing/removed domain
+does not delete its Spaces. The domain view's creation action preselects its primary
+domain; membership and canonical understanding remain separate.
+
+An explicitly requested domain route can survive validated OIDC reauthentication;
+ordinary login still opens Mon environnement. This is not automatic last-Space resume
+or persistent browser tokens. The selected original login mockup is a presentation
+reference for the native Keycloak form, not permission to implement React password
+collection or change identity/session contracts. QH-50 source refinements are tested
+in isolation; durable theme installation/activation remains subject to QH-49 and
+explicit runtime authorization. See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-refinement--hierarchical-navigation-2026-10-19).

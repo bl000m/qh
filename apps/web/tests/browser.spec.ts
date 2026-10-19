@@ -114,7 +114,7 @@ test('API failure is sanitized, recoverable; invalid name and failed creation pr
   await page.getByRole('link',{name:'QH — accueil'}).click();
   // Force a real route remount, without reloading the ephemeral session.
   await page.evaluate(() => { history.pushState(null,'','/absent'); dispatchEvent(new PopStateEvent('popstate')); });
-  await page.getByRole('link',{name:'Mes Context Spaces',exact:true}).click();
+  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Le service est indisponible');
   await expect(page.locator('body')).not.toContainText('private database');
   await page.unroute('**/api/environment/spaces?*'); await page.getByRole('button',{name:'Réessayer'}).click();

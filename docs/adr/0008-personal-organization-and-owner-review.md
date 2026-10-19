@@ -67,3 +67,34 @@ creation remains compatible and yields an unclassified Space, like pre-existing
 Spaces. New dashboard creation cannot bypass its required primary-domain choice.
 No automatic assignment is applied retroactively. Removing a domain only changes
 organization; it does not delete Spaces or their understanding.
+
+## Later owner refinement — hierarchical navigation, 2026-10-19
+
+This later decision supersedes **home filtering** in the earlier dashboard clarification;
+its persistence, owner fences, opening activity and primary-domain rules still apply.
+Mon environnement presents two compact independent shelves. Selecting a domain opens
+`/domains/{domain_id}`, with only that owner's associated Spaces and a creation action
+preselecting that primary domain. Settings hold domain editing; secondary collection
+views expose all/unclassified Spaces. The home has no remembered domain filter.
+
+Explicit domain-origin navigation uses `/domains/{domain_id}/context-spaces/{space_id}`.
+A breadcrumb uses that origin only after the owner's organization confirms membership;
+it never infers origin from the primary domain. Direct/resume Space links have no domain.
+Renaming preserves IDs; missing/deleted domains fail with an inaccessible-domain state.
+No new backend API, metadata schema or canonical write is necessary for routing.
+An explicitly requested domain URL survives an OIDC reauthentication through validated
+transaction state; ordinary login and plain Space login still land at Mon environnement.
+Token memory storage, expiry, PKCE, nonce and state verification remain unchanged.
+
+Alternatives rejected: leaving all shelves visible while filtering does not communicate
+entry into a domain; inferring primary membership as navigation origin misrepresents
+multi-domain navigation; session/local storage of a last Space silently resumes context.
+The tradeoff is an explicit nested route, plus a graceful home-only breadcrumb when
+its former domain/membership is no longer available. Membership never grants access.
+
+The owner-selected login mockup refines the existing Keycloak theme with small real
+FR/EN locale links and native credential controls. Versioned template overrides retain
+upstream authentication/session/error/optional-flow branches, with pinned upstream
+maintenance documented in the theme. No custom credential endpoint or realm change
+is introduced. Prepared source and isolated rendering do not activate the live theme;
+QH-49 owns durable image/mount delivery before any ordinary Keycloak recreation.
