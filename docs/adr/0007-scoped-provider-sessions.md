@@ -65,3 +65,33 @@ Mistral comprehension, live cost, latency or a billed-workspace compatibility re
 See [QH-45 report](../qh-45-generative-chat.md) and the separately gated
 [real-session protocol](../qh-45-provider-session-proposal.md). The actual VPS stays
 mock/session-disabled until a new explicit authorization and controlled configuration.
+
+
+## Later owner amendment — RESULT FIRST, 2026-10-19
+
+The owner now authorizes actual availability, overriding this ADR's historical
+preparation-only gate within the named synthetic scope. Separate **provider
+availability** (fixed 30 days) from **conversation grant** (unchanged five minutes,
+token-bound) and **price freshness** (at most 24 hours). The alternative of daily
+receipt/manifest approval is rejected as unnecessary administration within an
+already approved budget/scope. No extension, new owner/Space/model or budget reset.
+
+The outbound adapter verifies the fixed official model documentation over HTTPS
+without credentials/QH payload, redirects or retry; bounded HTML/structured pricing
+parsing rejects unknown/tiered/conflicting/increased prices or retired model. Cache
+only a successful fresh result in memory; after expiry/failure deny paid requests.
+This is not live billed-workspace/quota attestation: the single authorized smoke
+is the actual workspace test. No API model GET is authorized. Document-format
+changes may safely make the mode unavailable until the parser is reviewed.
+
+Receipt alteration/removal revokes eligibility; reopening cannot extend its fixed
+expiry. An exact context hash pins the authorized six synthetic proposed revisions.
+Capabilities additionally show provider expiry/global remaining calls/cost to that
+owner/scope only. Preview, consent, CHAT, graph checks, aliases and canonical answer
+DTO remain unchanged. Same application/backend, no extra service or canonical table.
+
+A backend-only guarded lifecycle option supports the authorized configuration and
+rollback; it cannot target dependencies and verifies all non-target containers.
+Private receipt/ledger mount and server-only key are restricted to that backend.
+No recurring owner manifest approval is needed; audits remain durable. Prior ADR
+sections describe the original checkpoint and are retained, not retroactively rewritten.

@@ -46,10 +46,13 @@ class ProviderSessions:
 
     async def capabilities(self, request):
         await self.chat._authorize(request)
-        enabled = self.factory is not None and self.factory.allowed(request.subject_id, request.context_id)
+        enabled = self.factory is not None and await self.factory.available(request.subject_id, request.context_id)
         return dict(enabled=enabled, model=self.factory.model if enabled else None,
                     max_seconds=300, max_calls=self.factory.max_calls if enabled else 3,
-                    max_usd=self.factory.max_usd if enabled else '0.01')
+                    max_usd=self.factory.max_usd if enabled else '0.01',
+                    provider_expires_at=self.factory.expires_at if enabled else None,
+                    **({k: v for k, v in self.factory.remaining().items() if k != 'blocked'} if enabled
+                       else dict(remaining_calls=0, remaining_usd='0')))
 
     def _prune(self):
         for key, grant in list(self.grants.items()):
@@ -66,6 +69,8 @@ class ProviderSessions:
             raise SessionClosed('Real provider unavailable')
         self._prune()
         built, selection = await self.chat.prepare(request)
+        if not self.factory.accepts_snapshot(request.subject_id, request.context_id, packet_hash(built)):
+            raise SessionClosed('Context outside the authorized snapshot')
         if not built.revisions:
             raise ChatInputInvalid('No eligible context; explicit proposal choice may be needed')
         grant = Grant(str(uuid4()), identity, request, built, selection,
@@ -83,7 +88,7 @@ class ProviderSessions:
             raise ContextSpaceNotFound('Context space not found')
         if not revoke and (identity.credential_id != grant.identity.credential_id
                 or self.clock() >= min(grant.expires_at, identity.expires_at)
-                or self.factory is None or not self.factory.allowed(identity.subject_id, request.context_id)):
+                or self.factory is None or not await self.factory.verified(identity.subject_id, request.context_id)):
             grant.state = 'closed'
             raise SessionClosed('Session expired or unavailable')
         return grant

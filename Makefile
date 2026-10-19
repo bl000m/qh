@@ -3,15 +3,15 @@ COMPOSE = docker compose --env-file .env -f infra/docker/docker-compose.yml
 # Existing VPS only: guarded frontend/backend operations, never dependencies.
 .PHONY: dev-up dev-status dev-logs dev-restart dev-stop
 dev-up:
-	python3 scripts/manage_qh_dev.py up
+	python3 scripts/manage_qh_dev.py up $(if $(DEV_SERVICE),--service $(DEV_SERVICE))
 dev-status:
 	python3 scripts/manage_qh_dev.py status
 dev-logs:
 	python3 scripts/manage_qh_dev.py logs
 dev-restart:
-	python3 scripts/manage_qh_dev.py restart
+	python3 scripts/manage_qh_dev.py restart $(if $(DEV_SERVICE),--service $(DEV_SERVICE))
 dev-stop:
-	python3 scripts/manage_qh_dev.py stop
+	python3 scripts/manage_qh_dev.py stop $(if $(DEV_SERVICE),--service $(DEV_SERVICE))
 
 .PHONY: config build up down logs ps test smoke verify verify-running verify-infra verify-persistence migrate migration-current test-migrations lock-node lock-python
 config:

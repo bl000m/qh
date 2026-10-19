@@ -10,6 +10,7 @@ import tempfile
 import httpx
 
 from adapters.llm.mistral import ExperimentBudget
+from tests.test_chat_sessions import offline_pricing
 from adapters.llm.session_config import PrivateSessionFactory
 from app.bootstrap import create_runtime_app
 from app.chat.sessions import ProviderSessions
@@ -51,7 +52,7 @@ def create_app():
                 reference_aliases=['R1'], insufficient_context=False))))]))
 
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
-                                   transport=httpx.MockTransport(simulate))
+                                   transport=httpx.MockTransport(simulate), pricing=offline_pricing())
     sessions = ProviderSessions(chat=app.state.services.chat, factory=factory, clock=time.time)
     app.state.services = replace(app.state.services, chat_sessions=sessions)
     original = app.router.lifespan_context

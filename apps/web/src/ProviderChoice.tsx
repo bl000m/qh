@@ -49,7 +49,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
   }catch{if(n===generation.current){forget();onChange('mistral',null);setError('Consentement refusé ou contexte modifié. Préparez un nouvel aperçu.');}}
   finally{if(n===generation.current)setBusy(false);}
  }
- async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null);setError('Session arrêtée : plafond atteint ou budget indisponible. Un nouveau consentement est requis.');}}
+ async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setCaps(await api.chatCapabilities(scope));if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null);setError('Session arrêtée : plafond atteint ou budget indisponible. Un nouveau consentement est requis.');}}
   catch{if(n===generation.current)await revoke();}}
  useEffect(()=>{if(completed&&current.current?.state==='active')void refresh();},[completed]);
  return <div className="provider-choice">
@@ -60,6 +60,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
   }}><option value="mock">Démonstration mock — sans appel externe</option><option value="mistral">Mistral — consentement requis</option></select>
   {mode==='mistral'&&<section aria-label="Consentement Mistral" className="provider-consent">
    {!caps?.enabled?<p role="status">Mistral n’est pas activé sur ce serveur. Aucune donnée n’est envoyée.</p>:<>
+    <p>Disponibilité jusqu’au {new Date(caps.provider_expires_at!*1000).toLocaleString('fr-FR')}. Budget global restant : {caps.remaining_calls} requêtes / {caps.remaining_usd} USD.</p>
     <p>Modèle : {caps.model}. Un seul Space : celui que vous consultez.</p>
     <p>Plafond par session : {caps.max_calls} requêtes, {caps.max_usd} USD. Réservation et limites globales appliquées par le serveur. Aucun retry ni fallback automatique.</p>
     <p className="small">Maximum 5 minutes, sans dépasser le temps restant de votre connexion (token de 300 secondes). Une reconnexion exige un nouveau consentement. Aucun renouvellement automatique.</p>

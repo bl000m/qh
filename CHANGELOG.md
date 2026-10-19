@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-45 RESULT FIRST — 2026-10-19
+
+- Separate fixed 30-day provider authorization from token-bounded conversation
+  grants and automatic official-price freshness; retain cumulative durable budget.
+- Add expiry/global-residual visibility, exact authorized snapshot and receipt
+  revocation checks; prepare controlled backend-only activation and rollback.
+- No canonical schema/Understanding write, OIDC redesign, retry or fallback.
+  Actual activation/test results belong to the deployment report, not this log.
+
 ## Unreleased — semantic foundation (QH-30)
 
 - QH-13: owner-approved ephemeral, single-Space contextual chat through existing

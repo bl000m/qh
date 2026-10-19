@@ -22,6 +22,9 @@ class CapabilityOutput(BaseModel):
     max_seconds: Literal[300]
     max_calls: int = Field(ge=1, le=8)
     max_usd: str
+    provider_expires_at: float | None
+    remaining_calls: int = Field(ge=0, le=8)
+    remaining_usd: str
 
 
 class AccountingOutput(BaseModel):

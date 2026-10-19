@@ -1,7 +1,7 @@
 import {ApiError,isUuid} from './transport';
 import {revisionPage} from './understanding';
 import type {CanonicalRevision} from './understanding';
-export interface SessionCapabilities {enabled:boolean;model:string|null;max_seconds:number;max_calls:number;max_usd:string}
+export interface SessionCapabilities {enabled:boolean;model:string|null;max_seconds:number;max_calls:number;max_usd:string;provider_expires_at:number|null;remaining_calls:number;remaining_usd:string}
 export interface ProviderSession {
  session_id:string;context_id:string;model:string;state:'preview'|'active'|'closed'|'revoked';expires_at:number;
  include_proposed:boolean;snapshot_sha256:string;max_calls:number;max_usd:string;
@@ -11,6 +11,9 @@ export interface ProviderSession {
 export function capabilities(raw:unknown):SessionCapabilities {
  const v=raw as SessionCapabilities;
  if(!v||typeof v.enabled!=='boolean'||!(v.enabled?v.model==='mistral-small-2603':v.model===null)||
+  (v.enabled?(!Number.isFinite(v.provider_expires_at)||!v.provider_expires_at):v.provider_expires_at!==null)||
+  !Number.isInteger(v.remaining_calls)||v.remaining_calls<0||v.remaining_calls>8||
+  typeof v.remaining_usd!=='string'||!Number.isFinite(Number(v.remaining_usd))||Number(v.remaining_usd)<0||Number(v.remaining_usd)>.20||
   v.max_seconds!==300||!Number.isInteger(v.max_calls)||v.max_calls<1||v.max_calls>8||
   typeof v.max_usd!=='string'||!Number.isFinite(Number(v.max_usd))||Number(v.max_usd)<=0||Number(v.max_usd)>.20)throw new ApiError(502);
  return v;

@@ -1,5 +1,9 @@
 # QH-45 — scoped generative chat sessions
 
+**Later owner decision, 2026-10-19:** the preparation-only statements below are
+historical. [RESULT FIRST activation](qh-45-live-activation.md) records the now
+authorized 30-day scope, final verification and operational outcome.
+
 2026-10-18 (Europe/Rome). PR #16, branch `feat/QH-45-generative-chat`, single
 checkout `/home/ubuntu/qh`, from verified QH-43 merge
 `fc8b9b92f54ab2caaf22cb2e1f96bf20cc48c39b`. The owner explicitly approved the

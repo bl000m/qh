@@ -8,12 +8,25 @@ import httpx
 import pytest
 
 from adapters.llm.mistral import ExperimentBudget
+from adapters.llm.pricing import OfficialPricing
 from adapters.llm.session_config import PrivateSessionFactory, configured_session_factory
 from app.chat.sessions import ProviderSessions, ChatIdentity, SessionClosed
 from app.chat.context import ChatContextUnavailable, ChatInputInvalid, ChatProviderUnavailable
 from app.core.models import ContextSpaceNotFound, Message, MessageRole
 from tests.test_chat_service import case, request
 from tests.test_chat_context import revision
+
+
+def price_html(incoming='0.15', outgoing='0.6'):
+    value = dict(pricing=dict(type='custom', free=False,
+        input=[dict(type='range', price=float(incoming), denominator='/M Tokens')],
+        output=[dict(type='range', price=float(outgoing), denominator='/M Tokens')]), isRetired=False)
+    return 'Mistral Small 4 mistral-small-2603<script>self.__next_f.push(' + json.dumps([1, json.dumps(value)]) + ')</script>'
+
+
+def offline_pricing():
+    return OfficialPricing(transport=httpx.MockTransport(lambda r: httpx.Response(200,
+        text=price_html(), headers={'Content-Type': 'text/html'})))
 
 
 def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
@@ -36,7 +49,7 @@ def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
             message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], insufficient_context=False))))]))
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
-                                   transport=httpx.MockTransport(simulated))
+                                   transport=httpx.MockTransport(simulated), pricing=offline_pricing())
     chat, context, _, owner = case(rows)
     clock = [now.timestamp()]
     sessions = ProviderSessions(chat=chat, factory=factory, clock=lambda: clock[0])
@@ -184,8 +197,8 @@ def test_session_and_aggregate_limits_survive_new_grants(tmp_path,monkeypatch):
             p=await active(s,who)
             for _ in range(min(3,8-len(calls))):await s.respond(who,request(),p['session_id'])
         assert len(calls)==8
-        p=await active(s,who)
-        with pytest.raises(ChatProviderUnavailable):await s.respond(who,request(),p['session_id'])
+        assert not (await s.capabilities(request()))['enabled']
+        with pytest.raises(SessionClosed):await active(s,who)
     asyncio.run(run());assert len(json.loads(ledger.read_text())['calls'])==8
 
 
@@ -251,8 +264,7 @@ def test_malformed_durable_costs_fail_before_http(tmp_path,monkeypatch,amount):
     state=json.loads(ledger.read_text());state['calls']=[dict(kind='old',status='completed',reserved_usd=amount)]
     ledger.write_text(json.dumps(state))
     async def run():
-        p=await active(s,who)
-        with pytest.raises(ChatProviderUnavailable):await s.respond(who,request(),p['session_id'])
+        with pytest.raises(SessionClosed):await active(s,who)
     asyncio.run(run());assert not calls
 
 

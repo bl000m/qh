@@ -452,3 +452,38 @@ distinct. No model response becomes Understanding State (QH-39 remains separate)
 [implementation/evidence](../qh-45-generative-chat.md) separates measured offline
 checks from the unexecuted real-session experiment. QH-49 tracks reproducible
 Keycloak theme delivery and is required before its future ordinary recreation.
+
+
+## QH-45 RESULT FIRST and usable scoped provider — owner decision, 2026-10-19
+
+The owner approves a usable private-POC Mistral choice for Alice's synthetic Projet
+pilote, not another preparation checkpoint. The normal experience is **choose
+Mistral → inspect what is shared → consent → converse**. Mock remains the default.
+Governance, manifest hashes, spend reservations and receipt checks run automatically;
+implementation details remain inspectable but never become extra owner approvals
+inside the already authorized scope. Separate proposed-content and external-
+disclosure consent stay visible, affirmative and required for every new session.
+
+Provider availability lasts exactly 30 days from activation, with no automatic
+renewal or widening to other Spaces/owners/models. This replaces the earlier
+24-hour receipt maximum for this authorization only. Each conversation grant still
+lasts at most five minutes and never outlives its verified OIDC token; no refresh/BFF
+or automatic resumption. Subsequent manually submitted questions need no additional
+consent while the snapshot, owner/scope/model/permissions and grant remain unchanged.
+
+Prices are verified automatically from the fixed official model documentation,
+without key, user data, Mistral API GET or paid generation. Successful checks are
+fresh for at most 24 hours; unrecognized/increased prices, failed verification or
+retired model fail closed after expiry of the last verification. This neither
+extends the authorization nor resets accounting. Pinned prices remain conservative
+cost ceilings, not invoice guarantees. Backend receipts additionally pin the exact
+six proposed revisions/context snapshot; a changed snapshot is outside this receipt.
+
+The fixed cumulative ledger allows at most 8 POST/0.20 USD across all sessions,
+including at most one Codex real smoke; each session is at most 3 POST/0.01 USD.
+No daily/new-session reset, retry/fallback, implicit confirmation, canonical chat
+persistence or additional model lookup. Private expiry/global residual budget are
+visible in the product. Explicit revocation and late-answer suppression apply.
+A narrowly backed-up backend-only configuration/recreation is authorized; preserve
+all other containers, OIDC, canonical data and historical ledgers. PR #16 remains
+open and QH-45 cannot be DONE until the owner's later review/merge authorization.
