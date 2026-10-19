@@ -38,8 +38,11 @@ def main():
     parser.add_argument('--qh-login-theme', action='store_true',
                         help='Preview source-only QH theme on this disposable IdP; never alters the VPS realm')
     parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
+    parser.add_argument('--focused-browser-only', action='store_true', help='Local focused UI checks only; never a full acceptance verdict')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if args.focused_browser_only and (not args.browser_grep or os.environ.get('CI')):
+        raise SystemExit('Focused mode requires a local explicit filter; CI acceptance cannot use it')
     docker = ['sudo', '-n', 'docker'] if args.sudo_docker else ['docker']
     run_id = ('qh12-browser-' if args.understanding else 'qh11-browser-') + uuid4().hex[:12]
     args.output.mkdir(parents=True, exist_ok=True)
@@ -194,9 +197,10 @@ def main():
                 args.browser_image, 'sh', '-c',
                 browser_command, capture=False)
             # Reuse the existing real OIDC/Core/persistence regression, not a duplicate.
-            run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
-                '-k', 'test_real_oidc_login_mapping_and_owner_isolation', capture=False)
-            if args.understanding:
+            if not args.focused_browser_only:
+                run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
+                    '-k', 'test_real_oidc_login_mapping_and_owner_isolation', capture=False)
+            if args.understanding and not args.focused_browser_only:
                 # Real outage of only this invocation's graph, not a mocked HTTP response.
                 run('stop', '--time', '10', graph)
                 run('run', '--rm', '--network', 'container:' + kc, '--env-file', str(browser_env),
@@ -252,14 +256,14 @@ def main():
                 'backend_image': run('image', 'inspect', args.backend_image, '--format', '{{.Id}}').strip(),
                 'frontend_image': run('image', 'inspect', args.frontend_image, '--format', '{{.Id}}').strip() if args.frontend_image else None,
                 'browser_image': run('image', 'inspect', args.browser_image, '--format', '{{.Id}}').strip(),
-                'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'PASS',
+                'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'NOT TESTED (focused)' if args.focused_browser_only else 'PASS',
                 'native_graph_enabled': args.understanding,
                 'qh_login_theme_preview': args.qh_login_theme,
                 'qh45_http_simulated_sessions': args.chat_sessions,
                 'qh_login_theme_locale': 'fr' if args.qh_login_theme else None,
                 'browser_filter': args.browser_grep,
-                'real_graph_outage': 'PASS' if args.understanding else None,
-                'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,
+                'real_graph_outage': 'PASS' if args.understanding and not args.focused_browser_only else None,
+                'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding and not args.focused_browser_only else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,
             }, indent=2) + '\n')
         finally:
             for name in reversed(resources):

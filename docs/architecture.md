@@ -74,6 +74,16 @@ The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 epheme
 chat, explicitly authorized synthetic import and QH-39 conversational acquisition.
 No change to Engine, canonical schema, public API, provider gate or runtime follows.
 
+### Later QH-49 delivery execution — 2026-10-19
+
+The owner explicitly approved [durable Keycloak theme activation](qh-49-keycloak-delivery.md)
+before final QH-50 review. The QH-50 native login is now served by the real VPS from
+a sealed versioned image on the existing Keycloak version/data volume. This replaces
+writable-layer theme delivery, with no application module, realm, OIDC/session or
+policy change. The other five services and all QH data remain preserved. Earlier
+source-only and QH-43 records above are historical; they do not describe current
+QH-49 activation. [Release manifest](../infra/keycloak/qh-theme-release.json).
+
 ## Current code and planned product flows — 2026-10-17
 
 QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via
@@ -523,3 +533,22 @@ limits. [Operational results and rollback](qh-45-live-activation.md) supersede t
 previous paragraph's preparation-only VPS state without changing its history.
 Mock remains default; no other Space/provider, conversation ingestion, OIDC renewal,
 canonical write or new production service follows.
+
+### QH-50 personal organization and owner review
+
+[ADR 0008](adr/0008-personal-organization-and-owner-review.md) defines the approved
+owner-only organization metadata and immutable review contracts. Organization and
+review are application responsibilities with explicit composition bindings; SQL
+adapters implement their persistence ports. Domains are navigation metadata, never
+new canonical semantic categories or permissions. Review reuses canonical
+publication and the existing projection outbox. See the
+[implementation record](qh-50-ux-v2.md) for actual verification status.
+
+QH-50's later owner refinement adds frontend-only stable domain and nested Space
+routes. Membership validates the displayed navigation origin; it never authorizes a
+Space. Resume links have no inferred domain. Explicit domain deep links can survive
+validated OIDC transaction state without persisting tokens or restoring a last Space.
+The native Keycloak theme has pinned presentation template overrides; upstream form,
+session and optional-flow logic remain. Source preparation is separate from QH-49's
+durable theme delivery and from any authorized VPS activation. See
+[the later ADR 0008 amendment](adr/0008-personal-organization-and-owner-review.md#later-owner-refinement--hierarchical-navigation-2026-10-19).

@@ -1,3 +1,6 @@
+import type {ReviewStatus} from './ReviewControls';
+import {organization} from './environment';
+import type {Organization} from './environment';
 import {capabilities,providerSession} from './provider-session';
 import {chatAnswer} from './chat';
 import type {ChatAnswer,DialogueMessage} from './chat';
@@ -20,6 +23,8 @@ function space(value: unknown): ContextSpace {
   return v;
 }
 export class QhApi {
+  private readonly organizationWrites=new Set<Promise<Organization>>();
+  private readonly openingWrites=new Map<string,Promise<void>>();
   private readonly providerGrants=new Map<string,string>();
   private closing=false;
   revokeSessionsBeforeLogout() {
@@ -41,6 +46,43 @@ export class QhApi {
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
+    if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
+    const s=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review') as ReviewStatus;
+    if(!s||s.revision_id!==revision||!isUuid(s.latest_revision_id)||typeof s.pending!=='boolean'||!(s.current_revision_id===null||isUuid(s.current_revision_id))||!(s.successor_revision_id===null||isUuid(s.successor_revision_id)))throw new ApiError(502);
+    return s;
+  }
+  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct';expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
+    if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
+    const r=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review','POST',operation) as {revision_id:string;action:string;replayed:boolean};
+    if(!r||!isUuid(r.revision_id)||r.action!==operation.action||typeof r.replayed!=='boolean')throw new ApiError(502);return r;
+  }
+  async pendingReview(scope:string,limit=20,after?:string){
+    if(!isUuid(scope))throw new ApiError(404);
+    return revisionPage(await this.request('/context-spaces/'+scope+'/review?limit='+limit+(after?'&after_revision_id='+encodeURIComponent(after):'')),{context_ids:[scope],view:'proposed',limit});
+  }
+  async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
+    await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);
+    const params=new URLSearchParams({sort,limit:'20'});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
+    const raw=await this.request('/environment/spaces?'+params) as SpacePage;
+    if(!raw||!Array.isArray(raw.items)||raw.items.length>20||!(raw.next_after_id===null||isUuid(raw.next_after_id)))throw new ApiError(502);
+    return {items:raw.items.map(space),next_after_id:raw.next_after_id};
+  }
+  async createOrganized(name:string,primary_domain_id:string):Promise<ContextSpace>{
+    if(!validName(name)||!isUuid(primary_domain_id))throw new ApiError(422);
+    return space(await this.request('/environment/spaces','POST',{name,primary_domain_id}));
+  }
+  async opened(scope:string,event_id:string):Promise<void>{
+    if(!isUuid(scope)||!isUuid(event_id))throw new ApiError(404);
+    const pending=this.openingWrites.get(event_id);if(pending)return pending;
+    const write=this.request('/environment/spaces/'+scope+'/open','POST',{event_id}).then(()=>{});this.openingWrites.set(event_id,write);
+    try{await write;}finally{if(this.openingWrites.get(event_id)===write)this.openingWrites.delete(event_id);}
+  }
+  async organization():Promise<Organization>{await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);return organization(await this.request('/environment'));}
+  async organize(document:Organization):Promise<Organization>{
+    const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains}).then(organization);
+    this.organizationWrites.add(write);try{return await write;}finally{this.organizationWrites.delete(write);}
   }
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);

@@ -3,3 +3,6 @@ export function spaceTitle(name: string): string {
   const characters = [...new Intl.Segmenter('fr', {granularity: 'grapheme'}).segment(name)].map(part => part.segment);
   return characters.length > 10 ? characters.slice(0, 10).join('') + '…' : name;
 }
+
+/** Confirmation compares the full canonical name literally; it grants no deletion capability. */
+export function exactSpaceName(typed:string,name:string){return typed===name;}

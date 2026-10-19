@@ -44,6 +44,6 @@ def register_generic_profiles(repository):
         version = c.execute("SELECT version_num FROM alembic_version").fetchone()[
             "version_num"
         ]
-        if version not in ("0004_projection_outbox", "0005_retire_legacy_category"):
-            raise RuntimeError("Generic provisioning requires reviewed 0004 or 0005")
+        if version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization"):
+            raise RuntimeError("Generic provisioning requires reviewed native semantic schema (0004/0005 or additive 0006)")
     repository.register_types(generic_definitions())

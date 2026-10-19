@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {afterLogin} from './navigation.browser';
+import {afterLogin,showSupport} from './navigation.browser';
 import type {Page} from '@playwright/test';
 const expected=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
 async function login(page:Page){
@@ -51,7 +51,7 @@ test('narrow mobile and 200 percent text resizing keep navigation and controls r
  await page.setViewportSize({width:320,height:812});
  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');
+ await showSupport(page);const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');
  await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -73,7 +73,7 @@ test('chat composer leads on mobile while technical details remain available and
  await expect(page.locator('.chat-pending .chat-question-message')).toContainText('Question en attente');
  await expect(field).toBeDisabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
  release();await expect(page.locator('.chat-turn')).toHaveCount(1);await expect(page.locator('.chat-pending')).toHaveCount(0);
- await expect(page.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toBeVisible();
  await expect(help).not.toHaveAttribute('open','');
  await expect(page.locator('.chat-turn details[open]')).toHaveCount(0);
@@ -125,7 +125,7 @@ test('one approved identity spans environment and Space without decorative clutt
  // A clean owner-review fixture: retain exact API records for the three real
  // synthetic demo Spaces; exclude unrelated acceptance/security controls only
  // in this capture's list response. No production filter or invented cards.
- await page.route('**/api/context-spaces?*',async route=>{
+ await page.route('**/api/environment/spaces?*',async route=>{
   const response=await route.fetch();const data=await response.json();
   const ids=new Set(expected.demo_spaces.map((demo:{scope:string})=>demo.scope));
   const items=data.items.filter((item:{id:string})=>ids.has(item.id));expect(items).toHaveLength(3);
@@ -133,27 +133,28 @@ test('one approved identity spans environment and Space without decorative clutt
  });
  await page.goto('/');await login(page);
  await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();
- await expect(page.locator('.environment-heading .qh-bubble')).toHaveJSProperty('naturalWidth',400);
- expect((await page.locator('.environment-heading .qh-bubble').boundingBox())!.width).toBeGreaterThanOrEqual(380);
+ // QH-50 owner refinement replaces the large dashboard hero with two compact shelves.
+ await expect(page.locator('.domain-orb img').first()).toHaveJSProperty('naturalWidth',400);
+ await expect(page.locator('.domain-orb')).toHaveCount(7);
  await expect(page.locator('.space-card .qh-bubble')).toHaveCount(await page.locator('.space-card').count());
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});
-  const bubble=await page.locator('.environment-heading .qh-bubble').boundingBox();
-  expect(Math.abs(bubble!.x+bubble!.width/2-width/2)).toBeLessThan(2);
+  const bubble=await page.locator('.domain-orb img').first().boundingBox();
+  expect(Math.abs(bubble!.width/bubble!.height-4/3)).toBeLessThan(.01);
   await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.qh-bubble')).toHaveCount(0);
+ await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
  await expect(page.locator('.chat-help')).not.toHaveAttribute('open','');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
  }
 });
 
-test('capsule captions truncate visually while full names and distinct IDs remain keyboard-accessible',async({page})=>{
+test('approved cards show full names within two lines while distinct IDs remain keyboard-accessible',async({page})=>{
  const names=['Organisation personnelle','Organisation alternative','123456789👩🏽‍🔬suite'];
- await page.route('**/api/context-spaces?*',async route=>{
+ await page.route('**/api/environment/spaces?*',async route=>{
   const response=await route.fetch();const data=await response.json();
   await route.fulfill({response,json:{...data,items:expected.demo_spaces.map((demo:{scope:string},i:number)=>({...data.items[0],id:demo.scope,name:names[i]}))}});
  });
@@ -162,34 +163,28 @@ test('capsule captions truncate visually while full names and distinct IDs remai
  for(let i=0;i<3;i++){
   const link=cards.nth(i).getByRole('link',{name:names[i],exact:true});
   await expect(link).toHaveAttribute('title',names[i]);await expect(link).toHaveAttribute('href','/context-spaces/'+expected.demo_spaces[i].scope);
-  await expect(link.locator('h3 > span[aria-hidden]')).toHaveText(i===2?'123456789👩🏽‍🔬…':'Organisati…');
+  await expect(link.locator('h3')).toHaveText(names[i]);expect(await link.locator('h3').evaluate(e=>getComputedStyle(e).webkitLineClamp)).toBe('2');
  }
  const last=cards.nth(2).getByRole('link');await last.focus();await expect(last).toBeFocused();await page.keyboard.press('Enter');
  await expect(page.getByRole('heading',{level:1,name:expected.demo_spaces[2].name,exact:true})).toBeVisible();
 });
 if(process.env.QH43_LOGIN_THEME_TEST==='1')test.describe('French QH login preview',()=>{
 test.use({locale:'fr-FR'});
-test('source-only QH login theme preserves the real Keycloak form and PKCE completion',async({page},info)=>{
+test('source-only QH login theme matches the approved form, switches FR EN and preserves PKCE',async({page},info)=>{
  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('#username')).toBeVisible();
- const url=new URL(page.url());expect(url.origin).toBe('http://localhost:8080');expect(url.searchParams.get('code_challenge_method')).toBe('S256');
+ const initial=new URL(page.url());expect(initial.origin).toBe('http://localhost:8080');expect(initial.searchParams.get('code_challenge_method')).toBe('S256');
  await expect(page.locator('link[href*="css/qh.css"]')).toHaveCount(1);await expect(page.locator('#password')).toHaveAttribute('type','password');
- await expect(page.locator('html')).toHaveAttribute('lang','fr');
- await expect(page.getByRole('heading',{name:'Connectez-vous à votre compte',exact:true})).toBeVisible();
- await expect(page.getByLabel('Mot de passe',{exact:true})).toBeVisible();
- await expect(page.getByRole('button',{name:'Connexion',exact:true})).toBeVisible();
- expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundImage)).toContain('qh-logo.png');
- expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundSize)).toBe('contain');
- for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
-  await page.setViewportSize({width,height});
-  const layout=await page.locator('.pf-v5-c-login__main-header').evaluate(n=>{
-   const s=getComputedStyle(n),bubble=getComputedStyle(n,'::after');
-   return {span:bubble.gridColumn,width:parseFloat(bubble.width),available:n.getBoundingClientRect().width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)};
-  });expect(layout.span).toBe('1 / -1');expect(Math.abs(layout.width-layout.available)).toBeLessThan(2);
-  await page.screenshot({path:info.outputPath('qh43-keycloak-preview-'+name+'.png'),fullPage:true});
+ for(const [locale,label,username,submit] of [['fr','Français','Email ou identifiant','Continuer'],['en','English','Email or username','Continue']] as const){
+  await page.getByRole('link',{name:label,exact:true}).click();await expect(page.locator('html')).toHaveAttribute('lang',locale);await expect(page.getByRole('link',{name:label,exact:true})).toHaveAttribute('aria-current','true');
+  await expect(page.locator('#kc-page-title')).toHaveCount(0);await expect(page.getByLabel(username,{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:submit,exact:true})).toBeVisible();
+  expect(await page.locator('#kc-form-login').getAttribute('action')).toContain('/login-actions/authenticate');
+  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){await page.setViewportSize({width,height});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const bubble=await page.locator('.pf-v5-c-login__main-header').evaluate(n=>({width:parseFloat(getComputedStyle(n,'::after').width),available:n.getBoundingClientRect().width-parseFloat(getComputedStyle(n).paddingLeft)-parseFloat(getComputedStyle(n).paddingRight)}));expect(Math.abs(bubble.width-bubble.available)).toBeLessThan(2);await page.screenshot({path:info.outputPath('qh50-keycloak-'+locale+'-'+name+'.png'),fullPage:true});}
  }
- await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.locator('#username').fill('alice');await page.locator('#password').fill('invalid-synthetic-password');await page.locator('#kc-login').click();await expect(page.locator('#input-error-username')).toBeVisible();await expect(page.locator('#password')).toHaveValue('');
+ await page.getByRole('link',{name:'Français',exact:true}).focus();await page.keyboard.press('Enter');await expect(page.locator('html')).toHaveAttribute('lang','fr');
+ await page.locator('#password').fill('visibility-control');await page.locator('#password-show-password').click();await expect(page.locator('#password')).toHaveAttribute('type','text');await page.locator('#password-show-password').click();await expect(page.locator('#password')).toHaveAttribute('type','password');
+ await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page);
- await expect(page.getByRole('heading',{name:'Mon environnement',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Se déconnecter'}).click();await expect(page).toHaveURL(/localhost:8080/);
 });
 });

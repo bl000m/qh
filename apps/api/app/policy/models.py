@@ -11,6 +11,9 @@ class PolicyAction(str, Enum):
     READ_CONTEXT = "read_context"
     PROJECT_CONTEXT = "project_context"
     CHAT = "chat"
+    ORGANIZE_ENVIRONMENT = "organize_environment"
+    PROPOSE_UPDATE = "propose_update"
+    CONFIRM_UPDATE = "confirm_update"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

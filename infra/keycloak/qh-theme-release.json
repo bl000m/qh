@@ -1,0 +1,30 @@
+{
+  "theme_source_revision": "1a103d1c472d8d9325ac8ceb54a4db305e9eaef7",
+  "upstream_image": "quay.io/keycloak/keycloak@sha256:9409c59bdfb65dbffa20b11e6f18b8abb9281d480c7ca402f51ed3d5977e6007",
+  "theme_manifest_sha256": "7a9eace5814e474dca51ffa8ecbc15a01a7f5f2c3c912f1fd6284bc37e0d8e4a",
+  "theme_manifest_encoding": "UTF-8 JSON, sorted keys, separators comma and colon, mapping qh-relative paths to SHA-256",
+  "theme_files": {
+    "qh/KEYCLOAK-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "qh/README.md": "e6e23e3362e38be4e8f7bf33dc0e6ad3cb69a193f8ac0c2b3183a05c6014b615",
+    "qh/UPSTREAM.md": "c1c8e5b4233368a3d4ac3efee5d2a5b265110b0edff39e0525cc5e67a506f045",
+    "qh/login/field.ftl": "f7996537ac15be219a2085fb5ed897d48a92bcfbde6d8d52920399377cd50d9e",
+    "qh/login/messages/messages_en.properties": "be441116e770a83f8e3b4c0e12c89107bae45f491931e7b7f8b61ab01f421c90",
+    "qh/login/messages/messages_fr.properties": "5d71dea437a6c3a539c31d36aa1938d654a53b1aaf682fd703d3f52dc5292b41",
+    "qh/login/resources/css/qh.css": "90aad914c50a367aa51ad5e0ce2a0e273b3f61f117bd1273358cec5b9cfa031f",
+    "qh/login/resources/img/favicon.ico": "1af8fa192125cd78ac281a1dff54aae71dfdb81fedfdf5fb28f8b949685d6baf",
+    "qh/login/resources/img/qh-bubble.png": "b1743518ef1914766fb676a55945fe2fa4d06e7a8cff6c297622fcc266b0e850",
+    "qh/login/resources/img/qh-logo.png": "e8b693382d4ac086fb95f730da4a96ede9ae35b8cc27fdefb1e19e7615f1e587",
+    "qh/login/template.ftl": "06299d5f4eb631d560c751ccaa9385e1c191ea717c786bc50712db3a64518199",
+    "qh/login/theme.properties": "c40f0a2ed4fd0e1b6e1ce358acf624a184a3fbd085310194d44d9945e1593096"
+  },
+  "active_image": {
+    "tag": "qh-keycloak:26.4.7-qh-1a103d1",
+    "id": "sha256:21451375143c0d31397f1d23cbb38aca9a872e220bd74c94d89f815635b43954",
+    "theme_manifest_sha256": "7a9eace5814e474dca51ffa8ecbc15a01a7f5f2c3c912f1fd6284bc37e0d8e4a"
+  },
+  "previous_theme_image": {
+    "tag": "qh-keycloak:26.4.7-qh43-rollback-20261019",
+    "id": "sha256:945dc5567d3aa113fc88fadfe3f45d1342f83cd3861f0e09088d3c2888e46d69",
+    "theme_manifest_sha256": "d0a08eabcfe3f5bdc7cc452d15f498c398891b710c5ef65790ae75d9487ae7ea"
+  }
+}

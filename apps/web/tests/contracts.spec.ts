@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ApiError, apiMessage, QhApi, validName } from '../src/api';
+import {parseRoute,spacePath,domainPath} from '../src/navigation';
 import { safeReturnPath } from '../src/auth';
 
 test('names follow the existing Unicode code-point contract', () => {
@@ -34,4 +35,11 @@ test('errors never render server bodies; 401 invalidates the session', async () 
     expect(expired).toBe(true);
     expect(apiMessage(new Error('private diagnostic'))).not.toContain('private');
   } finally { globalThis.fetch = original; }
+});
+
+test('stable domain routes preserve explicit origin without inventing a primary domain',()=>{
+ const id='00000000-0000-0000-0000-000000000001',space='00000000-0000-0000-0000-000000000002';
+ expect(parseRoute(domainPath(id))).toEqual({kind:'domain',id});expect(parseRoute(spacePath(space,id))).toEqual({kind:'space',id:space,origin:id});expect(parseRoute(spacePath(space))).toEqual({kind:'space',id:space});
+ expect(safeReturnPath(domainPath(id))).toBe(domainPath(id));expect(safeReturnPath(spacePath(space,id))).toBe(spacePath(space,id));
+ for(const invalid of ['/domains/'+id+'?token=secret','/domains/'+id+'/../settings','//evil.invalid/domains/'+id,'/domains/'+id+'/context-spaces/invalid','/domains/'+id+'/extra']){expect(parseRoute(invalid)).toEqual({kind:'missing'});expect(safeReturnPath(invalid)).toBe('/');}
 });

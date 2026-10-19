@@ -487,3 +487,54 @@ visible in the product. Explicit revocation and late-answer suppression apply.
 A narrowly backed-up backend-only configuration/recreation is authorized; preserve
 all other containers, OIDC, canonical data and historical ledgers. PR #16 remains
 open and QH-45 cannot be DONE until the owner's later review/merge authorization.
+
+## Owner-approved UX V2 amendment — 2026-10-19
+
+Seven editable personal domains organize existing Spaces without classifying their
+meaning or granting access. A Space can belong to several domains without identity
+or content duplication. Profile/preferences are transversal. Organization is
+owner-only metadata, distinct from canonical understanding.
+
+Explicit owner confirmation/rejection appends immutable review revisions; only
+confirmation advances confirmed-current. Text correction appends a human proposal.
+Previous evidence, extraction, lineage and history remain reconstructible. Pending
+review and historical proposed retrieval are distinct. Neither a descriptor nor
+a quote establishes semantic correctness. Presentation of lineage does not imply
+automatic reconciliation. [ADR 0008](../adr/0008-personal-organization-and-owner-review.md)
+records the approved contracts and limits; [QH-50](../qh-50-ux-v2.md) tracks execution.
+
+### Later UX V2 navigation/login refinement — 2026-10-19
+
+Mon environnement is a destination chooser: two compact independent shelves, not a
+persistent domain filter. A domain opens its own stable-ID view and only its associated
+Spaces; an explicit nested route preserves the actual entry domain when opening a
+Space. Resume/direct Space links never invent domain provenance. Editable organization,
+profile and all/unclassified collections remain secondary. A missing/removed domain
+does not delete its Spaces. The domain view's creation action preselects its primary
+domain; membership and canonical understanding remain separate.
+
+An explicitly requested domain route can survive validated OIDC reauthentication;
+ordinary login still opens Mon environnement. This is not automatic last-Space resume
+or persistent browser tokens. The selected original login mockup is a presentation
+reference for the native Keycloak form, not permission to implement React password
+collection or change identity/session contracts. QH-50 source refinements are tested
+in isolation; durable theme installation/activation remains subject to QH-49 and
+explicit runtime authorization. See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-refinement--hierarchical-navigation-2026-10-19).
+
+### Official three-page visual reference and destructive-action gate — 2026-10-19
+
+The owner's three approved maquettes are the visual reference for environment/domain/
+Space layout, not fixtures to import. Cards show authorized full names within two lines;
+the earlier ten-character visual cut is superseded. The domain hero is centered. Space
+chat is primary beside secondary sources, independent canonical understanding and metadata;
+mobile support navigation preserves temporary chat/review state. Sources always refer to
+actual response revisions. Mock replies and unconfirmed support remain clearly identified.
+Unavailable descriptions, avatar identities and example answers are never invented.
+
+Owner assignment uses the existing optimistic organization version and explicit saving.
+Supprimer requires a typed **exact full Space name**. No deletion/archive lifecycle is
+approved or implemented: the complete confirmation UX states that limitation and its final
+execution stays disabled. No destructive request, successful deletion, archive or retention
+promise is simulated. A future lifecycle decision must precede any enabling backend change.
+See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-amendment--three-official-maquettes-2026-10-19)
+and the [visual comparison record](../qh-50-maquette-fidelity.md).

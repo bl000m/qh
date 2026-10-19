@@ -16,7 +16,7 @@ async function preview(page:any){
 async function consent(page:any){
  await page.getByLabel('J’autorise l’envoi à Mistral',{exact:false}).check();
  await page.getByRole('button',{name:'Autoriser cette session Mistral',exact:true}).click();
- await expect(page.getByRole('status').filter({hasText:/Session autorisée/})).toBeVisible();
+ await expect(page.getByRole('status').filter({hasText:/Session active/})).toBeVisible();
 }
 if(enabled)test('QH-45 real API simulated provider: separate consent, exact preview, canonical references and follow-up',async({page},info)=>{
  await open(page,expected.demo_spaces[0].scope);
@@ -38,6 +38,7 @@ if(enabled)test('QH-45 real API simulated provider: separate consent, exact prev
  await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
  const first=page.getByRole('article',{name:'Échange 1',exact:true});await expect(first).toContainText('Simulation hors réseau');
  await expect(first.getByRole('note').filter({hasText:/Tout le contexte fourni/})).toBeVisible();
+ await page.getByRole('button',{name:'Budget et autorisation',exact:true}).click();
  await expect(page.getByRole('status').filter({hasText:/1\/3 requêtes/})).toBeVisible();
  await page.getByLabel('Votre question sur ce contexte').fill('E quali sono le incertezze?');
  await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();

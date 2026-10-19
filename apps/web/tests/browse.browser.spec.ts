@@ -9,7 +9,7 @@ test('opens without search, separates current/proposed, and browses every retain
  const overview=page.getByRole('region',{name:'Vue d’ensemble'});
  await expect(overview.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  await expect(overview.getByRole('region',{name:'Compréhension confirmée courante'}).getByRole('button').first()).toContainText('Confirmé courant');
- await expect(overview.getByRole('region',{name:'Propositions à examiner'}).getByRole('button').first()).toContainText('Proposé · non confirmé');
+ await expect(overview.getByRole('region',{name:'Révisions proposées conservées'}).getByRole('button').first()).toContainText('Proposé · non confirmé');
  expect(searches).toBe(0);await expect(page.getByLabel('Texte à rechercher')).not.toBeVisible();
  await overview.getByRole('button',{name:'Consulter l’historique complet'}).click();
  const explorer=page.getByRole('region',{name:'Explorer les éléments'});
@@ -25,14 +25,15 @@ test('opens without search, separates current/proposed, and browses every retain
 test('dynamic exact descriptors, unclassified entities, relation anchors and item history',async({page},info)=>{
  await open(page);await page.getByRole('button',{name:'Parcourir les éléments',exact:true}).click();
  const e=page.getByRole('region',{name:'Explorer les éléments'});
- await e.getByRole('button',{name:'Propositions à examiner',exact:true}).click();
+ await e.getByRole('button',{name:'Révisions proposées conservées',exact:true}).click();
  await e.getByRole('button',{name:'reversible_pause',exact:true}).click();await expect(e.locator('.understanding-card')).toHaveCount(1);
- await e.getByRole('button',{name:'Entités canoniques'}).click();await expect(e.locator('.understanding-card').first()).toContainText('entity');
+ await e.getByRole('button',{name:'Entités canoniques'}).click();await expect(e.locator('.understanding-card').first()).toContainText('Entité');
  await e.getByRole('button',{name:'Sans descripteur reconnu'}).click();await expect(e.locator('.understanding-card').first()).toBeVisible();
  await e.getByRole('button',{name:'Relations explicites'}).click();await e.locator('.understanding-card').first().click();
- const d=page.getByRole('region',{name:'Détail de l’élément'});await expect(d.getByRole('region',{name:'Relation'})).toContainText(expected.relation.predicate);
+ const d=page.getByRole('region',{name:'Détail de l’élément'});await expect(d.getByRole('region',{name:'Relation lisible'})).toContainText('Attribution déclarée');
+ await d.locator('.human-revision > .technical-details > summary').click();await expect(d.getByRole('region',{name:'Relation',exact:true})).toContainText(expected.relation.predicate);await d.locator('.human-revision > .technical-details > summary').click();
  await expect(d.locator('blockquote').first()).toBeVisible();await page.screenshot({path:info.outputPath('qh12-browse-detail.png'),fullPage:true});
- await d.getByRole('button',{name:'Voir la révision source'}).click();await expect(d.getByRole('article',{name:'Révision '+expected.relation.source_revision_id,exact:true})).toBeVisible();
+ await d.getByRole('button',{name:'Voir la révision source'}).click();await expect(d.locator('.human-revision[data-revision-id="'+expected.relation.source_revision_id+'"]')).toBeVisible();
  await d.getByText('Révisions de cet élément',{exact:true}).click();await expect(d.getByRole('region',{name:'Révisions de cet élément'}).locator('.understanding-card')).toHaveCount(expected.decision_ids.length);
  await page.getByRole('button',{name:'Vue d’ensemble',exact:true}).click();await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
 });
@@ -46,7 +47,7 @@ test('late browse pages and failed pagination cannot leave stale results; mobile
  await page.unroute('**/understanding?*');
  let release:()=>void=()=>{};const gate=new Promise<void>(r=>{release=r;});let waiting=false;
  await page.route('**/understanding?*',async route=>{if(new URL(route.request().url()).searchParams.get('view')==='proposed'){waiting=true;await gate;}await route.continue();});
- await e.getByRole('button',{name:'Propositions à examiner',exact:true}).click();await expect.poll(()=>waiting).toBe(true);await expect(e.locator('.understanding-card')).toHaveCount(0);
+ await e.getByRole('button',{name:'Révisions proposées conservées',exact:true}).click();await expect.poll(()=>waiting).toBe(true);await expect(e.locator('.understanding-card')).toHaveCount(0);
  await e.getByRole('button',{name:'Compréhension confirmée courante',exact:true}).click();await expect(e.locator('.understanding-card')).toHaveCount(1);const delayed=page.waitForResponse(r=>browseUrl(r) && new URL(r.url()).searchParams.get('view')==='proposed');release();await(await delayed).finished();await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
  await expect(e.locator('.understanding-card')).toHaveCount(1);await expect(e.locator('.understanding-card')).toContainText('Confirmé courant');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -64,7 +65,7 @@ test('truly empty, proposed-only and historical-only Spaces have distinct honest
    await expect(o.getByText('Ce Context Space ne contient pas encore d’éléments de compréhension.')).toHaveCount(0);
    await expect(o.getByText('Aucune révision confirmée courante.',{exact:true})).toBeVisible();
    if(label==='proposed'){
-    await expect(o.locator('.understanding-card')).toHaveCount(1);await o.getByRole('button',{name:'Explorer : Propositions à examiner',exact:true}).click();
+    await expect(o.locator('.understanding-card')).toHaveCount(1);await o.getByRole('button',{name:'Explorer : Révisions proposées conservées',exact:true}).click();
     const e=page.getByRole('region',{name:'Explorer les éléments'});await e.getByRole('button',{name:'Previously unseen Ω',exact:true}).click();await expect(e.locator('.understanding-card')).toHaveCount(1);await expect(e.locator('.understanding-card')).toContainText('tentative');
    } else await expect(o.getByRole('button',{name:'Consulter l’historique complet'})).toBeVisible();
   }

@@ -79,7 +79,7 @@ services:
 
   keycloak:
     profiles: [oidc]
-    image: quay.io/keycloak/keycloak:26.4.7
+    image: ${QH_KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.4.7}
     command: ["start-dev", "--import-realm"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: qh-admin

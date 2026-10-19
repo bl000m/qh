@@ -5,6 +5,21 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-50 UX V2 — in review, 2026-10-19
+
+- Conversational viewport, compact provider controls and accessible answer-specific
+  sources panel with human-readable provenance and complete technical disclosure.
+- Owner-editable domain and Space shelves, required primary domain for dashboard
+  creation, multiple memberships and real opening-based recency/frequency.
+- Explicit immutable owner review, atomic confirmed-current pointer, pending inbox
+  and conservative guided groups; advanced semantic reconciliation remains future.
+- Dedicated owner-domain routes preserve actual Space entry origin; compact home
+  shelves and secondary settings follow the approved minimal hierarchy.
+- Native Keycloak FR/EN theme source follows the selected mockup; new VPS activation
+  remains gated by durable delivery (QH-49).
+- Authorized 0006 adds organization metadata only. No demo confirmation, provider
+  inference, persistent Keycloak change or automatic merge/closure is part of this initiative.
+
 ## QH-45 RESULT FIRST — 2026-10-19
 
 - Separate fixed 30-day provider authorization from token-bounded conversation
@@ -373,3 +388,20 @@ starts from the recorded native cutover and does not invent past release version
   reuse isolated real OIDC/SQL/graph browser checks with HTTP-simulated Mistral.
 - Preserve canonical data, aliases and epistemic warnings. No real inference,
   canonical migration, OIDC renewal, public activation or QH-39 ingestion.
+
+### QH-50 official maquette refinement — 2026-10-19
+
+In review: official three-maquette environment/domain/
+Space composition, staged owner membership assignment, two-column chat/support and
+mobile support view. Supprimer requires the exact full Space name; execution remains
+unavailable pending an approved lifecycle. No destructive endpoint or provider call.
+
+### QH-49 durable Keycloak login activation — 2026-10-19
+
+- Package the unchanged approved native theme into a versioned Keycloak 26.4.7
+  image; select it through private configuration with no theme source mount.
+- Execute the owner-approved Keycloak-only replacement after verified cold backup;
+  actual VPS FR/EN desktop/mobile, OIDC and Alice/Bob checks pass. Idempotent apply
+  preserves the new container ID; isolated restored H2 startup and rollback pass.
+- Preserve realm/contracts, other five services, QH data and ledger. No inference,
+  canonical migration, merge or Jira DONE. See the QH-49 delivery record.

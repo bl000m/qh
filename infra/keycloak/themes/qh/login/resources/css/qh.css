@@ -1,22 +1,42 @@
-/* Inherit the entire Keycloak form, validation and OIDC behavior. Presentation only. */
-:root {
-  color-scheme: light;
-  --keycloak-logo-url: url('../img/qh-logo.png');
-  --keycloak-logo-height: 96px;
-  --keycloak-logo-width: 110px;
-  --keycloak-bg-logo-url: none;
-  --keycloak-card-top-color: #ff3131;
-}
-body, .login-pf body, .pf-v5-c-login { background: #fff; color: #1f1f1f; }
-#kc-header-wrapper { color: #1f1f1f !important; font-size: 1rem; letter-spacing: 0; }
-#kc-header-wrapper::before { content: ''; display: block; width: 110px; height: 96px; margin: 0 auto .75rem; background: url('../img/qh-logo.png') center / contain no-repeat; }
-.pf-v5-c-login__container { width: min(100%, 36rem); grid-template-columns: minmax(0, 1fr); padding-inline: 1rem; }
-.pf-v5-c-login__main { background: #fff; border: 1px solid #dedede; border-radius: 10px; }
-.pf-v5-c-login .pf-v5-c-login__main-header { grid-template-columns: minmax(0, 1fr) auto; border-top: 3px solid #ff3131; border-radius: 10px 10px 0 0; }
-.pf-v5-c-login__main-header::after { content: ''; display: block; grid-column: 1 / -1; width: 100%; height: 72px; margin-top: .5rem; background: url('../img/qh-bubble.png') center / 96px 72px no-repeat; }
-#kc-login { background: #1f1f1f; border-color: #1f1f1f; color: #fff; }
-:focus-visible { outline: 3px solid #1f1f1f; outline-offset: 3px; }
-@media (max-width: 600px) { #kc-header-wrapper::before { width: 82px; height: 72px; } }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* QH presentation; native Keycloak forms, errors, recovery and authentication remain. */
+:root {color-scheme:light;--keycloak-bg-logo-url:none;--keycloak-logo-url:none;}
+body,.login-pf body,.pf-v5-c-login {background:#fcfcfb;color:#202020;}
+.pf-v5-c-login {min-height:100dvh;padding:1.5rem 1rem;}
+.pf-v5-c-login__container {width:min(100%,29rem);grid-template-columns:minmax(0,1fr);row-gap:1.25rem;margin:auto;padding:0;}
+#kc-header {margin:0;text-align:center;}
+#kc-header-wrapper {color:#202020!important;font-size:1rem;font-weight:500;letter-spacing:0;padding:0;}
+#kc-header-wrapper::before {content:'';display:block;width:86px;height:76px;margin:0 auto .35rem;background:url('../img/qh-logo.png') center/contain no-repeat;}
+.pf-v5-c-login__main {background:#fff;border:1px solid #f1f1f1;border-radius:1.5rem;box-shadow:0 14px 55px #2222220d;overflow:visible;}
+.pf-v5-c-login .pf-v5-c-login__main-header {position:relative;display:block;border:0;padding:1.5rem 2rem .5rem;}
+.pf-v5-c-login__main-header::after {content:'';display:block;width:100%;height:104px;margin-top:1.4rem;background:url('../img/qh-bubble.png') center/144px 108px no-repeat;}
+.pf-v5-c-login__main-body {padding:1rem 2rem 1.5rem;min-width:0;}
+.qh-locales {display:flex;justify-content:flex-end;align-items:center;gap:.35rem;}
+.qh-locale {display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid #e2e2e2;text-decoration:none;background:#fff;}
+.qh-locale span {display:grid;place-items:center;font-size:1.25rem;width:26px;height:26px;border-radius:50%;overflow:hidden;line-height:1;}
+.qh-locale[aria-current] {background:#fff0f0;border-color:#ffbcbc;box-shadow:0 0 0 1px #ff313118;}
+.qh-locale:hover {background:#f5f5f5;}
+.pf-v5-c-form__label {font-weight:500;color:#202020;}
+.pf-v5-c-form-control {border:1px solid #d7d7db;border-radius:999px;background:#fdfdfd;--pf-v5-c-form-control--after--BorderBottomWidth:0;--pf-v5-c-form-control--before--BorderBottomWidth:0;}
+.pf-v5-c-form-control::before,.pf-v5-c-form-control::after {border:0!important;}
+.pf-v5-c-form-control>input {min-height:48px;padding:.7rem 1rem;border:0;border-radius:inherit;font-size:1rem;color:#202020;background:transparent;}
+.pf-v5-c-form-control:focus-within {outline:2px solid #292929;outline-offset:2px;}
+.pf-v5-c-form-control.pf-m-error {border-color:#b51f26;}
+.pf-v5-c-input-group {position:relative;}
+.pf-v5-c-input-group .pf-v5-c-input-group__item.pf-m-fill {width:100%;min-width:0;}
+.pf-v5-c-input-group input[type=password],.pf-v5-c-input-group input[type=text] {padding-right:3rem;}
+.pf-v5-c-input-group>.pf-v5-c-input-group__item:last-child:not(.pf-m-fill) {position:absolute;right:.3rem;top:.2rem;z-index:1;}
+button[data-password-toggle] {min-width:44px;min-height:44px;border:0;border-radius:50%;background:transparent;box-shadow:none;color:#202020;}
+#kc-login {position:relative;min-height:48px;border-radius:999px;background:#222;border:1px solid #222;color:#fff;font-size:1rem;padding:.7rem 3rem;box-shadow:0 6px 18px #22222212;}
+#kc-login {background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.6'%3E%3Cpath d='M4 12h15m-6-6 6 6-6 6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;background-size:24px;}
+#kc-login:hover {background:#383838;}
+#kc-login:disabled {opacity:.65;}
+.pf-v5-c-login__main-footer,.pf-v5-c-login__main-footer-band {background:transparent;font-size:.85rem;}
+.pf-v5-c-form__helper-text {font-size:.85rem;}
+#kc-registration-container {text-align:center;}
+:focus-visible {outline:3px solid #a01b23!important;outline-offset:3px;}
+@media(max-width:600px){.pf-v5-c-login {padding:1rem .75rem;}.pf-v5-c-login__container {width:100%;}#kc-header-wrapper::before {width:70px;height:62px;}.pf-v5-c-login .pf-v5-c-login__main-header {padding:1rem 1.25rem .25rem;}.pf-v5-c-login__main-body {padding:.75rem 1.25rem 1rem;}.pf-v5-c-login__main-header::after {height:86px;margin-top:.6rem;background-size:120px 90px;}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
-@media (max-width: 600px) { .pf-v5-c-login .pf-v5-c-login__main-header { grid-template-columns: minmax(0, 1fr); } }
+/* One clear field focus boundary; the native eye remains a separate keyboard target. */
+.pf-v5-c-form-control>input:focus-visible {outline:none!important;box-shadow:none;}
+button[data-password-toggle]::before,button[data-password-toggle]::after {border:0!important;box-shadow:none;}

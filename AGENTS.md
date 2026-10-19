@@ -20,7 +20,11 @@ reference. Never infer the functional model solely from table names, existing co
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
-QH-30 and semantic foundation are consolidated in main. Persistent schema is 0005;
+QH-30 and semantic foundation are consolidated in main. Canonical semantic schema remains 0005; owner-approved QH-50 migration 0006 adds only
+`owner_organization` metadata (domains, memberships and minimal opening activity).
+It was applied on 2026-10-19 after isolated restore verification; original canonical
+data and triggers were preserved. See [QH-50](docs/qh-50-ux-v2.md) and ADR 0008.
+For the canonical baseline,
 the owner authorized a VPS POC hot-reload transition on 2026-10-17:
 frontend/backend use the QH-12 checkout with source binds; MCP retains c723d32
 image-only operation. See [active POC procedure](docs/qh-development-stack.md).
@@ -32,9 +36,12 @@ Keep the readonly root Keycloak realm import file unchanged. The owner later aut
 QH-43 demo-realm theme/French activation on 2026-10-18; consult
 [the activation/rollback record](docs/qh-43-keycloak-activation.md). This preserves
 the readonly import, OIDC/security/session contracts and other infrastructure.
-Installed static theme files are not a source bind and must be reinstalled before
-any separately authorized future Keycloak recreation. Future planning does
-not authorize further persistent writes/deployment/retirement.
+The later owner-authorized [QH-49 durable delivery](docs/qh-49-keycloak-delivery.md)
+on 2026-10-19 replaces that writable-layer installation with a sealed versioned
+Keycloak image selected by private `QH_KEYCLOAK_IMAGE`. Preserve its exact image ID,
+existing data volume and readonly import; no theme source bind is used. Future
+recreation still needs explicit authorization, backup and image/config verification.
+Future planning does not authorize further persistent writes/deployment/retirement.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
 approved three generic profiles, open descriptor contract, authorized structured selection and
 applied 0005 and executed deployment evidence. Controlled registration is explicit; never infer new

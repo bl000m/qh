@@ -16,6 +16,7 @@ async function login(page: Page, name = 'alice') {
 async function create(page: Page, name: string) {
   await page.getByRole('button', {name:'Créer un Context Space',exact:true}).click();
   await page.getByLabel('Nom du Context Space').fill(name);
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByRole('button', {name:'Créer',exact:true}).click();
   await expect(page.getByRole('status').filter({hasText:'Context Space créé'})).toBeVisible();
 }
@@ -41,7 +42,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   const path = new URL(page.url()).pathname;
   await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
-  await page.getByRole('link', {name:'Mon environnement'}).click();
+  await page.getByRole('link', {name:'Mon environnement',exact:true}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();
   await storageIsTokenFree(page);
   await page.screenshot({path:info.outputPath('alice-dashboard.png'),fullPage:true});
@@ -54,7 +55,7 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
     await bob.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},path);
     await expect(bob.getByRole('alert')).toHaveText('Ce Context Space est introuvable ou inaccessible.');
     await expect(bob.getByRole('heading', {name:'Projet QH',exact:true})).toHaveCount(0);
-    await bob.getByRole('link', {name:'Mon environnement'}).click();
+    await bob.getByRole('link', {name:'Mon environnement',exact:true}).click();
     await expect(bob.getByRole('link', {name:'Projet QH',exact:true})).toHaveCount(0);
     await expect(bob.getByText('Votre premier contexte commence ici.')).toBeVisible();
     await storageIsTokenFree(bob);
@@ -109,26 +110,28 @@ test('tampered transaction nonce rejects the real ID token before private API ac
 });
 test('API failure is sanitized, recoverable; invalid name and failed creation preserve the form', async ({page}) => {
   await page.goto('/'); await login(page);
-  await page.route('**/api/context-spaces?*', r => r.fulfill({status:503,body:'private database diagnostic'}));
+  await page.route('**/api/environment/spaces?*', r => r.fulfill({status:503,body:'private database diagnostic'}));
   await page.getByRole('link',{name:'QH — accueil'}).click();
   // Force a real route remount, without reloading the ephemeral session.
   await page.evaluate(() => { history.pushState(null,'','/absent'); dispatchEvent(new PopStateEvent('popstate')); });
-  await page.getByRole('link',{name:'Mes Context Spaces',exact:true}).click();
+  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Le service est indisponible');
   await expect(page.locator('body')).not.toContainText('private database');
-  await page.unroute('**/api/context-spaces?*'); await page.getByRole('button',{name:'Réessayer'}).click();
+  await page.unroute('**/api/environment/spaces?*'); await page.getByRole('button',{name:'Réessayer'}).click();
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByLabel('Nom du Context Space').fill('   '); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Saisissez un nom');
-  await page.route('**/api/context-spaces', r => r.fulfill({status:503,body:'private creation diagnostic'}));
+  await page.route('**/api/environment/spaces', r => r.fulfill({status:503,body:'private creation diagnostic'}));
   await page.getByLabel('Nom du Context Space').fill('Retry space'); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Le service est indisponible');
   await expect(page.getByLabel('Nom du Context Space')).toHaveValue('Retry space');
 });
 test('401 discards private UI and requires login; reload does not persist tokens', async ({page}) => {
   await page.goto('/'); await login(page);
-  await page.route('**/api/context-spaces', r => r.fulfill({status:401,body:'unauthorized'}));
+  await page.route('**/api/environment/spaces', r => r.fulfill({status:401,body:'unauthorized'}));
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByLabel('Nom du Context Space').fill('Should fail'); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Votre session a expiré');
   await expect(page.getByRole('heading',{name:'Mes Context Spaces',exact:true})).toHaveCount(0);
@@ -146,7 +149,8 @@ test('keyboard creation, mobile layout, back/forward and names render as text', 
   await page.setViewportSize({width:375,height:812}); await page.goto('/'); await login(page);
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).focus(); await page.keyboard.press('Enter');
   const name = '<script>window.QH_XSS=true</script>';
-  await page.getByLabel('Nom du Context Space').fill(name); await page.keyboard.press('Enter');
+  await page.getByLabel('Nom du Context Space').fill(name);
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'}); await page.getByLabel('Nom du Context Space').focus();await page.keyboard.press('Enter');
   await expect(page.getByRole('link',{name,exact:true})).toBeVisible();
   await page.getByRole('link',{name,exact:true}).click(); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
   await page.goBack(); await expect(page.getByRole('link',{name,exact:true})).toBeVisible();
@@ -176,13 +180,18 @@ test('wrong PKCE verifier is rejected by real Keycloak without API disclosure', 
 test('loading and bounded pagination render explicitly (UI fault/response simulation)', async ({page}) => {
   let release: () => void = () => {};
   const gate = new Promise<void>(resolve => { release = resolve; });
+  let releaseOrganization:()=>void=()=>{};
+  const organizationGate=new Promise<void>(resolve=>{releaseOrganization=resolve;});
+  await page.route('**/api/environment',async route=>{if(route.request().method()==='GET')await organizationGate;await route.continue();});
+  let firstPageRequests=0;
   const first = '00000000-0000-0000-0000-000000000001';
   const second = '00000000-0000-0000-0000-000000000002';
   const item = (id:string,name:string) => ({id,name,owner_id:aliceId,status:'active',created_at:'2026-10-17T12:00:00Z',updated_at:'2026-10-17T12:00:00Z'});
-  await page.route('**/api/context-spaces?*', async route => {
+  await page.route('**/api/environment/spaces?*', async route => {
     const params = new URL(route.request().url()).searchParams;
     expect(params.get('limit')).toBe('20');
     if (!params.has('after_id')) {
+      firstPageRequests++;
       await gate;
       await route.fulfill({json:{items:[item(first,'Page A')],next_after_id:first}});
     } else {
@@ -191,8 +200,9 @@ test('loading and bounded pagination render explicitly (UI fault/response simula
     }
   });
   await page.goto('/'); await login(page);
-  await expect(page.getByRole('status')).toContainText('Chargement des Context Spaces');
-  release();
+  await expect(page.getByRole('status').filter({hasText:'Chargement des Context Spaces'})).toBeVisible();
+  expect(firstPageRequests).toBe(0);releaseOrganization();
+  await expect.poll(()=>firstPageRequests).toBe(1);release();
   await expect(page.getByRole('link',{name:'Page A',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Afficher plus'}).click();
   await expect(page.getByRole('link',{name:'Page B',exact:true})).toBeVisible();

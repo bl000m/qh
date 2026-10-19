@@ -26,7 +26,7 @@ owner = str(DEMO_IDENTITIES[0][1])
 repo = CanonicalRepository(url=database_url(), subject_id=owner)
 scope = str(uuid4())
 with repo.connect() as connection:
-    assert connection.execute('SELECT version_num FROM alembic_version').fetchone()['version_num'] == '0005_retire_legacy_category'
+    assert connection.execute('SELECT version_num FROM alembic_version').fetchone()['version_num'] == '0006_owner_organization'
     connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Démo QH-8')", (scope, owner))
 register_generic_profiles(repo)
 policy = OwnerPolicyService(owner_for=PostgresSecurityReader(url=repo.url).owner_for)
@@ -87,7 +87,15 @@ for case, name in zip(CASES, ('Projet pilote', 'Bien-être', 'Organisation perso
     demo_ids = asyncio.run(demo_usecase.publish(subject_id=owner,checkpoint=demo_cp))
     demo_spaces.append(dict(scope=demo_scope,name=name,revision_ids=demo_ids,source_revision_id=demo_source))
 
-print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces,
+# Disposable owner-review Space, independent of prior browse/search expectations.
+review_scope = str(uuid4())
+with repo.connect() as connection:
+    connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Review UX V2 control')", (review_scope,owner))
+review_p = {'repo':repo,'scope':review_scope,'service':SimpleNamespace(policy=policy)}
+review_usecase, _, _, review_cp = import_extract(review_p, CASES[0], key='qh50-isolated-review')
+asyncio.run(review_usecase.publish(subject_id=owner,checkpoint=review_cp))
+
+print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces, 'review_scope':review_scope,
                   'original_ids': [r['id'] for r in original],
                   'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],

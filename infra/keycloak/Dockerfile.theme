@@ -1,0 +1,7 @@
+# Rebuild into a NEW candidate tag; verify qh-theme-release.json before/after build.
+# This recipe packages the same public theme payload; it does not activate a realm.
+FROM quay.io/keycloak/keycloak@sha256:9409c59bdfb65dbffa20b11e6f18b8abb9281d480c7ca402f51ed3d5977e6007
+COPY --chown=1000:0 themes/qh /opt/keycloak/themes/qh
+LABEL org.opencontainers.image.title="QH Keycloak candidate" \
+ org.opencontainers.image.revision="1a103d1c472d8d9325ac8ceb54a4db305e9eaef7" \
+ qh.theme.manifest.sha256="7a9eace5814e474dca51ffa8ecbc15a01a7f5f2c3c912f1fd6284bc37e0d8e4a"

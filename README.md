@@ -92,6 +92,15 @@ original SVG and Keycloak theme preparation/activation remain gated; no final
 branding is applied. Jira QH-43 remains **À faire** (no status transition requested). Real Mistral remains separately consented/budgeted,
 maximum EUR 5.
 
+### Later QH-49 login activation — 2026-10-19
+
+The [QH-49 delivery record](docs/qh-49-keycloak-delivery.md) now verifies the new
+QH-50 French/English native login on the actual VPS, not only in isolated preview.
+A sealed versioned Keycloak image preserves the existing realm/OIDC/data/ports;
+only Keycloak was replaced. Its private image selector and backup/rollback are
+explicitly controlled. Earlier QH-43 planning/source-only statements remain
+historical. QH-50/PR #17 stays open for final owner review, without merge or DONE.
+
 ## Planned demo sequence — 2026-10-17
 
 **QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)
@@ -381,3 +390,10 @@ are separate from the preserved offline checkpoint: mock remains default; only
 Alice's synthetic Projet pilote is authorized, with exact preview, two explicit
 consents, short token-bound sessions and cumulative budget. Other Spaces/users
 remain excluded; no canonical conversation persistence is implemented.
+
+UX V2 development (QH-50) is tracked in the [implementation record](docs/qh-50-ux-v2.md)
+and [ADR 0008](docs/adr/0008-personal-organization-and-owner-review.md): conversational
+chat, answer-specific provenance, owner-only organization and immutable review.
+Domains and real opening activity are navigation metadata, independent of canonical
+understanding. Advanced semantic reconciliation and retrieval remain separate work.
+The task PR requires owner review; this entry does not attest a merge or release.
