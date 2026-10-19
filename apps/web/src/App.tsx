@@ -125,7 +125,7 @@ function Detail({ id, api, origin }: { id: string; api: QhApi; origin?:string })
   useEffect(()=>{if(supportOpen)supportTitle.current?.focus();},[supportOpen]);
   const from=organization.value?.domains.find(d=>d.id===origin&&organization.value?.memberships[id]?.includes(d.id));
   const [understandingVersion,setUnderstandingVersion]=useState(0);
-  const [enrichedRevision,setEnrichedRevision]=useState<string|undefined>();
+  const [enrichedRevision,setEnrichedRevision]=useState<{id:string;open:number}|null>(null);
   const openEvent=useRef(crypto.randomUUID());
   const [openingError,setOpeningError]=useState('');
   const [error, setError] = useState('');
@@ -142,9 +142,9 @@ function Detail({ id, api, origin }: { id: string; api: QhApi; origin?:string })
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
       space ? <article className={'detail'+(supportOpen?' support-open':'')}><header className="space-heading"><Orb tone={110}/><div className="space-title"><h1 ref={title} tabIndex={-1}>{space.name}</h1></div><SpaceActions space={space} state={organization}/></header>{openingError&&<p role="status">{openingError}</p>}
 
-      <div className="space-workspace"><Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} onAnswersChange={answersChanged} onOpenProposal={id=>{setEnrichedRevision(id);setSupportOpen(true);}}/><button ref={supportToggle} className="secondary support-toggle" aria-expanded={supportOpen} onClick={()=>{setSupportOpen(v=>!v);if(supportOpen)requestAnimationFrame(()=>supportToggle.current?.focus());}}><Icon name="understanding"/>{supportOpen?'Revenir à la discussion':'Sources & compréhension'}</button><aside className="support-panel" aria-labelledby="support-title"><header><Icon name="understanding"/><div><h2 id="support-title" ref={supportTitle} tabIndex={-1}>Sources & compréhension</h2><p>Sources utilisées et état de la compréhension.</p></div></header>
+      <div className="space-workspace"><Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} onAnswersChange={answersChanged} onOpenProposal={id=>{setEnrichedRevision(previous=>({id,open:(previous?.open??0)+1}));setSupportOpen(true);}}/><button ref={supportToggle} className="secondary support-toggle" aria-expanded={supportOpen} onClick={()=>{setSupportOpen(v=>!v);if(supportOpen)requestAnimationFrame(()=>supportToggle.current?.focus());}}><Icon name="understanding"/>{supportOpen?'Revenir à la discussion':'Sources & compréhension'}</button><aside className="support-panel" aria-labelledby="support-title"><header><Icon name="understanding"/><div><h2 id="support-title" ref={supportTitle} tabIndex={-1}>Sources & compréhension</h2><p>Sources utilisées et état de la compréhension.</p></div></header>
       <details className="support-sources support-section"><summary><Icon name="sources"/><span>Sources<small>Éléments cités dans les réponses</small></span></summary>{answers.length?answers.map((answer,i)=><button key={i} type="button" className="secondary" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1} · {answer.references.length} éléments cités</button>):<p>Les sources d’une réponse apparaîtront ici après votre question.</p>}</details>
-      <UnderstandingExplorer key={'understanding:'+space.id+':'+(enrichedRevision??'')} initialRevision={enrichedRevision} api={api} scope={space.id} onChanged={()=>setUnderstandingVersion(n=>n+1)} />
+      <UnderstandingExplorer key={'understanding:'+space.id+':'+(enrichedRevision?.open??'')} initialRevision={enrichedRevision?.id} api={api} scope={space.id} onChanged={()=>setUnderstandingVersion(n=>n+1)} />
       <details className="space-metadata support-section"><summary><Icon name="info"/><span>Détails du contexte<small>Métadonnées du Space</small></span></summary><Metadata space={space}/></details>
       </aside></div>{sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}</article> :
         <Notice>Chargement du Context Space…</Notice>}

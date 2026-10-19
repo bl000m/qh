@@ -42,6 +42,8 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText(claim);
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Proposé');
  await page.screenshot({path:info.outputPath('qh39-proposed-with-source-desktop.png'),fullPage:true});
+ await page.locator('details.understanding-explorer > summary').click();await expect(page.locator('.human-revision')).not.toBeVisible();
+ await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  // Fresh page + actual OIDC reauthentication: ephemeral conversation is gone,
  // canonical proposal and original source remain retrievable through the product.
  await page.reload();await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();await page.getByRole('button',{name:'Se connecter',exact:true}).click();
