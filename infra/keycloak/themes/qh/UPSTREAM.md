@@ -6,7 +6,7 @@ Upstream SCM revision: `38c38721ad4c1303fa2a1bc24ccece4799a8a242`.
 The [Apache 2.0 license](KEYCLOAK-LICENSE.txt) applies to those upstream templates.
 QH logo/bubble rights and approvals remain separate.
 
-QH changes are marked at each file's beginning:
+QH changes are marked at each file's beginning; inherited trailing whitespace is normalized:
 
 - Template: omit the ordinary login page title only, replace the language select
   with links generated from Keycloak's own `locale.supported[].url`. Additional

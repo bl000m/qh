@@ -95,9 +95,9 @@
       <div class="${properties.kcCodeClipboardCopyGroupClass}">
         <div class="${properties.kcInputGroup}">
           <div class="${properties.kcInputGroupItemClass}">
-            <button 
-              class="${properties.kcFormPasswordVisibilityButtonClass}" 
-              type="button" 
+            <button
+              class="${properties.kcFormPasswordVisibilityButtonClass}"
+              type="button"
               aria-label="${msg("code-clipboard-label")}"
               aria-expanded="false"
               aria-controls="kc-${name}-content"
