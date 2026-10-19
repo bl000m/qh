@@ -6,6 +6,28 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-19 — QH-49 durable new login, actually activated on VPS
+
+The owner explicitly approved replacing **only Keycloak**, after a protected cold
+H2 backup and isolated restore/file comparison. Active image:
+`qh-keycloak:26.4.7-qh-1a103d1`, ID
+`sha256:21451375143c0d31397f1d23cbb38aca9a872e220bd74c94d89f815635b43954`.
+It bakes the exact QH-50 native theme into the same pinned Keycloak 26.4.7 base;
+no source theme mount or writable-layer installation. Compose image selection is
+configurable through private `QH_KEYCLOAK_IMAGE`. All other resolved settings,
+existing volume/import mounts, realm/OIDC/identity/session contracts and other
+five containers/configurations remain unchanged. No realm PUT or canonical write.
+
+Actual VPS QH welcome → French/English new login → environment, desktop/mobile,
+Alice/Bob isolation, invalid password, logout, state/nonce/PKCE and memory-only
+checks PASS. Stop-to-readiness **40.04 s**. A repeat apply kept the same container ID.
+Restored cold H2 copy started successfully in isolation and retained realm/client/
+user invariants. Previous-theme image rollback was rehearsed in isolation, not
+needed live. Ledger unchanged, zero provider calls. Root import and QH-50 preserved.
+[Operation/rollback/DoD](qh-49-keycloak-delivery.md),
+[sanitized receipt](evidence/qh49-keycloak-live-20261019/README.md).
+PR #17/QH-50 remain open for owner review; no merge or Jira DONE.
+
 ## 2026-10-18 — QH-43 actual QH login on the existing VPS
 
 The owner explicitly authorized the later Jira/theme decision. Seven frozen,

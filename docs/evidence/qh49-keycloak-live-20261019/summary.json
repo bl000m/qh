@@ -1,0 +1,50 @@
+{
+  "date_utc": "2026-10-19",
+  "authorization": "explicit owner approval of activation and described rollback",
+  "theme_source_revision": "1a103d1c472d8d9325ac8ceb54a4db305e9eaef7",
+  "active_image": {
+    "tag": "qh-keycloak:26.4.7-qh-1a103d1",
+    "id": "sha256:21451375143c0d31397f1d23cbb38aca9a872e220bd74c94d89f815635b43954",
+    "theme_manifest_sha256": "7a9eace5814e474dca51ffa8ecbc15a01a7f5f2c3c912f1fd6284bc37e0d8e4a"
+  },
+  "previous_theme_rollback_image": {
+    "tag": "qh-keycloak:26.4.7-qh43-rollback-20261019",
+    "id": "sha256:945dc5567d3aa113fc88fadfe3f45d1342f83cd3861f0e09088d3c2888e46d69",
+    "theme_manifest_sha256": "d0a08eabcfe3f5bdc7cc452d15f498c398891b710c5ef65790ae75d9487ae7ea"
+  },
+  "actual_vps_login_verified": true,
+  "actual_vps_checks": {
+    "alice_code_pkce_state_nonce_memory": "PASS",
+    "alice_three_retained_spaces": "PASS",
+    "bob_six_foreign_scope_denials": "PASS",
+    "french_wrong_password": "PASS",
+    "mobile_authentication": "PASS",
+    "logout_and_fresh_server_login": "PASS",
+    "state_negative_control": "PASS",
+    "nonce_negative_control": "PASS",
+    "pkce_negative_control": "PASS",
+    "expiry_contract": "UNCHANGED: prior executed 300-second evidence reused; no wait repeated",
+    "anonymous_denial": "PASS"
+  },
+  "stop_to_readiness_seconds": 40.04,
+  "keycloak_container_replaced": true,
+  "other_five_containers_unchanged": true,
+  "same_keycloak_data_volume": true,
+  "same_readonly_realm_import": true,
+  "realm_client_user_configuration_equal": true,
+  "realm_puts": 0,
+  "image_only_effective_compose_delta": true,
+  "idempotent_repeat_kept_container_id": true,
+  "cold_backup_files_restored_equal": true,
+  "restored_h2_keycloak_startup_and_config_equality": "PASS",
+  "isolated_same_volume_theme_recreation": "PASS",
+  "isolated_previous_theme_rollback": "PASS",
+  "live_rollback_executed": false,
+  "new_paid_calls": 0,
+  "canonical_qh_writes": 0,
+  "provider_ledger_unchanged": true,
+  "private_evidence_root": ".local-archive/qh49-durable-theme-20261019/activation-20261019T202301Z",
+  "owner_final_visual_review": "PENDING",
+  "merge_performed": false,
+  "jira_done": false
+}

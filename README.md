@@ -92,6 +92,15 @@ original SVG and Keycloak theme preparation/activation remain gated; no final
 branding is applied. Jira QH-43 remains **À faire** (no status transition requested). Real Mistral remains separately consented/budgeted,
 maximum EUR 5.
 
+### Later QH-49 login activation — 2026-10-19
+
+The [QH-49 delivery record](docs/qh-49-keycloak-delivery.md) now verifies the new
+QH-50 French/English native login on the actual VPS, not only in isolated preview.
+A sealed versioned Keycloak image preserves the existing realm/OIDC/data/ports;
+only Keycloak was replaced. Its private image selector and backup/rollback are
+explicitly controlled. Earlier QH-43 planning/source-only statements remain
+historical. QH-50/PR #17 stays open for final owner review, without merge or DONE.
+
 ## Planned demo sequence — 2026-10-17
 
 **QH-9 merged:** [authenticated Space metadata REST](docs/qh-9-context-spaces.md)

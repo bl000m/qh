@@ -36,9 +36,12 @@ Keep the readonly root Keycloak realm import file unchanged. The owner later aut
 QH-43 demo-realm theme/French activation on 2026-10-18; consult
 [the activation/rollback record](docs/qh-43-keycloak-activation.md). This preserves
 the readonly import, OIDC/security/session contracts and other infrastructure.
-Installed static theme files are not a source bind and must be reinstalled before
-any separately authorized future Keycloak recreation. Future planning does
-not authorize further persistent writes/deployment/retirement.
+The later owner-authorized [QH-49 durable delivery](docs/qh-49-keycloak-delivery.md)
+on 2026-10-19 replaces that writable-layer installation with a sealed versioned
+Keycloak image selected by private `QH_KEYCLOAK_IMAGE`. Preserve its exact image ID,
+existing data volume and readonly import; no theme source bind is used. Future
+recreation still needs explicit authorization, backup and image/config verification.
+Future planning does not authorize further persistent writes/deployment/retirement.
 Read [post-cutover consolidation](docs/qh-semantic-consolidation.md) for the
 approved three generic profiles, open descriptor contract, authorized structured selection and
 applied 0005 and executed deployment evidence. Controlled registration is explicit; never infer new

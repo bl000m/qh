@@ -395,3 +395,13 @@ In review: official three-maquette environment/domain/
 Space composition, staged owner membership assignment, two-column chat/support and
 mobile support view. Supprimer requires the exact full Space name; execution remains
 unavailable pending an approved lifecycle. No destructive endpoint or provider call.
+
+### QH-49 durable Keycloak login activation — 2026-10-19
+
+- Package the unchanged approved native theme into a versioned Keycloak 26.4.7
+  image; select it through private configuration with no theme source mount.
+- Execute the owner-approved Keycloak-only replacement after verified cold backup;
+  actual VPS FR/EN desktop/mobile, OIDC and Alice/Bob checks pass. Idempotent apply
+  preserves the new container ID; isolated restored H2 startup and rollback pass.
+- Preserve realm/contracts, other five services, QH data and ledger. No inference,
+  canonical migration, merge or Jira DONE. See the QH-49 delivery record.

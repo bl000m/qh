@@ -86,3 +86,14 @@ def test_backend_only_activation_cannot_target_or_restart_other_services():
         assert not set(args) & {'postgres', 'neo4j', 'keycloak', 'mcp', '--build', 'down'}
     for services in [('postgres',), ('backend', 'keycloak'), ()]:
         with pytest.raises(ValueError):command([], 'up', services)
+
+
+def test_guard_retains_reviewed_keycloak_image_without_allowing_image_drift():
+    config, containers, manifest = fixture()
+    reviewed = 'qh-keycloak:26.4.7-qh-1a103d1'
+    config['services']['keycloak']['image'] = reviewed
+    containers[2]['Config']['Image'] = reviewed
+    DEV['validate'](config, containers, manifest)
+    containers[2]['Config']['Image'] = 'unreviewed-keycloak'
+    with pytest.raises(ValueError, match='Infrastructure image drift'):
+        DEV['validate'](config, containers, manifest)

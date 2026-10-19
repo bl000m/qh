@@ -41,6 +41,17 @@ Frozen theme files are installed in the existing container rather than source-bo
 future Keycloak replacement must reinstall them before serving the selected theme.
 No generic Compose operation or automatic startup migration is authorized.
 
+## Later QH-49 durable login activation — 2026-10-19
+
+The explicitly approved [QH-49 operation](qh-49-keycloak-delivery.md) now serves
+QH-50's native French/English login on the real VPS from a sealed versioned image.
+It supersedes the old writable-layer delivery described above. Private
+`QH_KEYCLOAK_IMAGE` selects the active image; the same existing data/import mounts,
+realm/client/identity/session configuration and all five other services are preserved.
+Only Keycloak was replaced; measured stop-to-readiness was 40.04 seconds. Cold
+backup/isolated recovery, actual VPS authentication and idempotent apply pass.
+No new general recreation permission follows. Ordinary dev commands remain app-only.
+
 ## Comandi ordinari
 
 Da `/home/ubuntu/qh`, con accesso Docker; su questo VPS:

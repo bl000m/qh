@@ -74,6 +74,16 @@ The [operational roadmap/seed plan](qh-13-demo-a-plan.md) separates QH-13 epheme
 chat, explicitly authorized synthetic import and QH-39 conversational acquisition.
 No change to Engine, canonical schema, public API, provider gate or runtime follows.
 
+### Later QH-49 delivery execution — 2026-10-19
+
+The owner explicitly approved [durable Keycloak theme activation](qh-49-keycloak-delivery.md)
+before final QH-50 review. The QH-50 native login is now served by the real VPS from
+a sealed versioned image on the existing Keycloak version/data volume. This replaces
+writable-layer theme delivery, with no application module, realm, OIDC/session or
+policy change. The other five services and all QH data remain preserved. Earlier
+source-only and QH-43 records above are historical; they do not describe current
+QH-49 activation. [Release manifest](../infra/keycloak/qh-theme-release.json).
+
 ## Current code and planned product flows — 2026-10-17
 
 QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via
