@@ -35,7 +35,7 @@ test('UX V2 hierarchical domains, real activity, origin navigation and owner edi
  const card=page.locator('.space-card').filter({has:page.getByRole('link',{name:'Primary domain UX control',exact:true})});await expect(card).toHaveCount(1);
  await card.getByText('Domaines de ce Space',{exact:true}).click();await card.getByLabel('Travail & projets',{exact:true}).check();await expect(card.getByRole('combobox',{name:'Domaine principal',exact:true}).locator('option:checked')).toHaveText('Loisirs & découvertes');
  if(await card.locator('.space-memberships').evaluate((e:HTMLDetailsElement)=>e.open))await card.getByText('Domaines de ce Space',{exact:true}).click();
- for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh50-domain-'+name+'.png'),fullPage:true});}
+ for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){await page.setViewportSize({width,height});if(name==='desktop')expect((await card.boundingBox())!.width).toBeLessThan(400);await page.screenshot({path:info.outputPath('qh50-domain-'+name+'.png'),fullPage:true});}
  await card.getByRole('link',{name:'Primary domain UX control',exact:true}).click();
  await expect(page.getByRole('navigation',{name:'Fil d’Ariane'})).toContainText('Loisirs & découvertes');await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
  const nestedPath=new URL(page.url()).pathname;

@@ -308,3 +308,5 @@ button { max-width: 100%; overflow-wrap: anywhere; }
 
 main:has(>.environment-home) {padding-top:2rem;}
 .environment-home .space-capsule {min-height:180px;}
+/* Keep a lone domain Space at capsule width instead of stretching across the page. */
+.domain-page .space-grid {grid-template-columns:repeat(auto-fill,minmax(min(100%,15rem),1fr));}
