@@ -16,6 +16,7 @@ async function login(page: Page, name = 'alice') {
 async function create(page: Page, name: string) {
   await page.getByRole('button', {name:'Créer un Context Space',exact:true}).click();
   await page.getByLabel('Nom du Context Space').fill(name);
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByRole('button', {name:'Créer',exact:true}).click();
   await expect(page.getByRole('status').filter({hasText:'Context Space créé'})).toBeVisible();
 }
@@ -146,7 +147,8 @@ test('keyboard creation, mobile layout, back/forward and names render as text', 
   await page.setViewportSize({width:375,height:812}); await page.goto('/'); await login(page);
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).focus(); await page.keyboard.press('Enter');
   const name = '<script>window.QH_XSS=true</script>';
-  await page.getByLabel('Nom du Context Space').fill(name); await page.keyboard.press('Enter');
+  await page.getByLabel('Nom du Context Space').fill(name);
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'}); await page.keyboard.press('Enter');
   await expect(page.getByRole('link',{name,exact:true})).toBeVisible();
   await page.getByRole('link',{name,exact:true}).click(); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
   await page.goBack(); await expect(page.getByRole('link',{name,exact:true})).toBeVisible();

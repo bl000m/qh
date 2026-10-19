@@ -48,3 +48,22 @@ semantic retrieval (QH-48), conversation ingestion (QH-39) and session redesign
 The application adds organization/review contracts, outbound PostgreSQL adapters
 and inbound REST routes, assembled in composition. Core stays framework independent.
 No Keycloak, OIDC lifetime, provider budgets or consent changes follow this ADR.
+
+## Owner dashboard clarification — 2026-10-19
+
+The two dashboard shelves are horizontal carousels: Mes domaines and Reprendre
+mes Context Spaces. Domain selection filters the server-paginated Space list;
+Tous les domaines and Non classés are explicit. Titles remain centered and full
+names accessible. Sorting uses recorded opening time or opening count, never
+`updated_at`. One bounded request-local opening event records server time/count
+in the same owner document, without conversation text. A bounded deduplication
+window handles duplicate React effects; this is navigation activity, not analytics
+or proof of use before this feature existed. Organization updates cannot forge
+or erase server-authored activity and do not race its version unnecessarily.
+
+The UX creation route requires one primary domain and atomically creates the
+Space and its membership; further memberships are editable. Legacy QH-9 REST
+creation remains compatible and yields an unclassified Space, like pre-existing
+Spaces. New dashboard creation cannot bypass its required primary-domain choice.
+No automatic assignment is applied retroactively. Removing a domain only changes
+organization; it does not delete Spaces or their understanding.

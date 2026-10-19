@@ -264,3 +264,13 @@ button { max-width: 100%; overflow-wrap: anywhere; }
 .space-memberships input[type=checkbox] {width:1.2rem;height:1.2rem;}
 .text-button {background:none;color:#991b1b;text-decoration:underline;border:0;padding:.25rem;}
 @media(max-width:480px){.domain-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.domain-edit{display:block;}.domain-edit input{width:100%;}.personal-domains .section-heading{align-items:flex-start;}}
+/* Two keyboard-accessible horizontal shelves; no autoplay or hidden controls. */
+.horizontal-carousel {display:flex;overflow-x:auto;gap:1.25rem;scroll-snap-type:x proximity;scroll-padding-inline:.5rem;overscroll-behavior-x:contain;padding:.75rem .5rem 1.25rem;max-width:100%;}
+.domain-grid.horizontal-carousel>li {flex:0 0 11rem;scroll-snap-align:start;}
+.space-grid.horizontal-carousel>.space-card {flex:0 0 15rem;scroll-snap-align:start;}
+.carousel-controls {display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap;}
+.carousel-controls button {font-size:.85rem;padding:.4rem .7rem;}
+.resume-controls {margin-block:1rem;}
+.resume-controls select {max-width:18rem;}
+@media(max-width:480px){.domain-grid.horizontal-carousel>li{flex-basis:9rem;}.space-grid.horizontal-carousel>.space-card{flex-basis:13rem;}}
+@media(prefers-reduced-motion:reduce){.horizontal-carousel{scroll-behavior:auto;scroll-snap-type:none;}}

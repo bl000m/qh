@@ -17,11 +17,11 @@ class OrganizationConflict(ValueError):
 def defaults():
     return {'version': 0, 'domains': [{'id': str(uuid5(NAMESPACE_URL, 'qh.domain/'+str(i))),
                                      'name': name} for i, name in enumerate(LABELS)],
-            'memberships': {}}
+            'memberships': {}, 'primary_domains': {}, 'usage': {}}
 
 
 def validate(document):
-    if set(document) != {'version', 'domains', 'memberships'}:
+    if set(document) != {'version', 'domains', 'memberships', 'primary_domains'}:
         raise ValueError('Invalid organization')
     if type(document['version']) is not int or document['version'] < 0:
         raise ValueError('Invalid organization version')
@@ -39,17 +39,25 @@ def validate(document):
     for space, assigned in memberships.items():
         if str(UUID(space)) != space or not isinstance(assigned, list) or any(not isinstance(v, str) for v in assigned) or len(assigned) != len(set(assigned)) or not set(assigned) <= ids:
             raise ValueError('Invalid memberships')
+    primary = document['primary_domains']
+    if not isinstance(primary, dict) or set(primary) != {s for s, ids in memberships.items() if ids}:
+        raise ValueError('Every classified Space requires one primary domain')
+    if any(primary[s] not in memberships[s] for s in primary):
+        raise ValueError('Primary domain must be a membership')
     return deepcopy(document)
 
 
 class OrganizationRepository(Protocol):
     async def read(self, subject): ...
     async def replace(self, subject, document): ...
+    async def opened(self, subject, scope, event_id): ...
+    async def create_space(self, subject, name, primary_domain_id): ...
+    async def resume(self, subject, sort, domain, limit, after): ...
 
 
 class EnvironmentService:
-    def __init__(self, *, repository: OrganizationRepository, policy):
-        self.repository, self.policy = repository, policy
+    def __init__(self, *, repository: OrganizationRepository, policy, context=None):
+        self.repository, self.policy, self.context = repository, policy, context
 
     async def _allow(self, subject, scopes=()):
         result = await self.policy.evaluate(PolicyRequest(subject_id=subject,
@@ -70,3 +78,29 @@ class EnvironmentService:
         document = validate(document)
         await self._allow(subject, tuple(document['memberships']))
         return await self.repository.replace(subject, document)
+
+    async def opened(self, subject, scope, event_id):
+        await self._allow(subject, (scope,))
+        UUID(event_id)
+        return await self.repository.opened(subject, scope, event_id)
+
+    async def create_space(self, subject, name, primary_domain_id):
+        await self._allow(subject)
+        allowed = await self.policy.evaluate(PolicyRequest(subject_id=subject, action=PolicyAction.CREATE_CONTEXT))
+        if not allowed.allowed:
+            raise PermissionError('Owner access required')
+        from app.context.service import validate_name
+        validate_name(name)
+        UUID(primary_domain_id)
+        return await self.repository.create_space(subject, name, primary_domain_id)
+
+    async def resume(self, subject, sort, domain, limit, after):
+        from app.core.models import ContextSpacePage
+        await self._allow(subject)
+        if sort not in ('recent', 'used') or not 1 <= limit <= 100:
+            raise ValueError('Invalid resume page')
+        if domain not in (None, 'unclassified'):
+            UUID(domain)
+        ids = await self.repository.resume(subject, sort, domain, limit+1, after)
+        items = tuple([await self.context.get_space(subject_id=subject, context_id=id) for id in ids[:limit]])
+        return ContextSpacePage(items=items, next_after_id=items[-1].id if len(ids)>limit else None)

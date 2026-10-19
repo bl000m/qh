@@ -44,8 +44,22 @@ export class QhApi {
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
+  async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
+    const params=new URLSearchParams({sort});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
+    const raw=await this.request('/environment/spaces?'+params) as SpacePage;
+    if(!raw||!Array.isArray(raw.items)||raw.items.length>20||!(raw.next_after_id===null||isUuid(raw.next_after_id)))throw new ApiError(502);
+    return {items:raw.items.map(space),next_after_id:raw.next_after_id};
+  }
+  async createOrganized(name:string,primary_domain_id:string):Promise<ContextSpace>{
+    if(!validName(name)||!isUuid(primary_domain_id))throw new ApiError(422);
+    return space(await this.request('/environment/spaces','POST',{name,primary_domain_id}));
+  }
+  async opened(scope:string,event_id:string):Promise<void>{
+    if(!isUuid(scope)||!isUuid(event_id))throw new ApiError(404);
+    await this.request('/environment/spaces/'+scope+'/open','POST',{event_id});
+  }
   async organization():Promise<Organization>{return organization(await this.request('/environment'));}
-  async organize(document:Organization):Promise<Organization>{return organization(await this.request('/environment','PUT',document));}
+  async organize(document:Organization):Promise<Organization>{return organization(await this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains}));}
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);
     return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{

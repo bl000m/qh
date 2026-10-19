@@ -88,7 +88,7 @@ def create_runtime_app():
     return create_app(
         services=ApplicationServices(
             context=context,
-            environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy),
+            environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,
             policy=policy,
         ),
