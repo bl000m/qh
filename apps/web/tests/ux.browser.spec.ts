@@ -133,13 +133,14 @@ test('one approved identity spans environment and Space without decorative clutt
  });
  await page.goto('/');await login(page);
  await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();
- await expect(page.locator('.environment-heading .qh-bubble')).toHaveJSProperty('naturalWidth',400);
- expect((await page.locator('.environment-heading .qh-bubble').boundingBox())!.width).toBeGreaterThanOrEqual(380);
+ // QH-50 owner refinement replaces the large dashboard hero with two compact shelves.
+ await expect(page.locator('.domain-orb img').first()).toHaveJSProperty('naturalWidth',400);
+ await expect(page.locator('.domain-orb')).toHaveCount(7);
  await expect(page.locator('.space-card .qh-bubble')).toHaveCount(await page.locator('.space-card').count());
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});
-  const bubble=await page.locator('.environment-heading .qh-bubble').boundingBox();
-  expect(Math.abs(bubble!.x+bubble!.width/2-width/2)).toBeLessThan(2);
+  const bubble=await page.locator('.domain-orb img').first().boundingBox();
+  expect(Math.abs(bubble!.width/bubble!.height-4/3)).toBeLessThan(.01);
   await page.screenshot({path:info.outputPath('qh43-branded-environment-'+name+'.png'),fullPage:true});
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
@@ -169,27 +170,21 @@ test('capsule captions truncate visually while full names and distinct IDs remai
 });
 if(process.env.QH43_LOGIN_THEME_TEST==='1')test.describe('French QH login preview',()=>{
 test.use({locale:'fr-FR'});
-test('source-only QH login theme preserves the real Keycloak form and PKCE completion',async({page},info)=>{
+test('source-only QH login theme matches the approved form, switches FR EN and preserves PKCE',async({page},info)=>{
  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('#username')).toBeVisible();
- const url=new URL(page.url());expect(url.origin).toBe('http://localhost:8080');expect(url.searchParams.get('code_challenge_method')).toBe('S256');
+ const initial=new URL(page.url());expect(initial.origin).toBe('http://localhost:8080');expect(initial.searchParams.get('code_challenge_method')).toBe('S256');
  await expect(page.locator('link[href*="css/qh.css"]')).toHaveCount(1);await expect(page.locator('#password')).toHaveAttribute('type','password');
- await expect(page.locator('html')).toHaveAttribute('lang','fr');
- await expect(page.getByRole('heading',{name:'Connectez-vous à votre compte',exact:true})).toBeVisible();
- await expect(page.getByLabel('Mot de passe',{exact:true})).toBeVisible();
- await expect(page.getByRole('button',{name:'Connexion',exact:true})).toBeVisible();
- expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundImage)).toContain('qh-logo.png');
- expect(await page.locator('#kc-header-wrapper').evaluate(n=>getComputedStyle(n,'::before').backgroundSize)).toBe('contain');
- for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
-  await page.setViewportSize({width,height});
-  const layout=await page.locator('.pf-v5-c-login__main-header').evaluate(n=>{
-   const s=getComputedStyle(n),bubble=getComputedStyle(n,'::after');
-   return {span:bubble.gridColumn,width:parseFloat(bubble.width),available:n.getBoundingClientRect().width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)};
-  });expect(layout.span).toBe('1 / -1');expect(Math.abs(layout.width-layout.available)).toBeLessThan(2);
-  await page.screenshot({path:info.outputPath('qh43-keycloak-preview-'+name+'.png'),fullPage:true});
+ for(const [locale,label,username,submit] of [['fr','Français','Email ou identifiant','Continuer'],['en','English','Email or username','Continue']] as const){
+  await page.getByRole('link',{name:label,exact:true}).click();await expect(page.locator('html')).toHaveAttribute('lang',locale);await expect(page.getByRole('link',{name:label,exact:true})).toHaveAttribute('aria-current','true');
+  await expect(page.locator('#kc-page-title')).toHaveCount(0);await expect(page.getByLabel(username,{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:submit,exact:true})).toBeVisible();
+  expect(await page.locator('#kc-form-login').getAttribute('action')).toContain('/login-actions/authenticate');
+  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){await page.setViewportSize({width,height});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const bubble=await page.locator('.pf-v5-c-login__main-header').evaluate(n=>({width:parseFloat(getComputedStyle(n,'::after').width),available:n.getBoundingClientRect().width-parseFloat(getComputedStyle(n).paddingLeft)-parseFloat(getComputedStyle(n).paddingRight)}));expect(Math.abs(bubble.width-bubble.available)).toBeLessThan(2);await page.screenshot({path:info.outputPath('qh50-keycloak-'+locale+'-'+name+'.png'),fullPage:true});}
  }
- await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.locator('#username').fill('alice');await page.locator('#password').fill('invalid-synthetic-password');await page.locator('#kc-login').click();await expect(page.locator('#input-error-username')).toBeVisible();await expect(page.locator('#password')).toHaveValue('');
+ await page.getByRole('link',{name:'Français',exact:true}).focus();await page.keyboard.press('Enter');await expect(page.locator('html')).toHaveAttribute('lang','fr');
+ await page.locator('#password').fill('visibility-control');await page.locator('#password-show-password').click();await expect(page.locator('#password')).toHaveAttribute('type','text');await page.locator('#password-show-password').click();await expect(page.locator('#password')).toHaveAttribute('type','password');
+ await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page);
- await expect(page.getByRole('heading',{name:'Mon environnement',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Se déconnecter'}).click();await expect(page).toHaveURL(/localhost:8080/);
 });
 });

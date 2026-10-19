@@ -19,7 +19,8 @@ current pointer and outbox tests. No persistent demo review writes.
 At integration: one full native/SQL/graph/browser/OIDC/outage/restore campaign,
 then repeat only failed or affected checks. Results will be recorded when executed.
 
-Implementation is IN PROGRESS. No merge or Jira closure is authorized.
+At the initial implementation checkpoint, work was IN PROGRESS. No merge or Jira
+closure is authorized; the final PR checks and owner review determine readiness.
 
 Increment 1 focused execution: Docker `npm run build:web` and `npm run typecheck`
 PASS; two human-provenance/descriptor tests PASS. Browser interaction assertions
@@ -132,3 +133,112 @@ unknown endpoint and an extra method. This changes no issuer, token, permission 
 realm behavior. Local domain creation/multi-membership/order/editing and the chat
 scroll/source/reflow scenarios have passed separately; omitted full gates in these
 focused runs remain explicitly NOT TESTED until the required CI jobs complete.
+
+## Later owner refinement: minimal hierarchy and native login
+
+The existing branch and every prior commit were preserved, including the local OIDC
+allowlist correction `984645f`. The later owner request replaces home-domain filtering
+with dedicated stable-ID views, without another schema/backend change. Home contains
+two compact shelves, actual recent/used order and discreet settings/all-Spaces links.
+Domain views contain only associated Spaces and preselect their primary domain on
+creation. Settings retain editable domains, all/unclassified collections and the
+honest future-profile disclosure. Technical metadata is still available in secondary
+collection/Space views, not exposed on the home cards.
+
+Nested Space routes carry actual origin, verified against the owner's memberships.
+Direct/resume opening never substitutes the primary domain for origin. Browser history,
+renaming, removed/private domains and explicit domain reauthentication are regression
+cases; ordinary login/plain Space reload retain the Mon environnement landing contract.
+No canonical data is written for routing. Existing opening tracking remains owner scoped.
+
+The login reference is the original private `QH-design 2/Interface de connexion QH minimaliste.png`.
+The versioned theme uses the original logo/bubble, a compact rounded card, pill fields,
+Continuer/Continue and true Keycloak FR/EN locale links. The ordinary login title is
+removed; other native-flow headings remain. Two pinned 26.4.7 template overrides preserve
+native authentication, session, error, recovery/registration and passkey branches.
+No password is persisted to preserve drafts during language navigation. Browser flag
+rendering follows the platform emoji font. Recovery/registration are shown only if the
+realm already supports them; no illustrative registration promise is added.
+
+The newer theme is **not activated on the VPS**: source and isolated evidence are distinct
+from its existing QH-43 login. QH-49 remains open for durable image/mount delivery and
+recreation/rollback checks before future activation; no new writable-layer installation
+or persistent container/realm change was performed. See the [theme maintenance record](../infra/keycloak/themes/qh/README.md#qh-50-source-refinement--2026-10-19).
+
+The first isolated hierarchy run passed. A second run exposed a real navigation race:
+leaving settings immediately after saving a removed domain could fetch its old metadata
+before the PUT finished. The client now awaits in-flight organization writes before
+metadata/Space-list reads, with a delayed-write regression; it does not retry failed
+writes or weaken server version checks. The theme's decorative submit arrow initially
+entered its accessible name; an image background keeps the accessible button name exact.
+Focused login FR/EN, invalid-password clearing, native show/hide, 200% reflow and logout
+passed after correction. Final required CI still verifies the published exact HEAD.
+
+Read-only preservation rechecked every original SQL table against the post-0006 inventory,
+identities, demo Spaces, graph/outbox state and triggers. Container IDs/images/mounts/env,
+private configuration, original art and historical ledgers match the pre-initiative record.
+Only application StartedAt differs from that older record because frontend/backend were
+already restarted at 05:14 UTC for the authorized branch transition, before this refinement;
+all infrastructure StartedAt values match. The QH-45 ledger hash is unchanged, three calls.
+The sealed QH-33 v1/v2 audit reproduces 74 IDs, with human review pending/null as before.
+
+
+## Refinement reproduction
+
+Focused source/build contracts: Docker `npm run typecheck`, `npm run build:web`,
+then `playwright test tests/environment.spec.ts tests/contracts.spec.ts`: **8 PASS**,
+including origin URL rejection and delayed organization-save ordering. The native
+business/backend is unchanged by this refinement; earlier real SQL/graph evidence
+is retained. Required CI is still run by the repository's unmodified PR workflow.
+
+Private screenshots and machine output use the existing isolated harness:
+
+```bash
+python3 scripts/test_qh11_browser.py --sudo-docker \
+  --backend-image qh50-api:review --browser-image qh50-browser:review \
+  --frontend-image qh50-web:review --understanding --qh-login-theme --chat-sessions \
+  --browser-grep 'source-only QH login theme|UX V2 hierarchical' \
+  --focused-browser-only --output .local-archive/qh50-browser-hierarchy-theme-final
+```
+
+This focused command deliberately omits separate OIDC/outage/restore stages and
+reports them NOT TESTED in that run; it never substitutes for the required full
+GitHub Actions campaign. Login tests switch real Keycloak language links, submit
+an invalid password, check clearing and native visibility, complete real PKCE login,
+then logout. Hierarchy checks cover owner-only custom domains, multi-membership,
+primary-domain preservation, explicit origins, recent/used sorting, deleted domains,
+keyboard, desktop/mobile and direct-domain refresh through reauthentication.
+
+The ordinary QH-43 dashboard branding regression was updated only where the later
+owner decision replaced the large home hero with compact original-bubble shelves.
+The original asset dimensions/ratio, Space isolation and warning/consent checks remain.
+Screenshots remain private; the approved reference mockup is not published in Git.
+
+
+Final refinement run: **2 browser tests PASS, 43.5 s**, using the exact packaged
+frontend/backend without source mounts; the original theme is mounted read-only only
+inside the test-owned Keycloak. All ten requested hierarchy/login desktop/mobile
+captures are under `.local-archive/qh50-browser-hierarchy-theme-final/`. No live QH
+access, published test ports or paid calls. Earlier targeted API-error/branding checks
+also passed; counts are not summed across overlapping runs. The separate full suite
+is required by the published PR workflow, whose current-head checks are authoritative.
+
+| Done criterion | Classification / evidence and remaining gate |
+| --- | --- |
+| Three authorized increments, one branch/PR | Implemented/tested; distinct chat, organization, review and refinement commits, PR #17 |
+| Real opening order, primary/multiple domains, stable hierarchy | Implemented/tested; 8 focused contracts, final browser hierarchy including Alice/Bob and removal |
+| Chat/manual scroll, accessible answer-specific sources, guided review | Implemented/tested; retained focused browser/native evidence and required full PR regressions |
+| Canonical states, citations, immutable review, policy/concurrency | Implemented/tested; 71 focused review/policy/composition checks, native CI guard |
+| New login visual and real FR/EN interaction | Implemented/tested in isolation; final browser login/error/visibility/logout/reflow checks |
+| VPS preservation and zero new inference | PASS read-only inventory/ledger/config audit; no new schema/runtime change in refinement |
+| Required full current-head CI | Required publication gate; consult the final PR check results, not an earlier successful job |
+| Durable new theme activation | Out of QH-50 scope; QH-49 and explicit runtime authorization; existing VPS login preserved |
+| Owner review, merge and Jira closure | Pending, not authorized automatically; technical readiness is not DONE |
+
+Residual limitations: no advanced semantic matching/ranking or persistent chat;
+300-second OIDC sessions remain unchanged (QH-42). Historical creation stays compatible
+and unclassified; restrictive profiles may reject review metadata atomically. Language
+switching need not retain unsubmitted fields and never stores a password. The login
+layout is responsive rather than the mockup's fixed poster dimensions; unsupported
+registration is deliberately absent. Existing live theme persistence debt remains
+QH-49; this PR neither hides it nor adds another ephemeral installation.

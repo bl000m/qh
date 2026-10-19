@@ -13,8 +13,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
   creation, multiple memberships and real opening-based recency/frequency.
 - Explicit immutable owner review, atomic confirmed-current pointer, pending inbox
   and conservative guided groups; advanced semantic reconciliation remains future.
+- Dedicated owner-domain routes preserve actual Space entry origin; compact home
+  shelves and secondary settings follow the approved minimal hierarchy.
+- Native Keycloak FR/EN theme source follows the selected mockup; new VPS activation
+  remains gated by durable delivery (QH-49).
 - Authorized 0006 adds organization metadata only. No demo confirmation, provider
-  inference, Keycloak change or automatic merge/closure is part of this initiative.
+  inference, persistent Keycloak change or automatic merge/closure is part of this initiative.
 
 ## QH-45 RESULT FIRST — 2026-10-19
 
