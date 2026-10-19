@@ -98,3 +98,37 @@ upstream authentication/session/error/optional-flow branches, with pinned upstre
 maintenance documented in the theme. No custom credential endpoint or realm change
 is introduced. Prepared source and isolated rendering do not activate the live theme;
 QH-49 owns durable image/mount delivery before any ordinary Keycloak recreation.
+
+## Later owner amendment — three official maquettes, 2026-10-19
+
+The owner selected three new private images as the official visual reference for
+Mon environnement, domain and Space views. Their verified mapping and fidelity
+checks are recorded in [the visual implementation record](../qh-50-maquette-fidelity.md).
+This supersedes the earlier lateral domain hero, capsule outlines and ten-character
+caption clipping. Full authorized names are now shown within a two-line visual limit,
+with their literal full accessible/link titles retained. Data is never copied from
+illustrative mockup names, descriptions, avatars or generated example answers.
+
+The Space view has a primary conversation column and a secondary sources/understanding/
+metadata column. Mobile exposes a separate support view without unmounting the chat
+or canonical review. Answer references still come from actual authorized responses;
+canonical browsing remains independently available before any question. The header's
+owner-only assignment dialog stages primary/secondary membership changes and submits
+the existing versioned metadata contract. A conflict remains visible with explicit
+reload; no overwrite, automatic retry or canonical mutation is introduced.
+
+Supprimer opens an explicit named confirmation. The owner requires typing the full
+literal canonical Space name, including case, spaces and Unicode spelling. This
+counter-confirmation grants no deletion capability. QH-9 still has no approved deletion/
+archive lifecycle and DELETE remains unsupported. Execution is therefore visibly disabled,
+including after an exact name match, and no request or success is simulated. A future
+contract must define lifecycle, retention, source/revision/history and graph implications,
+authorization, replay/concurrency, recovery and server-side target checks before enabling it.
+UI typing alone can never replace those guards or authorize destructive cascade behavior.
+
+Alternatives rejected: inferring domain meaning/descriptions from titles, inventing
+profile initials or provider replies, modifying canonical data to fill a mockup, placing
+technical records into the conversation, or introducing a delete endpoint from its button.
+The deliberate consequences are real varying card counts, no unavailable descriptions,
+an honest mock response label and a disabled destructive operation. No public backend,
+persistent schema, provider policy, Keycloak activation or authentication change follows.

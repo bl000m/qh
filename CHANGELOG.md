@@ -388,3 +388,10 @@ starts from the recorded native cutover and does not invent past release version
   reuse isolated real OIDC/SQL/graph browser checks with HTTP-simulated Mistral.
 - Preserve canonical data, aliases and epistemic warnings. No real inference,
   canonical migration, OIDC renewal, public activation or QH-39 ingestion.
+
+### QH-50 official maquette refinement — 2026-10-19
+
+In review: official three-maquette environment/domain/
+Space composition, staged owner membership assignment, two-column chat/support and
+mobile support view. Supprimer requires the exact full Space name; execution remains
+unavailable pending an approved lifecycle. No destructive endpoint or provider call.

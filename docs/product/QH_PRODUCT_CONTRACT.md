@@ -520,3 +520,21 @@ reference for the native Keycloak form, not permission to implement React passwo
 collection or change identity/session contracts. QH-50 source refinements are tested
 in isolation; durable theme installation/activation remains subject to QH-49 and
 explicit runtime authorization. See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-refinement--hierarchical-navigation-2026-10-19).
+
+### Official three-page visual reference and destructive-action gate — 2026-10-19
+
+The owner's three approved maquettes are the visual reference for environment/domain/
+Space layout, not fixtures to import. Cards show authorized full names within two lines;
+the earlier ten-character visual cut is superseded. The domain hero is centered. Space
+chat is primary beside secondary sources, independent canonical understanding and metadata;
+mobile support navigation preserves temporary chat/review state. Sources always refer to
+actual response revisions. Mock replies and unconfirmed support remain clearly identified.
+Unavailable descriptions, avatar identities and example answers are never invented.
+
+Owner assignment uses the existing optimistic organization version and explicit saving.
+Supprimer requires a typed **exact full Space name**. No deletion/archive lifecycle is
+approved or implemented: the complete confirmation UX states that limitation and its final
+execution stays disabled. No destructive request, successful deletion, archive or retention
+promise is simulated. A future lifecycle decision must precede any enabling backend change.
+See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-amendment--three-official-maquettes-2026-10-19)
+and the [visual comparison record](../qh-50-maquette-fidelity.md).

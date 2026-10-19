@@ -242,3 +242,11 @@ switching need not retain unsubmitted fields and never stores a password. The lo
 layout is responsive rather than the mockup's fixed poster dimensions; unsupported
 registration is deliberately absent. Existing live theme persistence debt remains
 QH-49; this PR neither hides it nor adds another ephemeral installation.
+
+## Later three-maquette implementation
+
+The owner's three newly approved maquettes supersede the preceding visual layouts.
+See [the visual comparison and confirmation record](qh-50-maquette-fidelity.md) for
+verified image mapping, functional assignment, typed-name deletion gate, mobile support
+navigation, actual comparisons, intentional differences and execution results. Earlier
+CI/captures remain historical evidence; current-head PR checks determine final readiness.
