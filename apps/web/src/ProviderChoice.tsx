@@ -12,6 +12,8 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
  const [caps,setCaps]=useState<SessionCapabilities|null>(null);
  const [session,setSession]=useState<ProviderSession|null>(null);
  const [consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [expanded,setExpanded]=useState(false);
+ const manage=useRef<HTMLButtonElement>(null);
  const [now,setNow]=useState(Date.now());
  const current=useRef<ProviderSession|null>(null),generation=useRef(0),prepared=useRef('');
  function forget(){const old=current.current;current.current=null;setSession(null);setConsent(false);return old;}
@@ -45,14 +47,18 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
   if(!session||!consent)return;const n=generation.current;setBusy(true);setError('');
   try{const v=await api.consentSession(scope,session.session_id,session.snapshot_sha256,include);
    if(n!==generation.current){void api.revokeSession(scope,v.session_id).catch(()=>{});return;}
-   current.current=v;setSession(v);onChange('mistral',v.session_id);
+   current.current=v;setSession(v);setExpanded(false);onChange('mistral',v.session_id);
   }catch{if(n===generation.current){forget();onChange('mistral',null);setError('Consentement refusé ou contexte modifié. Préparez un nouvel aperçu.');}}
   finally{if(n===generation.current)setBusy(false);}
  }
  async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setCaps(await api.chatCapabilities(scope));if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null);setError('Session arrêtée : plafond atteint ou budget indisponible. Un nouveau consentement est requis.');}}
   catch{if(n===generation.current)await revoke();}}
  useEffect(()=>{if(completed&&current.current?.state==='active')void refresh();},[completed]);
- return <div className="provider-choice">
+ const active=session?.state==='active';
+ useEffect(()=>{if(active)manage.current?.focus({preventScroll:true});},[active]);
+ return <div className={'provider-choice'+(active?' provider-is-active':'')}>
+  {active&&<div className="provider-active-line"><p role="status">Mistral · Session active · {remaining} s restantes</p><button ref={manage} type="button" className="secondary" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}>Budget et autorisation</button></div>}
+  <div hidden={active&&!expanded}>
   <label htmlFor="chat-provider">Mode de discussion</label>
   <select id="chat-provider" value={mode} onChange={e=>{
    const next=e.target.value as 'mock'|'mistral';generation.current++;const old=forget();if(old)void api.revokeSession(scope,old.session_id).catch(()=>{});
@@ -83,6 +89,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
     <p className="small">La révocation bloque les nouveaux envois ; les données déjà transmises ne peuvent pas être rappelées. Changer de Space, de propositions ou de mode efface la discussion. Rien n’est ajouté à la compréhension canonique.</p>
    </>}
   </section>}
+  </div>
   {error&&<p role="alert">{error}</p>}
  </div>;
 }

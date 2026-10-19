@@ -487,3 +487,18 @@ visible in the product. Explicit revocation and late-answer suppression apply.
 A narrowly backed-up backend-only configuration/recreation is authorized; preserve
 all other containers, OIDC, canonical data and historical ledgers. PR #16 remains
 open and QH-45 cannot be DONE until the owner's later review/merge authorization.
+
+## Owner-approved UX V2 amendment — 2026-10-19
+
+Seven editable personal domains organize existing Spaces without classifying their
+meaning or granting access. A Space can belong to several domains without identity
+or content duplication. Profile/preferences are transversal. Organization is
+owner-only metadata, distinct from canonical understanding.
+
+Explicit owner confirmation/rejection appends immutable review revisions; only
+confirmation advances confirmed-current. Text correction appends a human proposal.
+Previous evidence, extraction, lineage and history remain reconstructible. Pending
+review and historical proposed retrieval are distinct. Neither a descriptor nor
+a quote establishes semantic correctness. Presentation of lineage does not imply
+automatic reconciliation. [ADR 0008](../adr/0008-personal-organization-and-owner-review.md)
+records the approved contracts and limits; [QH-50](../qh-50-ux-v2.md) tracks execution.

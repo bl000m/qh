@@ -523,3 +523,13 @@ limits. [Operational results and rollback](qh-45-live-activation.md) supersede t
 previous paragraph's preparation-only VPS state without changing its history.
 Mock remains default; no other Space/provider, conversation ingestion, OIDC renewal,
 canonical write or new production service follows.
+
+### QH-50 personal organization and owner review
+
+[ADR 0008](adr/0008-personal-organization-and-owner-review.md) defines the approved
+owner-only organization metadata and immutable review contracts. Organization and
+review are application responsibilities with explicit composition bindings; SQL
+adapters implement their persistence ports. Domains are navigation metadata, never
+new canonical semantic categories or permissions. Review reuses canonical
+publication and the existing projection outbox. See the
+[implementation record](qh-50-ux-v2.md) for actual verification status.
