@@ -30,7 +30,8 @@ test('dynamic exact descriptors, unclassified entities, relation anchors and ite
  await e.getByRole('button',{name:'Entités canoniques'}).click();await expect(e.locator('.understanding-card').first()).toContainText('Entité');
  await e.getByRole('button',{name:'Sans descripteur reconnu'}).click();await expect(e.locator('.understanding-card').first()).toBeVisible();
  await e.getByRole('button',{name:'Relations explicites'}).click();await e.locator('.understanding-card').first().click();
- const d=page.getByRole('region',{name:'Détail de l’élément'});await expect(d.getByRole('region',{name:'Relation lisible'})).toContainText(expected.relation.predicate);
+ const d=page.getByRole('region',{name:'Détail de l’élément'});await expect(d.getByRole('region',{name:'Relation lisible'})).toContainText('Attribution déclarée');
+ await d.locator('.human-revision > .technical-details > summary').click();await expect(d.getByRole('region',{name:'Relation',exact:true})).toContainText(expected.relation.predicate);await d.locator('.human-revision > .technical-details > summary').click();
  await expect(d.locator('blockquote').first()).toBeVisible();await page.screenshot({path:info.outputPath('qh12-browse-detail.png'),fullPage:true});
  await d.getByRole('button',{name:'Voir la révision source'}).click();await expect(d.locator('.human-revision[data-revision-id="'+expected.relation.source_revision_id+'"]')).toBeVisible();
  await d.getByText('Révisions de cet élément',{exact:true}).click();await expect(d.getByRole('region',{name:'Révisions de cet élément'}).locator('.understanding-card')).toHaveCount(expected.decision_ids.length);

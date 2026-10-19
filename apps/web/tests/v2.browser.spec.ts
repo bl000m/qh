@@ -22,10 +22,12 @@ test('UX V2 two horizontal shelves, actual opening order, primary domain and own
   await page.setViewportSize({width,height});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('qh50-environment-'+name+'.png'),fullPage:true});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await page.getByRole('link',{name:'Mon environnement',exact:true}).click();
+ const metadata=page.waitForResponse(r=>r.request().method()==='GET'&&new URL(r.url()).pathname==='/api/environment');
+ await page.getByRole('link',{name:'Mon environnement',exact:true}).click();const activity=await (await metadata).json();
  await expect(page.locator('.space-card').first().getByRole('link')).toHaveAccessibleName('Projet pilote');
- await page.getByLabel('Ordre des Spaces').selectOption('used');
- await expect(page.locator('.space-card').first().getByRole('link')).toHaveAccessibleName('Projet pilote');
+ const usedResponse=page.waitForResponse(r=>r.request().method()==='GET'&&r.url().includes('/environment/spaces?')&&new URL(r.url()).searchParams.get('sort')==='used');
+ await page.getByLabel('Ordre des Spaces').selectOption('used');const ordered=await (await usedResponse).json();const counts=ordered.items.map((s:{id:string})=>activity.usage[s.id]?.open_count??0);expect(counts).toEqual([...counts].sort((a,b)=>b-a));
+ await expect(page.locator('.space-card').first().getByRole('link')).toHaveAccessibleName(ordered.items[0].name);
  await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
  await page.getByLabel('Nom du Context Space').fill('Primary domain UX control');
  await expect(page.getByRole('button',{name:'Créer',exact:true})).toBeDisabled();
@@ -35,7 +37,7 @@ test('UX V2 two horizontal shelves, actual opening order, primary domain and own
  const card=page.locator('.space-card').filter({has:page.getByRole('link',{name:'Primary domain UX control',exact:true})});await expect(card).toBeVisible();
  await card.getByText('Domaines de ce Space',{exact:true}).click();
  await card.getByLabel('Travail & projets',{exact:true}).check();
- await expect(card.getByLabel('Domaine principal',{exact:true}).locator('option:checked')).toHaveText('Loisirs & découvertes');
+ await expect(card.getByRole('combobox',{name:'Domaine principal',exact:true}).locator('option:checked')).toHaveText('Loisirs & découvertes');
  await page.getByRole('button',{name:'Travail & projets',exact:true}).click();await expect(card).toBeVisible();
  await page.getByRole('button',{name:'Tous les domaines',exact:true}).click();
  await page.getByRole('button',{name:'Organiser mes domaines'}).click();

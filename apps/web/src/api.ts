@@ -23,6 +23,7 @@ function space(value: unknown): ContextSpace {
   return v;
 }
 export class QhApi {
+  private readonly openingWrites=new Map<string,Promise<void>>();
   private readonly providerGrants=new Map<string,string>();
   private closing=false;
   revokeSessionsBeforeLogout() {
@@ -61,6 +62,7 @@ export class QhApi {
     return revisionPage(await this.request('/context-spaces/'+scope+'/review?limit='+limit+(after?'&after_revision_id='+encodeURIComponent(after):'')),{context_ids:[scope],view:'proposed',limit});
   }
   async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
+    await Promise.allSettled(this.openingWrites.values());
     const params=new URLSearchParams({sort,limit:'20'});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
     const raw=await this.request('/environment/spaces?'+params) as SpacePage;
     if(!raw||!Array.isArray(raw.items)||raw.items.length>20||!(raw.next_after_id===null||isUuid(raw.next_after_id)))throw new ApiError(502);
@@ -72,9 +74,11 @@ export class QhApi {
   }
   async opened(scope:string,event_id:string):Promise<void>{
     if(!isUuid(scope)||!isUuid(event_id))throw new ApiError(404);
-    await this.request('/environment/spaces/'+scope+'/open','POST',{event_id});
+    const pending=this.openingWrites.get(event_id);if(pending)return pending;
+    const write=this.request('/environment/spaces/'+scope+'/open','POST',{event_id}).then(()=>{});this.openingWrites.set(event_id,write);
+    try{await write;}finally{if(this.openingWrites.get(event_id)===write)this.openingWrites.delete(event_id);}
   }
-  async organization():Promise<Organization>{return organization(await this.request('/environment'));}
+  async organization():Promise<Organization>{await Promise.allSettled(this.openingWrites.values());return organization(await this.request('/environment'));}
   async organize(document:Organization):Promise<Organization>{return organization(await this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains}));}
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);

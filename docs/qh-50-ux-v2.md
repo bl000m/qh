@@ -110,3 +110,17 @@ the authoritative execution evidence; until those jobs succeed, readiness is pen
 Private focused screenshots are under `.local-archive/qh50-browser-focused-*`.
 No screenshot/raw evidence upload was added to CI; the default security gates remain.
 QH-46/47/48 are not closed automatically; owner review and merge remain outstanding.
+
+The first CI attempt identified two regressions: an unintended third positional
+argument in the historical QH-8 harness migration call (mistakenly enabling SQL
+output mode), and a changed frozen QH-33 architecture test. Both historical files
+were restored byte-for-byte from the merged baseline. New boundaries are checked
+in a separate test and composition uses typed inward-only application facets.
+The focused simulated-429 test and 45 composition/boundary checks pass; the sealed
+v1/v2 QH-33 audit passes without changing any stored fingerprint or attestation.
+
+Recovery remains forward-only: do not drop owner metadata or stamp Alembic back
+to 0005. A historic image-only rollback that rejects 0006 requires a reviewed
+compatibility patch first. The current hot-reload runtime explicitly accepts the
+additive version. Restoring the protected pre-upgrade backup is a separately
+reviewed recovery operation, never an automatic way to discard later owner data.

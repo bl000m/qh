@@ -195,7 +195,7 @@ test('loading and bounded pagination render explicitly (UI fault/response simula
     }
   });
   await page.goto('/'); await login(page);
-  await expect(page.getByRole('status')).toContainText('Chargement des Context Spaces');
+  await expect(page.getByRole('status').filter({hasText:'Chargement des Context Spaces'})).toBeVisible();
   release();
   await expect(page.getByRole('link',{name:'Page A',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Afficher plus'}).click();

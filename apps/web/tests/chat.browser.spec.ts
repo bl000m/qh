@@ -33,7 +33,7 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  await turn.getByRole('button',{name:'Voir les sources de la réponse 1',exact:true}).click();
  const sources=page.getByRole('dialog',{name:'Sources & compréhension'});
  await expect(sources.locator('blockquote').first()).toBeVisible();
- await expect(sources.locator('.human-revision[data-revision-id="'+data.references[0].revision_id+'"]')).toBeVisible();
+ await expect(sources.getByRole('region',{name:'Éléments cités dans cette réponse'}).locator('.human-revision[data-revision-id="'+data.references[0].revision_id+'"]')).toBeVisible();
  await sources.getByRole('button',{name:'Fermer les sources'}).click();
  const next=await ask(page,'Et que savons-nous encore ?');expect(next.status()).toBe(200);
  const body=next.request().postDataJSON();expect(body.messages.map((m:any)=>m.role)).toEqual(['user','assistant','user']);

@@ -213,7 +213,7 @@ def execute(
         os.chdir(ROOT / "apps/api")
         command.upgrade(
             Config(str(ROOT / "apps/api/adapters/postgres/alembic.ini")),
-            "0005_retire_legacy_category", "0006_owner_organization",
+            "0005_retire_legacy_category",
         )
         url = database_url()
         owner = manifest["owner"]
