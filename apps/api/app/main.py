@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api.review import router as review_router
 from app.api.environment import router as environment_router
 
 from app.api.health import router as health_router
@@ -25,6 +26,7 @@ def create_app(*, services: ApplicationServices | None = None,
         raise ValueError("Application and security must share the same PolicyService")
     application.state.services = services
     application.state.security = security
+    application.include_router(review_router)
     application.include_router(environment_router)
     application.include_router(health_router)
     application.include_router(auth_router)

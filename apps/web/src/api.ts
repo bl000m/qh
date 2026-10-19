@@ -1,3 +1,4 @@
+import type {ReviewStatus} from './ReviewControls';
 import {organization} from './environment';
 import type {Organization} from './environment';
 import {capabilities,providerSession} from './provider-session';
@@ -43,6 +44,21 @@ export class QhApi {
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
+    if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
+    const s=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review') as ReviewStatus;
+    if(!s||s.revision_id!==revision||!isUuid(s.latest_revision_id)||typeof s.pending!=='boolean'||!(s.current_revision_id===null||isUuid(s.current_revision_id))||!(s.successor_revision_id===null||isUuid(s.successor_revision_id)))throw new ApiError(502);
+    return s;
+  }
+  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct';expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
+    if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
+    const r=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review','POST',operation) as {revision_id:string;action:string;replayed:boolean};
+    if(!r||!isUuid(r.revision_id)||r.action!==operation.action||typeof r.replayed!=='boolean')throw new ApiError(502);return r;
+  }
+  async pendingReview(scope:string,limit=20,after?:string){
+    if(!isUuid(scope))throw new ApiError(404);
+    return revisionPage(await this.request('/context-spaces/'+scope+'/review?limit='+limit+(after?'&after_revision_id='+encodeURIComponent(after):'')),{context_ids:[scope],view:'proposed',limit});
   }
   async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
     const params=new URLSearchParams({sort});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);

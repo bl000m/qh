@@ -20,11 +20,11 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   const [unread,setUnread]=useState(false);
   const viewport=useRef<HTMLDivElement>(null),latest=useRef<HTMLElement|null>(null);
   const follow=useRef(true),moving=useRef(false);
-  function showLatest(){const node=viewport.current;if(!node)return;moving.current=true;const item=latest.current;node.scrollTop=item?item.offsetTop-node.offsetTop:node.scrollHeight;setUnread(false);requestAnimationFrame(()=>{moving.current=false;});}
+  function showLatest(){const node=viewport.current;if(!node)return;moving.current=true;const item=latest.current;node.scrollTop=item?item.getBoundingClientRect().top-node.getBoundingClientRect().top+node.scrollTop:node.scrollHeight;setUnread(false);requestAnimationFrame(()=>{moving.current=false;});}
   useLayoutEffect(()=>{if(follow.current)showLatest();else if(answers.length||loading)setUnread(true);},[answers.length,loading]);
-  const providerChanged=useCallback((mode:'mock'|'mistral',id:string|null)=>{
+  const providerChanged=useCallback((mode:'mock'|'mistral',id:string|null,preserveDialogue=false)=>{
     setProviderMode(mode);setProviderSession(id);
-    if(id===null){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setLoading(false);setError('');}
+    if(id===null&&!preserveDialogue){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setLoading(false);setError('');}
   },[]);
   const [error,setError]=useState('');
   const generation=useRef(0);

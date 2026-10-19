@@ -47,7 +47,7 @@ def configure(monkeypatch, namespace):
     monkeypatch.setenv("NEO4J_PASSWORD", os.environ["QH30_TEST_NEO4J_PASSWORD"])
 
 
-@pytest.mark.parametrize("schema", ["0004_projection_outbox", "0005_retire_legacy_category"])
+@pytest.mark.parametrize("schema", ["0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization"])
 def test_application_runtime_end_to_end_restart_and_error_recovery(pipeline, monkeypatch, caplog, schema):
     repo, bob, graph, _, rows = pipeline
     from alembic.config import Config

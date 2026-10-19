@@ -3,7 +3,7 @@ import type {QhApi} from './api';
 import Understanding from './Understanding';
 
 /** Native disclosure; lazy first load, retained when folded, reset by Space key. */
-export default function UnderstandingExplorer({api,scope}:{api:QhApi;scope:string}) {
+export default function UnderstandingExplorer({api,scope,onChanged}:{api:QhApi;scope:string;onChanged?:()=>void}) {
   const [visited,setVisited]=useState(false);
   const summary=useRef<HTMLElement>(null);
   const content=useRef<HTMLDivElement>(null);
@@ -17,6 +17,6 @@ export default function UnderstandingExplorer({api,scope}:{api:QhApi;scope:strin
   }}>
     <summary ref={summary}>Explorer la compréhension</summary>
     <p className="muted">Consultez les éléments conservés, leurs sources et leur historique, sans formuler de recherche.</p>
-    <div ref={content}>{visited && <Understanding api={api} scope={scope}/>}</div>
+    <div ref={content}>{visited && <Understanding api={api} scope={scope} onChanged={onChanged}/>}</div>
   </details>;
 }

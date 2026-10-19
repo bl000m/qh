@@ -6,7 +6,7 @@ import type {ProviderSession,SessionCapabilities} from './provider-session';
 import {Revision} from './Revision';
 
 type Props={api:QhApi;scope:string;include:boolean;messages:DialogueMessage[];failure:number;completed:number;
- onChange:(mode:'mock'|'mistral',session:string|null)=>void};
+ onChange:(mode:'mock'|'mistral',session:string|null,preserveDialogue?:boolean)=>void};
 export default function ProviderChoice({api,scope,include,messages,failure,completed,onChange}:Props){
  const [mode,setMode]=useState<'mock'|'mistral'>('mock');
  const [caps,setCaps]=useState<SessionCapabilities|null>(null);
@@ -51,7 +51,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
   }catch{if(n===generation.current){forget();onChange('mistral',null);setError('Consentement refusé ou contexte modifié. Préparez un nouvel aperçu.');}}
   finally{if(n===generation.current)setBusy(false);}
  }
- async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setCaps(await api.chatCapabilities(scope));if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null);setError('Session arrêtée : plafond atteint ou budget indisponible. Un nouveau consentement est requis.');}}
+ async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setCaps(await api.chatCapabilities(scope));if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null,v.state==='active'&&!v.accounting.blocked);setError('Session arrêtée : plafond atteint ou budget indisponible. Un nouveau consentement est requis.');}}
   catch{if(n===generation.current)await revoke();}}
  useEffect(()=>{if(completed&&current.current?.state==='active')void refresh();},[completed]);
  const active=session?.state==='active';

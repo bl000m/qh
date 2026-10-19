@@ -39,6 +39,7 @@ def main():
     return pytest.main([
         "-q", "-x", "--tb=short", "-p", "no:cacheprovider",
         "-o", "faulthandler_timeout=60",
+        "tests/test_environment.py", "tests/test_owner_review.py",
         "tests/test_session_pricing.py", "tests/test_chat_sessions.py", "tests/test_chat_sessions_api.py", "tests/test_chat_sessions_pipeline.py",
         "tests/test_chat_context.py", "tests/test_chat_references.py", "tests/test_chat_serialization.py", "tests/test_chat_service.py", "tests/test_chat_mistral.py", "tests/test_chat_pipeline.py",
         "tests/test_mistral.py", "tests/test_mistral_pipeline.py",

@@ -487,3 +487,14 @@ canonical write, migration, realm/theme change or other-container lifecycle.
 All canonical tables, frontend/DB/graph/Keycloak/MCP identities/configs, original
 assets and historical ledgers retained. Explicitly do not restore/reset the active
 ledger from the checkpoint as owner calls consume the remaining allowance.
+
+
+## 2026-10-19 — QH-50 metadata-only migration
+
+Owner-authorized `0006_owner_organization` adds one navigation/activity metadata
+table and its FK constraints, without source/Understanding/revision changes.
+Protected backup and isolated restore verified all original table rows; no demo
+classification or confirmation. App source remains on the single QH-50 hot-reload
+branch; this is not a product release or merge. Infrastructure containers, realm,
+provider authorization and ledgers are preserved. See [QH-50](qh-50-ux-v2.md)
+for executed checks, limits and the private recovery archive location.

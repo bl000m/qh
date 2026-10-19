@@ -5,6 +5,17 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-50 UX V2 — in review, 2026-10-19
+
+- Conversational viewport, compact provider controls and accessible answer-specific
+  sources panel with human-readable provenance and complete technical disclosure.
+- Owner-editable domain and Space shelves, required primary domain for dashboard
+  creation, multiple memberships and real opening-based recency/frequency.
+- Explicit immutable owner review, atomic confirmed-current pointer, pending inbox
+  and conservative guided groups; advanced semantic reconciliation remains future.
+- Authorized 0006 adds organization metadata only. No demo confirmation, provider
+  inference, Keycloak change or automatic merge/closure is part of this initiative.
+
 ## QH-45 RESULT FIRST — 2026-10-19
 
 - Separate fixed 30-day provider authorization from token-bounded conversation

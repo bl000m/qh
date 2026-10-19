@@ -30,10 +30,11 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  expect(data.references[0].provenance[0].source_revision_id).toBe(expected.source_revision_id);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});await expect(turn).toContainText('Mode mock');
  await expect(turn.getByRole('note')).toHaveCount(0);
- await turn.getByText('Sources utilisées (1 références déclarées)',{exact:true}).click();
- const sources=turn.locator('details').filter({has:page.locator('summary').filter({hasText:/^Sources utilisées/})});
- await expect(sources.locator('blockquote')).toBeVisible();
- await expect(sources.getByRole('article',{name:'Révision '+data.references[0].revision_id,exact:true})).toBeVisible();
+ await turn.getByRole('button',{name:'Voir les sources de la réponse 1',exact:true}).click();
+ const sources=page.getByRole('dialog',{name:'Sources & compréhension'});
+ await expect(sources.locator('blockquote').first()).toBeVisible();
+ await expect(sources.locator('.human-revision[data-revision-id="'+data.references[0].revision_id+'"]')).toBeVisible();
+ await sources.getByRole('button',{name:'Fermer les sources'}).click();
  const next=await ask(page,'Et que savons-nous encore ?');expect(next.status()).toBe(200);
  const body=next.request().postDataJSON();expect(body.messages.map((m:any)=>m.role)).toEqual(['user','assistant','user']);
  await expect(page.getByRole('article',{name:'Échange 2',exact:true})).toBeVisible();
@@ -54,7 +55,7 @@ test('proposed-only Space needs explicit choice and empty context invents no evi
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText(help);
  await page.getByLabel('Inclure explicitement les propositions non confirmées').check();r=await ask(page);
  const data=await r.json();expect(data.provided_revisions).toHaveLength(1);expect(data.provided_revisions[0].validation_state).toBe('proposed');
- await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Proposé, non confirmé');
+ await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('non encore confirmés');
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Discuter avec ce contexte',exact:true})).toBeVisible();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
@@ -130,7 +131,7 @@ test('Alice navigates all three fixture Spaces without duplicate keys or retaine
   await expect(turn.getByRole('heading',{name:'Réponse de l’IA',exact:true})).toHaveCount(0);
   await field.fill('Brouillon du Space précédent');
   await expandUnderstanding(page);await page.getByRole('button',{name:'Parcourir les éléments',exact:true}).click();
-  await page.getByRole('button',{name:'Propositions à examiner',exact:true}).click();
+  await page.getByRole('button',{name:'Révisions proposées conservées',exact:true}).click();
   await page.getByRole('button',{name:'Entités canoniques',exact:true}).click();
   await expect(page.locator('.understanding-card')).toHaveCount(1);
   await page.locator('.understanding-card').click();
@@ -158,12 +159,12 @@ test('all-proposed canonical context warns even when generated prose omits or co
   references:noReferences?[]:original.references,insufficient_context:noReferences})}));
  await ask(page);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});
- await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toBeVisible();
- await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(turn.getByRole('note')).toBeVisible();
+ await expect(turn.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toBeVisible();
  await expect(turn).toContainText('Tout est confirmé.'); // Prose remains untrusted, never rewritten.
  noReferences=true;await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();await ask(page);
- await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toHaveCount(0);
- await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(turn.getByRole('note')).toHaveCount(1);
+ await expect(turn.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toBeVisible();
 });
 
 test('mixed canonical support warns only for actually cited proposals',async({page})=>{
@@ -179,6 +180,6 @@ test('mixed canonical support warns only for actually cited proposals',async({pa
  await ask(page);const turn=page.getByRole('article',{name:'Échange 1',exact:true});
  await expect(turn.getByRole('note')).toHaveCount(0);
  references=proposed;await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();await ask(page);
- await expect(turn.getByText('Cette réponse cite des propositions non confirmées. Elle ne constitue pas une validation de la compréhension.',{exact:true})).toBeVisible();
- await expect(turn.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toHaveCount(0);
+ await expect(turn.getByRole('note')).toBeVisible();
+ await expect(turn.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toHaveCount(0);
 });

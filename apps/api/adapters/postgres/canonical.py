@@ -166,104 +166,108 @@ class CanonicalRepository:
     def save(self, *, sources=(), revisions=()):
         """One ACID batch; IDs/numbers explicit; no automatic confirmation/current."""
         sources, revisions = tuple(sources), tuple(revisions)
-        scopes = {r["context_space_id"] for r in (*sources, *revisions)}
         with self.connect() as c:
-            self._authorize(c, scopes, lock=True)
-            for key in sorted({str(r["id"]) for r in (*sources, *revisions)}):
-                c.execute(
-                    "SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (key,)
+            self._save_on(c, sources=sources, revisions=revisions)
+
+    def _save_on(self, c, *, sources=(), revisions=()):
+        """Same canonical publication inside a caller-owned atomic transaction."""
+        scopes = {r["context_space_id"] for r in (*sources, *revisions)}
+        self._authorize(c, scopes, lock=True)
+        for key in sorted({str(r["id"]) for r in (*sources, *revisions)}):
+            c.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (key,)
+            )
+        for source in sources:
+            self._identity(
+                c,
+                "sources",
+                source["source_id"],
+                source["context_space_id"],
+                source.get("source_name", "Source"),
+            )
+            values = {
+                k: source[k]
+                for k in (
+                    "id",
+                    "source_id",
+                    "context_space_id",
+                    "revision_no",
+                    "content",
+                    "origin",
                 )
-            for source in sources:
-                self._identity(
+            }
+            if "created_at" in source:
+                values["created_at"] = source["created_at"]
+            self._immutable(c, "source_revisions", values)
+        for revision in revisions:
+            self._identity(
+                c,
+                "understanding_items",
+                revision["item_id"],
+                revision["context_space_id"],
+            )
+            binding = dict(
+                item_revision_id=revision["id"],
+                context_space_id=revision["context_space_id"],
+                type_id=revision["type_id"],
+                type_version=revision["type_version"],
+                **{k: revision.get(k) for k in TEMPORAL},
+            )
+            self._immutable(c, "item_revision_types", binding)
+            relation = revision.get("relation")
+            if relation is not None:
+                self._immutable(
                     c,
-                    "sources",
-                    source["source_id"],
-                    source["context_space_id"],
-                    source.get("source_name", "Source"),
+                    "relation_revision_details",
+                    dict(
+                        item_revision_id=revision["id"],
+                        context_space_id=revision["context_space_id"],
+                        **relation,
+                    ),
                 )
-                values = {
-                    k: source[k]
-                    for k in (
-                        "id",
-                        "source_id",
-                        "context_space_id",
-                        "revision_no",
-                        "content",
-                        "origin",
-                    )
-                }
-                if "created_at" in source:
-                    values["created_at"] = source["created_at"]
-                self._immutable(c, "source_revisions", values)
-            for revision in revisions:
-                self._identity(
-                    c,
-                    "understanding_items",
-                    revision["item_id"],
-                    revision["context_space_id"],
-                )
-                binding = dict(
-                    item_revision_id=revision["id"],
-                    context_space_id=revision["context_space_id"],
-                    type_id=revision["type_id"],
-                    type_version=revision["type_version"],
-                    **{k: revision.get(k) for k in TEMPORAL},
-                )
-                self._immutable(c, "item_revision_types", binding)
-                relation = revision.get("relation")
-                if relation is not None:
-                    self._immutable(
-                        c,
-                        "relation_revision_details",
-                        dict(
-                            item_revision_id=revision["id"],
-                            context_space_id=revision["context_space_id"],
-                            **relation,
-                        ),
-                    )
-                elif c.execute(
-                    "SELECT 1 FROM relation_revision_details WHERE item_revision_id=%s",
+            elif c.execute(
+                "SELECT 1 FROM relation_revision_details WHERE item_revision_id=%s",
+                (revision["id"],),
+            ).fetchone():
+                raise ValueError("Immutable relation cannot be removed")
+            published = c.execute(
+                "SELECT 1 FROM understanding_item_revisions WHERE id=%s",
+                (revision["id"],),
+            ).fetchone()
+            provenance = set(map(str, revision["provenance"]))
+            if published:
+                old = c.execute(
+                    "SELECT source_revision_id FROM item_revision_provenance WHERE item_revision_id=%s",
                     (revision["id"],),
-                ).fetchone():
-                    raise ValueError("Immutable relation cannot be removed")
-                published = c.execute(
-                    "SELECT 1 FROM understanding_item_revisions WHERE id=%s",
-                    (revision["id"],),
-                ).fetchone()
-                provenance = set(map(str, revision["provenance"]))
-                if published:
-                    old = c.execute(
-                        "SELECT source_revision_id FROM item_revision_provenance WHERE item_revision_id=%s",
-                        (revision["id"],),
-                    ).fetchall()
-                    if provenance != {str(r["source_revision_id"]) for r in old}:
-                        raise ValueError("Conflicting immutable provenance replay")
-                else:
-                    for ref in sorted(provenance):
-                        c.execute(
-                            "INSERT INTO item_revision_provenance VALUES (%s,%s,%s)",
-                            (revision["id"], ref, revision["context_space_id"]),
-                        )
-                values = {
-                    k: revision[k]
-                    for k in (
-                        "id",
-                        "item_id",
-                        "context_space_id",
-                        "revision_no",
-                        "content",
-                        "origin_kind",
-                        "validation_state",
+                ).fetchall()
+                if provenance != {str(r["source_revision_id"]) for r in old}:
+                    raise ValueError("Conflicting immutable provenance replay")
+            else:
+                for ref in sorted(provenance):
+                    c.execute(
+                        "INSERT INTO item_revision_provenance VALUES (%s,%s,%s)",
+                        (revision["id"], ref, revision["context_space_id"]),
                     )
-                }
-                values.update(
-                    validated_by=revision.get("validated_by"),
-                    validated_at=revision.get("validated_at"),
-                    based_on_revision_id=revision.get("based_on_revision_id"),
+            values = {
+                k: revision[k]
+                for k in (
+                    "id",
+                    "item_id",
+                    "context_space_id",
+                    "revision_no",
+                    "content",
+                    "origin_kind",
+                    "validation_state",
                 )
-                if "created_at" in revision:
-                    values["created_at"] = revision["created_at"]
-                self._immutable(c, "understanding_item_revisions", values)
+            }
+            values.update(
+                validated_by=revision.get("validated_by"),
+                validated_at=revision.get("validated_at"),
+                based_on_revision_id=revision.get("based_on_revision_id"),
+            )
+            if "created_at" in revision:
+                values["created_at"] = revision["created_at"]
+            self._immutable(c, "understanding_item_revisions", values)
 
     def read_sources(self, context_ids, source_revision_ids):
         """Exact authorized original revisions, including those with no understanding yet."""

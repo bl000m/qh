@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from app.review.service import ReviewService
 from app.environment.service import EnvironmentService
 
 from app.chat.services import ChatService
@@ -26,3 +27,4 @@ class ApplicationServices:
     chat: ChatService | None = None
     chat_sessions: ProviderSessions | None = None
     environment: EnvironmentService | None = None
+    review: ReviewService | None = None

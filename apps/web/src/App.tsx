@@ -112,6 +112,7 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
   </section>;
 }
 function Detail({ id, api }: { id: string; api: QhApi }) {
+  const [understandingVersion,setUnderstandingVersion]=useState(0);
   const openEvent=useRef(crypto.randomUUID());
   const [openingError,setOpeningError]=useState('');
   useEffect(()=>{void api.get(id).then(()=>api.opened(id,openEvent.current)).catch(()=>setOpeningError('Cette ouverture n’a pas pu être enregistrée dans votre activité.'));},[api,id]);
@@ -128,7 +129,7 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   }, [id, api, refresh]);
   return <section><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">{space?.name ?? 'Context Space'}</span></nav>
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className="detail"><p className="eyebrow">Context Space</p><h1 ref={title} tabIndex={-1}>{space.name}</h1>{openingError&&<p role="status">{openingError}</p>}<Chat key={'chat:'+space.id} api={api} scope={space.id} /><UnderstandingExplorer key={'understanding:'+space.id} api={api} scope={space.id} /><details className="space-metadata"><summary>Métadonnées du Space</summary><Metadata space={space} /></details></article> :
+      space ? <article className="detail"><p className="eyebrow">Context Space</p><h1 ref={title} tabIndex={-1}>{space.name}</h1>{openingError&&<p role="status">{openingError}</p>}<Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} /><UnderstandingExplorer key={'understanding:'+space.id} api={api} scope={space.id} onChanged={()=>setUnderstandingVersion(n=>n+1)} /><details className="space-metadata"><summary>Métadonnées du Space</summary><Metadata space={space} /></details></article> :
         <Notice>Chargement du Context Space…</Notice>}
   </section>;
 }

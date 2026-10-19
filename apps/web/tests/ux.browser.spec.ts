@@ -73,7 +73,7 @@ test('chat composer leads on mobile while technical details remain available and
  await expect(page.locator('.chat-pending .chat-question-message')).toContainText('Question en attente');
  await expect(field).toBeDisabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
  release();await expect(page.locator('.chat-turn')).toHaveCount(1);await expect(page.locator('.chat-pending')).toHaveCount(0);
- await expect(page.getByText('Tout le contexte fourni est proposé et non confirmé. Aucune révision confirmée courante n’a été transmise.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toBeVisible();
  await expect(help).not.toHaveAttribute('open','');
  await expect(page.locator('.chat-turn details[open]')).toHaveCount(0);

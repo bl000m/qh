@@ -20,7 +20,11 @@ reference. Never infer the functional model solely from table names, existing co
 or an incomplete Jira ticket. PostgreSQL is canonical for QH sources, persisted
 understanding, revisions and governance; Neo4j is replaceable derived operational state. ADR 0003 supersedes
 the Graphiti runtime choice while preserving ADR 0002 product/identity invariants.
-QH-30 and semantic foundation are consolidated in main. Persistent schema is 0005;
+QH-30 and semantic foundation are consolidated in main. Canonical semantic schema remains 0005; owner-approved QH-50 migration 0006 adds only
+`owner_organization` metadata (domains, memberships and minimal opening activity).
+It was applied on 2026-10-19 after isolated restore verification; original canonical
+data and triggers were preserved. See [QH-50](docs/qh-50-ux-v2.md) and ADR 0008.
+For the canonical baseline,
 the owner authorized a VPS POC hot-reload transition on 2026-10-17:
 frontend/backend use the QH-12 checkout with source binds; MCP retains c723d32
 image-only operation. See [active POC procedure](docs/qh-development-stack.md).
