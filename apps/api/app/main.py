@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.health import router as health_router
 from app.api.chat import router as chat_router
+from app.api.chat_sessions import router as chat_sessions_router
 from app.composition import ApplicationServices
 from app.api.auth import router as auth_router
 from app.api.security import SecurityBindings
@@ -29,6 +30,7 @@ def create_app(*, services: ApplicationServices | None = None,
     application.include_router(query_router)
     application.include_router(browse_router)
     application.include_router(chat_router)
+    application.include_router(chat_sessions_router)
     return application
 
 

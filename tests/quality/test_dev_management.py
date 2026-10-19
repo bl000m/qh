@@ -76,3 +76,13 @@ def test_guard_refuses_resource_and_configuration_drift(change):
         containers[5]['NetworkSettings']['Networks'] = {'preview_app': {}}
     with pytest.raises(ValueError):
         DEV['validate'](config, containers, manifest)
+
+
+def test_backend_only_activation_cannot_target_or_restart_other_services():
+    command = DEV['command']
+    for action in ('up', 'restart', 'stop'):
+        args = command(['docker', 'compose'], action, ('backend',))
+        assert args[-1] == 'backend' and 'frontend' not in args
+        assert not set(args) & {'postgres', 'neo4j', 'keycloak', 'mcp', '--build', 'down'}
+    for services in [('postgres',), ('backend', 'keycloak'), ()]:
+        with pytest.raises(ValueError):command([], 'up', services)

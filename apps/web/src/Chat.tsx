@@ -1,8 +1,9 @@
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
 import {apiMessage,ApiError} from './api';
 import type {QhApi} from './api';
 import {Revision} from './Revision';
+import ProviderChoice from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
 export default function Chat({api,scope}:{api:QhApi;scope:string}) {
@@ -12,6 +13,13 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
   const [question,setQuestion]=useState('');
   const [loading,setLoading]=useState(false);
+  const [providerMode,setProviderMode]=useState<'mock'|'mistral'>('mock');
+  const [providerSession,setProviderSession]=useState<string|null>(null);
+  const [providerFailure,setProviderFailure]=useState(0);
+  const providerChanged=useCallback((mode:'mock'|'mistral',id:string|null)=>{
+    setProviderMode(mode);setProviderSession(id);
+    if(id===null){generation.current++;setMessages([]);setAnswers([]);setLoading(false);setError('');}
+  },[]);
   const [error,setError]=useState('');
   const generation=useRef(0);
   const questionField=useRef<HTMLTextAreaElement>(null);
@@ -31,17 +39,18 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   },[api,scope]);
   function reset(){generation.current++;setMessages([]);setAnswers([]);setQuestion('');setError('');setLoading(false);}
   async function submit(event:FormEvent){
-    event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available)return;
+    event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available || providerMode==='mistral'&&!providerSession)return;
     const n=generation.current;
     const next:DialogueMessage[]=[...messages,{role:'user',content:question}];
     setLoading(true);setError('');
     try{
-      const answer=await api.chat(scope,next,includeProposed);
+      const answer=providerMode==='mistral' ? await api.sessionChat(scope,providerSession!,next,includeProposed) : await api.chat(scope,next,includeProposed);
       if(n!==generation.current)return;
       // No conversation is persisted or promoted to canonical understanding.
       setMessages([...next,{role:'assistant',content:answer.answer}]);
       setAnswers(previous=>[...previous,answer]);setQuestion('');
     }catch(e){if(n!==generation.current)return;setMessages([]);setAnswers([]);
+      if(providerMode==='mistral'){setProviderFailure(v=>v+1);setProviderSession(null);}
       setError(e instanceof ApiError && e.status===422 ? 'La discussion dépasse les limites autorisées. Commencez une nouvelle discussion avec une question plus courte.' : e instanceof ApiError && e.status===503 ? 'Discussion indisponible : contexte non fiable ou fournisseur indisponible. Aucun nouvel essai automatique.' : apiMessage(e));
     }finally{if(n===generation.current)setLoading(false);}
   }
@@ -83,8 +92,9 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
       <form className="chat-composer" onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
         <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
-        <div className="actions"><button disabled={loading || !available || !question.trim() || messages.length>=8}>Envoyer la question</button>
-          <button type="button" className="secondary" disabled={loading} onClick={reset}>Nouvelle discussion</button></div>
+      {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} completed={answers.length} onChange={providerChanged}/>}
+        <div className="actions"><button disabled={loading || !available || !question.trim() || messages.length>=8 || providerMode==='mistral'&&!providerSession}>Envoyer la question</button>
+          <button type="button" className="secondary" disabled={loading} onClick={()=>{reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button></div>
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
       <details className="chat-help"><summary>Fonctionnement et limites</summary>

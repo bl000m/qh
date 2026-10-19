@@ -142,7 +142,7 @@ export default function App({ session }: { session: BrowserSession }) {
   const api = useMemo(() => new QhApi(session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
   return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Votre contexte, sous votre contrôle.</span></a>
-    {state === 'authenticated' && <button className="secondary" onClick={() => { void session.logout(); }}>Se déconnecter</button>}</header>
+    {state === 'authenticated' && <button className="secondary" onClick={() => { api.revokeSessionsBeforeLogout(); void session.logout(); }}>Se déconnecter</button>}</header>
     <main id="main-content" tabIndex={-1}>
       {state === 'authenticated' ? <Environment api={api} /> : <section className="signin">
         {state === 'starting' ? <Notice>Connexion en cours…</Notice> : <>

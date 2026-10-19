@@ -364,3 +364,20 @@ Use the [74-unit personal-review matrix](docs/evidence/qh33-v2-20261016/review-m
 and [package instructions](docs/evidence/qh33-v2-20261016/README.md). Owner approval
 of the rubric does not attest personal review; all human judgments remain pending.
 Reproduce with `python3 scripts/evaluate_qh33_v2.py --out /tmp/qh33-v2-review`.
+
+### QH-45 controlled provider-session checkpoint
+
+[QH-45](docs/qh-45-generative-chat.md) adds explicit scoped preview/consent,
+short-lived provider grants and durable budget enforcement, reusing QH-13's
+ChatService/LLMProvider/canonical retrieval. [ADR 0007](docs/adr/0007-scoped-provider-sessions.md)
+records the owner-approved contract. Mock remains default; the VPS's Mistral
+sessions remain disabled. Isolated HTTP-simulated tests are not real LLM quality
+or billing evidence. A new exact disclosure/spending/configuration gate is required
+before any real session; no chat answer writes Understanding State.
+
+
+QH-45's later owner-authorized [scoped Mistral availability and rollback](docs/qh-45-live-activation.md)
+are separate from the preserved offline checkpoint: mock remains default; only
+Alice's synthetic Projet pilote is authorized, with exact preview, two explicit
+consents, short token-bound sessions and cumulative budget. Other Spaces/users
+remain excluded; no canonical conversation persistence is implemented.

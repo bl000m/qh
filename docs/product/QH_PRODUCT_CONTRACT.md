@@ -419,3 +419,71 @@ qh realm**, after preflight, narrow backup, rollback and live verification.
 QH-42 retains any future BFF/same-origin architecture and threat model. QH-45
 (real LLM chat) is not started here. No credential export, new auth/provider system,
 canonical write, paid inference, automatic confirmation, merge or Jira DONE.
+
+## QH-45 scoped provider session — owner-approved contract, 2026-10-18
+
+The owner explicitly approves a single authenticated owner/Space/model/snapshot
+session for contextual chat, with disclosure consent **separate** from proposed
+revision inclusion. This is approval to implement/test offline, not transmission,
+spending, live provider configuration, canonical writes or a new OIDC contract.
+
+Mock remains default and available. A real session additionally requires a private
+server allowlist/authorization/ledger and explicit browser consent after preview
+of the exact authorized context, current question and temporary dialogue. CHAT
+policy and graph-backed canonical verification apply before disclosure; immutable
+revision aliases/provenance and canonical epistemic warnings remain mandatory.
+Context changes require renewed consent. No historical/rejected data is added.
+
+The grant binds owner, Space, model, token and exact context; at most five minutes,
+never beyond verified access-token/private-authorization expiry. Revocation,
+logout, changing Space/proposal choice/provider, new discussion, reload or backend
+restart must not silently resume it. Local cleanup cannot recall already transmitted
+data; unacknowledged offline revocation relies on the short expiry. Default is
+three requests/0.01 USD, configurable server limits within the aggregate existing
+eight attempts/0.20 USD and owner-approved EUR ceiling. Opening new sessions cannot
+reset durable accounting. No retry, fallback or silent renewal. Pending/unknown
+spend and errors stop further automatic work.
+
+The 300-second OIDC lifetime is unchanged: late consent may leave only seconds.
+QH-42 owns any future renewal/BFF/session redesign. Generated prose, canonical
+reference identity, source provenance, validation state and semantic support are
+distinct. No model response becomes Understanding State (QH-39 remains separate).
+[ADR 0007](../adr/0007-scoped-provider-sessions.md) records rationale and alternatives;
+[implementation/evidence](../qh-45-generative-chat.md) separates measured offline
+checks from the unexecuted real-session experiment. QH-49 tracks reproducible
+Keycloak theme delivery and is required before its future ordinary recreation.
+
+
+## QH-45 RESULT FIRST and usable scoped provider — owner decision, 2026-10-19
+
+The owner approves a usable private-POC Mistral choice for Alice's synthetic Projet
+pilote, not another preparation checkpoint. The normal experience is **choose
+Mistral → inspect what is shared → consent → converse**. Mock remains the default.
+Governance, manifest hashes, spend reservations and receipt checks run automatically;
+implementation details remain inspectable but never become extra owner approvals
+inside the already authorized scope. Separate proposed-content and external-
+disclosure consent stay visible, affirmative and required for every new session.
+
+Provider availability lasts exactly 30 days from activation, with no automatic
+renewal or widening to other Spaces/owners/models. This replaces the earlier
+24-hour receipt maximum for this authorization only. Each conversation grant still
+lasts at most five minutes and never outlives its verified OIDC token; no refresh/BFF
+or automatic resumption. Subsequent manually submitted questions need no additional
+consent while the snapshot, owner/scope/model/permissions and grant remain unchanged.
+
+Prices are verified automatically from the fixed official model documentation,
+without key, user data, Mistral API GET or paid generation. Successful checks are
+fresh for at most 24 hours; unrecognized/increased prices, failed verification or
+retired model fail closed after expiry of the last verification. This neither
+extends the authorization nor resets accounting. Pinned prices remain conservative
+cost ceilings, not invoice guarantees. Backend receipts additionally pin the exact
+six proposed revisions/context snapshot; a changed snapshot is outside this receipt.
+
+The fixed cumulative ledger allows at most 8 POST/0.20 USD across all sessions,
+including at most one Codex real smoke; each session is at most 3 POST/0.01 USD.
+No daily/new-session reset, retry/fallback, implicit confirmation, canonical chat
+persistence or additional model lookup. Private expiry/global residual budget are
+visible in the product. Explicit revocation and late-answer suppression apply.
+A narrowly backed-up backend-only configuration/recreation is authorized; preserve
+all other containers, OIDC, canonical data and historical ledgers. PR #16 remains
+open and QH-45 cannot be DONE until the owner's later review/merge authorization.

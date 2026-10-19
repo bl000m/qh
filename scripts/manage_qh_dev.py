@@ -79,24 +79,28 @@ def validate(config, containers, manifest):
         raise ValueError('Native runtime must retain qh-native')
 
 
-def command(compose, action):
+def command(compose, action, services=SERVICES):
+    if not services or any(name not in SERVICES for name in services):
+        raise ValueError('Only frontend/backend may be targeted')
     if action == 'up':
-        return compose + ['up', '-d', '--no-deps', '--no-build', '--wait', '--wait-timeout', '120', *SERVICES]
+        return compose + ['up', '-d', '--no-deps', '--no-build', '--wait', '--wait-timeout', '120', *services]
     if action == 'restart':
-        return compose + ['restart', '--no-deps', '--timeout', '40', *SERVICES]
+        return compose + ['restart', '--no-deps', '--timeout', '40', *services]
     if action == 'stop':
-        return compose + ['stop', '--timeout', '40', *SERVICES]
+        return compose + ['stop', '--timeout', '40', *services]
     if action == 'status':
         return compose + ['ps', '-a']
     if action == 'logs':
-        return compose + ['logs', '--no-color', '--tail', '100', *SERVICES]
+        return compose + ['logs', '--no-color', '--tail', '100', *services]
     raise ValueError('Unsupported operation')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('up', 'status', 'logs', 'restart', 'stop'))
+    parser.add_argument('--service', choices=SERVICES, help='Target only one existing app; never a dependency')
     args = parser.parse_args()
+    services = (args.service,) if args.service else SERVICES
     compose = ['docker', 'compose', '--env-file', str(ROOT / '.env'), '-p', 'qh',
                '-f', str(ROOT / 'infra/docker/docker-compose.yml'),
                '-f', str(ROOT / 'infra/docker/qh-hot-reload.yml'), '--profile', 'oidc']
@@ -115,17 +119,17 @@ def main():
         for c in containers[:2]:
             if c['Config']['Labels'].get('com.docker.compose.project.config_files') != ','.join([str(ROOT / 'infra/docker/docker-compose.yml'), str(ROOT / 'infra/docker/qh-hot-reload.yml')]):
                 raise ValueError('Refusing operation before verified hot-reload activation')
-    result = output(command(compose, args.action))
+    result = output(command(compose, args.action, services))
     if args.action == 'restart':
         for _ in range(120):
-            apps = json.loads(output(['docker', 'inspect', 'qh-frontend-1', 'qh-backend-1']))
+            apps = json.loads(output(['docker', 'inspect', *['qh-'+s+'-1' for s in services]]))
             if all(c['State'].get('Health', {}).get('Status') == 'healthy' for c in apps):
                 break
             time.sleep(1)
         else:
             raise RuntimeError('Applications did not become healthy after restart')
     if args.action in ('up', 'restart', 'stop'):
-        after = json.loads(output(['docker', 'inspect', *['qh-' + s + '-1' for s in (*INFRA, 'mcp')]]))
+        after = json.loads(output(['docker', 'inspect', *['qh-' + s + '-1' for s in (*INFRA, 'mcp', *[n for n in SERVICES if n not in services])]]))
         previous = {c['Name']: c for c in containers}
         for current in after:
             old = previous[current['Name']]
@@ -136,7 +140,7 @@ def main():
     for c in containers:
         for entry in c['Config']['Env']:
             key, value = entry.split('=', 1)
-            if value and any(part in key for part in ('PASSWORD', 'SECRET', 'TOKEN', 'NEO4J_AUTH')):
+            if value and any(part in key for part in ('PASSWORD', 'SECRET', 'TOKEN', 'NEO4J_AUTH', 'API_KEY')):
                 result = result.replace(value, '[REDACTED]')
     result = re.sub(r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+', '[REDACTED]', result)
     result = re.sub(r'([?&](?:code|state)=)[^&\s]+', r'\1[REDACTED]', result)

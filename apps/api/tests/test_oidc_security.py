@@ -49,12 +49,25 @@ def build_auth(*, mapping=None, handler=None, settings=SETTINGS, resolver=None):
                              transport=httpx.MockTransport(handler or jwks)), calls
 
 
+def evaluated_claims(changes):
+    # Long suites must not age collection-time future claims into validity.
+    return {key: value() if callable(value) else value for key, value in changes.items()}
+
+
+def test_future_claims_remain_future_after_collection_delay(monkeypatch):
+    values = {'nbf': lambda: int(time.time()) + 600, 'iat': lambda: int(time.time()) + 600}
+    delayed = int(time.time()) + 1200
+    monkeypatch.setattr(time, 'time', lambda: delayed)
+    assert evaluated_claims(values) == {'nbf': delayed + 600, 'iat': delayed + 600}
+
+
 @pytest.mark.parametrize("changes", [
     {"iss": "https://wrong.example"}, {"aud": "other-api"}, {"exp": 1},
-    {"nbf": int(time.time()) + 600}, {"iat": int(time.time()) + 600},
+    {"nbf": lambda: int(time.time()) + 600}, {"iat": lambda: int(time.time()) + 600},
     {"sub": ""}, {"sub": 123}, {"exp": None}, {"aud": None},
 ])
 def test_invalid_claims_fail_before_identity_lookup(changes):
+    changes = evaluated_claims(changes)
     auth, calls = build_auth()
     with pytest.raises(InvalidCredentials):
         asyncio.run(auth.authenticate(token(**changes)))
@@ -161,8 +174,9 @@ def test_unconfigured_authentication_is_closed_but_health_works():
 
 
 @pytest.mark.parametrize("changes", [{"iss": "wrong"}, {"aud": "wrong"}, {"exp": 1},
-                                    {"nbf": int(time.time()) + 600}])
+                                    {"nbf": lambda: int(time.time()) + 600}])
 def test_http_rejects_invalid_tokens_with_401(changes):
+    changes = evaluated_claims(changes)
     auth, calls = build_auth()
     async def owner_for(space):
         pytest.fail("Owner lookup must not occur before authentication")

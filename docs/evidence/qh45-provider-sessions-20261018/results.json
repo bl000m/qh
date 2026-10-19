@@ -1,0 +1,62 @@
+{
+  "ticket": "QH-45",
+  "contract_owner_approved": true,
+  "real_mistral_requests": 0,
+  "merge_or_jira_done": false,
+  "native": {
+    "verdict": "PASS",
+    "passed": 707,
+    "skips": 0,
+    "seconds": 856.74,
+    "image": "sha256:d3196ef7369de6dc3981a3dd4e83a423bfdab526a27618210003929d59f433dd",
+    "command": "python -u /workspace/scripts/run_qh30_integration.py",
+    "note": "Dedicated PostgreSQL/Neo4j; local image. Final exact-HEAD hosted CI also covers subsequent bearer-response assertions."
+  },
+  "isolated_browser": {
+    "full_prior": 55,
+    "targeted_session_and_mobile": 5,
+    "oidc": 1,
+    "outage_and_controls": 4,
+    "restore_browser": 1,
+    "paid_calls": 0,
+    "counts_overlap": true,
+    "note": "Final hosted full browser includes the keepalive server-state verification; local targeted receipt retains its exact prior images."
+  },
+  "targeted_checks": {
+    "session_api_architecture": 79,
+    "typed_response_and_architecture": 52,
+    "bearer_api_and_oidc": 39,
+    "dynamic_future_oidc": 30,
+    "counts_overlap": true
+  },
+  "preservation": {
+    "canonical_14_tables": true,
+    "three_demo_spaces": true,
+    "container_ids_config_mounts_start_times": true,
+    "private_env": true,
+    "readonly_realm_import": true,
+    "closed_qh13_ledgers": true,
+    "original_branding": true
+  },
+  "images": {
+    "qh45-api:final": "sha256:d3196ef7369de6dc3981a3dd4e83a423bfdab526a27618210003929d59f433dd",
+    "qh45-api:review": "sha256:02a3882354e9211112e0d2af60c38408274930138536c08b94809b89576be35b",
+    "qh45-web:review": "sha256:6e1754f4562450d013699cdc9f000a364320e474f49c0c29143c1baaf88e8720",
+    "qh45-browser:review": "sha256:f00924df92a6dec8e929338a9351fc6b95cbc58083bd172bb3a4bdf9894d93fa"
+  },
+  "live_provider": "mock",
+  "live_interactive_sessions_enabled": false,
+  "limits": [
+    "No real Mistral quality, billed-workspace compatibility or observed charge measured",
+    "Single-process ephemeral grants; fixed expiry cannot extend OIDC",
+    "Revocation cannot recall sent data; network failure uses expiry backstop",
+    "Bounded non-ranked retrieval and alias membership do not prove entailment"
+  ],
+  "preliminary_failures_corrected": [
+    "Mobile composer pushed down; selector moved after question",
+    "Two exact OpenAPI allowlists updated for approved routes",
+    "Collection-time future claims aged into validity; both guards now evaluate lazily with delayed-clock regression",
+    "Keepalive response may outlive page; logout test checks server revoked state and denied generation"
+  ],
+  "executable_head": "310b8bfe994c1fd77e29464cb272a6f9ef29dfe6"
+}

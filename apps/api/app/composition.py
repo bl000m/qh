@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from app.chat.services import ChatService
+from app.chat.sessions import ProviderSessions
 from app.core.services import ContextService
 from app.policy.services import PolicyService
 from app.projections.services import ProjectionService
@@ -21,3 +22,4 @@ class ApplicationServices:
     policy: PolicyService
     projections: ProjectionService | None = None
     chat: ChatService | None = None
+    chat_sessions: ProviderSessions | None = None

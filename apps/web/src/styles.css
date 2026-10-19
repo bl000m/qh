@@ -203,3 +203,9 @@ button { max-width: 100%; overflow-wrap: anywhere; }
   .chat-composer textarea { min-height: 140px; }
 }
 @media (prefers-reduced-motion: reduce) { .space-capsule { transition: none; } }
+
+/* QH-45: explicit provider choice; consent is distinct from proposed visibility. */
+.provider-choice { margin-block: 1rem; }
+.provider-choice > select { max-width: 100%; }
+.provider-consent { background: #fff; border: 1px solid #dedede; border-radius: 12px; padding: 1rem; margin-top: .75rem; }
+.provider-consent > button { margin: .4rem .5rem .4rem 0; }

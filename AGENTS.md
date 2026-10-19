@@ -58,6 +58,34 @@ inference from descriptors, or SQL-only graph bypass. Search QH-10's selector
 contract remains distinct. The ADR and QH-12 report distinguish implemented/tested
 capabilities from future work; never infer acceptance from the approved direction.
 
+## RESULT FIRST — owner decision, 2026-10-19
+
+When the owner has approved the objective, scope, architecture, economic limits and
+security conditions, complete the authorized work through an actually usable result.
+Do not stop for another manifest/hash approval, reversible configuration operation
+or individual paid call already covered by that precise authorization. Manifest,
+hash, receipts, durable ledgers and preservation checks remain mandatory automatic
+controls; they are not extra administrative user steps. This is bounded autonomy,
+not general permission for future spending, disclosure, deployment or data writes.
+
+Within approved scope, fix ordinary bugs/test failures/reversible operational issues
+and verify the result autonomously. STOP AND ASK only for a concrete unauthorized
+scope/user/Space/provider disclosure, risk of exceeding budget, unresolved security
+risk, destructive or unauthorized persistent change/data loss, substantial ADR-
+incompatible architectural change, or unavailable credentials/quota/model preventing
+safe progress. Stop the affected operation; continue independent authorized work.
+Missing structural decisions still require approval under the following section.
+Never bypass a tool/GitHub safety refusal; report its exact action/reason if blocked.
+
+QH-45's specific authorization allows 30 days from actual activation for **Alice /
+Projet pilote / mistral-small-2603 only**, with fresh official price verification,
+backend-only activation/rollback, maximum one Codex smoke POST and owner manual
+requests within cumulative 8 POST/0.20 USD and 3 POST/0.01 USD per session. Separate
+in-app proposed/disclosure consents, token-bounded five-minute grants, exact snapshot,
+CHAT/graph checks, no retry/fallback and no canonical chat writes remain mandatory.
+No daily/session budget reset, extension past 30 days, merge or Jira DONE is implied.
+This exception supersedes preparation-only QH-45 instructions within this scope.
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

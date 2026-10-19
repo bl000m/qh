@@ -1,0 +1,10 @@
+{
+  "actual_vps": true,
+  "alice_three_caps_disabled": "PASS",
+  "bob_three_caps_denied": "PASS",
+  "mock_six_proposed": "PASS",
+  "real_ui_unavailable": "PASS",
+  "paid_calls": 0,
+  "canonical_writes": 0,
+  "configuration_writes": 0
+}

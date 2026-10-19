@@ -1,0 +1,10 @@
+{
+  "checks": {
+    "bob_owned_space_capabilities": "PASS",
+    "alice_owned_space_capabilities": "PASS",
+    "new_preview_revoked_without_generation": "PASS",
+    "mock_default_and_remaining_allowance": "PASS"
+  },
+  "new_paid_requests": 0,
+  "timezone": "Europe/Rome"
+}

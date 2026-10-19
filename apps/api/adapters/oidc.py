@@ -72,6 +72,10 @@ class OIDCAuthenticator:
             return self._keys[kid]
 
     async def authenticate(self, token: str) -> SubjectId:
+        subject, _ = await self.authenticate_with_expiry(token)
+        return subject
+
+    async def authenticate_with_expiry(self, token: str) -> tuple[SubjectId, float]:
         try:
             if not token or len(token) > 16384:
                 raise InvalidCredentials("Invalid credentials")
@@ -84,6 +88,8 @@ class OIDCAuthenticator:
                 issuer=self._settings.issuer,
                 options={"require": ["exp", "iat", "iss", "aud", "sub"]},
             )
+            if type(claims["exp"]) not in (int, float) or not 0 < claims["exp"] < float("inf"):
+                raise InvalidCredentials("Invalid credentials")
             if not isinstance(claims["sub"], str) or not claims["sub"].strip():
                 raise InvalidCredentials("Invalid credentials")
         except (jwt.PyJWTError, TypeError, ValueError):
@@ -97,4 +103,4 @@ class OIDCAuthenticator:
         subject = await self._resolve(claims["iss"], claims["sub"])
         if subject is None:
             raise InvalidCredentials("Invalid credentials")
-        return subject
+        return subject, float(claims["exp"])

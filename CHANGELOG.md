@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-45 RESULT FIRST — 2026-10-19
+
+- Separate fixed 30-day provider authorization from token-bounded conversation
+  grants and automatic official-price freshness; retain cumulative durable budget.
+- Add expiry/global-residual visibility, exact authorized snapshot and receipt
+  revocation checks; prepare controlled backend-only activation and rollback.
+- No canonical schema/Understanding write, OIDC redesign, retry or fallback.
+  Actual activation/test results belong to the deployment report, not this log.
+
 ## Unreleased — semantic foundation (QH-30)
 
 - QH-13: owner-approved ephemeral, single-Space contextual chat through existing
@@ -346,3 +355,21 @@ starts from the recorded native cutover and does not invent past release version
 ### QH-43 final centring correction — 2026-10-18
 
 - Centre the original bubble across the full Keycloak header grid and mobile welcome/environment; preserve authentication and frozen previous evidence. See [actual VPS checks](docs/evidence/qh43-centering-20261018/README.md).
+
+### QH-45 session contract proposal — 2026-10-18
+
+- Start from merged QH-43 with a reviewable proposal for scoped provider sessions,
+  separate disclosure/proposal consent, accounting/revocation and 300-second OIDC
+  implications. Include offline contract wireframes; no application implementation,
+  Mistral activation, new inference or canonical write is claimed.
+
+### QH-45 scoped provider sessions — 2026-10-18
+
+- Implement the owner-approved preview/consent/status/revoke flow with exact
+  token/snapshot/Space binding, fixed expiry, canonical QH-13 generation and
+  atomic per-session/aggregate accounting in the existing durable ledger.
+- Keep mock as default and interactive Mistral disabled on the VPS. Add separate
+  French provider/disclosure controls, proposal consent and lifecycle cleanup;
+  reuse isolated real OIDC/SQL/graph browser checks with HTTP-simulated Mistral.
+- Preserve canonical data, aliases and epistemic warnings. No real inference,
+  canonical migration, OIDC renewal, public activation or QH-39 ingestion.

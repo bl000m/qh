@@ -34,6 +34,7 @@ def main():
     parser.add_argument('--browser-image', required=True)
     parser.add_argument('--frontend-image', help='Serve the exact packaged candidate, with no source mounts')
     parser.add_argument('--understanding', action='store_true', help='QH-12 native retrieval and backup/restore acceptance')
+    parser.add_argument('--chat-sessions', action='store_true', help='QH-45 sessions with test-only HTTP-simulated Mistral, never live HTTP')
     parser.add_argument('--qh-login-theme', action='store_true',
                         help='Preview source-only QH theme on this disposable IdP; never alters the VPS realm')
     parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
@@ -92,6 +93,7 @@ def main():
             'OIDC_AUDIENCE': 'qh-api', 'QH_NATIVE_CONTEXT_ENABLED': 'false',
             'QH11_BROWSER_TEST': '1', 'QH12_BROWSER_TEST': '1' if args.understanding else '0', 'QH_RUN_OIDC': '1', 'PYTHONPATH': '/workspace/apps/api',
             'QH43_LOGIN_THEME_TEST': '1' if args.qh_login_theme else '0',
+            'QH45_SESSION_BROWSER_TEST': '1' if args.chat_sessions else '0',
         }
         if args.understanding:
             values.update(NEO4J_AUTH='neo4j/' + secrets.token_hex(24), NEO4J_URI='bolt://neo4j:7687',
@@ -163,7 +165,8 @@ def main():
                     stream.write('QH12_EXPECTED_JSON=' + json.dumps(expected) + '\n')
             backend = start('backend', '--network', run_id, '--network-alias', 'backend', '--env-file', str(env),
                             '-e', 'QH_NATIVE_CONTEXT_ENABLED=' + ('true' if args.understanding else 'false'),
-                            args.backend_image, 'uvicorn', 'app.bootstrap:create_runtime_app', '--factory',
+                            args.backend_image, 'uvicorn',
+                            'tests.browser_session_app:create_app' if args.chat_sessions else 'app.bootstrap:create_runtime_app', '--factory',
                             '--host', '0.0.0.0', '--port', '8000', '--no-access-log')
             for url in ['http://keycloak:8080/realms/qh/.well-known/openid-configuration', 'http://localhost:8000/health']:
                 wait(['exec', backend, 'python', '-c',
@@ -171,7 +174,7 @@ def main():
             values['QH_BROWSER_EXTERNAL_SERVER'] = '1' if args.frontend_image else '0'
             browser_env = restricted_env('browser.env', ['QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD',
                                                        'QH12_BROWSER_TEST', 'QH12_EXPECTED_JSON',
-                                                       'QH43_LOGIN_THEME_TEST',
+                                                       'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST',
                                                        'QH_BROWSER_EXTERNAL_SERVER'])
             with env.open('a') as stream:
                 stream.write('QH_BROWSER_EXTERNAL_SERVER=' + ('1' if args.frontend_image else '0') + '\n')
@@ -252,6 +255,7 @@ def main():
                 'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'PASS',
                 'native_graph_enabled': args.understanding,
                 'qh_login_theme_preview': args.qh_login_theme,
+                'qh45_http_simulated_sessions': args.chat_sessions,
                 'qh_login_theme_locale': 'fr' if args.qh_login_theme else None,
                 'browser_filter': args.browser_grep,
                 'real_graph_outage': 'PASS' if args.understanding else None,

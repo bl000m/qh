@@ -1,3 +1,4 @@
+import {capabilities,providerSession} from './provider-session';
 import {chatAnswer} from './chat';
 import type {ChatAnswer,DialogueMessage} from './chat';
 import { revisionPage } from './understanding';
@@ -19,6 +20,13 @@ function space(value: unknown): ContextSpace {
   return v;
 }
 export class QhApi {
+  private readonly providerGrants=new Map<string,string>();
+  private closing=false;
+  revokeSessionsBeforeLogout() {
+    // Start revocation with the current in-memory token before local logout clears it.
+    for(const [id,scope] of this.providerGrants)void this.revokeSession(scope,id).catch(()=>{});
+    this.closing=true;this.providerGrants.clear();
+  }
   constructor(private readonly token: () => string, private readonly expired: () => void) {}
   private async request(path: string, method = 'GET', body?: unknown): Promise<unknown> {
     const token = this.token();
@@ -26,7 +34,8 @@ export class QhApi {
     try {
       response = await fetch('/api' + path, {
         method, headers: { Authorization: 'Bearer ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) },
-        body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error'
+        body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error',
+        keepalive: method === 'DELETE'
       });
     } catch { throw new ApiError(503); }
     if (response.status === 401) this.expired();
@@ -37,6 +46,36 @@ export class QhApi {
     if(!isUuid(scope))throw new ApiError(404);
     return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{
       messages,include_proposed:includeProposed}),scope,includeProposed);
+  }
+  async chatCapabilities(scope:string) {
+    if(!isUuid(scope))throw new ApiError(404);
+    return capabilities(await this.request('/context-spaces/'+scope+'/chat-sessions'));
+  }
+  async previewSession(scope:string,messages:DialogueMessage[],include:boolean) {
+    if(!isUuid(scope))throw new ApiError(404);
+    const view=providerSession(await this.request('/context-spaces/'+scope+'/chat-sessions/preview','POST',{messages,include_proposed:include}),scope,include);
+    this.providerGrants.set(view.session_id,scope);return view;
+  }
+  async consentSession(scope:string,id:string,hash:string,include:boolean) {
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    const view=providerSession(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/consent','POST',{snapshot_sha256:hash,disclosure_consent:true}),scope,include);
+    if(view.session_id!==id)throw new ApiError(502);return view;
+  }
+  async sessionStatus(scope:string,id:string,include:boolean) {
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    const view=providerSession(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id),scope,include);
+    if(view.session_id!==id)throw new ApiError(502);return view;
+  }
+  async revokeSession(scope:string,id:string) {
+    if(this.closing)return;
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    const receipt=await this.request('/context-spaces/'+scope+'/chat-sessions/'+id,'DELETE') as {session_id?:string;state?:string};
+    if(!receipt||receipt.session_id!==id||receipt.state!=='revoked')throw new ApiError(502);
+    this.providerGrants.delete(id);
+  }
+  async sessionChat(scope:string,id:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer> {
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/messages','POST',{messages,include_proposed:include}),scope,include);
   }
   async query(query: RevisionQuery): Promise<RevisionPage> {
     return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);
@@ -49,6 +88,7 @@ export class QhApi {
       {context_ids:[scope],view:query.view,limit:query.limit});
   }
   async me(): Promise<string> {
+    this.closing=false;
     const v = await this.request('/auth/me') as { user_id?: string };
     if (!v || !isUuid(v.user_id ?? '')) throw new ApiError(502);
     return v.user_id!;

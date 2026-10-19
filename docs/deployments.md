@@ -450,3 +450,40 @@ Owner-approved horizontal bubble centring updates only the existing installed
 container restart/recreation, mounts, images or volumes change. Actual desktop/mobile
 login and centring pass; canonical tables, identities, configuration and ledgers
 remain equal. See [sealed supplemental receipt](evidence/qh43-centering-20261018/README.md).
+
+### QH-45 development-source checkpoint — 2026-10-18
+
+The existing frontend/backend source binds expose QH-45's new provider-selection
+UI and scoped session ingress in the authorized single-checkout HMR POC. **The
+provider remains mock and real sessions remain disabled**; no private environment,
+image pin, service command/mount/port, schema, realm or volume is changed. There is
+no live Mistral activation, inference or new provider authorization. Alice's three
+synthetic Spaces remain unchanged and Bob is denied. Only the already documented
+app-only stop/up for the QH-43 → QH-45 branch transition changed app start times;
+QH-45 implementation adds no further runtime lifecycle operation.
+
+[QH-45 evidence](evidence/qh45-provider-sessions-20261018/README.md) separates local
+isolated tests and actual VPS read-only verification. Future real activation needs
+a separately approved manifest/private receipt/ledger and backend configuration
+window. Keycloak theme distribution stays QH-49; no recreation is performed.
+
+
+## 2026-10-19 — QH-45 owner-authorized scoped Mistral availability
+
+[Activation, exact scope, tests and rollback](qh-45-live-activation.md).
+PR #16 stays open, implementation commit `b070375`; this is an explicitly authorized
+private-POC runtime activation before merge, not a release. Source hot reload remains
+in `/home/ubuntu/qh`; only backend was recreated with its retained QH-12 image,
+original DB/OIDC/native environment, networks and loopback port. Added backend-only
+private receipt/ledger mount and server-only provider environment. Host .env changed
+only scoped-session enabled and default mock flags; API-key bytes retained.
+
+Alice / synthetic Projet pilote / mistral-small-2603 only. Fixed receipt expires
+2026-11-18 05:30:42 Europe/Rome, or earlier on scope/price/budget/revocation failure.
+One actual client POST succeeded, grant revoked; seven QH-45 calls and estimated
+USD 0.19940285 remain at checkpoint, not reset on restart/new session/daily check.
+Mock default remains; other Space/owner capabilities disabled. No API GET/retry,
+canonical write, migration, realm/theme change or other-container lifecycle.
+All canonical tables, frontend/DB/graph/Keycloak/MCP identities/configs, original
+assets and historical ledgers retained. Explicitly do not restore/reset the active
+ledger from the checkpoint as owner calls consume the remaining allowance.
