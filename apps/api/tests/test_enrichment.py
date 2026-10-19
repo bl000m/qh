@@ -156,3 +156,40 @@ def test_actual_http_auth_input_and_cache_guards():
         assert len(result.json()['revision_ids'])==1
         policy.evaluate.return_value=PolicyDecision(allowed=False)
         assert client.post(path,headers=headers,json=data).status_code==404
+
+
+def test_owner_revoked_after_generation_never_publishes():
+    repo, policy, _, service = setup()
+    class Revoked:
+        async def generate(self, request):
+            result = await LiteralSegmentProvider().generate(request)
+            policy.evaluate.return_value = PolicyDecision(allowed=False)
+            return result
+    service.provider = Revoked()
+    with pytest.raises(ContextSpaceNotFound): run(repo, service, str(uuid4()), payload())
+    assert repo.calls == 0 and not service._busy
+
+
+def test_repeated_identical_quote_is_ambiguous_not_offset_disambiguated():
+    repo, _, _, service = setup()
+    with pytest.raises(ValueError): run(repo, service, str(uuid4()), payload('Same exact assertion.', 'Same exact assertion.'))
+    assert repo.calls == 0
+
+
+def test_inflight_same_operation_has_one_provider_call_without_automatic_retry():
+    repo, _, _, service = setup()
+    scope, data = str(uuid4()), payload()
+    async def scenario():
+        started, release = asyncio.Event(), asyncio.Event()
+        class Delayed:
+            calls = 0
+            async def generate(self, request):
+                self.calls += 1;started.set();await release.wait()
+                return await LiteralSegmentProvider().generate(request)
+        provider = Delayed();service.provider = provider
+        first = asyncio.create_task(service.enrich(repo.subject_id, scope, data))
+        await started.wait()
+        with pytest.raises(EnrichmentUnavailable): await service.enrich(repo.subject_id, scope, data)
+        release.set();await first
+        assert provider.calls == 1 and repo.calls == 1
+    asyncio.run(scenario())

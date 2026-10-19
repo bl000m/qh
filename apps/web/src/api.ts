@@ -1,3 +1,4 @@
+import type {SelectedConversationTurn,EnrichmentReceipt} from './EnrichConversation';
 import type {ReviewStatus} from './ReviewControls';
 import {organization} from './environment';
 import type {Organization} from './environment';
@@ -46,6 +47,12 @@ export class QhApi {
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean}):Promise<EnrichmentReceipt>{
+    if(!isUuid(scope))throw new ApiError(404);
+    const r=await this.request('/context-spaces/'+scope+'/enrichments','POST',payload) as EnrichmentReceipt;
+    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||r.provider_mode!=='offline-literal/1')throw new ApiError(502);
+    return r;
   }
   async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
