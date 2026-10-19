@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {afterLogin} from './navigation.browser';
+import {afterLogin,showSupport} from './navigation.browser';
 import type {Page} from '@playwright/test';
 const expected=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
 async function login(page:Page){
@@ -51,7 +51,7 @@ test('narrow mobile and 200 percent text resizing keep navigation and controls r
  await page.setViewportSize({width:320,height:812});
  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');
+ await showSupport(page);const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');
  await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -145,14 +145,14 @@ test('one approved identity spans environment and Space without decorative clutt
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.qh-bubble')).toHaveCount(0);
+ await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
  await expect(page.locator('.chat-help')).not.toHaveAttribute('open','');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
  }
 });
 
-test('capsule captions truncate visually while full names and distinct IDs remain keyboard-accessible',async({page})=>{
+test('approved cards show full names within two lines while distinct IDs remain keyboard-accessible',async({page})=>{
  const names=['Organisation personnelle','Organisation alternative','123456789👩🏽‍🔬suite'];
  await page.route('**/api/environment/spaces?*',async route=>{
   const response=await route.fetch();const data=await response.json();
@@ -163,7 +163,7 @@ test('capsule captions truncate visually while full names and distinct IDs remai
  for(let i=0;i<3;i++){
   const link=cards.nth(i).getByRole('link',{name:names[i],exact:true});
   await expect(link).toHaveAttribute('title',names[i]);await expect(link).toHaveAttribute('href','/context-spaces/'+expected.demo_spaces[i].scope);
-  await expect(link.locator('h3 > span[aria-hidden]')).toHaveText(i===2?'123456789👩🏽‍🔬…':'Organisati…');
+  await expect(link.locator('h3')).toHaveText(names[i]);expect(await link.locator('h3').evaluate(e=>getComputedStyle(e).webkitLineClamp)).toBe('2');
  }
  const last=cards.nth(2).getByRole('link');await last.focus();await expect(last).toBeFocused();await page.keyboard.press('Enter');
  await expect(page.getByRole('heading',{level:1,name:expected.demo_spaces[2].name,exact:true})).toBeVisible();

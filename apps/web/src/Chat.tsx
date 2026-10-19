@@ -6,11 +6,12 @@ import SourcesPanel from './SourcesPanel';
 import ProviderChoice from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
-export default function Chat({api,scope}:{api:QhApi;scope:string}) {
+export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void}) {
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean;historical:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
+  useEffect(()=>{onAnswersChange?.(answers);},[answers,onAnswersChange]);
   const [question,setQuestion]=useState('');
   const [loading,setLoading]=useState(false);
   const [providerMode,setProviderMode]=useState<'mock'|'mistral'>('mock');
