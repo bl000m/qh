@@ -43,7 +43,7 @@ def main():
     if args.write_synthetic:
         # Registration must have happened through the explicit provisioning CLI.
         with repo.connect() as c:
-            if c.execute("SELECT version_num FROM alembic_version").fetchone()["version_num"] not in ("0004_projection_outbox", "0005_retire_legacy_category"):
+            if c.execute("SELECT version_num FROM alembic_version").fetchone()["version_num"] not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization"):
                 raise SystemExit("Requires reviewed 0004 or 0005 schema")
             if not c.execute("SELECT 1 FROM semantic_type_versions WHERE type_id='qh.generic.item' AND version=1").fetchone():
                 raise SystemExit("Run explicitly authorized generic profile provisioning first")

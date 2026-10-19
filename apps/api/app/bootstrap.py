@@ -7,6 +7,8 @@ from contextlib import asynccontextmanager
 
 from adapters.llm.chat_config import ChatConfigurationError, configured_chat_provider
 from adapters.llm.session_config import configured_session_factory
+from adapters.postgres.environment import PostgresOrganizationRepository
+from app.environment.service import EnvironmentService
 from app.chat.sessions import ProviderSessions
 from app.chat.implementation import ContextualChatService
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
@@ -86,6 +88,7 @@ def create_runtime_app():
     return create_app(
         services=ApplicationServices(
             context=context,
+            environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy),
             chat=chat, chat_sessions=sessions,
             policy=policy,
         ),

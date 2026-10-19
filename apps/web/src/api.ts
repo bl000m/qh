@@ -1,3 +1,5 @@
+import {organization} from './environment';
+import type {Organization} from './environment';
 import {capabilities,providerSession} from './provider-session';
 import {chatAnswer} from './chat';
 import type {ChatAnswer,DialogueMessage} from './chat';
@@ -42,6 +44,8 @@ export class QhApi {
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
+  async organization():Promise<Organization>{return organization(await this.request('/environment'));}
+  async organize(document:Organization):Promise<Organization>{return organization(await this.request('/environment','PUT',document));}
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);
     return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{

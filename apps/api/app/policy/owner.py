@@ -13,7 +13,7 @@ class OwnerPolicyService:
     async def evaluate(self, request: PolicyRequest) -> PolicyDecision:
         if not request.subject_id:
             return PolicyDecision(allowed=False, reason="Owner access required")
-        if request.action in (PolicyAction.CREATE_CONTEXT, PolicyAction.LIST_CONTEXTS):
+        if request.action in (PolicyAction.CREATE_CONTEXT, PolicyAction.LIST_CONTEXTS, PolicyAction.ORGANIZE_ENVIRONMENT):
             # The trusted authenticated subject selects only their own namespace.
             # No target owner or foreign scope can be supplied with these actions.
             return PolicyDecision(allowed=not request.context_ids, reason=None if not request.context_ids else "Owner access required")

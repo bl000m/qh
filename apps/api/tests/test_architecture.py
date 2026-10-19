@@ -13,6 +13,8 @@ APP_ROOT = API_ROOT / "app"
 STDLIB = {"__future__", "dataclasses", "enum", "typing", "copy", "datetime", "hashlib", "json", "re", "uuid"}
 LAYERS = {
     "core": {"app.core"},
+    "environment": {"app.core", "app.policy", "app.environment"},
+    "review": {"app.core", "app.policy", "app.review"},
     "policy": {"app.core", "app.policy"},
     "projections": {"app.core", "app.projections"},
     "understanding": {"app.core", "app.policy", "app.understanding"},

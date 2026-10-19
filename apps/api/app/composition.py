@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from app.environment.service import EnvironmentService
+
 from app.chat.services import ChatService
 from app.chat.sessions import ProviderSessions
 from app.core.services import ContextService
@@ -23,3 +25,4 @@ class ApplicationServices:
     projections: ProjectionService | None = None
     chat: ChatService | None = None
     chat_sessions: ProviderSessions | None = None
+    environment: EnvironmentService | None = None

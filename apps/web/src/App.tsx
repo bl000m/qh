@@ -4,6 +4,7 @@ import { apiMessage, QhApi, validName } from './api';
 import type { ContextSpace } from './api';
 import type { BrowserSession } from './auth';
 import Chat from './Chat';
+import EnvironmentDomains,{useOrganization,SpaceMemberships} from './EnvironmentDomains';
 import UnderstandingExplorer from './UnderstandingExplorer';
 import { navigate, usePath } from './navigation';
 import qhLogo from './brand/qh-logo.png';
@@ -34,6 +35,8 @@ function Metadata({ space }: { space: ContextSpace }) {
   </dl>;
 }
 function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace | null; onCreated: (space: ContextSpace) => void }) {
+  const organization=useOrganization(api);
+  const [domain,setDomain]=useState<string|null>(null);
   const [items, setItems] = useState<ContextSpace[]>([]);
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,12 +72,14 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
     try {
       const created = await api.create(name);
       onCreated(created);
+      if(domain&&organization.value){try{await organization.save({...organization.value,memberships:{...organization.value.memberships,[created.id]:[domain]}});}catch{setCreateError('Space créé ; son association au domaine reste à effectuer.');}}
       setSuccess('Context Space créé : ' + created.name); setName(''); setForm(false);
       setRefresh(value => value + 1);
     } catch (reason) { setCreateError(apiMessage(reason)); } finally { setCreating(false); }
   }
   return <section aria-labelledby="spaces-title">
     <div className="page-heading environment-heading"><div><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Retrouvez vos Context Spaces et choisissez celui avec lequel discuter.</p></div><DecorativeBubble/></div>
+    <EnvironmentDomains state={organization} selected={domain} onSelect={setDomain} onCreate={()=>setForm(true)}/>
     <div className="section-heading"><div><h2 id="spaces-title">Mes Context Spaces</h2><p className="muted">Vos espaces de compréhension, sous votre contrôle.</p></div>
       <button onClick={() => { setForm(true); setSuccess(''); }} disabled={form}>Créer un Context Space</button></div>
     {form && <form className="create-panel" onSubmit={event => { void create(event); }}>
@@ -86,15 +91,17 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
         <button className="secondary" type="button" disabled={creating} onClick={() => setForm(false)}>Annuler</button></div>
     </form>}
     {success && <Notice>{success}</Notice>}
+    {!form&&createError&&<Notice error>{createError}</Notice>}
     {error && <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>}
     {loading && <Notice>Chargement des Context Spaces…</Notice>}
     {!loading && !error && items.length === 0 && !recent && <div className="empty"><h3>Votre premier contexte commence ici.</h3><p>Vous n’avez pas encore de Context Space. Créez-en un pour commencer.</p></div>}
-    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).map(item => <li key={item.id} className="space-card">
+    {domain&&!items.some(item=>organization.value?.memberships[item.id]?.includes(domain))&&<div className="empty"><h3>Ce domaine attend vos premiers contextes.</h3><p>Créez un Space ou affichez tous vos Context Spaces pour en associer un. Cette vue porte sur les Spaces chargés.</p></div>}
+    <ul className="space-grid">{(recent ? [recent, ...items.filter(item => item.id !== recent.id)] : items).filter(item=>!domain||organization.value?.memberships[item.id]?.includes(domain)).map(item => <li key={item.id} className="space-card">
       <Link to={'/context-spaces/' + item.id} label={item.name} title={item.name}>
         <h3><span aria-hidden="true">{spaceTitle(item.name)}</span><span className="sr-only">{item.name}</span></h3>
         <div className="space-capsule"><DecorativeBubble/><span className="capsule-action">Ouvrir ce contexte <span aria-hidden="true">↗</span></span></div>
       </Link>
-      <div className="space-card-caption">{recent?.id === item.id && <p className="muted">Créé récemment</p>}<p className="space-lifecycle">{item.status === 'active' ? 'Space actif' : item.status}</p><p className="small muted">Modifié le <time dateTime={item.updated_at}>{new Date(item.updated_at).toLocaleDateString('fr-FR')}</time></p><details><summary>Métadonnées du Space</summary><p>{item.name}</p><Metadata space={item} /></details></div>
+      <div className="space-card-caption"><SpaceMemberships space={item} state={organization}/>{recent?.id === item.id && <p className="muted">Créé récemment</p>}<p className="space-lifecycle">{item.status === 'active' ? 'Space actif' : item.status}</p><p className="small muted">Modifié le <time dateTime={item.updated_at}>{new Date(item.updated_at).toLocaleDateString('fr-FR')}</time></p><details><summary>Métadonnées du Space</summary><p>{item.name}</p><Metadata space={item} /></details></div>
     </li>)}</ul>
     {next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}
   </section>;
