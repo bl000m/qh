@@ -1,0 +1,16 @@
+{
+  "scope": "1cd31f12-e776-4213-8dd0-a95a6bb457c9",
+  "proposed_receipt": {
+    "context_id": "1cd31f12-e776-4213-8dd0-a95a6bb457c9",
+    "source_revision_id": "6c0ad6bd-aa95-54e3-86ab-23808f5ed46c",
+    "revision_ids": [
+      "94cfa830-37dc-51c2-b328-3a970f826bd2"
+    ],
+    "replayed": false,
+    "provider_mode": "offline-literal/1"
+  },
+  "source_text": "Nous proposons un pilote réversible avec Jo, sans commande approuvée. 🌱",
+  "replay_same_ids": true,
+  "provider": "offline-literal/1",
+  "paid_calls": 0
+}

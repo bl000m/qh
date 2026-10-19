@@ -397,3 +397,14 @@ chat, answer-specific provenance, owner-only organization and immutable review.
 Domains and real opening activity are navigation metadata, independent of canonical
 understanding. Advanced semantic reconciliation and retrieval remain separate work.
 The task PR requires owner review; this entry does not attest a merge or release.
+
+
+### QH-39 — selected conversational enrichment (in review, 2026-10-19)
+
+`Enrichir ce contexte` adds explicit message selection and source/proposal persistence
+consent to the existing chat, through the single Understanding Engine and atomic
+canonical publisher. Proposed revisions survive refresh and use the existing owner
+review. The initial adapter is visibly **offline literal control**, not semantic
+extraction or live Mistral. No three-demo-Space mutation, migration or new paid call.
+[Behavior, acceptance and limits](docs/qh-39-living-context.md),
+[ADR 0009](docs/adr/0009-selected-conversation-enrichment.md).

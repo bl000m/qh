@@ -65,11 +65,11 @@ preview/consent after enrichment; they do not authorize extraction disclosure.
 
 | QH-39 criterion | Classification / evidence |
 | --- | --- |
-| Authenticated synthetic user creates/opens Space, submits selected conversation and sees proposed revision linked to original source | Implemented; final browser acceptance being verified, no live demo mutation |
+| Authenticated synthetic user creates/opens Space, submits selected conversation and sees proposed revision linked to original source | Implemented/tested — PASS: real isolated Chromium creation → explicit selection/consent → proposed source-backed revision → refresh/new OIDC login → QH-46 review; no live demo mutation |
 | Retrieval after projection returns exact IDs/citations; unauthorized cannot read/send | Implemented/tested — PASS: dedicated SQL/Neo4j tests, policy-before-access, exact Unicode source spans, foreign HTTP denial |
 | Chat answer cannot write without Engine; no automatic confirmation | Implemented/tested — PASS: separate explicit route/consent, same Engine/strict validation and atomic repository; null current pointer, proposed state, unchanged review workflow |
 | Required mock/replay E2E; live provider only separately authorized | Offline implementation/tested: durable replay, fixture structured relations, provider-error/timeout controls; live extraction NOT IMPLEMENTED/NOT TESTED and no paid call |
-| CI and isolated integration green, persistent QH databases unchanged | Targeted tests PASS; final complete CI/preservation check pending publication |
+| CI and isolated integration green, persistent QH databases unchanged | Targeted tests PASS; final complete CI/preservation results recorded on the PR/Jira after publication |
 | Reviewed merge and Jira closure | Pending owner review; no QH-39 merge or DONE |
 
 Targeted executed evidence before publication:
@@ -81,6 +81,9 @@ Targeted executed evidence before publication:
   reopened service, exact source/provenance, proposed/current separation, QH-46
   confirmation, structured entity/relation output, empty extraction, damaged/stale
   graph denial and canonical rebuild. No persistent target fallback is permitted.
+- Additional revoked-owner, ambiguous-quote and concurrent-inflight controls: **15 PASS** in the focused application suite (overlaps earlier counts).
+- Focused real browser: **1 PASS / 36.6 s**, with create/selected-source consent, proposed provenance, durable replay, refresh/re-authentication, owner confirmation, desktop/mobile screenshots and Bob denial. [Canonical receipt](evidence/qh39-selected-conversation-20261019/README.md). Two earlier focused failures were retained and corrected: pending projection before replay and before post-review detail. Backend freshness was preserved; the UI waits only for bounded authorized GETs after a known local publication.
+- Frontend wire regression: **1 PASS**, invalid/foreign receipt, duplicate IDs and provider-mode mislabelling rejected.
 - Docker TypeScript app/test typecheck and production Vite build PASS before final
   targeted browser run. Subsequent affected UI checks are recorded in the PR.
 
@@ -105,7 +108,10 @@ QH-33/QH-38 defects/independent validation remain open. The offline control cann
 show real semantic extraction from conversation; activating an LLM requires a new
 purpose/payload-specific disclosure and budget design/authorization. Existing
 QH-45 Mistral availability, receipt, credentials, budget and ledger are untouched;
-no chat grant is repurposed. No new paid call, automatic retry or fallback.
+no chat grant is repurposed. No new paid call, provider/write retry or fallback. After a known local publication,
+revision detail may perform at most four authorized GETs over 1.5 seconds while the
+derived graph catches up; persistent failure remains visible with manual navigation
+retry, and navigation cancels further scheduled reads. No SQL-only success.
 
 Unsaved dialogue remains in memory only. User-selected segments persist canonically;
 QH-31 Source Vault, multi-author authorship attestation, QH-42 session redesign,
