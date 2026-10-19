@@ -381,3 +381,10 @@ are separate from the preserved offline checkpoint: mock remains default; only
 Alice's synthetic Projet pilote is authorized, with exact preview, two explicit
 consents, short token-bound sessions and cumulative budget. Other Spaces/users
 remain excluded; no canonical conversation persistence is implemented.
+
+UX V2 development (QH-50) is tracked in the [implementation record](docs/qh-50-ux-v2.md)
+and [ADR 0008](docs/adr/0008-personal-organization-and-owner-review.md): conversational
+chat, answer-specific provenance, owner-only organization and immutable review.
+Domains and real opening activity are navigation metadata, independent of canonical
+understanding. Advanced semantic reconciliation and retrieval remain separate work.
+The task PR requires owner review; this entry does not attest a merge or release.

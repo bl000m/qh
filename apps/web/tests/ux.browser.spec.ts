@@ -125,7 +125,7 @@ test('one approved identity spans environment and Space without decorative clutt
  // A clean owner-review fixture: retain exact API records for the three real
  // synthetic demo Spaces; exclude unrelated acceptance/security controls only
  // in this capture's list response. No production filter or invented cards.
- await page.route('**/api/context-spaces?*',async route=>{
+ await page.route('**/api/environment/spaces?*',async route=>{
   const response=await route.fetch();const data=await response.json();
   const ids=new Set(expected.demo_spaces.map((demo:{scope:string})=>demo.scope));
   const items=data.items.filter((item:{id:string})=>ids.has(item.id));expect(items).toHaveLength(3);
@@ -153,7 +153,7 @@ test('one approved identity spans environment and Space without decorative clutt
 
 test('capsule captions truncate visually while full names and distinct IDs remain keyboard-accessible',async({page})=>{
  const names=['Organisation personnelle','Organisation alternative','123456789👩🏽‍🔬suite'];
- await page.route('**/api/context-spaces?*',async route=>{
+ await page.route('**/api/environment/spaces?*',async route=>{
   const response=await route.fetch();const data=await response.json();
   await route.fulfill({response,json:{...data,items:expected.demo_spaces.map((demo:{scope:string},i:number)=>({...data.items[0],id:demo.scope,name:names[i]}))}});
  });

@@ -19,7 +19,7 @@ test('UX V2 two horizontal shelves, actual opening order, primary domain and own
  await page.getByRole('button',{name:'Non classés',exact:true}).click();
  await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
-  await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh50-environment-'+name+'.png'),fullPage:true});
+  await page.setViewportSize({width,height});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('qh50-environment-'+name+'.png'),fullPage:true});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();
@@ -35,7 +35,7 @@ test('UX V2 two horizontal shelves, actual opening order, primary domain and own
  const card=page.locator('.space-card').filter({has:page.getByRole('link',{name:'Primary domain UX control',exact:true})});await expect(card).toBeVisible();
  await card.getByText('Domaines de ce Space',{exact:true}).click();
  await card.getByLabel('Travail & projets',{exact:true}).check();
- await expect(card.getByLabel('Domaine principal',{exact:true})).toHaveValue(await page.getByRole('button',{name:'Loisirs & découvertes',exact:true}).evaluate(()=>document.querySelector<HTMLSelectElement>('.space-memberships select')!.value));
+ await expect(card.getByLabel('Domaine principal',{exact:true}).locator('option:checked')).toHaveText('Loisirs & découvertes');
  await page.getByRole('button',{name:'Travail & projets',exact:true}).click();await expect(card).toBeVisible();
  await page.getByRole('button',{name:'Tous les domaines',exact:true}).click();
  await page.getByRole('button',{name:'Organiser mes domaines'}).click();
@@ -58,6 +58,7 @@ test('UX V2 chat follows latest, respects deliberate scroll, source drawer traps
  await page.getByRole('button',{name:'Voir la nouvelle réponse ↓'}).click();
  const source=page.getByRole('button',{name:'Voir les sources de la réponse 3',exact:true});await source.click();
  const drawer=page.getByRole('dialog',{name:'Sources & compréhension'});await expect(drawer).toBeVisible();
+ await expect(drawer.getByRole('button',{name:'Fermer les sources'})).toBeFocused();await page.keyboard.press('Shift+Tab');expect(await page.evaluate(()=>document.activeElement?.closest('dialog')!==null)).toBe(true);
  await expect(drawer.getByRole('heading',{name:'Ce que cette réponse cite'})).toBeVisible();
  await expect(drawer.locator('blockquote').first()).toBeVisible();
  expect(await drawer.locator('.technical-details[open]').count()).toBe(0);

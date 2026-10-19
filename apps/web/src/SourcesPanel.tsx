@@ -6,7 +6,7 @@ export default function SourcesPanel({answer,index,onClose}:{answer:ChatAnswer;i
  useEffect(()=>{const node=dialog.current;const opener=document.activeElement as HTMLElement|null;node?.showModal();return()=>{node?.close();if(opener?.isConnected)opener.focus({preventScroll:true});};},[]);
  const ids=new Set(answer.references.map(r=>r.item_id));
  const relations=answer.provided_revisions.filter(r=>r.relation&&(ids.has(r.relation.source_item_id)||ids.has(r.relation.target_item_id))&&!answer.references.some(a=>a.revision_id===r.revision_id));
- return <dialog className="sources-panel" ref={dialog} aria-labelledby={title} onCancel={onClose} onClose={onClose}>
+ return <dialog className="sources-panel" ref={dialog} aria-labelledby={title} onCancel={event=>{event.preventDefault();onClose();}}>
   <header className="sources-panel-header"><div><p className="eyebrow">Réponse {index+1}</p><h2 id={title}>Sources & compréhension</h2></div><button type="button" className="secondary" onClick={onClose} autoFocus>Fermer les sources</button></header>
   <p>{answer.references.length} éléments cités par {answer.model}. Une référence exacte indique ce qui a été cité, pas une validation indépendante du sens.</p>
   <EpistemicExplanation/>

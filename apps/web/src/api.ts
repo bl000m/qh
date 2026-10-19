@@ -61,7 +61,7 @@ export class QhApi {
     return revisionPage(await this.request('/context-spaces/'+scope+'/review?limit='+limit+(after?'&after_revision_id='+encodeURIComponent(after):'')),{context_ids:[scope],view:'proposed',limit});
   }
   async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
-    const params=new URLSearchParams({sort});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
+    const params=new URLSearchParams({sort,limit:'20'});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
     const raw=await this.request('/environment/spaces?'+params) as SpacePage;
     if(!raw||!Array.isArray(raw.items)||raw.items.length>20||!(raw.next_after_id===null||isUuid(raw.next_after_id)))throw new ApiError(502);
     return {items:raw.items.map(space),next_after_id:raw.next_after_id};

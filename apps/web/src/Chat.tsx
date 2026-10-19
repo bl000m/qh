@@ -29,6 +29,9 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
   const [error,setError]=useState('');
   const generation=useRef(0);
   const questionField=useRef<HTMLTextAreaElement>(null);
+  const composer=useRef<HTMLFormElement>(null);
+  const [compactComposer,setCompactComposer]=useState(false);
+  useEffect(()=>{const node=composer.current;if(!node)return;const measure=()=>setCompactComposer(innerWidth>=700&&node.getBoundingClientRect().height<innerHeight*.55);const observer=new ResizeObserver(measure);observer.observe(node);window.addEventListener('resize',measure);measure();return()=>{observer.disconnect();window.removeEventListener('resize',measure);};},[]);
   useEffect(()=>{
     const n=++generation.current;
     setAvailable(null);setError('');
@@ -90,7 +93,7 @@ export default function Chat({api,scope}:{api:QhApi;scope:string}) {
       </div>
       {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
       <p className="generation-status" role="status">{loading?'Réponse en cours…':answers.length?'Réponse disponible. La discussion reste temporaire.':''}</p>
-      <form className="chat-composer" onSubmit={e=>{void submit(e);}}>
+      <form ref={composer} className={'chat-composer'+(compactComposer?' composer-persistent':'')} onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
         <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
       {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} completed={answers.length} onChange={providerChanged}/>}

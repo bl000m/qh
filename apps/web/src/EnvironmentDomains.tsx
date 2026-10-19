@@ -6,7 +6,7 @@ import bubble from './brand/qh-bubble.png';
 export function useOrganization(api:QhApi){
  const [value,setValue]=useState<Organization|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
  useEffect(()=>{let active=true;setError('');api.organization().then(v=>{if(active)setValue(v);}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[api,refresh]);
- async function save(next:Organization){setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Rechargez avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
+ async function save(next:Organization){const previous=value;setValue(next);setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setValue(previous);setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Rechargez avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
  return {value,error,busy,save,reload:()=>{setValue(null);setRefresh(n=>n+1);}};
 }
 export default function EnvironmentDomains({state,selected,onSelect,onCreate}:{state:ReturnType<typeof useOrganization>;selected:string|null;onSelect:(id:string|null)=>void;onCreate:()=>void}){

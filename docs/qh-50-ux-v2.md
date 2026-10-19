@@ -85,3 +85,28 @@ Backup, restore inventory and exact before/after records are private mode-600 fi
 under `.local-archive/qh50-organization/`. No Understanding demo review or domain
 assignment was performed. The first post-upgrade audit was corrected to account
 for the expected new metadata FK triggers; no data discrepancy was concealed.
+
+Local focused UI runs explicitly use `--focused-browser-only --browser-grep`.
+This mode is refused in CI, reports omitted OIDC/outage/restore gates as NOT TESTED
+and leaves default full CI acceptance unchanged. It supplies private screenshots
+without adding external artifact uploads. A fixture preflight initially rejected
+0006; both explicit provisioning helpers now recognize the additive metadata schema.
+No provisioning command was run against the live VPS for this correction.
+
+## Final integration gates
+
+Focused browser work caught and corrected asynchronous checkbox rendering, StrictMode
+modal cleanup, scroll-shelf accessible-label overflow, and a sticky composer that
+could obscure mandatory controls at enlarged text sizes. The composer is persistent
+only when its measured height fits; otherwise it stays in normal flow. The provider
+selector is width-bounded. An isolated no-network 320px/200% layout regression passes.
+Explicit opening activity reuses the authorized metadata read, without a duplicate
+read or any conversation content. Pending inbox excludes obsolete older proposals.
+
+Final acceptance is the single complete GitHub Actions campaign on this task PR:
+quality, native integration (including organization/review), real OIDC, full browser,
+real graph outage and disposable backup/restore. PR checks and its final report are
+the authoritative execution evidence; until those jobs succeed, readiness is pending.
+Private focused screenshots are under `.local-archive/qh50-browser-focused-*`.
+No screenshot/raw evidence upload was added to CI; the default security gates remain.
+QH-46/47/48 are not closed automatically; owner review and merge remain outstanding.

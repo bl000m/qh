@@ -110,26 +110,28 @@ test('tampered transaction nonce rejects the real ID token before private API ac
 });
 test('API failure is sanitized, recoverable; invalid name and failed creation preserve the form', async ({page}) => {
   await page.goto('/'); await login(page);
-  await page.route('**/api/context-spaces?*', r => r.fulfill({status:503,body:'private database diagnostic'}));
+  await page.route('**/api/environment/spaces?*', r => r.fulfill({status:503,body:'private database diagnostic'}));
   await page.getByRole('link',{name:'QH — accueil'}).click();
   // Force a real route remount, without reloading the ephemeral session.
   await page.evaluate(() => { history.pushState(null,'','/absent'); dispatchEvent(new PopStateEvent('popstate')); });
   await page.getByRole('link',{name:'Mes Context Spaces',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Le service est indisponible');
   await expect(page.locator('body')).not.toContainText('private database');
-  await page.unroute('**/api/context-spaces?*'); await page.getByRole('button',{name:'Réessayer'}).click();
+  await page.unroute('**/api/environment/spaces?*'); await page.getByRole('button',{name:'Réessayer'}).click();
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByLabel('Nom du Context Space').fill('   '); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Saisissez un nom');
-  await page.route('**/api/context-spaces', r => r.fulfill({status:503,body:'private creation diagnostic'}));
+  await page.route('**/api/environment/spaces', r => r.fulfill({status:503,body:'private creation diagnostic'}));
   await page.getByLabel('Nom du Context Space').fill('Retry space'); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Le service est indisponible');
   await expect(page.getByLabel('Nom du Context Space')).toHaveValue('Retry space');
 });
 test('401 discards private UI and requires login; reload does not persist tokens', async ({page}) => {
   await page.goto('/'); await login(page);
-  await page.route('**/api/context-spaces', r => r.fulfill({status:401,body:'unauthorized'}));
+  await page.route('**/api/environment/spaces', r => r.fulfill({status:401,body:'unauthorized'}));
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'});
   await page.getByLabel('Nom du Context Space').fill('Should fail'); await page.getByRole('button',{name:'Créer',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Votre session a expiré');
   await expect(page.getByRole('heading',{name:'Mes Context Spaces',exact:true})).toHaveCount(0);
@@ -148,7 +150,7 @@ test('keyboard creation, mobile layout, back/forward and names render as text', 
   await page.getByRole('button',{name:'Créer un Context Space',exact:true}).focus(); await page.keyboard.press('Enter');
   const name = '<script>window.QH_XSS=true</script>';
   await page.getByLabel('Nom du Context Space').fill(name);
-  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'}); await page.keyboard.press('Enter');
+  await page.getByLabel('Domaine principal',{exact:true}).selectOption({label:'Travail & projets'}); await page.getByLabel('Nom du Context Space').focus();await page.keyboard.press('Enter');
   await expect(page.getByRole('link',{name,exact:true})).toBeVisible();
   await page.getByRole('link',{name,exact:true}).click(); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
   await page.goBack(); await expect(page.getByRole('link',{name,exact:true})).toBeVisible();
@@ -181,7 +183,7 @@ test('loading and bounded pagination render explicitly (UI fault/response simula
   const first = '00000000-0000-0000-0000-000000000001';
   const second = '00000000-0000-0000-0000-000000000002';
   const item = (id:string,name:string) => ({id,name,owner_id:aliceId,status:'active',created_at:'2026-10-17T12:00:00Z',updated_at:'2026-10-17T12:00:00Z'});
-  await page.route('**/api/context-spaces?*', async route => {
+  await page.route('**/api/environment/spaces?*', async route => {
     const params = new URL(route.request().url()).searchParams;
     expect(params.get('limit')).toBe('20');
     if (!params.has('after_id')) {

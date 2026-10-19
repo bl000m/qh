@@ -52,7 +52,7 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
   const [success, setSuccess] = useState('');
   useEffect(() => {
     let active = true;
-    setLoading(true); setError('');
+    setLoading(true); setError('');setNext(null);
     api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setNext(page.next_after_id); } })
       .catch(reason => { if (active) setError(apiMessage(reason)); })
       .finally(() => { if (active) setLoading(false); });
@@ -82,7 +82,7 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
   }
   return <section aria-labelledby="spaces-title">
     <div className="page-heading environment-heading"><div><p className="eyebrow">QH · Environnement personnel</p><h1>Mon environnement</h1><p className="muted">Retrouvez vos Context Spaces et choisissez celui avec lequel discuter.</p></div><DecorativeBubble/></div>
-    <EnvironmentDomains state={organization} selected={domain} onSelect={setDomain} onCreate={()=>{setPrimaryDomain(domain&&domain!=='unclassified'?domain:'');setForm(true);}}/>
+    <EnvironmentDomains state={organization} selected={domain} onSelect={id=>{setItems([]);setDomain(id);}} onCreate={()=>{setPrimaryDomain(domain&&domain!=='unclassified'?domain:'');setForm(true);}}/>
     <div className="section-heading"><div><h2 id="spaces-title">Reprendre mes Context Spaces</h2><p className="muted">Vos espaces de compréhension, sous votre contrôle.</p></div>
       <button onClick={() => { setPrimaryDomain(domain&&domain!=='unclassified'?domain:'');setForm(true); setSuccess(''); }} disabled={form}>Créer un Context Space</button></div>
     {form && <form className="create-panel" onSubmit={event => { void create(event); }}>
@@ -94,12 +94,12 @@ function Spaces({ api, recent, onCreated }: { api: QhApi; recent: ContextSpace |
       <div className="actions"><button type="submit" disabled={creating||!primaryDomain}>{creating ? 'Création…' : 'Créer'}</button>
         <button className="secondary" type="button" disabled={creating} onClick={() => setForm(false)}>Annuler</button></div>
     </form>}
-    {success && <Notice>{success}</Notice>}
+    {success && <Notice>{success} {recent&&<Link to={'/context-spaces/'+recent.id}>Ouvrir ce Space</Link>}</Notice>}
     {!form&&createError&&<Notice error>{createError}</Notice>}
     {error && <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>}
     {loading && <Notice>Chargement des Context Spaces…</Notice>}
     {!loading && !error && items.length === 0 && !recent && <div className="empty"><h3>Votre premier contexte commence ici.</h3><p>Vous n’avez pas encore de Context Space. Créez-en un pour commencer.</p></div>}
-    <div className="resume-controls"><label>Ordre des Spaces<select value={sort} onChange={e=>setSort(e.target.value as 'recent'|'used')}><option value="recent">Récemment ouverts</option><option value="used">Les plus utilisés</option></select></label><p className="small muted">Basé sur vos ouvertures enregistrées depuis UX V2 ; aucune activité antérieure n’est inventée.</p><div className="carousel-controls" role="group" aria-label="Navigation des Spaces"><button className="secondary" onClick={()=>spacesCarousel.current?.scrollBy({left:-320,behavior:'smooth'})}>Spaces précédents</button><button className="secondary" onClick={()=>spacesCarousel.current?.scrollBy({left:320,behavior:'smooth'})}>Spaces suivants</button></div></div>
+    <div className="resume-controls"><label>Ordre des Spaces<select value={sort} onChange={e=>{setItems([]);setSort(e.target.value as 'recent'|'used');}}><option value="recent">Récemment ouverts</option><option value="used">Les plus utilisés</option></select></label><p className="small muted">Basé sur vos ouvertures enregistrées depuis UX V2 ; aucune activité antérieure n’est inventée.</p><div className="carousel-controls" role="group" aria-label="Navigation des Spaces"><button className="secondary" onClick={()=>spacesCarousel.current?.scrollBy({left:-320,behavior:'smooth'})}>Spaces précédents</button><button className="secondary" onClick={()=>spacesCarousel.current?.scrollBy({left:320,behavior:'smooth'})}>Spaces suivants</button></div></div>
     {domain&&!loading&&!items.length&&<div className="empty"><h3>{domain==='unclassified'?'Tous vos Spaces sont organisés.':'Ce domaine attend vos premiers contextes.'}</h3><p>Créez un Space ou affichez tous les domaines pour associer un Space existant.</p></div>}
     <ul ref={spacesCarousel} className="space-grid horizontal-carousel" aria-label="Carrousel Reprendre mes Context Spaces">{items.map(item => <li key={item.id} className="space-card">
       <Link to={'/context-spaces/' + item.id} label={item.name} title={item.name}>
@@ -115,7 +115,6 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   const [understandingVersion,setUnderstandingVersion]=useState(0);
   const openEvent=useRef(crypto.randomUUID());
   const [openingError,setOpeningError]=useState('');
-  useEffect(()=>{void api.get(id).then(()=>api.opened(id,openEvent.current)).catch(()=>setOpeningError('Cette ouverture n’a pas pu être enregistrée dans votre activité.'));},[api,id]);
   const [space, setSpace] = useState<ContextSpace | null>(null);
   const [error, setError] = useState('');
   const [refresh, setRefresh] = useState(0);
@@ -123,7 +122,7 @@ function Detail({ id, api }: { id: string; api: QhApi }) {
   useEffect(() => { if (space) title.current?.focus(); }, [space]);
   useEffect(() => {
     let active = true; setSpace(null); setError('');
-    api.get(id).then(value => { if (active) setSpace(value); })
+    api.get(id).then(value => { if (active) {setSpace(value);void api.opened(id,openEvent.current).catch(()=>{if(active)setOpeningError('Cette ouverture n’a pas pu être enregistrée dans votre activité.');});} })
       .catch(reason => { if (active) setError(apiMessage(reason)); });
     return () => { active = false; };
   }, [id, api, refresh]);
