@@ -68,9 +68,74 @@ recreate Keycloak or run generic Compose lifecycle commands.
 
 ## Verification and operational result
 
-Execution results, activation/expiry, remaining allowance, smoke response, exact
-CI and preservation verdicts will be filled after the corresponding operations.
-No planned check in this section is a claimed PASS.
+**MISTRAL AVAILABLE IN THE QH CLIENT: YES**, only Alice / Projet pilote,
+while scope, prices, provider availability and remaining budget stay valid.
+
+- Activation receipt: 2026-10-19 04:30:42 UTC (06:30:42 Europe/Rome).
+- Fixed expiry: **2026-11-18 04:30:42 UTC / 05:30:42 Europe/Rome**. The daylight-
+  saving change explains the different local hour; duration is 30 × 24 hours.
+- One actual browser POST completed: provider and QH HTTP 200, Italian overview,
+  four exact references from six supplied proposed revisions, canonical warnings.
+  Prompt 3,609 / completion 93 tokens; estimated USD **0.00059715**, QH generation
+  **2.20 seconds**. Reservation was USD 0.0024. No API GET, retry or extra inference.
+- Codex smoke grant explicitly revoked; subsequent preview also revoked without
+  generation. Real mode remains enabled for the owner. Remaining at checkpoint:
+  **7 cumulative POST / USD 0.19940285**, 3 POST/0.01 USD maximum per new session.
+- Every canonical table and all five non-backend containers are unchanged. Backend
+  image, ports, networks and pre-existing DB/OIDC/native environment retained;
+  only the authorized private mount/settings and backend recreation differ.
+- Actual Alice/Bob owned-space capabilities, foreign denial, default mock, two
+  consents, exact preview, canonical warnings and revocation **PASS**. Separate
+  post-smoke checks made zero generation requests. Historical ledgers/assets/realm
+  import unchanged; private API-key bytes unchanged and absent from browser/logs/Git.
+
+[Sealed real response, screenshots, allowance and preservation receipts](evidence/qh45-live-20261019/README.md).
+
+### Try immediately from the owner's Mac
+
+1. Keep the existing SSH forwarding for 5173/8000/8080. Open
+   `http://localhost:5173`, sign in as Alice and open **Projet pilote** (or the
+   existing `/context-spaces/eb122625-1830-4557-b805-473d3b66132a` URL).
+2. Explicitly check “Inclure explicitement les propositions non confirmées”, enter
+   the question, then choose **Mistral — consentement requis**.
+3. Select “Examiner les données avant envoi”; inspect the six actual revisions,
+   sources and supplier messages. Check the separate external-disclosure consent,
+   then “Autoriser cette session Mistral”. Preview/consent consume no generation.
+4. “Envoyer la question” uses the real provider. Follow-up questions use the same
+   grant/snapshot without another consent, subject to the displayed expiry and
+   limits. Expand sources/provided context to inspect provenance.
+5. “Révoquer la session” ends it. Login token remains 300 seconds from authentication;
+   a late consent may leave little time. Reauthenticate and consent anew if expired:
+   this never replenishes the seven-request global remainder.
+
+### Quality and POC limits
+
+The actual answer addresses the overview question in Italian but does not explicitly
+qualify support as proposed; both deterministic warnings remain mandatory. “Pausa
+reversibile da prendere” can sound more committed than the source's possibility.
+Citation selection includes Alex's entity/evidence quote rather than the main pilot
+item. Exact aliases do not establish ideal citation relevance or entailment. One
+success is not general semantic, prompt-injection, quota or 30-day uptime proof.
+Unknown costs/provider errors stop further sends; there is no retry/fallback.
+Bounded non-ranked retrieval, short OIDC session and memory-only grants remain.
+
+### Acceptance and technical checks
+
+| Current Jira/owner criterion | Classification and result |
+| --- | --- |
+| Usable Alice/Projet pilote real chat with actual exact preview and separate consents | Implemented and tested — PASS, real browser/client single POST and subsequent zero-inference availability |
+| Other owners/Spaces excluded, canonical hydration/graph/snapshot/aliases/warnings | Implemented and tested — PASS, actual Alice/Bob, sealed scope/response plus isolated regressions |
+| Fixed 30-day availability distinct from five-minute/token grants and fresh prices | Implemented and tested — PASS, exact receipt, expiry/price failure/revocation/max-duration offline tests; automatic fixed official source, no model API GET |
+| Session/global budget, no reset/retry/fallback, ledger/cost | Implemented and tested — PASS, actual single settled ledger attempt, seven remaining, isolated multi-session/concurrency/crash/error guards |
+| No canonical writes; preserve data, other containers, historical ledgers and rollback | Implemented and tested — PASS, fourteen-table equality, five-container exact identity/config comparison, backend-only guard and retained private rollback inputs. Actual rollback not executed because activation succeeded |
+| Functional/browser/OIDC regressions and final exact-HEAD CI | Targeted 127 PASS, backend-management 16 PASS, TypeScript/build/Ruff PASS; full native/browser/quality/OIDC execution and immutable final run are reported in PR #16's final review summary, separately from local image counts |
+| General semantic correctness or future persistence/session redesign | Not demonstrated / out of scope; QH-39/QH-42 and all other tickets not started |
+| Owner review, merge and Jira DONE | Not performed; PR #16 remains open, no DONE claim |
+
+No further Codex inference is authorized: its one smoke allowance is consumed.
+The remaining owner manual calls remain authorized within the unchanged receipt,
+consent, scope, budget and expiry. Future unavailability or format/price drift must
+fail closed without silently changing the receipt, extending time or resetting costs.
 
 The sealed prior offline archive's source fingerprints belong to commit `9fdc667`;
 run its audit at that revision. The new live archive records later source/operational

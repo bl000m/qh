@@ -177,3 +177,20 @@ app. Procedura di ripristino applicativo, soltanto durante un'operazione autoriz
 
 Nessun `down -v`, prune, modifica del realm, migrazione, inferenza, tag/release,
 merge o transizione Jira è compreso in questa attivazione.
+
+
+## QH-45 scoped provider activation — owner authorization, 2026-10-19
+
+The existing hot-reload override now accepts default-off provider-session flags
+and a backend-only private `/run/qh-chat` mount. Only the backend receives the
+server Mistral key. Actual scoped availability, expiry, preservation and rollback
+are recorded in [the activation report](qh-45-live-activation.md); this is not
+permission to recreate dependencies or extend that authorization.
+
+Use `sudo -n make dev-up DEV_SERVICE=backend` for the specifically authorized
+backend configuration activation/rollback. The guarded command validates images,
+DB/OIDC/native settings, ports and source paths and compares every non-target
+container afterward. `DEV_SERVICE` accepts only frontend/backend; omit it to retain
+the original app-pair behavior. A normal dev-up is not permission to enable a
+provider, renew receipts, replace ledgers or run an inference. Existing dev-stop
+before branch switching and all persistent-data protections remain mandatory.

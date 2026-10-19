@@ -505,3 +505,21 @@ key presence and client payloads cannot activate it. The isolated browser helper
 injects `httpx.MockTransport` only under its disposable harness guard; production
 startup never selects that helper. See [QH-45](qh-45-generative-chat.md) for executed
 checks, 300-second UX limits and the unexecuted, separately authorized live gate.
+
+
+### QH-45 RESULT FIRST — later owner authorization, 2026-10-19
+
+The [ADR 0007 amendment](adr/0007-scoped-provider-sessions.md#later-owner-amendment--result-first-2026-10-19)
+separates fixed provider availability from short token-bound conversation grants
+and automatic official-price freshness. No module or canonical persistence boundary
+changes. The same outbound factory checks private receipt revocation, fixed
+owner/Space/model/synthetic snapshot and cumulative ledger; a fixed public docs
+price fetch uses no key/context and no Mistral API call. Unknown or increased
+prices fail closed after cache expiry. This does not verify semantic entailment.
+
+The owner authorizes an actual 30-day private-POC activation for Alice / Projet
+pilote only, one Codex smoke and remaining owner manual calls under the existing
+limits. [Operational results and rollback](qh-45-live-activation.md) supersede the
+previous paragraph's preparation-only VPS state without changing its history.
+Mock remains default; no other Space/provider, conversation ingestion, OIDC renewal,
+canonical write or new production service follows.

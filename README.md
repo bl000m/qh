@@ -374,3 +374,10 @@ records the owner-approved contract. Mock remains default; the VPS's Mistral
 sessions remain disabled. Isolated HTTP-simulated tests are not real LLM quality
 or billing evidence. A new exact disclosure/spending/configuration gate is required
 before any real session; no chat answer writes Understanding State.
+
+
+QH-45's later owner-authorized [scoped Mistral availability and rollback](docs/qh-45-live-activation.md)
+are separate from the preserved offline checkpoint: mock remains default; only
+Alice's synthetic Projet pilote is authorized, with exact preview, two explicit
+consents, short token-bound sessions and cumulative budget. Other Spaces/users
+remain excluded; no canonical conversation persistence is implemented.

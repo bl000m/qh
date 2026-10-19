@@ -1,0 +1,32 @@
+{
+  "implementation_commit": "b07037565e62bceca87c6406f9e50af4382706de",
+  "files": {
+    "README.md": "8a5841c43c36f294d642e02eb68c57d15afd38e170d0b9c64a6e2447490ab740",
+    "audit.py": "28a890a0d7dfc84241a2f1e3cfd9b176d888337c8f4703f019edc4840f9a44ef",
+    "availability.json": "c7e1316f2e59944c99afb3b116121eff8c9adb2aa2752454ec7de36c62a6c578",
+    "available-desktop.png": "cca4fd6bf8d775bcdfd4d7fa9166ef5171f0cf059126afd76e8e9bef5e829b61",
+    "available-mobile.png": "2518b2c5aa9ed32b7d1671fefe9be9f8fd49fedead834cf2db07e5d7d9209bb4",
+    "live-desktop.png": "e081010bca8549fad18c135a2568126ec3edfa30ee2e9b9110a21871fd9e1c3a",
+    "live-mobile.png": "1d7d4d142e22d20b1a49bf03947ad6cc8d630f2f1b6c1c045ab6839df68d9c8e",
+    "qh-response.json": "8b3a10962b3792d9022238197289d5a4b4223b8bbd299e4f79a22db28435ef56",
+    "result.json": "da1439d4324e783ef0a3f6d61ad070be05c5ffc2fe14944bd77c256287532c6d"
+  },
+  "source_hashes": {
+    "apps/api/app/chat/references.py": "693adf0cb0cbb445aba7337bab6b0697525ac4976f62f09f6fd98a02a9fd41fe",
+    "apps/api/app/chat/implementation.py": "008abc0587b02e8f49ad1f89f7effe711a460c24dfb43e8d43aea9c7c4bc2e37",
+    "apps/api/app/chat/services.py": "4fc2b60eb9f0863d09eafc59b962fc1a8235b0fbb2c880c3731676a9a04ec463",
+    "apps/api/app/chat/context.py": "21ba970f281956107769cefa5621fa16a6d32474e5f3d76b581e0a4bbfcd950e",
+    "apps/api/app/chat/models.py": "c076125c7e5d22ad595da58676315506d62dd98a344f73b1779cbb2a30e4d8eb",
+    "apps/api/app/chat/sessions.py": "0ad366dfc1d0f71825651d4a6c67e2dde613fe970b9f662d89962d057343b531",
+    "apps/api/app/chat/__init__.py": "a128fbd5fd79987992b84a4d2a70652f772adee00562aac6a93127fe631a2e6f",
+    "apps/api/app/chat/serialization.py": "398958136da084dce34c0e831d333a79203aba17da9d9cf670e50b428327d017",
+    "apps/api/adapters/llm/session_config.py": "edc6b3f0b280cc5eed8f38e5663b26b91f096560c9cfc1f2d536870257fd633c",
+    "apps/api/adapters/llm/pricing.py": "ee4b83b3d8bd7fdcbc28d7884fe58e18704c70371e2a59c30bb797b698cb6a03",
+    "apps/api/adapters/llm/mistral.py": "7d61728a9590bcabe00e9965ae306a77df93a6dcdef9573b1550afd4a2ba6264",
+    "apps/api/app/api/chat_sessions.py": "4576db72700cf7bdc4f66b6820216576838a6b5385b7b60bef3be8571d5b334e",
+    "apps/web/src/ProviderChoice.tsx": "e5ddf29c57d7759b61abb9caf5e5af008e142a27a624806a878a37f37d4ed411",
+    "apps/web/src/provider-session.ts": "5486c387404fac7071998e6676d160393c8a4274cc731fc31a0a19fbcfc34b86",
+    "infra/docker/qh-hot-reload.yml": "7fadc083e6c962fd680f4b13e3141ac90fb40c9d783c8cca4fa3a811340ef723",
+    "scripts/manage_qh_dev.py": "7ae41538b97d64d86b0a2f85a4f2a43931dc2dbb2e45ac7b4395cb1e622b90de"
+  }
+}
