@@ -5,7 +5,7 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
-## Demo B block 2 — in development, 2026-10-20
+## Demo B block 2 — in review, 2026-10-20
 
 - QH-14 adds canonical mutable Projection Drafts with exact item/revision scope,
   exclusions, recipient/purpose, expiry and atomic versioned edits. The central

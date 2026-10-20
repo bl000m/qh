@@ -134,3 +134,16 @@ Private preflight/test harness and protected inventories are retained under
 `.local-archive/block2-20261020/`, never published. Reproduce isolated execution with
 `infra/docker/qh30-integration.yml` in a dedicated project, generated test credentials
 and the named pytest files; never use the persistent `qh` project for these tests.
+
+Final read-only preservation: all pre-existing ignored files, private configuration
+and readonly realm hashes match; original container IDs/images/mounts match and
+infrastructure start times match. Guarded app-only stop/up restored six healthy
+services. Actual persistent schema is 0006 with no draft tables. The disposable
+test project is removed. These controls establish no task provider/production data
+write; they do not claim a content-wide audit of concurrent owner application use.
+
+Commits: `7164517` QH-14 contract/schema/CRUD/policy; `b7dd93a` QH-15 exact native
+resolution/minimal export; `f80d501` QH-16 adversarial checks, canonical ordering fix
+and CI integration. The final documentation commit records this preservation.
+One final hosted workflow is required on that published block head; its actual
+run/conclusions and ticket-by-ticket readiness are retained in the PR and Jira.
