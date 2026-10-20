@@ -8,10 +8,10 @@ async function open(page:Page, name='alice') {
   await page.locator('#username').fill(name);
   await page.locator('#password').fill(process.env['QH_' + name.toUpperCase() + '_PASSWORD']!);
   await page.locator('#kc-login').click();await afterLogin(page,expected.scope);
-  if (name === 'alice') {await expandUnderstanding(page);await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await page.getByText('Rechercher dans ce contexte',{exact:true}).click();}
+  if (name === 'alice') {await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await expandUnderstanding(page);await page.getByText('Rechercher dans ce contexte',{exact:true}).click();}
 }
 async function search(page:Page, view:string, input:string, descriptors=false) {
-  await page.getByRole('button',{name:view,exact:true}).click();
+  await page.locator('.workspace-advanced').getByRole('button',{name:view,exact:true}).click();
   if (descriptors) await page.getByRole('radio',{name:'Descripteurs',exact:true}).check();
   await page.getByLabel(descriptors ? 'Descripteurs exacts, un par ligne' : 'Texte à rechercher').fill(input);
   const response = page.waitForResponse(r => {
@@ -39,7 +39,7 @@ test('QH-8 rows, canonical provenance, open meanings, history and pagination use
   await page.getByRole('button',{name:'Confirmé',exact:true}).click();
   await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(1);
   await expect(page.locator('.secondary-search .state-proposed')).toHaveCount(0);
-  await page.getByRole('button',{name:'Historique',exact:true}).click();
+  await page.locator('.workspace-advanced').getByRole('button',{name:'Historique',exact:true}).click();
   await expect(page.locator('.secondary-search .state-rejected')).toHaveCount(1);
   for (const id of expected.decision_ids) await expect(page.getByRole('article',{name:'Révision '+id,exact:true})).toBeVisible();
   await page.getByLabel('Résultats par page').selectOption('5');
@@ -107,7 +107,7 @@ test('late historical responses cannot relabel proposals as confirmed-current (r
     if(route.request().postDataJSON().view==='history') {waiting=true; await gate;}
     await route.continue();
   });
-  await page.getByRole('button',{name:'Historique',exact:true}).click();
+  await page.locator('.workspace-advanced').getByRole('button',{name:'Historique',exact:true}).click();
   await expect.poll(()=>waiting).toBe(true);
   await page.getByRole('button',{name:'Confirmé',exact:true}).click();
   await expect(page.locator('.secondary-search .state-confirmed')).toHaveCount(1);

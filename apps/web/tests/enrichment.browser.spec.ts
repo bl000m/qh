@@ -1,3 +1,5 @@
+import {expandUnderstanding} from './navigation.browser';
+import {closeUnderstanding} from './navigation.browser';
 import {writeFile} from 'node:fs/promises';
 import {test,expect} from '@playwright/test';
 import {afterLogin,showSupport} from './navigation.browser';
@@ -37,19 +39,19 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  await dialog.getByRole('button',{name:'Conserver et proposer',exact:true}).click();const replay=await repeated;
  expect(replay.status()).toBe(200);expect((await replay.json()).revision_ids).toEqual(receipt.revision_ids);expect(replay.request().postDataJSON().operation_id).toBe(payload.operation_id);
  await writeFile(info.outputPath('qh39-canonical-receipt.json'),JSON.stringify({scope:created.id,proposed_receipt:receipt,source_text:claim,replay_same_ids:true,provider:'offline-literal/1',paid_calls:0},null,2));
- await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();
+ await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expandUnderstanding(page);
  await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText(claim);
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Proposé');
  await page.screenshot({path:info.outputPath('qh39-proposed-with-source-desktop.png'),fullPage:true});
- await page.locator('details.understanding-explorer > summary').click();await expect(page.locator('.human-revision')).not.toBeVisible();await page.getByRole('tab',{name:'Discussion',exact:true}).click();
- await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
+ await closeUnderstanding(page);await expect(page.locator('.human-revision')).not.toBeVisible();await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();
+ await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expandUnderstanding(page);await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  // Fresh page + actual OIDC reauthentication: ephemeral conversation is gone,
  // canonical proposal and original source remain retrievable through the product.
  await page.reload();await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();await page.getByRole('button',{name:'Se connecter',exact:true}).click();
  if(await page.locator('#username').isVisible()){await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();}
  await afterLogin(page,created.id);await expect(page.getByRole('log',{includeHidden:true})).toBeEmpty();
- await showSupport(page);await page.locator('details.understanding-explorer > summary').click();await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();
+ await expandUnderstanding(page);await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();
  const card=page.locator('.understanding-card').filter({hasText:claim});await expect(card).toBeVisible();await card.click();
  let detailReads=0,reviewWrites=0;
  page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/review'))reviewWrites++;});
@@ -60,7 +62,7 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
   }
   return route.continue();
  });
- const review=page.getByRole('region',{name:'Révision par le propriétaire'});await review.getByRole('button',{name:'Examiner une confirmation',exact:true}).click();
+ const review=page.locator('.workspace-advanced').getByRole('region',{name:'Révision par le propriétaire'});await review.getByRole('button',{name:'Examiner une confirmation',exact:true}).click();
  await review.getByRole('button',{name:'Confirmer explicitement cet élément',exact:true}).click();await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Confirmé courant');expect(detailReads).toBeGreaterThanOrEqual(3);expect(detailReads).toBeLessThanOrEqual(4);expect(reviewWrites).toBe(1);
  await page.setViewportSize({width:390,height:844});await showSupport(page);
  await expect(page.locator('.human-revision')).toContainText(claim);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

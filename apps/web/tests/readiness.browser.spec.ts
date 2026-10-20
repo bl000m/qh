@@ -1,3 +1,5 @@
+import {expandUnderstanding} from './navigation.browser';
+import {closeUnderstanding} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import type {Page} from '@playwright/test';
 const enabled=process.env.QH52_PRODUCT_BROWSER_TEST==='1';
@@ -24,10 +26,10 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await expect(page.getByLabel('Mode de discussion',{exact:true})).toHaveCount(0);await expect(page.locator('body')).not.toContainText('Démonstration mock');
  await expect(page.getByRole('button',{name:'Envoyer la question',exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'Modifier le Space',exact:true}).click();
- await page.getByLabel('Nom du Space',{exact:true}).fill('Budget personnel synthétique');await page.getByLabel('Description du Space',{exact:true}).fill('Repère personnel, sans classification automatique.');await page.getByRole('button',{name:'Enregistrer le Space',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('tab',{name:'Discussion',exact:true}).click();
+ await page.getByLabel('Nom du Space',{exact:true}).fill('Budget personnel synthétique');await page.getByLabel('Description du Space',{exact:true}).fill('Repère personnel, sans classification automatique.');await page.getByRole('button',{name:'Enregistrer le Space',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Budget personnel synthétique',exact:true})).toBeVisible();
  await expect(page.locator('.space-title>p')).toBeVisible();
- await page.getByRole('link',{name:'Paramètres de mon environnement',exact:true}).click();
+ await closeUnderstanding(page);await page.getByRole('link',{name:'Paramètres de mon environnement',exact:true}).click();
  await page.getByRole('button',{name:'Organiser mes domaines',exact:true}).click();await page.getByLabel('Nom du domaine 1',{exact:true}).fill('Organisation QH-52');await page.getByLabel('Description du domaine 1',{exact:true}).fill('Description organisationnelle du domaine.');await page.getByRole('button',{name:'Enregistrer l’organisation',exact:true}).click();
  await page.getByRole('link',{name:'Mon environnement',exact:true}).first().click();await page.getByRole('link',{name:'Organisation QH-52',exact:true}).click();await expect(page.getByText('Description organisationnelle du domaine.',{exact:true})).toBeVisible();await page.getByRole('link',{name:'Budget personnel synthétique',exact:true}).click();
  for(const [label,width,height,zoom] of [['desktop',1448,1086,1],['mobile',390,844,1],['desktop-200',1448,1086,2],['keyboard',390,450,1]] as const){
@@ -41,11 +43,11 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await page.evaluate(()=>{document.documentElement.style.zoom='1';});await page.setViewportSize({width:1448,height:1086});
  await page.getByRole('button',{name:'Ajouter un élément',exact:true}).click();
  const text='Pour mon budget de démonstration, je prévois 2 500 € de revenus mensuels et 1 300 € de dépenses fixes.';
- await page.getByLabel('Votre information',{exact:true}).fill(text);await expect(page.getByRole('button',{name:'Conserver cette information',exact:true})).toBeDisabled();
- await page.getByLabel('Je souhaite conserver ce texte comme proposition non confirmée dans ce contexte.',{exact:true}).check();
- const saving=page.waitForResponse(r=>r.url().endsWith('/enrichments')&&r.request().method()==='POST');await page.getByRole('button',{name:'Conserver cette information',exact:true}).click();
+ await page.getByLabel('Votre information',{exact:true}).fill(text);await expect(page.getByRole('button',{name:'Ajouter au contexte',exact:true})).toBeEnabled();
+ await expect(page.getByRole('dialog').getByRole('checkbox')).toHaveCount(0);
+ const saving=page.waitForResponse(r=>r.url().endsWith('/enrichments')&&r.request().method()==='POST');await page.getByRole('button',{name:'Ajouter au contexte',exact:true}).click();
  const response=await saving;expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.provider_mode).toBe('offline-literal/1');expect(receipt.revision_ids).toHaveLength(1);
- await expect(page.getByText(/Votre information est conservée/)).toBeVisible();await page.getByRole('button',{name:'Examiner l’information 1',exact:true}).click();await expect(page.locator('blockquote').filter({hasText:text}).first()).toBeVisible();
+ await expect(page.getByText('Élément ajouté au contexte',{exact:true})).toBeVisible();await page.getByRole('tab',{name:'Éléments',exact:true}).click();await page.locator('.understanding-explorer>summary').click();await expect(page.locator('.context-literal')).toHaveText(text);await page.getByRole('button',{name:'Voir la source',exact:true}).click();await expect(page.locator('blockquote').filter({hasText:text}).first()).toBeVisible();
  await page.screenshot({path:info.outputPath('qh52-first-information.png'),fullPage:true});
  await page.reload();await page.getByRole('button',{name:'Se connecter',exact:true}).click();
  // Existing SSO reconnects without entering credentials. Explicit Space route survives.
@@ -73,10 +75,10 @@ if(enabled)test('QH-52 product: real OIDC renewal preserves draft and disclosure
  await page.clock.pauseAt(Date.now()+1000);await page.clock.setFixedTime(Date.now()+241000);
  const renewed=page.waitForResponse(r=>r.url().includes('/protocol/openid-connect/token')&&r.request().postData()?.includes('refresh_token')===true);
  await page.evaluate(()=>dispatchEvent(new Event('focus')));const refresh=await renewed;expect(refresh.status()).toBe(200);await page.clock.setFixedTime(Date.now());
- await expect(page.getByLabel('Votre question sur ce contexte')).toHaveValue(draft);await page.getByRole('tab',{name:'Modèle',exact:true}).click();await page.locator('.administrative-disclosure>summary').click();await expect(page.getByRole('status').filter({hasText:/Autorisation active/})).toBeVisible();await page.getByRole('tab',{name:'Discussion',exact:true}).click();
+ await expect(page.getByLabel('Votre question sur ce contexte')).toHaveValue(draft);await page.getByRole('tab',{name:'Modèle',exact:true}).click();await page.locator('.administrative-disclosure>summary').click();await expect(page.getByRole('status').filter({hasText:/Autorisation active/})).toBeVisible();await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();
  await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Simulation hors réseau');
  await page.getByRole('tab',{name:'Modèle',exact:true}).click();await expect(page.getByRole('status').filter({hasText:/1\/3 requêtes/})).toBeVisible();
- await page.getByRole('button',{name:'Révoquer la session',exact:true}).click();await page.getByRole('tab',{name:'Discussion',exact:true}).click();await expect(page.getByRole('button',{name:'Envoyer la question',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Révoquer la session',exact:true}).click();await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();await expect(page.getByRole('button',{name:'Envoyer la question',exact:true})).toBeDisabled();
  expect(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}))).not.toMatch(/access_token|refresh_token|Question synthétique/);
  const tokens=await refresh.json();
  await page.getByLabel('Votre question sur ce contexte').fill('Brouillon après révocation');

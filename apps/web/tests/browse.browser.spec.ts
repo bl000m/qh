@@ -2,7 +2,7 @@ import {afterLogin,expandUnderstanding} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import type {Page} from '@playwright/test';
 const expected=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
-async function open(page:Page){await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page,expected.scope);await expandUnderstanding(page);await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();}
+async function open(page:Page){await page.goto('/context-spaces/'+expected.scope);await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();await afterLogin(page,expected.scope);await expect(page.getByRole('heading',{name:'Démo QH-8',exact:true})).toBeVisible();await expandUnderstanding(page);}
 const browseUrl=(r:any)=>r.url().includes('/understanding?');
 test('opens without search, separates current/proposed, and browses every retained revision',async({page},info)=>{
  let searches=0;page.on('request',r=>{if(r.url().endsWith('/context-spaces/query'))searches++;});await open(page);
@@ -35,7 +35,7 @@ test('dynamic exact descriptors, unclassified entities, relation anchors and ite
  await expect(d.locator('blockquote').first()).toBeVisible();await page.screenshot({path:info.outputPath('qh12-browse-detail.png'),fullPage:true});
  await d.getByRole('button',{name:'Voir la révision source'}).click();await expect(d.locator('.human-revision[data-revision-id="'+expected.relation.source_revision_id+'"]')).toBeVisible();
  await d.getByText('Révisions de cet élément',{exact:true}).click();await expect(d.getByRole('region',{name:'Révisions de cet élément'}).locator('.understanding-card')).toHaveCount(expected.decision_ids.length);
- await page.getByRole('button',{name:'Vue d’ensemble',exact:true}).click();await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
+ await page.locator('.workspace-advanced').getByRole('button',{name:'Vue d’ensemble',exact:true}).click();await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
 });
 test('late browse pages and failed pagination cannot leave stale results; mobile keyboard works',async({page})=>{
  await page.setViewportSize({width:375,height:812});await open(page);

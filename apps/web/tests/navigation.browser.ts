@@ -7,7 +7,7 @@ export async function afterLogin(page:Page,scope?:string) {
   if(scope)await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+scope);
 }
 export async function showSupport(page:Page){
- if(await page.locator('.understanding-workspace').isVisible())return;
+ if(await page.locator('.understanding-workspace').isVisible()||await page.locator('#space-tab-1').getAttribute('aria-selected')==='true')return;
  await page.getByRole('tab',{name:'Éléments',exact:true}).click();
 }
 export async function expandUnderstanding(page:Page){

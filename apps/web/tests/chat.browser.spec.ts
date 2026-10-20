@@ -104,6 +104,7 @@ test('real Bob OIDC cannot chat with Alice Space, arbitrary IDs reveal no privat
 
 
 test('Alice navigates all three fixture Spaces without duplicate keys or retained dialogue',async({page})=>{
+ test.setTimeout(90000); // Four real Space visits, including their separate canonical workspace reads.
  expect(expected.demo_spaces).toHaveLength(3);
  await open(page,expected.demo_spaces[0].scope);
  const visits=[...expected.demo_spaces,expected.demo_spaces[0]];

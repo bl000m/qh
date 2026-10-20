@@ -1,0 +1,19 @@
+{
+  "private_artifacts": ".local-archive/qh54-understanding-20261020/comparison-regressions-final",
+  "pairs": [
+    {
+      "view": "list-detail",
+      "reference": "Tableau SaaS « Compréhension du contexte »-1.png",
+      "reference_sha256": "248b3de11768d94b2c79c92bfbca3b16e2a0477ab55566a1d5515c738efa9c9f",
+      "actual": "regressions-final/context-understanding.brow-811ca-fter-refresh-and-denies-Bob/qh54-understanding-list-desktop.png",
+      "actual_sha256": "5af9efd722818e0ff27683c374f65d1787b7930d174cf7c4b4cf5e72945628e6"
+    },
+    {
+      "view": "overview",
+      "reference": "Tableau de compréhension du contexte-2.png",
+      "reference_sha256": "66d4c8c620caaace16a4e47d870a5778d9b645a4af9e624f07b72310d3c1a7cb",
+      "actual": "regressions-final/context-understanding.brow-811ca-fter-refresh-and-denies-Bob/qh54-understanding-overview-desktop.png",
+      "actual_sha256": "a02b970a07cae5c37593955b148b9b5b9e4492b26e48f124f82c0ca1e3fe76b2"
+    }
+  ]
+}
