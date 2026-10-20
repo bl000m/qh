@@ -33,9 +33,9 @@ export class QhApi {
     for(const [id,scope] of this.providerGrants)void this.revokeSession(scope,id).catch(()=>{});
     this.closing=true;this.providerGrants.clear();
   }
-  constructor(private readonly token: () => string, private readonly expired: () => void) {}
+  constructor(private readonly token: () => string|Promise<string>, private readonly expired: () => void) {}
   private async request(path: string, method = 'GET', body?: unknown): Promise<unknown> {
-    const token = this.token();
+    const token = await this.token();
     let response: Response;
     try {
       response = await fetch('/api' + path, {
@@ -88,7 +88,7 @@ export class QhApi {
   }
   async organization():Promise<Organization>{await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);return organization(await this.request('/environment'));}
   async organize(document:Organization):Promise<Organization>{
-    const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains}).then(organization);
+    const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains,...(document.space_descriptions?{space_descriptions:document.space_descriptions}:{})}).then(organization);
     this.organizationWrites.add(write);try{return await write;}finally{this.organizationWrites.delete(write);}
   }
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
@@ -151,6 +151,10 @@ export class QhApi {
   async get(id: string): Promise<ContextSpace> {
     if (!isUuid(id)) throw new ApiError(404);
     return space(await this.request('/context-spaces/' + id));
+  }
+  async rename(id:string,name:string):Promise<ContextSpace> {
+    if(!isUuid(id)||!validName(name))throw new ApiError(422);
+    return space(await this.request('/context-spaces/'+id,'PATCH',{name}));
   }
   async create(name: string): Promise<ContextSpace> {
     if (!validName(name)) throw new ApiError(422);

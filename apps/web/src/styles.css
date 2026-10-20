@@ -436,6 +436,16 @@ main:has(>.environment-home) {padding-top:2rem;}
 .signed-in h1,.signed-in h2,.signed-in h3 {letter-spacing:-.025em;}
 .space-workspace {align-items:stretch;}
 .signed-in .context-chat {align-self:start;}
+
+/* QH-52: the composer participates in document flow at every zoom/height.
+   Sticky positioning inside a variable-height flex column could cover earlier
+   notices when the provider/consent panel grows. Keep those controls reachable. */
+.chat-composer,.chat-composer.composer-persistent {position:static;inset:auto;z-index:auto;}
+.context-chat>* {flex-shrink:0;min-width:0;}
+.signed-in .conversation-scroll {flex:0 1 auto;min-height:0;}
+.conversation-scroll:empty {display:none;}
+.manual-information {margin-block:.75rem;}
+.manual-information button {max-width:100%;white-space:normal;}
 @media(min-width:851px){.signed-in .environment-topline h1{font-size:3.75rem;margin-bottom:24px;}.signed-in .domain-heading h1{font-size:4.25rem;}.signed-in .conversation-scroll{max-height:clamp(180px,calc(100dvh - 650px),510px);}}
 
 /* QH-39: a secondary explicit persistence action, not a new admin screen. */
