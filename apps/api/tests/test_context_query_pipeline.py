@@ -32,7 +32,7 @@ def application(p):
     app.state.offline_chat=True
     reader=PostgresSecurityReader(url=database_url())
     auth,_=build_auth(resolver=reader.resolve_identity)
-    app.state.security=replace(app.state.security,authenticate=auth.authenticate)
+    app.state.security=replace(app.state.security,authenticate=auth.authenticate,authenticate_with_expiry=auth.authenticate_with_expiry,authenticate_session=auth.authenticate_session)
     policy=app.state.services.policy
     app.state.services.context.retrieval_for=lambda subject:AuthorizedNativeContextService(
         policy=policy,engine=IncrementalContextEngine(
@@ -227,7 +227,7 @@ def test_pending_failed_recovery_rebuild_and_reopen(retrieved,monkeypatch):
     for _ in range(2):
         app=create_runtime_app()
         auth,_=build_auth(resolver=PostgresSecurityReader(url=database_url()).resolve_identity)
-        app.state.security=replace(app.state.security,authenticate=auth.authenticate)
+        app.state.security=replace(app.state.security,authenticate=auth.authenticate,authenticate_with_expiry=auth.authenticate_with_expiry,authenticate_session=auth.authenticate_session)
         with TestClient(app) as reopened:
             runtime=app.state.native_context
             wait_until(lambda:p['repo'].sync_status((p['scope'],))[0]['sync_state']=='ready')

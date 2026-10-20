@@ -186,7 +186,7 @@ of this task. Private execution artifacts: .local-archive/qh52-20261020/.
 | Administrative availability vs exact disclosure vs human confirmation | Implemented and tested — PASS within prepared contract | Separate receipt/policy/budget, snapshot consent, and canonical review remain; fake-provider tests retain3/USD0.01 work cap and aggregate8/USD0.20 across token renewal/reconsent/restart |
 | Empty-Space first information without Mistral | Implemented and tested — PASS | Real UI→OIDC→API→isolated PostgreSQL/Neo4j, exact literal source/proposed revision/provenance, reload and Bob denial. No semantic extraction or human confirmation inferred |
 | Existing configuration/evidence and active PR preserved | Implemented and tested — PASS | preservation.json: all947 original ignored files, .env/import, original image/mount identities and infrastructure start times equal; guarded dev-status six healthy; PR19 unchanged |
-| Full final CI campaign and new review PR | Implemented but unverified — NOT TESTED at this checkpoint | One complete campaign will follow the final targeted checks; no prior full campaign for QH-52 |
+| Full final CI campaign and new review PR | Implemented but unverified — NOT TESTED at this checkpoint | PR20 initial integration pass found a partially replaced OIDC test binding; all verifier facets were aligned and rechecked. The final campaign verdict is recorded on PR20 and in the final Jira comment |
 | Persistent VPS renewal/grant activation | Out of scope for this approval — NOT TESTED | Prepared exact delta above; no realm/ledger/receipt/schema/provider activation or real paid POST |
 
 Regression corrections were kept within scope: explicit mock opt-in in historical
@@ -202,3 +202,11 @@ reopen, mock denial and Bob isolation); product-browser-8 renewal/revocation sce
 PASS with actual Keycloak and simulated provider HTTP. The extra browser-clock step
 crosses SDK expires_in-derived expiry; server time and TTLs are never changed.
 [Retained synthetic screenshots](evidence/qh52-20261020/README.md).
+
+
+Final integration corrections: test compositions now replace identity, expiry and
+verified-session authentication together, retaining actual signature/claims and SQL
+owner checks. Logout dispatches grant revocation with its current in-memory access
+credential before clearing it; it cannot wait on or initiate a renewal. The focused
+logout/current-token and in-flight/account/rotation checks pass (3 tests/typecheck).
+No timeout, policy, ledger or provenance check was weakened.
