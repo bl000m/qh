@@ -1,0 +1,11 @@
+{
+  "source": "QH-52 isolated product-browser-7, synthetic data only; no real model inference",
+  "sha256": {
+    "empty-desktop.png": "cfd6007577ee11fbc3b87f40004d9b39dc0e61afe09b5c58755dc345617d73f3",
+    "empty-mobile.png": "9142f9d0a52c39ec87aa6c8b32caa1d6cfe118be562ff57044b1568748a3217b",
+    "empty-zoom200.png": "330573d8365b71108ed1d59dc140ae2360b83826c0908def0f38ec4c459866fd",
+    "first-information.png": "e17eca75a75d8c9f470eca8ce1fe4070d208477736c652ab6e3fb97abc96c7b7",
+    "provider-desktop.png": "a0a9a6b00038d14ef52037f95374cfa860fa542d6e6a8fd1435ba03c91cfa41f",
+    "provider-mobile.png": "ae2fb64d4066d181c462e0a816c2828f2a1aa5c4a0b4b4c77b8574b99c3acf5b"
+  }
+}

@@ -5,6 +5,18 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-52 development readiness — in progress, 2026-10-20
+
+- Prepare bounded memory-only OIDC renewal and exact-snapshot disclosure stable
+  across renewed access tokens, with durable work-session budgets; both profiles
+  remain default-off pending the separate persistent activation gate.
+- Add owner-only Space/domain descriptions in existing organization metadata,
+  reuse Space name editing and QH-39 for a manual first information without IA.
+- Keep composer and notices in normal document flow; normal product chat shows
+  an authorized provider or unavailability. Mock requires explicit test composition.
+- Preserve PR19, existing demo Spaces, schema0006, Keycloak image/import and paid
+  ledgers. No real inference, migration, provider expansion or automatic merge.
+
 ## QH-50 UX V2 — in review, 2026-10-19
 
 - Conversational viewport, compact provider controls and accessible answer-specific

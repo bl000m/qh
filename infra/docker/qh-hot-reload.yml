@@ -2,12 +2,15 @@
 # Source mounts and reload commands come from the base development Compose.
 services:
   frontend:
+    environment:
+      VITE_QH_DEVELOPMENT_SESSION: ${VITE_QH_DEVELOPMENT_SESSION:-0}
     image: qh12-web:d70626bbe50c070c428b02564d22dec42b3b22b0
     build: !reset null
   backend:
     # QH-45 owner-authorized backend-only activation; flags stay deny-by-default.
     environment:
       QH_CHAT_PROVIDER: mock
+      QH_CHAT_SESSION_BINDING: ${QH_CHAT_SESSION_BINDING:-credential}
       QH_CHAT_SESSIONS_ENABLED: ${QH_CHAT_SESSIONS_ENABLED:-false}
       QH_CHAT_SESSION_AUTHORIZATION_FILE: /run/qh-chat/authorization.json
       QH_CHAT_SESSION_LEDGER_FILE: /run/qh-chat/ledger.json

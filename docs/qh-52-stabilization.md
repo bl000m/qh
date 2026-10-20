@@ -51,8 +51,8 @@ each plain text up to 500 characters. Existing documents mean empty descriptions
 preserve omitted fields from old clients rather than silently erasing metadata.
 Reuse version conflict handling, organization policy and SQL owner checks. Reuse
 QH-9 PATCH for Space names. No original source/Understanding/schema/type migration,
-automatic classification or demo-data update. The metadata API extension and tests
-need approval as a public-contract refinement before implementation; actual new
+automatic classification or demo-data update. The owner approved the metadata API extension and tests
+as a public-contract refinement; actual new
 metadata writes are initiated explicitly by the owner through the UI.
 
 Alternative: add canonical Space columns and a migration; this unnecessarily moves
@@ -120,3 +120,85 @@ the inherited native login form. That is not evidence that rendered username or
 password fields disable completion. Inspect the actual isolated login DOM before
 changing or building a replacement image. Native Mac password-manager prompts
 remain browser/OS-controlled; compatible markup alone cannot prove their display.
+
+
+## Prepared persistent activation gate (not executed)
+
+The exact non-secret Keycloak delta is
+[infra/keycloak/qh52-development-session.json](../infra/keycloak/qh52-development-session.json):
+rotation with zero refresh-token reuse, and an additive qh-web-only AUTH_TIME
+session-note mapper. The existing qh:api audience/roles/subject, public client,
+Code+PKCE, redirect/origin and TTLs stay fixed. The mapper uses the server session
+note, never a user-editable attribute. The readonly root import remains untouched.
+Its reference is Keycloak26.4.7's built-in
+[auth_time mapper](https://github.com/keycloak/keycloak/blob/26.4.7/services/src/main/java/org/keycloak/protocol/oidc/OIDCLoginProtocolFactory.java).
+No protocol mapper or realm setting has been written to the VPS.
+
+For a later activation request, first retain a protected realm/client/settings
+readback and backup/rollback under the established Keycloak procedure. Compare the
+actual delta (apply only missing mapper/settings), preserve sealed image ID, root
+import and data volume, and test rollback on the isolated copy. Enable only the
+frontend VITE_QH_DEVELOPMENT_SESSION=1 environment and backend
+QH_CHAT_SESSION_BINDING=oidc after explicit approval of their concrete container
+config diff and brief frontend/backend restart. The guarded hot-reload overlay prepares both environment keys with deny-by-default values; no dev-up/restart has been run with that changed configuration. Neither flag is enabled here.
+Terminate the old browser work session and sign in anew; retain historical ledger
+rows and cumulative totals. Do not map old grant UUIDs to invented session IDs or
+reset costs. Existing receipt/snapshot/allowlist/price/budget and availability expiry
+still apply. No paid smoke or canonical/demo write is part of this activation.
+
+Password-manager evidence: the native form actually served at localhost:8080 has
+username/name=username/autocomplete=username, password/name=password/type=password/
+autocomplete=current-password and a native same-origin POST form. No React password
+field or password storage exists. Remember Me concerns the IdP session, not browser
+password saving; it is absent from the inspected form. On the Mac retain the same
+SSH-tunnel host and port for both saved credentials and login: localhost and
+127.0.0.1 are distinct origins. Chrome/Safari profile, private-browsing and password
+manager settings still determine whether a save/update prompt appears. That native
+Mac prompt is NOT TESTED here; markup compatibility is directly verified.
+
+A read-only administration inspection of the actual VPS on2026-10-20 confirmed:
+access300s, SSO idle1800s, SSO absolute36000s, refresh rotationfalse, maxReuse0,
+RememberMefalse; qh-web remains public Code+PKCE with qh:api and no password grant.
+The client has no auth_time mapper. The necessary activation delta is therefore
+rotationfalse→true plus that client mapper, frontend flag0→1 and backend binding
+credential→oidc. MaxReuse0 and all TTLs stay as observed. A resolved Compose dry
+comparison verified that enabling the prepared flags changes exactly those two
+frontend/backend environment entries and no other service configuration. Keycloak
+imageID remains sha256:21451375143c0d31397f1d23cbb38aca9a872e220bd74c94d89f815635b43954.
+Guarded dev-status still reports all six QH services healthy; no restart/activation
+was performed after preparing the new environment keys.
+
+## Acceptance evidence (technical readiness, review still required)
+
+Dedicated Jira: [QH-52](https://contextlab.atlassian.net/browse/QH-52). Related QH-42,
+QH-49, QH-50 and QH-51; no QH-46 state change. Checkout /home/ubuntu/qh on
+fix/QH-52-demo-readiness from0336566. PR19 stays OPEN at18bac2c. No merge is part
+of this task. Private execution artifacts: .local-archive/qh52-20261020/.
+
+| Criterion | Classification and verdict | Executed evidence and limits |
+| --- | --- | --- |
+| Dedicated scope/dependencies and approved structural decisions | Implemented and tested — PASS | QH-52 created/linked; owner A/B/C approval recorded in comment10034 and this document |
+| Memory-only bounded renewal, route continuity, work/disclosure budgets and fail-closed checks | Implemented and tested — PASS for isolated contracts | backend-contracts.log:79 tests; session-http.log:10 tests; focused-web-final.log:6 tests including failed rotation, different account, logout race, expiry and8h clock; actual Keycloak rotating/old-token/revoke/logout protocol test passes; product-browser-8 passes real SPA renewal, unchanged grant/draft, revoked-refresh expiry with in-memory draft retention, explicit logout erasure |
+| Native password-manager-compatible form | Implemented and tested — PASS for markup | Actual VPS DOM readback native-login-fields.json plus real Chromium/Keycloak login; native Mac Chrome/Safari password-manager prompts NOT TESTED |
+| Composer/empty notice, desktop1448×1086, mobile390×844, zoom200%, reduced keyboard viewport, expanded disclosure | Implemented and tested — PASS | Product browser runs and screenshots, bounds/overflow assertions; real device OS keyboard NOT TESTED (450px viewport simulated) |
+| Owner-only name/descriptions, persistence and compatibility | Implemented and tested — PASS | test_environment.py isolated PostgreSQL at0006: reopening, old-client omission preservation, CAS, Alice/Bob, ownership revocation, no sources/understanding writes; product name/domain edits and reopen |
+| No mock in normal product path | Implemented and tested — PASS | Product-mode browser without fixture flag; unavailable provider disables Send, explicit direct mock POST returns503; legacy replay fixtures opt in |
+| Administrative availability vs exact disclosure vs human confirmation | Implemented and tested — PASS within prepared contract | Separate receipt/policy/budget, snapshot consent, and canonical review remain; fake-provider tests retain3/USD0.01 work cap and aggregate8/USD0.20 across token renewal/reconsent/restart |
+| Empty-Space first information without Mistral | Implemented and tested — PASS | Real UI→OIDC→API→isolated PostgreSQL/Neo4j, exact literal source/proposed revision/provenance, reload and Bob denial. No semantic extraction or human confirmation inferred |
+| Existing configuration/evidence and active PR preserved | Implemented and tested — PASS | preservation.json: all947 original ignored files, .env/import, original image/mount identities and infrastructure start times equal; guarded dev-status six healthy; PR19 unchanged |
+| Full final CI campaign and new review PR | Implemented but unverified — NOT TESTED at this checkpoint | One complete campaign will follow the final targeted checks; no prior full campaign for QH-52 |
+| Persistent VPS renewal/grant activation | Out of scope for this approval — NOT TESTED | Prepared exact delta above; no realm/ledger/receipt/schema/provider activation or real paid POST |
+
+Regression corrections were kept within scope: explicit mock opt-in in historical
+fixtures, capability HTTP union for the approved1800s mode, native logout navigation
+synchronization in the browser test, and title/actions grouping on mobile. Simulated
+Mistral HTTP demonstrates orchestration/accounting, not live model comprehension,
+latency, cost or provider reliability. Semantic extraction remains QH-51.
+
+
+Final targeted product result before publication: product-browser-7 first scenario
+PASS (native form, Space/domain edits, all viewport bounds, literal bootstrap,
+reopen, mock denial and Bob isolation); product-browser-8 renewal/revocation scenario
+PASS with actual Keycloak and simulated provider HTTP. The extra browser-clock step
+crosses SDK expires_in-derived expiry; server time and TTLs are never changed.
+[Retained synthetic screenshots](evidence/qh52-20261020/README.md).

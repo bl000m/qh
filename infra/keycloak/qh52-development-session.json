@@ -1,0 +1,22 @@
+{
+  "realm_settings": {
+    "revokeRefreshToken": true,
+    "refreshTokenMaxReuse": 0
+  },
+  "client_id": "qh-web",
+  "add_protocol_mapper": {
+    "name": "QH verified authentication time",
+    "protocol": "openid-connect",
+    "protocolMapper": "oidc-usersessionmodel-note-mapper",
+    "consentRequired": false,
+    "config": {
+      "user.session.note": "AUTH_TIME",
+      "claim.name": "auth_time",
+      "jsonType.label": "long",
+      "access.token.claim": "true",
+      "id.token.claim": "true",
+      "userinfo.token.claim": "false",
+      "introspection.token.claim": "true"
+    }
+  }
+}
