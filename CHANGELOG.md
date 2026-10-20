@@ -442,3 +442,6 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
   an inference, consent never automatically submits, proposed inclusion remains
   affirmative, revocation/accounting remain available in secondary controls.
 - No schema/provider/identity contract change, paid inference or fake settings.
+
+- QH-53 provider failures retain their sanitized error after automatic grant
+  revocation; no retry or fallback. The regression checks the settled revoked state.

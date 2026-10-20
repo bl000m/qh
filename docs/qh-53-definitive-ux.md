@@ -90,14 +90,22 @@ Evidence is retained under `.local-archive/qh53-ux-20261020/`.
   workflows PASS. `product-final.log`: all four normal-product QH-53/QH-52 browser
   cases PASS, plus one real isolated Keycloak rotation/replay/revocation protocol
   check. TypeScript and packaged build PASS; exact captures are in the evidence README.
-- The final hosted `QH quality` campaign is linked on the PR at its exact HEAD.
-  It supplies the complete quality, native PostgreSQL–Neo4j, OIDC and browser gates.
-  Local focused runs are not described as complete CI.
+- Initial hosted campaign [39464945690](https://github.com/bl000m/qh/actions/runs/39464945690):
+  quality and OIDC PASS; native integration **785 PASS, zero skipped**; browser
+  **78 PASS / 1 FAIL**. The failure exposed a real render race: automatic provider
+  revocation cleared the sanitized chat error just after it appeared. Revocation
+  now preserves that error; the regression waits for server revocation and the
+  settled secondary status before asserting the visible error. `failure-fix.log`
+  records four focused provider browser tests PASS and TypeScript PASS.
+  A corrective CI iteration is required on
+  the new HEAD; its final verdict is linked on the PR. This is not represented as
+  one clean CI execution. Local focused runs are not complete CI.
 
 Ordinary failures corrected within scope: rename-modal opening raced rendering;
 zoom exposed intrinsic flex overflow; mixed support produced an overbroad proposal
 warning; global settings duplicated a heading; an existing navigation link had been
-lost; model budget needed refreshing after a response. Relevant regressions cover
+lost; model budget needed refreshing after a response; revocation erased a provider
+error during effect cleanup. Relevant regressions cover
 the corrected behavior. No architectural or persistent configuration workaround.
 
 ## Acceptance and closure

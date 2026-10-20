@@ -16,7 +16,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,conte
  const current=useRef<ProviderSession|null>(null),generation=useRef(0),prepared=useRef(''),attempted=useRef('');
  const dialogueKey=JSON.stringify(messages);
  function forget(){const old=current.current;current.current=null;setSession(null);setConsent(false);return old;}
- async function revoke(){generation.current++;const old=forget();onChange('mistral',null);setBusy(false);if(old)try{await api.revokeSession(scope,old.session_id);setError('Autorisation retirée. Aucun nouvel envoi.');}catch{setError('Autorisation effacée dans cet onglet. Le serveur n’a pas confirmé son retrait ; elle reste limitée dans le temps.');}}
+ async function revoke(preserveDialogue=false){generation.current++;const old=forget();onChange('mistral',null,preserveDialogue);setBusy(false);if(old)try{await api.revokeSession(scope,old.session_id);setError('Autorisation retirée. Aucun nouvel envoi.');}catch{setError('Autorisation effacée dans cet onglet. Le serveur n’a pas confirmé son retrait ; elle reste limitée dans le temps.');}}
  useEffect(()=>{
   generation.current++;setCaps(null);onCapabilities?.(null);setSession(null);current.current=null;setConsent(false);setMode(defaultMode);setError('');attempted.current='';onChange(defaultMode,null);
   let mounted=true;api.chatCapabilities(scope).then(v=>{if(mounted){setCaps(v);onCapabilities?.(v);}}).catch(()=>{if(mounted)setError('Le modèle est indisponible pour ce contexte. Vous pouvez toujours ajouter un élément.');});
@@ -24,7 +24,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,conte
   return()=>{mounted=false;generation.current++;window.removeEventListener('pagehide',leave);leave();};
  },[api,scope,include,onChange,onCapabilities]);
  useEffect(()=>{if(request){attempted.current='';setError('');setOpen(true);}},[request]);
- useEffect(()=>{if(failure&&mode==='mistral')void revoke().then(()=>setError('La discussion a été arrêtée. Donnez une nouvelle autorisation avant de réessayer.'));},[failure]);
+ useEffect(()=>{if(failure&&mode==='mistral')void revoke(true).then(()=>setError('La discussion a été arrêtée. Donnez une nouvelle autorisation avant de réessayer.'));},[failure]);
  useEffect(()=>{if(!contextChanged||!current.current)return;generation.current++;const old=forget();setBusy(false);onChange('mistral',null,true);void api.revokeSession(scope,old!.session_id).catch(()=>{});setError('Le contexte a changé. Une nouvelle autorisation est nécessaire.');},[contextChanged]);
  useEffect(()=>{if(current.current?.state==='preview'&&prepared.current!==dialogueKey){void revoke();}},[dialogueKey]);
  useEffect(()=>{if(!session)return;const t=window.setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t);},[session]);

@@ -71,13 +71,21 @@ Local targeted results:
 | `corrected-regressions.log` | 3 PASS / 1 residual FAIL | Both canonical proposal-warning cases and maquette actions corrected; residual missing collection link subsequently fixed |
 | `navigation-final.log` | PASS, 2 tests | New Space, identity/account navigation, metadata, foreign denial; actual domain editing, back/forward and unclassified navigation |
 | `lint-final3.log` | PASS | Application and test TypeScript |
+| `failure-fix.log` | PASS, 4 focused provider browser tests + TypeScript | Stable error after completed revocation, no retry/fallback, consent, scope change and logout |
 | `product-final.log` | PASS, 4 browser tests + 1 real OIDC protocol test | Normal UI, description/domain/proposal persistence, Bob denial, distinct preview/consent/send, real budget, selected memory and OIDC renewal |
 
 Each runner owns its private Docker network and tmpfs data services, never reads
 the root `.env`, publishes no ports and removes only its own test resources.
 Real isolated Keycloak rotation/replay/revocation is separate from simulated HTTP
-provider generation. The one complete hosted CI campaign is linked on the PR at
-its exact HEAD; focused runs are not substituted for that campaign.
+provider generation. The first complete hosted CI campaign passed quality/OIDC/native integration
+(785 native tests, no skips) but exposed one browser render race after 78 browser
+passes: revocation cleared the provider-failure error. The correction preserves
+that error, with an assertion after server revocation has settled. Its focused
+provider recheck and corrective CI verdict are recorded on the PR at the final
+HEAD; the initial failure is retained, not described as one clean CI execution.
+Focused runs are not substituted for complete CI. The captured successful-screen
+paths are visually unchanged by this error-path correction; `captures.json`
+retains the exact source tree from which those PNGs were actually produced.
 
 Physical Mac password-manager/OS keyboard behavior and owner visual acceptance are
 **NOT TESTED** here. The [criterion-by-criterion report](../../qh-53-definitive-ux.md)
