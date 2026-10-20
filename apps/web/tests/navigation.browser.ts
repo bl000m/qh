@@ -20,3 +20,7 @@ export async function includeProposals(page:Page,checked=true){
  await page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.',{exact:true}).setChecked(checked);
  await page.getByRole('tab',{name:'Discussion',exact:true}).click();
 }
+export async function newDiscussion(page:Page){
+ const menu=page.locator('.composer-options');if(!await menu.evaluate((n:HTMLDetailsElement)=>n.open))await menu.locator('summary').click();
+ await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();
+}

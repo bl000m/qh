@@ -1,6 +1,6 @@
 import {writeFile} from 'node:fs/promises';
 import {test,expect} from '@playwright/test';
-import {afterLogin} from './navigation.browser';
+import {afterLogin,showSupport} from './navigation.browser';
 const fixture=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
 
 test('QH-39 browser selected conversation persists, reopens, reviews and denies Bob',async({page,browser},info)=>{
@@ -13,12 +13,12 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  const creation=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/environment/spaces'));
  await page.getByRole('button',{name:'Créer',exact:true}).click();const created=await (await creation).json();
  await page.getByRole('link',{name:'Ouvrir ce Space',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.getByRole('button',{name:'Enrichir ce contexte',exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toHaveCount(0);
  const claim='Nous proposons un pilote réversible avec Jo, sans commande approuvée. 🌱';
  await page.getByLabel('Votre question sur ce contexte').fill(claim);await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'Enrichir ce contexte',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Enrichir ce contexte',exact:true});
- await expect(dialog).toContainText('Aucune analyse sémantique ni inférence Mistral');
+ await page.getByRole('button',{name:'Mémoriser cette conversation',exact:false}).click();const dialog=page.getByRole('dialog',{name:'Mémoriser cette conversation',exact:false});
+ await expect(dialog).toContainText('sans analyse par une IA');
  const selections=dialog.locator('.enrichment-turn input');await expect(selections.nth(0)).toBeChecked();await expect(selections.nth(1)).not.toBeChecked();
  await expect(dialog.getByRole('button',{name:'Conserver et proposer',exact:true})).toBeDisabled();
  await dialog.getByRole('checkbox',{name:'J’autorise la conservation',exact:false}).check();
@@ -29,7 +29,7 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  // Exact same browser submission replay is durable, not a second model invocation.
  await expect.poll(async()=>{const r=await page.request.get('/api/context-spaces/'+created.id+'/understanding?view=proposed&limit=20',{headers:{Authorization:aliceToken}});return r.status();}).toBe(200);
  const payload=response.request().postDataJSON();
- await page.getByRole('button',{name:'Enrichir ce contexte',exact:true}).click();
+ await page.getByRole('button',{name:'Mémoriser cette conversation',exact:false}).click();
  await expect(dialog.locator('.enrichment-turn input').nth(0)).not.toBeChecked();
  await expect(dialog).toContainText('Déjà conservé dans une source sélectionnée');
  await dialog.locator('.enrichment-turn input').nth(0).check();await dialog.getByRole('checkbox',{name:'J’autorise la conservation',exact:false}).check();
@@ -42,14 +42,14 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText(claim);
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Proposé');
  await page.screenshot({path:info.outputPath('qh39-proposed-with-source-desktop.png'),fullPage:true});
- await page.locator('details.understanding-explorer > summary').click();await expect(page.locator('.human-revision')).not.toBeVisible();
+ await page.locator('details.understanding-explorer > summary').click();await expect(page.locator('.human-revision')).not.toBeVisible();await page.getByRole('tab',{name:'Discussion',exact:true}).click();
  await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  // Fresh page + actual OIDC reauthentication: ephemeral conversation is gone,
  // canonical proposal and original source remain retrievable through the product.
  await page.reload();await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();await page.getByRole('button',{name:'Se connecter',exact:true}).click();
  if(await page.locator('#username').isVisible()){await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();}
  await afterLogin(page,created.id);await expect(page.getByRole('log',{includeHidden:true})).toBeEmpty();
- await page.locator('details.understanding-explorer > summary').click();await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();
+ await showSupport(page);await page.locator('details.understanding-explorer > summary').click();await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();
  const card=page.locator('.understanding-card').filter({hasText:claim});await expect(card).toBeVisible();await card.click();
  let detailReads=0,reviewWrites=0;
  page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/review'))reviewWrites++;});
@@ -62,7 +62,7 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  });
  const review=page.getByRole('region',{name:'Révision par le propriétaire'});await review.getByRole('button',{name:'Examiner une confirmation',exact:true}).click();
  await review.getByRole('button',{name:'Confirmer explicitement cet élément',exact:true}).click();await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Confirmé courant');expect(detailReads).toBeGreaterThanOrEqual(3);expect(detailReads).toBeLessThanOrEqual(4);expect(reviewWrites).toBe(1);
- await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Sources & compréhension',exact:true}).click();
+ await page.setViewportSize({width:390,height:844});await showSupport(page);
  await expect(page.locator('.human-revision')).toContainText(claim);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:info.outputPath('qh39-confirmed-mobile.png'),fullPage:true});
  const session=await browser.newContext({baseURL:'http://localhost:5173'}),bob=await session.newPage();let bobToken='';bob.on('request',r=>{if(r.url().endsWith('/auth/me'))bobToken=r.headers()['authorization']||'';});
