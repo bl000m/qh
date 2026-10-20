@@ -445,3 +445,13 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
 
 - QH-53 provider failures retain their sanitized error after automatic grant
   revocation; no retry or fallback. The regression checks the settled revoked state.
+
+### QH-54 — Context understanding refinement (Unreleased)
+
+- Direct manual text is retained with one explicit Ajouter au contexte action,
+  without a second self-confirmation checkbox or an administrative review jump.
+- Canonical provenance distinguishes personal declarations from QH interpretations;
+  proposed state, source evidence, immutable history and human review remain intact.
+- New list/detail and complementary data-derived understanding overview; source and
+  audit remain accessible. No semantic extraction, invented graph, schema change or
+  provider/allowlist/budget activation.

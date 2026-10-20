@@ -14,7 +14,7 @@ function status(row:CanonicalRevision) {
 }
 function text(row:CanonicalRevision) {return typeof row.content.text==='string' ? row.content.text : 'Élément structuré — ouvrir le contenu';}
 function assignments(row:CanonicalRevision) {return (Array.isArray(row.content.descriptors) ? row.content.descriptors : []).flatMap(a=>{const v=descriptorAssignment(a);return v ? [v] : [];});}
-function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection=false) {
+export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection=false) {
   const [refresh,setRefresh]=useState(0);
   const key=scope+JSON.stringify(query)+refresh+pending+refreshKey+waitForProjection;
   const version=useRef(0);

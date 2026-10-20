@@ -13,7 +13,7 @@ import type {SessionCapabilities} from './provider-session';
 import ProviderChoice,{offlineFixture} from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
-export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Discussion',addRequest=0,draftRequest}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void;tab?:SpaceTab;addRequest?:number;draftRequest?:{id:number;text:string}}) {
+export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Discussion',addRequest=0,draftRequest,onContextSaved}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void;tab?:SpaceTab;addRequest?:number;draftRequest?:{id:number;text:string};onContextSaved?:()=>void}) {
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean;historical:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
@@ -92,11 +92,11 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Disc
     </div>
     {error&&<p role="alert" className="chat-error">{error}</p>}
     {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
-    <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
+    <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{onContextSaved?.();if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
     <form className="chat-composer product-composer" onSubmit={e=>{void submit(e);}}><label className="sr-only" htmlFor="chat-question">Votre question sur ce contexte</label><textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} disabled={loading||!available||messages.length>=8} rows={1} placeholder="Écrire un message…"/><button aria-label="Envoyer la question" title="Envoyer" disabled={loading||!available||!question.trim()||messages.length>=8}><Icon name="arrow"/></button><details className="composer-options"><summary aria-label="Options de la discussion">⋯</summary><div>{answers.length>0&&<button type="button" className="secondary" onClick={()=>setManualOpen(n=>n+1)}>Ajouter un élément</button>}<button type="button" className="secondary" disabled={loading} onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button><p className="small muted">Les brouillons et la discussion restent dans cet onglet. Seuls les messages que vous choisissez de mémoriser sont conservés.</p></div></details></form>
     {messages.length>=8&&<p role="status">Commencez une nouvelle discussion pour continuer.</p>}
   </section>
-  <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction onOpen={onOpenProposal} onSaved={()=>{setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
+  <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction onSaved={()=>{onContextSaved?.();setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
   <ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} request={authorizationRequest} visible={tab==='Modèle'} hasProposed={available?.proposed} onInclude={setIncludeProposed} onCapabilities={capabilitiesChanged} onChange={providerChanged}/>
   {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
   </>;

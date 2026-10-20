@@ -596,3 +596,20 @@ claiming a durable whole-chat archive, semantic extraction or human confirmation
 Conseils are editable question starters requiring explicit send, not generated
 recommendations. Model/budget come from real capabilities; unavailable settings and
 unimplemented deletion/sharing controls are not displayed as functioning actions.
+
+## QH-54 direct declaration and understanding presentation — owner amendment, 2026-10-20
+
+The explicit manual **Ajouter au contexte** button expresses consent to preserve
+that supplied text; no second self-confirmation checkbox is needed. QH-39 retains
+the source, provenance and proposed canonical revision without certifying truth or
+performing semantic classification. Selected conversation memory and external
+provider disclosure retain their distinct consents and scopes.
+
+Understanding distinguishes literal owner declarations (only when established by
+stored provider/locator/source evidence) from actual QH interpretations. Direct
+information is presented as **Vos informations** even while its current backend
+lifecycle remains proposed; the real state stays inspectable. AI proposals remain
+**À vérifier** until QH-46 human review. Corrections preserve immutable revision and
+new-human-proposal rules. No formal lifecycle change or auto-confirmation follows.
+A primary list/detail and complementary data-derived overview open through
+Éléments → Compréhension; source/history/audit remain accessible secondarily.

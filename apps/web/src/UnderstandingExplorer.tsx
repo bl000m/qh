@@ -1,23 +1,11 @@
 import {useRef,useState} from 'react';
 import type {QhApi} from './api';
-import Understanding from './Understanding';
+import UnderstandingWorkspace from './UnderstandingWorkspace';
 import {Icon} from './Ui';
 
-/** Native disclosure; lazy first load, retained when folded, reset by Space key. */
-export default function UnderstandingExplorer({api,scope,onChanged,initialRevision,standalone=false}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string;standalone?:boolean}) {
-  const [visited,setVisited]=useState(!!initialRevision);
-  const summary=useRef<HTMLElement>(null);
-  const content=useRef<HTMLDivElement>(null);
-  return <details open={initialRevision?true:undefined} className={'understanding-explorer '+(standalone?'element-section':'support-section')} onToggle={event=>{
-    if(event.currentTarget.open)setVisited(true);
-    else if(content.current?.contains(document.activeElement))summary.current?.focus();
-  }} onKeyDown={event=>{
-    if(event.key==='Escape' && event.currentTarget.open){
-      event.preventDefault();event.currentTarget.open=false;summary.current?.focus();
-    }
-  }}>
-    <summary ref={summary}><span className="card-icon"><Icon name="understanding"/></span><span><strong>Compréhension</strong><small>Explorer la compréhension</small></span></summary>
-    <p className="muted">Consultez les éléments conservés, leurs sources et leur historique, sans formuler de recherche.</p>
-    <div ref={content}>{visited && <Understanding api={api} scope={scope} onChanged={onChanged} initialRevision={initialRevision}/>}</div>
-  </details>;
+/** Entry from Éléments; closing the workspace restores the same card and tab. */
+export default function UnderstandingExplorer({api,scope,onChanged,initialRevision,standalone=false,spaceName='Ce contexte',refreshKey=0,onAdd}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string;standalone?:boolean;spaceName?:string;refreshKey?:number;onAdd?:()=>void}) {
+ const [open,setOpen]=useState(!!initialRevision),[visited,setVisited]=useState(!!initialRevision);const entry=useRef<HTMLDetailsElement>(null),summary=useRef<HTMLElement>(null);
+ function close(){setOpen(false);if(entry.current)entry.current.open=false;requestAnimationFrame(()=>summary.current?.focus({preventScroll:true}));}
+ return <details ref={entry} open={open} className={'understanding-explorer '+(standalone?'element-section':'support-section')} onToggle={e=>{if(e.currentTarget.open){setVisited(true);setOpen(true);}}}><summary ref={summary}><span className="card-icon"><Icon name="understanding"/></span><span><strong>Compréhension</strong><small>Vos informations, les interprétations et leurs sources</small></span></summary>{visited&&<UnderstandingWorkspace open={open} api={api} scope={scope} spaceName={spaceName} initialRevision={initialRevision} refreshKey={refreshKey} onClose={close} onChanged={onChanged} onAdd={onAdd}/>}</details>;
 }
