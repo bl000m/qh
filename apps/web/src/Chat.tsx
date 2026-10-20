@@ -1,11 +1,12 @@
 import EnrichConversation from './EnrichConversation';
+import ManualInformation from './ManualInformation';
 import type {SelectedConversationTurn} from './EnrichConversation';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
 import {apiMessage,ApiError} from './api';
 import type {QhApi} from './api';
 import SourcesPanel from './SourcesPanel';
-import ProviderChoice from './ProviderChoice';
+import ProviderChoice,{offlineFixture} from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
 export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void}) {
@@ -17,8 +18,9 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
   useEffect(()=>{onAnswersChange?.(answers);},[answers,onAnswersChange]);
   const [question,setQuestion]=useState('');
+  const [manualOpen,setManualOpen]=useState(0);
   const [loading,setLoading]=useState(false);
-  const [providerMode,setProviderMode]=useState<'mock'|'mistral'>('mock');
+  const [providerMode,setProviderMode]=useState<'mock'|'mistral'>(offlineFixture?'mock':'mistral');
   const [providerSession,setProviderSession]=useState<string|null>(null);
   const [providerFailure,setProviderFailure]=useState(0);
   const [contextChanged,setContextChanged]=useState(0);
@@ -35,9 +37,6 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
   const [error,setError]=useState('');
   const generation=useRef(0);
   const questionField=useRef<HTMLTextAreaElement>(null);
-  const composer=useRef<HTMLFormElement>(null);
-  const [compactComposer,setCompactComposer]=useState(false);
-  useEffect(()=>{const node=composer.current;if(!node)return;const measure=()=>setCompactComposer(innerWidth>=700&&node.getBoundingClientRect().height<innerHeight*.55);const observer=new ResizeObserver(measure);observer.observe(node);window.addEventListener('resize',measure);measure();return()=>{observer.disconnect();window.removeEventListener('resize',measure);};},[]);
   useEffect(()=>{
     const n=++generation.current;
     setAvailable(null);setError('');
@@ -81,7 +80,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
         {!available.current && available.proposed && <div className="notice chat-availability"><p>Compréhension disponible : propositions non confirmées uniquement.</p>{proposalsExcluded && <p id="chat-availability-help">{proposalHelp}</p>}</div>}
         {noActive && <div className="chat-empty" role="note"><h3>{available.historical ? 'Une histoire à explorer, aucun élément actif pour discuter.' : 'Ce Space attend sa première compréhension.'}</h3>
           <p>{available.historical ? 'Des révisions sont conservées dans l’historique. Elles restent consultables dans Explorer la compréhension, mais ne sont pas transmises à la chat.' : 'Aucune révision de compréhension n’est disponible dans ce Space. Il n’y a pas encore d’éléments sur lesquels appuyer une réponse.'}</p>
-          <p className="small muted">Vous pouvez revenir à Mon environnement pour choisir un autre Space.</p></div>}
+          <p className="small muted">Ajoutez votre première information ci-dessous, sans appel à un fournisseur. Elle restera proposée jusqu’à votre examen explicite.</p><button type="button" className="secondary" disabled={loading} onClick={()=>setManualOpen(n=>n+1)}>Ajouter une information</button></div>}
         <label className="chat-opt-in"><input type="checkbox" checked={includeProposed} disabled={loading} onChange={e=>{reset();setIncludeProposed(e.target.checked);}}/> Inclure explicitement les propositions non confirmées</label>
       </>}
       <div className="conversation-scroll" ref={viewport} role="log" aria-label="Conversation temporaire" aria-live="polite" aria-relevant="additions" aria-busy={loading} tabIndex={0} onScroll={()=>{const n=viewport.current;if(n&&!moving.current){follow.current=n.scrollHeight-n.clientHeight-n.scrollTop<48;if(follow.current)setUnread(false);}}}>
@@ -101,7 +100,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
       </div>
       {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
       <p className="generation-status" role="status">{loading?'Réponse en cours…':answers.length?'Réponse disponible. La discussion reste temporaire.':''}</p>
-      <form ref={composer} className={'chat-composer'+(compactComposer?' composer-persistent':'')} onSubmit={e=>{void submit(e);}}>
+      <form className="chat-composer" onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
         <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
       {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} onChange={providerChanged}/>}
@@ -109,11 +108,12 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
           <button type="button" className="secondary" disabled={loading} onClick={()=>{reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button></div>
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
+      <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction={noActive} onOpen={onOpenProposal} onSaved={()=>{setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
       <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
       {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
       <details className="chat-help"><summary>Fonctionnement et limites</summary>
       <p>Échanges temporaires, distincts de la compréhension conservée. La réponse seule n’ajoute ni ne confirme rien. « Enrichir ce contexte » permet une conservation séparée, explicite et non confirmée.</p>
-      <p>La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
+      <p>La discussion utilise une sélection bornée, sans classement sémantique. Mistral exige une activation administrative et une autorisation explicite des données affichées. Sans fournisseur disponible, vous pouvez conserver une information sans IA.</p>
       <p>Les révisions historiques et refusées sont exclues. Changer le choix des propositions efface la discussion temporaire.</p>
       <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Seuls les messages explicitement sélectionnés via « Enrichir ce contexte » peuvent être conservés comme source et propositions.</p>
       </details>

@@ -24,7 +24,7 @@ def api(tmp_path,monkeypatch):
     policy=OwnerPolicyService(owner_for=lookup);sessions.chat.policy=policy
     sessions.factory.scopes=frozenset([('alice',scope)])
     auth,_=build_auth(mapping={'external-alice':'alice','external-bob':'bob'})
-    app=create_app(services=ApplicationServices(context=context,policy=policy,chat=sessions.chat,chat_sessions=sessions),
+    app=create_app(offline_chat=True, services=ApplicationServices(context=context,policy=policy,chat=sessions.chat,chat_sessions=sessions),
         security=SecurityBindings(authenticate=auth.authenticate,policy=policy,authenticate_with_expiry=auth.authenticate_with_expiry))
     with TestClient(app) as client:yield client,scope,sessions,calls,ledger,clock
 
@@ -87,3 +87,24 @@ def test_verified_expiry_is_exposed_without_altering_identity_contract():
     subject,expires=asyncio.run(auth.authenticate_with_expiry(token(exp=int(expiry))))
     assert subject==QH_ALICE and expires==int(expiry)
     assert asyncio.run(auth.authenticate(token()))==QH_ALICE
+
+
+def test_qh52_verified_session_http_contract_supports_renewal(api):
+    from dataclasses import replace
+    import time
+    c,scope,s,calls,_,_=api
+    s.session_binding=True
+    security=c.app.state.security
+    c.app.state.security=replace(security,authenticate_session=security.authenticate_with_expiry.__self__.authenticate_session)
+    auth=headers(sid='private-test-session',auth_time=int(time.time())-20)
+    base='/context-spaces/'+scope+'/chat-sessions'
+    caps=c.get(base,headers=auth)
+    assert caps.status_code==200 and caps.json()['max_seconds']==1800
+    p=c.post(base+'/preview',headers=auth,json={'messages':[{'role':'user','content':'test'}]})
+    assert p.status_code==200,p.text
+    grant=p.json();path=base+'/'+grant['session_id']
+    assert c.post(path+'/consent',headers=auth,json={'snapshot_sha256':grant['snapshot_sha256'],'disclosure_consent':True}).status_code==200
+    renewed=headers(sid='private-test-session',auth_time=int(time.time())-20,exp=int(time.time())+600)
+    assert c.get(path,headers=renewed).status_code==200
+    assert c.get(path,headers=headers(sid='other-session',auth_time=int(time.time())-20)).status_code==409
+    assert not calls

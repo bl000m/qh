@@ -566,3 +566,14 @@ The native Keycloak theme has pinned presentation template overrides; upstream f
 session and optional-flow logic remain. Source preparation is separate from QH-49's
 durable theme delivery and from any authorized VPS activation. See
 [the later ADR 0008 amendment](adr/0008-personal-organization-and-owner-review.md#later-owner-refinement--hierarchical-navigation-2026-10-19).
+
+### QH-52 development stabilization
+
+The [approved stabilization contracts](qh-52-stabilization.md) retain module and
+persistence boundaries. Browser renewal is memory-only and default-off; the OIDC
+adapter provides a hash of verified issuer/subject/session and an absolute work
+expiry for the chat module's optional session-bound grants. Durable accounting
+remains an outbound responsibility. Organization descriptions reuse schema0006
+JSON with policy and SQL ownership fencing. Manual first information uses QH-39's
+existing enrichment application and literal provider; semantic extraction remains
+QH-51 and review remains QH-46. Mock chat requires explicit test composition.

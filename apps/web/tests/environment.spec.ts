@@ -28,3 +28,11 @@ test('domain navigation waits for an in-flight organization save, including remo
  globalThis.fetch=async(path,init)=>{seen.push((init?.method??'GET')+' '+String(path));if(init?.method==='PUT')await gate;return new Response(JSON.stringify(String(path).includes('/environment/spaces?')?{items:[],next_after_id:null}:doc));};
  try{const api=new QhApi(()=> 'synthetic-test-only',()=>{});const saved=api.organize({...doc,version:1}),read=api.organization(),spaces=api.resumeSpaces('recent',id);await Promise.resolve();expect(seen).toEqual(['PUT /api/environment']);release();expect(await saved).toEqual(doc);expect(await read).toEqual(doc);expect(await spaces).toEqual({items:[],next_after_id:null});expect(seen).toHaveLength(3);}finally{release();globalThis.fetch=original;}
 });
+
+
+test('QH-52 descriptions reject malformed wire metadata instead of normalizing it',()=>{
+ const doc={version:1,domains:[{id,name:'Personal',description:'Organization only'}],memberships:{},primary_domains:{},space_descriptions:{[id]:'Private metadata'},usage:{}};
+ expect(organization(doc)).toEqual(doc);
+ for(const descriptions of [null,false,[],{foreign:'text'},{[id]:'x'.repeat(501)},{[id]:'bad\0text'}])expect(()=>organization({...doc,space_descriptions:descriptions})).toThrow();
+ for(const description of [null,false,'x'.repeat(501)])expect(()=>organization({...doc,domains:[{...doc.domains[0],description}]})).toThrow();
+});

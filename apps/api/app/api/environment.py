@@ -18,6 +18,7 @@ class Domain(BaseModel):
     model_config = ConfigDict(extra='forbid')
     id: UUID
     name: StrictStr = Field(min_length=1, max_length=100)
+    description: StrictStr = Field(default='', max_length=500)
 
 
 class OrganizationInput(BaseModel):
@@ -26,6 +27,7 @@ class OrganizationInput(BaseModel):
     domains: list[Domain] = Field(max_length=50)
     memberships: dict[str, list[str]] = Field(max_length=1000)
     primary_domains: dict[str, str] = Field(max_length=1000)
+    space_descriptions: dict[str, Annotated[StrictStr, Field(max_length=500)]] = Field(default_factory=dict, max_length=1000)
 
 
 class Opening(BaseModel):
@@ -67,7 +69,7 @@ async def replace(document: OrganizationInput, request: Request, response: Respo
                   subject: SubjectId = Depends(authenticated_subject)):
     service = bound(request, response)
     try:
-        return await call(service.replace(subject, document.model_dump(mode='json')))
+        return await call(service.replace(subject, document.model_dump(mode='json', exclude_unset=True)))
     except OrganizationConflict:
         raise HTTPException(409, 'Organization changed; reload before editing') from None
     except (ValueError, TypeError, AttributeError):

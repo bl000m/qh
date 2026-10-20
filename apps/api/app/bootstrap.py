@@ -89,7 +89,10 @@ def create_runtime_app():
                                     policy=policy, retrieval_for=retrieval_for)
     chat = ContextualChatService(context=context, policy=policy,
                                  provider=provider, model=model, clock=time.perf_counter)
-    sessions = ProviderSessions(chat=chat, factory=configured_session_factory(), clock=time.time)
+    binding=os.environ.get('QH_CHAT_SESSION_BINDING','credential')
+    if binding not in ('credential','oidc'):
+        raise ChatConfigurationError('Invalid chat session binding')
+    sessions = ProviderSessions(chat=chat, factory=configured_session_factory(), clock=time.time, session_binding=binding=='oidc')
     return create_app(
         services=ApplicationServices(
             context=context,
@@ -103,6 +106,7 @@ def create_runtime_app():
             policy=policy,
         ),
         security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy,
-                                  authenticate_with_expiry=authenticator.authenticate_with_expiry),
+                                  authenticate_with_expiry=authenticator.authenticate_with_expiry,
+                                  authenticate_session=authenticator.authenticate_session),
         lifespan=lifespan,
     )

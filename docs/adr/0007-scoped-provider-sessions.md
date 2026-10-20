@@ -95,3 +95,31 @@ rollback; it cannot target dependencies and verifies all non-target containers.
 Private receipt/ledger mount and server-only key are restricted to that backend.
 No recurring owner manifest approval is needed; audits remain durable. Prior ADR
 sections describe the original checkpoint and are retained, not retroactively rewritten.
+
+## QH-52 owner-approved development amendment — 2026-10-20
+
+The owner explicitly approved contracts A/B/C in
+[QH-52](../qh-52-stabilization.md) for implementation and isolated tests.
+The normal product interface now offers an authorized real provider or explicit
+unavailability. Mock responses require an explicit isolated test/replay binding;
+no provider failure falls back to a mock.
+
+Two independent default-off switches prepare bounded browser memory-only refresh
+and verified OIDC-session-bound disclosure. The latter requires signed issuer,
+subject, sid and auth_time after the same full resource-server validation and QH
+identity resolution. Only a derived session hash crosses the authentication port.
+Grants remain ephemeral exact-snapshot authorizations, at most thirty minutes and
+within the eight-hour work session and private receipt expiry. Access tokens still
+expire and every request must present a currently valid verified credential.
+Renewal never extends disclosure; changed selection, scope, model or proposal
+choice requires new consent. Existing policy/provenance/graph checks remain.
+
+Durable per-work-session accounting uses the verified session hash, not an ephemeral
+grant UUID: reconsent, renewed tokens or an application restart cannot reset the
+3-attempt/USD0.01 session cap or aggregate8/USD0.20. Historical ledger rows are not
+rewritten. No active ledger conversion, flag enablement, realm write, paid call,
+new allowlist, duration extension or provider activation is authorized here.
+An offline browser cannot guarantee immediate server acknowledgement of revocation;
+JWT expiry remains the resource server bound and rotated/revoked refresh credentials
+prevent new access tokens. Neither this amendment nor a UI logout claims retroactive
+recall of data already transmitted.

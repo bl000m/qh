@@ -21,7 +21,7 @@ def test_canonical_sessions_aliases_provenance_and_zero_writes(retrieved,tmp_pat
     sessions.factory.scopes=frozenset([(str(p['repo'].subject_id),p['scope'])])
     c.app.state.services=replace(c.app.state.services,chat_sessions=sessions)
     auth,_=build_auth(resolver=PostgresSecurityReader(url=database_url()).resolve_identity)
-    c.app.state.security=replace(c.app.state.security,authenticate_with_expiry=auth.authenticate_with_expiry)
+    c.app.state.security=replace(c.app.state.security,authenticate_with_expiry=auth.authenticate_with_expiry,authenticate_session=auth.authenticate_session)
     before=p['repo'].read_snapshot((p['scope'],))
     base='/context-spaces/'+p['scope']+'/chat-sessions'
     alice=headers();bob=headers('external-bob')

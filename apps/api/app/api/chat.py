@@ -44,7 +44,7 @@ async def chat(context_id: UUID, payload: ChatInput, request: Request, response:
                subject: SubjectId = Depends(authenticated_subject)):
     allowed_query(request, set())
     bindings = request.app.state.services
-    if bindings is None or bindings.chat is None:
+    if bindings is None or bindings.chat is None or not request.app.state.offline_chat:
         raise HTTPException(503, 'Chat unavailable')
     try:
         result = await call(bindings.chat.respond(ChatRequest(subject_id=subject,

@@ -6,6 +6,23 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-20 — QH-52 application source, persistent activation deferred
+
+The owner explicitly authorized independent stabilization while PR19 remains open.
+In the sole checkout, guarded dev-stop stopped frontend/backend before main was
+fast-forwarded to0336566 and fix/QH-52-demo-readiness created. Guarded dev-up restored
+the compatible source-mounted apps; all infrastructure/image/volume identities
+were retained. Ordinary source changes are visible through the approved development
+binds. No source switch implies migration or Keycloak/provider activation.
+
+QH-52 contracts A/B/C were subsequently approved only for implementation/isolated
+tests. VITE_QH_DEVELOPMENT_SESSION remains unset/default0 and
+QH_CHAT_SESSION_BINDING defaults to credential. No live realm, ledger, receipt,
+allowlist, TTL or root import was changed. No live provider POST or existing demo
+Space test write occurred. The native login DOM already supplies username and
+current-password autocomplete; no Keycloak image replacement is needed.
+[Contracts, evidence and later activation gate](qh-52-stabilization.md).
+
 ## 2026-10-19 — QH-39 development-source boundary
 
 After the owner-authorized no-squash merge of PR #17 (`8c10bf6eb3da3a66b46d5ac6ed8062fcb16edb92`),

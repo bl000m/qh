@@ -28,14 +28,14 @@ export class QhApi {
   private readonly openingWrites=new Map<string,Promise<void>>();
   private readonly providerGrants=new Map<string,string>();
   private closing=false;
-  revokeSessionsBeforeLogout() {
+  revokeSessionsBeforeLogout(credential?:string|null) {
     // Start revocation with the current in-memory token before local logout clears it.
-    for(const [id,scope] of this.providerGrants)void this.revokeSession(scope,id).catch(()=>{});
+    if(credential!==null)for(const [id,scope] of this.providerGrants)void this.revokeSession(scope,id,credential).catch(()=>{});
     this.closing=true;this.providerGrants.clear();
   }
-  constructor(private readonly token: () => string, private readonly expired: () => void) {}
-  private async request(path: string, method = 'GET', body?: unknown): Promise<unknown> {
-    const token = this.token();
+  constructor(private readonly token: () => string|Promise<string>, private readonly expired: () => void) {}
+  private async request(path: string, method = 'GET', body?: unknown, credential?:string): Promise<unknown> {
+    const token = credential??await this.token();
     let response: Response;
     try {
       response = await fetch('/api' + path, {
@@ -88,7 +88,7 @@ export class QhApi {
   }
   async organization():Promise<Organization>{await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);return organization(await this.request('/environment'));}
   async organize(document:Organization):Promise<Organization>{
-    const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains}).then(organization);
+    const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains,...(document.space_descriptions?{space_descriptions:document.space_descriptions}:{})}).then(organization);
     this.organizationWrites.add(write);try{return await write;}finally{this.organizationWrites.delete(write);}
   }
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
@@ -115,10 +115,10 @@ export class QhApi {
     const view=providerSession(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id),scope,include);
     if(view.session_id!==id)throw new ApiError(502);return view;
   }
-  async revokeSession(scope:string,id:string) {
+  async revokeSession(scope:string,id:string,credential?:string) {
     if(this.closing)return;
     if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
-    const receipt=await this.request('/context-spaces/'+scope+'/chat-sessions/'+id,'DELETE') as {session_id?:string;state?:string};
+    const receipt=await this.request('/context-spaces/'+scope+'/chat-sessions/'+id,'DELETE',undefined,credential) as {session_id?:string;state?:string};
     if(!receipt||receipt.session_id!==id||receipt.state!=='revoked')throw new ApiError(502);
     this.providerGrants.delete(id);
   }
@@ -151,6 +151,10 @@ export class QhApi {
   async get(id: string): Promise<ContextSpace> {
     if (!isUuid(id)) throw new ApiError(404);
     return space(await this.request('/context-spaces/' + id));
+  }
+  async rename(id:string,name:string):Promise<ContextSpace> {
+    if(!isUuid(id)||!validName(name))throw new ApiError(422);
+    return space(await this.request('/context-spaces/'+id,'PATCH',{name}));
   }
   async create(name: string): Promise<ContextSpace> {
     if (!validName(name)) throw new ApiError(422);

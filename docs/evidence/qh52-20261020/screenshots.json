@@ -1,0 +1,11 @@
+{
+  "source": "QH-52 isolated product-final, both scenarios PASS; synthetic data only; no real model inference",
+  "sha256": {
+    "empty-desktop.png": "c7a05001c21bf11ce51a784a58fd5a5089a73930ecb9d1b3d6a0a8fdbd9f51eb",
+    "empty-mobile.png": "3f4c5ea9998a38a1e929fc6da059ff1d4b797436aedc8b8966dd9cb65741d839",
+    "empty-zoom200.png": "0273e5fcab5094fe935ef2a58b2c9fdb16c1f03c46bbeb0454eb2d7ecb11a3a1",
+    "first-information.png": "76adeb373c5f0cf9a08cd934153d9beb9ce725e0d46536f2a7580557e337e096",
+    "provider-desktop.png": "8be95de419c4fc2cb8f1c82b63836faf315117f08eb35ee01913e76404f39a2b",
+    "provider-mobile.png": "ef4c93cf8de8565f6567c6c19425942d1e5aa45350d7c9c6ae62d242c87651ca"
+  }
+}

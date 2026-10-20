@@ -297,3 +297,50 @@ def test_legacy_global_mistral_mode_cannot_bypass_interactive_consent(monkeypatc
     monkeypatch.delenv('POSTGRES_PASSWORD',raising=False)
     with pytest.raises(ChatConfigurationError,match='Runtime default must be mock'):
         create_runtime_app()
+
+
+def test_qh52_verified_session_renewal_reconsent_and_durable_budget(tmp_path,monkeypatch):
+    s,who,_,_,calls,ledger,clock=setup(tmp_path,monkeypatch)
+    s.session_binding=True
+    who=replace(who,verified_session_id='hashed-verified-issuer-sub-sid',work_expires_at=clock[0]+8*3600)
+    async def run():
+        p=await active(s,who)
+        assert p['expires_at']==clock[0]+1800
+        await s.respond(who,request(),p['session_id'])
+        clock[0]+=121
+        renewed=replace(who,credential_id='different-access-token',expires_at=clock[0]+300)
+        assert (await s.status(renewed,request(),p['session_id']))['accounting']['calls']==1
+        await s.respond(renewed,request(),p['session_id'])
+        await s.revoke(renewed,request(),p['session_id'])
+        # New consent AND a restarted application retain the same durable work cap.
+        s.grants.clear()
+        new=await active(s,renewed)
+        assert new['accounting']['calls']==2
+        await s.respond(renewed,request(),new['session_id'])
+        again=await active(s,renewed)
+        assert again['accounting']['calls']==3
+        with pytest.raises(ChatProviderUnavailable):await s.respond(renewed,request(),again['session_id'])
+        assert len(calls)==3
+    asyncio.run(run())
+    assert {row['session_id'] for row in json.loads(ledger.read_text())['calls']}=={who.verified_session_id}
+
+
+@pytest.mark.parametrize('invalid',['missing','different','expired-work','expired-token','expired-grant','changed-snapshot'])
+def test_qh52_session_binding_fail_closed(tmp_path,monkeypatch,invalid):
+    s,who,context,_,calls,_,clock=setup(tmp_path,monkeypatch)
+    s.session_binding=True
+    verified=replace(who,verified_session_id='verified-session',work_expires_at=clock[0]+8*3600)
+    async def run():
+        if invalid=='missing':
+            with pytest.raises(SessionClosed):await s.preview(who,request())
+            return
+        p=await active(s,verified);candidate=verified
+        if invalid=='different':candidate=replace(verified,verified_session_id='other-session')
+        if invalid=='expired-work':candidate=replace(verified,work_expires_at=clock[0])
+        if invalid=='expired-token':candidate=replace(verified,expires_at=clock[0])
+        if invalid=='expired-grant':
+            clock[0]+=1800;candidate=replace(verified,expires_at=clock[0]+300)
+        if invalid=='changed-snapshot':context.values[0].content['text']='new information'
+        with pytest.raises((SessionClosed,ChatContextUnavailable)):
+            await s.status(candidate,request(),p['session_id'])
+    asyncio.run(run());assert not calls

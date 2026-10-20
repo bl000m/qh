@@ -93,7 +93,7 @@ def internal_url(value):
     return INTERNAL + parsed.path + ("?" + parsed.query if parsed.query else "")
 
 
-def login(username, password):
+def login(username, password, *, token_bundle=False):
     verifier = secrets.token_urlsafe(48)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
     state = secrets.token_urlsafe(24)
@@ -119,7 +119,7 @@ def login(username, password):
             "code": parameters["code"][0], "redirect_uri": redirect, "code_verifier": verifier,
         })
         assert response.status_code == 200, "PKCE token exchange failed"
-        return response.json()["access_token"]
+        return response.json() if token_bundle else response.json()["access_token"]
 
 
 def test_real_oidc_login_mapping_and_owner_isolation():
@@ -249,3 +249,26 @@ def test_live_application_identity():
             assert response.status_code == 401
             assert response.headers["WWW-Authenticate"] == "Bearer"
         assert client.get("/test/private/anything").status_code == 404
+
+
+@pytest.mark.skipif(os.environ.get('QH52_PRODUCT_BROWSER_TEST')!='1',reason='Isolated QH-52 rotating realm only')
+def test_qh52_real_rotation_revocation_and_logout():
+    endpoint=INTERNAL+'/realms/qh/protocol/openid-connect/'
+    def credentials():
+        return login('alice',os.environ['QH_ALICE_PASSWORD'],token_bundle=True)
+    def refresh(client,value):
+        return client.post(endpoint+'token',data={'client_id':'qh-web','grant_type':'refresh_token','refresh_token':value})
+    with httpx.Client(timeout=10,follow_redirects=False) as client:
+        original=credentials()
+        claims=jwt.decode(original['access_token'],options={'verify_signature':False})
+        assert 'sid' in claims and 'auth_time' in claims, 'Missing session claim; available keys: '+','.join(sorted(claims))
+        renewed=refresh(client,original['refresh_token'])
+        assert renewed.status_code==200,'Refresh failed'
+        assert renewed.json()['refresh_token']!=original['refresh_token'],'Refresh token was not rotated'
+        assert refresh(client,original['refresh_token']).status_code==400,'Replayed refresh token accepted'
+        revoked=credentials()
+        assert client.post(endpoint+'revoke',data={'client_id':'qh-web','token':revoked['refresh_token'],'token_type_hint':'refresh_token'}).status_code==200
+        assert refresh(client,revoked['refresh_token']).status_code==400,'Revoked refresh token accepted'
+        logged_out=credentials()
+        assert client.post(endpoint+'logout',data={'client_id':'qh-web','refresh_token':logged_out['refresh_token']}).status_code==204
+        assert refresh(client,logged_out['refresh_token']).status_code==400,'Logged-out session renewed'

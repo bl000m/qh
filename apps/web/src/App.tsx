@@ -12,6 +12,7 @@ import qhLogo from './brand/qh-logo.png';
 import qhBubble from './brand/qh-bubble.png';
 import {Orb,Icon} from './Ui';
 import SpaceActions from './SpaceActions';
+import SpaceEditor from './SpaceEditor';
 import SourcesPanel from './SourcesPanel';
 import type {ChatAnswer} from './chat';
 
@@ -88,6 +89,7 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
   return <section className={home?'environment-home':'domain-page'} aria-labelledby="environment-title">
     {!home&&<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">{heading}</span></nav>}
     <div className={home?'environment-topline':'domain-heading'}>{!home&&domain!=='unclassified'&&<Orb tone={(organization.value?.domains.findIndex(d=>d.id===domain)??0)*34}/>}<h1 id="environment-title" ref={title} tabIndex={-1}>{heading}</h1></div>
+    {activeDomain?.description&&<p>{activeDomain.description}</p>}
     {home&&<EnvironmentDomains state={organization}/>}
     <section className={home?"resume-shelf":"space-collection"} aria-labelledby="spaces-title"><div className="section-heading spaces-section-heading"><h2 id="spaces-title">{home?'Reprendre mes Context Spaces':'Context Spaces'}</h2><div className="actions">{(home||items.length>0)&&<label className="sort-control"><span className="sr-only">Ordre des Spaces</span><select value={sort} onChange={e=>setSort(e.target.value as 'recent'|'used')}><option value="recent">Récemment ouverts</option><option value="used">Les plus utilisés</option></select></label>}{home&&<Link to="/spaces">Tous les Spaces <span aria-hidden="true">›</span></Link>}{(home||items.length>0||form)&&<button onClick={() => { setPrimaryDomain(activeDomain?.id??'');setForm(true); setSuccess(''); }} disabled={form}>Créer un Context Space</button>}</div></div>
     {form && <form className="create-panel" onSubmit={event => { void create(event); }}>
@@ -140,7 +142,7 @@ function Detail({ id, api, origin }: { id: string; api: QhApi; origin?:string })
   }, [id, api, refresh]);
   return <section><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name ?? 'Context Space'}</span></nav>
     {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className={'detail'+(supportOpen?' support-open':'')}><header className="space-heading"><Orb tone={110}/><div className="space-title"><h1 ref={title} tabIndex={-1}>{space.name}</h1></div><SpaceActions space={space} state={organization}/></header>{openingError&&<p role="status">{openingError}</p>}
+      space ? <article className={'detail'+(supportOpen?' support-open':'')}><header className="space-heading"><Orb tone={110}/><div className="space-title"><h1 ref={title} tabIndex={-1}>{space.name}</h1>{organization.value?.space_descriptions?.[space.id]&&<p>{organization.value.space_descriptions[space.id]}</p>}</div><SpaceActions space={space} state={organization}><SpaceEditor space={space} api={api} state={organization} onChanged={setSpace}/></SpaceActions></header>{openingError&&<p role="status">{openingError}</p>}
 
       <div className="space-workspace"><Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} onAnswersChange={answersChanged} onOpenProposal={id=>{setEnrichedRevision(previous=>({id,open:(previous?.open??0)+1}));setSupportOpen(true);}}/><button ref={supportToggle} className="secondary support-toggle" aria-expanded={supportOpen} onClick={()=>{setSupportOpen(v=>!v);if(supportOpen)requestAnimationFrame(()=>supportToggle.current?.focus());}}><Icon name="understanding"/>{supportOpen?'Revenir à la discussion':'Sources & compréhension'}</button><aside className="support-panel" aria-labelledby="support-title"><header><Icon name="understanding"/><div><h2 id="support-title" ref={supportTitle} tabIndex={-1}>Sources & compréhension</h2><p>Sources utilisées et état de la compréhension.</p></div></header>
       <details className="support-sources support-section"><summary><Icon name="sources"/><span>Sources<small>Éléments cités dans les réponses</small></span></summary>{answers.length?answers.map((answer,i)=><button key={i} type="button" className="secondary" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1} · {answer.references.length} éléments cités</button>):<p>Les sources d’une réponse apparaîtront ici après votre question.</p>}</details>
@@ -174,14 +176,19 @@ function Settings({api}:{api:QhApi}){
  const state=useOrganization(api);const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{heading.current?.focus();},[]);
  return <section><nav className="breadcrumbs" aria-label="Fil d’Ariane"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">Paramètres</span></nav><h1 tabIndex={-1} ref={heading}>Mon profil & mes préférences</h1><OrganizationEditor state={state}/><div className="secondary-navigation"><Link to="/spaces">Tous les domaines</Link><Link to="/spaces/unclassified">Non classés</Link></div><details><summary>Préférences personnelles</summary><p>Le profil de compréhension personnel et les préférences partagées ne sont pas encore disponibles.</p></details></section>;
 }
+function Reconnect({session}:{session:BrowserSession}){
+ const dialog=useRef<HTMLDialogElement>(null);const [copied,setCopied]=useState('');
+ useEffect(()=>{dialog.current?.showModal();return()=>dialog.current?.close();},[]);
+ return <dialog ref={dialog} className="space-action-dialog" onCancel={e=>e.preventDefault()} aria-labelledby="reconnect-title"><h2 id="reconnect-title">Reconnectez-vous pour continuer</h2><p>La session a expiré. Vos brouillons restent dans cet onglet. La reconnexion quitte cette page : copiez les textes que vous souhaitez conserver avant de continuer.</p><button type="button" onClick={()=>{const text=[...document.querySelectorAll<HTMLTextAreaElement>('textarea')].map(n=>n.value).filter(Boolean).join('\n\n');void navigator.clipboard.writeText(text).then(()=>setCopied('Brouillons copiés.'),()=>setCopied('Copie indisponible. Sélectionnez et copiez votre texte avant de vous reconnecter.'));}}>Copier mes brouillons</button><p role="status">{copied}</p><button onClick={()=>{void session.login();}}>Se reconnecter</button><button className="secondary" onClick={()=>{void session.logout();}}>Se déconnecter et effacer les brouillons</button></dialog>;
+}
 export default function App({ session }: { session: BrowserSession }) {
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
-  const api = useMemo(() => new QhApi(session.accessToken, session.expire), [session]);
+  const api = useMemo(() => new QhApi(session.readyToken??session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
   return <div className={'app-shell'+(state==='authenticated'?' signed-in':'')}><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Votre contexte, sous votre contrôle.</span></a>
-    {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={() => { api.revokeSessionsBeforeLogout(); void session.logout(); }}><Icon name="logout"/></button></nav>}</header>
+    {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={() => { let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke a grant. */}api.revokeSessionsBeforeLogout(credential); void session.logout(); }}><Icon name="logout"/></button></nav>}</header>
     <main id="main-content" tabIndex={-1}>
-      {state === 'authenticated' ? <Environment api={api} /> : <section className="signin">
+      {state === 'authenticated'||state==='expired'&&session.preserveDrafts ? <><Environment api={api}/>{state==='expired'&&<Reconnect session={session}/>}</> : <section className="signin">
         {state === 'starting' ? <Notice>Connexion en cours…</Notice> : <>
           {state === 'expired' && <Notice error>Votre session a expiré. Reconnectez-vous pour continuer.</Notice>}
           {state === 'error' && <Notice error>La connexion n’a pas abouti. Veuillez recommencer.</Notice>}

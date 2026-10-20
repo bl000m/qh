@@ -35,7 +35,7 @@ def application():
     auth, _ = build_auth(resolver=reader.resolve_identity)
     # Only the JWKS transport is a fixture: signature/claims, identity mapping,
     # bootstrap, service, owner lookup and all metadata SQL are real.
-    app.state.security = replace(app.state.security, authenticate=auth.authenticate)
+    app.state.security = replace(app.state.security, authenticate=auth.authenticate, authenticate_with_expiry=auth.authenticate_with_expiry, authenticate_session=auth.authenticate_session)
     assert app.state.security.policy is app.state.services.policy
     assert isinstance(app.state.services.context.repository, PostgresContextSpaceRepository)
     return app

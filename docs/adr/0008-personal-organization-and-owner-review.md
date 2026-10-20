@@ -132,3 +132,14 @@ technical records into the conversation, or introducing a delete endpoint from i
 The deliberate consequences are real varying card counts, no unavailable descriptions,
 an honest mock response label and a disabled destructive operation. No public backend,
 persistent schema, provider policy, Keycloak activation or authentication change follows.
+
+## QH-52 owner-approved descriptions — 2026-10-20
+
+The owner approved optional domain descriptions and Space descriptions (plain text,
+500 characters) in the existing owner_organization JSON document at schema0006.
+Omitted fields from older clients preserve stored descriptions. Explicit empty
+values clear them. Space IDs in descriptions require the same policy and SQL owner
+checks as memberships; descriptions grant no access and create no Understanding.
+No new migration or canonical Space field is needed. The existing QH-9 name PATCH
+remains distinct from the organization CAS; the UI reports a partial save if one
+succeeds and the other fails. No existing demo metadata is edited by development.

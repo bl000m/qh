@@ -55,6 +55,9 @@ def create_app():
                                    transport=httpx.MockTransport(simulate), pricing=offline_pricing())
     sessions = ProviderSessions(chat=app.state.services.chat, factory=factory, clock=time.time)
     app.state.services = replace(app.state.services, chat_sessions=sessions)
+    app.state.offline_chat=os.environ.get('QH52_PRODUCT_BROWSER_TEST')!='1'
+    if os.environ.get('QH52_PRODUCT_BROWSER_TEST')=='1':
+        sessions.session_binding=True
     original = app.router.lifespan_context
 
     @asynccontextmanager
