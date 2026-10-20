@@ -1,0 +1,122 @@
+[
+  {
+    "file": "Image ChatGPT 20 oct. 2026, 16_47_12-1.png",
+    "content": "Discussion vide",
+    "width": 1672,
+    "height": 941,
+    "sha256": "eccd18ccfa8bc1877f7a407113311009d2dea0b22d1f888e7cdba886e7e9b350",
+    "operational_reference": true
+  },
+  {
+    "file": "Image ChatGPT 20 oct. 2026, 16_47_14-2.png",
+    "content": "Éléments",
+    "width": 1672,
+    "height": 941,
+    "sha256": "7b40b0d1e46a8be14adc7afc14c0abc4e5147c2aa64d6c5ee812a55ef45b37ed",
+    "operational_reference": true
+  },
+  {
+    "file": "Image ChatGPT 20 oct. 2026, 16_47_16-3.png",
+    "content": "Modèle",
+    "width": 1672,
+    "height": 941,
+    "sha256": "4af0b16ed31e2b594a3a1eed2ff1120b45f98ad6056146432c133946a6478da1",
+    "operational_reference": true
+  },
+  {
+    "file": "Image ChatGPT 20 oct. 2026, 16_47_19-4.png",
+    "content": "Conseils",
+    "width": 1672,
+    "height": 941,
+    "sha256": "2a0944262d78c3667bcdbc0e05b4ae9d839497c1825c0fd2d31285e9b53af965",
+    "operational_reference": true
+  },
+  {
+    "file": "Image ChatGPT 20 oct. 2026, 16_47_22-5.png",
+    "content": "Paramètres du contexte",
+    "width": 1672,
+    "height": 941,
+    "sha256": "f1fc179a248ba58f9b05840ac5159b53a7999c506062673acc05a3c4683453fd",
+    "operational_reference": true
+  },
+  {
+    "file": "Interface française de paramètres minimaliste (1).png",
+    "content": "Paramètres globaux",
+    "width": 1672,
+    "height": 941,
+    "sha256": "eb41af7ec85b32f9c9948e29753c1f86f21f1b883ef9c135f1c26078cdf79473",
+    "operational_reference": true
+  },
+  {
+    "file": "done/01-mobile-mon-environnement.png",
+    "content": "Historic mobile environment/brand",
+    "width": 1086,
+    "height": 1448,
+    "sha256": "d9cfc30641f72819220ba05397d69352ff961b32e798e53477fb20ac26db2883",
+    "operational_reference": false
+  },
+  {
+    "file": "done/02-chat-projection-sante.png",
+    "content": "Historic illustrative chat, fictional health example",
+    "width": 1086,
+    "height": 1448,
+    "sha256": "c365c388914772935d949bd135a47d30f841b1122a2e565c4837c2a64d97f8f8",
+    "operational_reference": false
+  },
+  {
+    "file": "done/03-projection-autorisations.png",
+    "content": "Future projection/sharing concepts, not working controls",
+    "width": 1086,
+    "height": 1448,
+    "sha256": "c05520317d4f3036122347a38a8c7c8a3d7825fa13b0900e17b2a9ab1650e23c",
+    "operational_reference": false
+  },
+  {
+    "file": "done/04-illustration-bulles.png",
+    "content": "Marketing illustration, not functional navigation",
+    "width": 1122,
+    "height": 1402,
+    "sha256": "0abf0dd0261b3371cad3f1e86563881e2728ec823d5ec31c7c084d5a0cd1d237",
+    "operational_reference": false
+  },
+  {
+    "file": "done/Bulle de savon irisée transparente.png",
+    "content": "Original orb reference",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "046928db09708381a83fa4868a318f4c722966630c97ba3a3d29c9a8c1743055",
+    "operational_reference": false
+  },
+  {
+    "file": "done/Image ChatGPT 19 oct. 2026, 14_50_18-1.png",
+    "content": "Existing environment maquette",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "dd3f15119d15be78436c05d184626302a07e05f0337ee2a0ab599d5e8de46149",
+    "operational_reference": false
+  },
+  {
+    "file": "done/Image ChatGPT 19 oct. 2026, 14_50_21-2.png",
+    "content": "Existing domain maquette",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "796ba650da7d079e4813c80d856896e521a2d3b2c77c7c04d483cc55e2a2311f",
+    "operational_reference": false
+  },
+  {
+    "file": "done/Image ChatGPT 19 oct. 2026, 14_50_23-3.png",
+    "content": "Historic two-column conversation, superseded by owner tabs",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "5a1bcba2c2b0ef7dcfae423e3c2d079623af236e7f390f3a7eafe817569494d4",
+    "operational_reference": false
+  },
+  {
+    "file": "done/Interface de connexion QH minimaliste.png",
+    "content": "Native login presentation reference",
+    "width": 1122,
+    "height": 1402,
+    "sha256": "af85771f369307169da8b5ed27842d67e409d507256d4da8da971e9316797c1c",
+    "operational_reference": false
+  }
+]
