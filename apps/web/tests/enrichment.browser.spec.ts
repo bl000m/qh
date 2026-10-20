@@ -48,7 +48,7 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  // canonical proposal and original source remain retrievable through the product.
  await page.reload();await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();await page.getByRole('button',{name:'Se connecter',exact:true}).click();
  if(await page.locator('#username').isVisible()){await page.locator('#username').fill('alice');await page.locator('#password').fill(process.env.QH_ALICE_PASSWORD!);await page.locator('#kc-login').click();}
- await afterLogin(page,created.id);await expect(page.getByRole('log')).toBeEmpty();
+ await afterLogin(page,created.id);await expect(page.getByRole('log',{includeHidden:true})).toBeEmpty();
  await page.locator('details.understanding-explorer > summary').click();await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();
  const card=page.locator('.understanding-card').filter({hasText:claim});await expect(card).toBeVisible();await card.click();
  let detailReads=0,reviewWrites=0;
