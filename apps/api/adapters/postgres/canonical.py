@@ -366,7 +366,7 @@ class CanonicalRepository:
                   query.descriptor,query.descriptor,['asserted','tentative'] if query.include_tentative else ['asserted'],
                   query.unclassified,query.limit+1)).fetchall())
 
-    def read_snapshot(self, context_ids, revision_ids=None):
+    def read_snapshot(self, context_ids, revision_ids=None, *, source_metadata_only=False):
         """Authorized, consistent bulk read; all history unless IDs explicitly given.
 
         Source content is a representation; origin may locate an external original.
@@ -417,8 +417,11 @@ class CanonicalRepository:
                 ):
                     row.pop(k)
             refs = sorted({str(ref) for row in rows for ref in row["provenance"]})
+            # Draft resolution authorizes selected understanding revisions and their
+            # provenance identities, never full original-source representations.
+            source_fields = 'id,source_id,context_space_id' if source_metadata_only else '*'
             sources = c.execute(
-                "SELECT * FROM source_revisions WHERE context_space_id=ANY(%s::uuid[]) AND id=ANY(%s::uuid[]) ORDER BY id",
+                f"SELECT {source_fields} FROM source_revisions WHERE context_space_id=ANY(%s::uuid[]) AND id=ANY(%s::uuid[]) ORDER BY id",
                 (scopes, refs),
             ).fetchall()
             return json_values(

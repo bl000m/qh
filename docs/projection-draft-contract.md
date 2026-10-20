@@ -50,3 +50,41 @@ development; one complete hosted CI campaign on the final block. Reuse OIDC and
 owner fixtures. No paid calls, persistent demo writes, Editor, guest link, approved
 snapshot, natural-language selection, reconciliation or MCP. Technical readiness,
 human review/merge and Jira closure remain distinct.
+
+## Internal consumer contract (future Projection Editor)
+
+Instantiate `ProjectionDraftService(repository=PostgresDraftRepository(url=...),
+authorize=projection_authorizer(policy), resolver=NativeDraftResolver(...))` at the
+application boundary. The resolver receives an owner-bound CanonicalRepository
+factory and the existing native projector; it creates no worker or graph namespace.
+No production route, runtime activation or public wire schema is added in this block.
+HTTP exposure and runtime acceptance of schema 0007 require the later Editor contract.
+
+| Operation | Inputs and result |
+| --- | --- |
+| `create(subject, scope, spec)` | Authenticated QH subject, one Space, DraftSpec → saved version-1 ProjectionDraft |
+| `read(subject, scope, draft_id)` | Owned Space and draft UUID → exact draft metadata and selection |
+| `replace(subject, scope, draft_id, version, spec)` | Whole replacement at expected version → next version, atomically; no silent merge/retry |
+| `resolve(subject, scope, draft_id, version, requested=None)` | Expected version plus optional exact subset of effective RevisionKeys → ResolvedDraft |
+
+`DraftSpec` has recipient_kind (`subject` or `category`), opaque recipient label,
+purpose, tuple of included RevisionKeys, tuple of excluded RevisionKeys and optional
+timezone-aware expiry. Each RevisionKey has canonical item_id/revision_id UUIDs.
+Both lists are bounded to 100 unique pairs. Identity/owner/state/version come from
+the service/repository, never the spec. Unknown semantic descriptors do not infer scope.
+An expired draft remains editable/readable by its owner but cannot resolve.
+
+Resolution is all-or-nothing and sorts by item UUID then revision UUID. Explicit
+subsets cannot expand scope. Empty effective/requested scope, invalid pairs, missing
+draft, foreign owner or relation without explicitly included exact endpoints fails
+uniformly. A stale edit version conflicts. Pending/missing/tampered graph or changed
+readiness fails unavailable; no SQL fallback. Owner, version and expiry are rechecked
+after graph work. The service has no provider port; the result alone is not a future
+guest or provider-disclosure grant.
+
+`ProjectionNotFound` and `ProjectionUnavailable` inherit the existing Core missing/
+unavailable errors and can use existing inbound error mapping. ProjectionConflict
+requires a future 409 mapping. This block tests those mappings with private test-only
+routes; it does not add public endpoints. Automatic review rejected an attempted
+public API/runtime expansion as outside explicit authorization; that patch was not
+applied, and the internal engine increment proceeds within the approved boundary.

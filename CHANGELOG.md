@@ -10,6 +10,9 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 - QH-14 adds canonical mutable Projection Drafts with exact item/revision scope,
   exclusions, recipient/purpose, expiry and atomic versioned edits. The central
   owner policy is reused; recipient metadata does not grant access.
+- QH-15 resolves only the effective exact revision scope through native graph
+  verification, omitting original source bodies and off-scope lifecycle pointers.
+  Empty/expired/outside-scope requests and concurrent changes fail closed.
 - Migration 0007 is prepared for isolated verification only; persistent VPS remains
   at 0006. No approved snapshot, guest link, Editor or paid extraction.
 - QH-39 owner merge/closure and confirmed Mac-call attribution are recorded;
