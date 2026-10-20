@@ -17,7 +17,7 @@ class PostgresOrganizationRepository:
 
     @staticmethod
     def _store(c, subject, document):
-        body = {k: document[k] for k in ('domains','memberships','primary_domains','usage')}
+        body = {k: document[k] for k in ('domains','memberships','primary_domains','usage','space_descriptions')}
         c.execute('INSERT INTO owner_organization(owner_id,version,document) VALUES (%s,%s,%s) '
                   'ON CONFLICT(owner_id) DO UPDATE SET version=EXCLUDED.version,document=EXCLUDED.document',
                   (subject, document['version'], Jsonb(body)))
@@ -36,6 +36,8 @@ class PostgresOrganizationRepository:
                     raise PermissionError('Owner access required')
                 row = c.execute('SELECT version,document FROM owner_organization WHERE owner_id=%s', (subject,)).fetchone()
                 current = dict(row['document'], version=row['version']) if row else defaults()
+                current.setdefault('space_descriptions', {})
+                current['domains'] = [dict(d, description=d.get('description', '')) for d in current['domains']]
                 if page:
                     sort, domain, limit, after = page
                     order = 'opened DESC,id' if sort=='recent' else 'uses DESC,opened DESC,id'
@@ -77,13 +79,19 @@ class PostgresOrganizationRepository:
                     self._store(c,subject,current)
                     return space(record)
                 # Never return private foreign membership/usage identities after revocation.
-                scopes=set(current['memberships'])|set(current['usage'])
+                scopes=set(current['memberships'])|set(current['usage'])|set(current['space_descriptions'])
                 if document is None:
                     if scopes: repo._authorize(c,scopes,lock=True)
                     return self._public(current)
                 if document['version'] != current['version']:
                     raise OrganizationConflict('Organization changed; reload before editing')
-                if document['memberships']: repo._authorize(c,document['memberships'],lock=True)
+                requested = set(document['memberships']) | set(document.get('space_descriptions', {}))
+                if requested: repo._authorize(c,requested,lock=True)
+                # Omitted optional fields from older clients preserve stored metadata.
+                descriptions={d['id']: d.get('description', '') for d in current['domains']}
+                document=dict(document, domains=[dict(d, description=d.get('description', descriptions.get(d['id'], ''))) for d in document['domains']],
+                              space_descriptions=document.get('space_descriptions', current['space_descriptions']))
+                if document['space_descriptions']: repo._authorize(c,document['space_descriptions'],lock=True)
                 # Read-only usage is never accepted from the browser.
                 result=dict(document,version=current['version']+1,usage=current['usage'])
                 self._store(c,subject,result)

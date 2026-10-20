@@ -16,12 +16,12 @@ class OrganizationConflict(ValueError):
 
 def defaults():
     return {'version': 0, 'domains': [{'id': str(uuid5(NAMESPACE_URL, 'qh.domain/'+str(i))),
-                                     'name': name} for i, name in enumerate(LABELS)],
-            'memberships': {}, 'primary_domains': {}, 'usage': {}}
+                                     'name': name, 'description': ''} for i, name in enumerate(LABELS)],
+            'memberships': {}, 'primary_domains': {}, 'space_descriptions': {}, 'usage': {}}
 
 
 def validate(document):
-    if set(document) != {'version', 'domains', 'memberships', 'primary_domains'}:
+    if not {'version', 'domains', 'memberships', 'primary_domains'} <= set(document) or set(document) - {'version', 'domains', 'memberships', 'primary_domains', 'space_descriptions'}:
         raise ValueError('Invalid organization')
     if type(document['version']) is not int or document['version'] < 0:
         raise ValueError('Invalid organization version')
@@ -30,11 +30,13 @@ def validate(document):
         raise ValueError('Organization limit exceeded')
     ids = set()
     for domain in domains:
-        if not isinstance(domain, dict) or set(domain) != {'id', 'name'}:
+        if not isinstance(domain, dict) or not {'id', 'name'} <= set(domain) or set(domain) - {'id', 'name', 'description'}:
             raise ValueError('Invalid domain')
         id = str(UUID(domain['id']))
         if id != domain['id'] or id in ids or not isinstance(domain['name'], str) or not domain['name'].strip() or len(domain['name']) > 100 or '\0' in domain['name']:
             raise ValueError('Invalid domain')
+        if 'description' in domain:
+            validate_description(domain['description'])
         ids.add(id)
     for space, assigned in memberships.items():
         if str(UUID(space)) != space or not isinstance(assigned, list) or any(not isinstance(v, str) for v in assigned) or len(assigned) != len(set(assigned)) or not set(assigned) <= ids:
@@ -44,7 +46,19 @@ def validate(document):
         raise ValueError('Every classified Space requires one primary domain')
     if any(primary[s] not in memberships[s] for s in primary):
         raise ValueError('Primary domain must be a membership')
+    descriptions = document.get('space_descriptions', {})
+    if not isinstance(descriptions, dict) or len(descriptions) > 1000:
+        raise ValueError('Invalid descriptions')
+    for scope, description in descriptions.items():
+        if str(UUID(scope)) != scope:
+            raise ValueError('Invalid Space')
+        validate_description(description)
     return deepcopy(document)
+
+
+def validate_description(value):
+    if not isinstance(value, str) or len(value) > 500 or '\0' in value:
+        raise ValueError('Invalid description')
 
 
 class OrganizationRepository(Protocol):
@@ -70,13 +84,13 @@ class EnvironmentService:
         await self._allow(subject)
         document = await self.repository.read(subject)
         # Memberships never disclose foreign identities after ownership revocation.
-        await self._allow(subject, tuple(document['memberships']))
+        await self._allow(subject, tuple(set(document['memberships']) | set(document.get('space_descriptions', {}))))
         return document
 
     async def replace(self, subject, document):
         await self._allow(subject)
         document = validate(document)
-        await self._allow(subject, tuple(document['memberships']))
+        await self._allow(subject, tuple(set(document['memberships']) | set(document.get('space_descriptions', {}))))
         return await self.repository.replace(subject, document)
 
     async def opened(self, subject, scope, event_id):

@@ -123,3 +123,31 @@ def test_primary_domain_creation_and_true_opening_activity(organization_db):
         assert client.get('/environment',headers=headers('external-bob')).json()['usage']=={}
     with TestClient(application()) as reopened:
         assert reopened.get('/environment',headers=headers()).json()['usage'][a['id']]['open_count']==2
+
+
+def test_qh52_descriptions_preserved_for_old_clients_and_owner_fenced(organization_db):
+    with TestClient(application()) as client:
+        auth=headers(); scope=client.post('/context-spaces',headers=auth,json={'name':'Before'}).json()['id']
+        doc=client.get('/environment',headers=auth).json();doc.pop('usage')
+        doc['space_descriptions']={scope:'Monthly budget, user-authored metadata'}
+        doc['domains'][0]['description']='Personal organization only'
+        saved=client.put('/environment',headers=auth,json=doc)
+        assert saved.status_code==200
+        assert client.patch('/context-spaces/'+scope,headers=auth,json={'name':'After'}).status_code==200
+        legacy=saved.json();legacy.pop('usage');legacy.pop('space_descriptions')
+        for domain in legacy['domains']:domain.pop('description')
+        kept=client.put('/environment',headers=auth,json=legacy)
+        assert kept.status_code==200 and kept.json()['space_descriptions']==doc['space_descriptions']
+        assert kept.json()['domains'][0]['description']=='Personal organization only'
+        foreign=kept.json();foreign.pop('usage')
+        assert client.put('/environment',headers=headers('external-bob'),json=foreign).status_code==403
+        for value in ['x'*501,'bad\0description']:
+            invalid=deepcopy(foreign);invalid['space_descriptions']={scope:value}
+            assert client.put('/environment',headers=auth,json=invalid).status_code==422
+        with connect() as c:
+            assert c.execute('SELECT count(*) FROM sources').fetchone()==(0,)
+            assert c.execute('SELECT count(*) FROM understanding_items').fetchone()==(0,)
+            c.execute('UPDATE context_spaces SET owner_id=%s WHERE id=%s',(BOB,scope))
+        assert client.get('/environment',headers=auth).status_code==403
+    with TestClient(application()) as reopened:
+        assert reopened.get('/environment',headers=headers('external-bob')).json()['space_descriptions']=={}
