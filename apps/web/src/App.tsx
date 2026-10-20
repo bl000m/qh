@@ -12,7 +12,9 @@ import qhLogo from './brand/qh-logo.png';
 import qhBubble from './brand/qh-bubble.png';
 import {Orb,Icon} from './Ui';
 import SpaceActions from './SpaceActions';
-import SpaceEditor from './SpaceEditor';
+import SpaceTabs from './SpaceTabs';
+import type {SpaceTab} from './SpaceTabs';
+import ContextSettings from './ContextSettings';
 import SourcesPanel from './SourcesPanel';
 import type {ChatAnswer} from './chat';
 
@@ -118,41 +120,33 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
     {next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}</section>
   </section>;
 }
-function Detail({ id, api, origin }: { id: string; api: QhApi; origin?:string }) {
-  const [space,setSpace]=useState<ContextSpace|null>(null);
-  const organization=useOrganization(api,space!==null);
-  const [answers,setAnswers]=useState<ChatAnswer[]>([]),[sourceIndex,setSourceIndex]=useState<number|null>(null),[supportOpen,setSupportOpen]=useState(false);
-  const supportTitle=useRef<HTMLHeadingElement>(null),supportToggle=useRef<HTMLButtonElement>(null);
-  const answersChanged=useCallback((next:ChatAnswer[])=>{setAnswers(next);if(!next.length)setSourceIndex(null);},[]);
-  useEffect(()=>{if(supportOpen)supportTitle.current?.focus();},[supportOpen]);
-  const from=organization.value?.domains.find(d=>d.id===origin&&organization.value?.memberships[id]?.includes(d.id));
-  const [understandingVersion,setUnderstandingVersion]=useState(0);
-  const [enrichedRevision,setEnrichedRevision]=useState<{id:string;open:number}|null>(null);
-  const openEvent=useRef(crypto.randomUUID());
-  const [openingError,setOpeningError]=useState('');
-  const [error, setError] = useState('');
-  const [refresh, setRefresh] = useState(0);
-  const title = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { if (space) title.current?.focus(); }, [space]);
-  useEffect(() => {
-    let active = true; setSpace(null); setError('');
-    api.get(id).then(value => { if (active) {setSpace(value);void api.opened(id,openEvent.current).catch(()=>{if(active)setOpeningError('Cette ouverture n’a pas pu être enregistrée dans votre activité.');});} })
-      .catch(reason => { if (active) setError(apiMessage(reason)); });
-    return () => { active = false; };
-  }, [id, api, refresh]);
-  return <section><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name ?? 'Context Space'}</span></nav>
-    {error ? <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></> :
-      space ? <article className={'detail'+(supportOpen?' support-open':'')}><header className="space-heading"><Orb tone={110}/><div className="space-title"><h1 ref={title} tabIndex={-1}>{space.name}</h1>{organization.value?.space_descriptions?.[space.id]&&<p>{organization.value.space_descriptions[space.id]}</p>}</div><SpaceActions space={space} state={organization}><SpaceEditor space={space} api={api} state={organization} onChanged={setSpace}/></SpaceActions></header>{openingError&&<p role="status">{openingError}</p>}
-
-      <div className="space-workspace"><Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} onAnswersChange={answersChanged} onOpenProposal={id=>{setEnrichedRevision(previous=>({id,open:(previous?.open??0)+1}));setSupportOpen(true);}}/><button ref={supportToggle} className="secondary support-toggle" aria-expanded={supportOpen} onClick={()=>{setSupportOpen(v=>!v);if(supportOpen)requestAnimationFrame(()=>supportToggle.current?.focus());}}><Icon name="understanding"/>{supportOpen?'Revenir à la discussion':'Sources & compréhension'}</button><aside className="support-panel" aria-labelledby="support-title"><header><Icon name="understanding"/><div><h2 id="support-title" ref={supportTitle} tabIndex={-1}>Sources & compréhension</h2><p>Sources utilisées et état de la compréhension.</p></div></header>
-      <details className="support-sources support-section"><summary><Icon name="sources"/><span>Sources<small>Éléments cités dans les réponses</small></span></summary>{answers.length?answers.map((answer,i)=><button key={i} type="button" className="secondary" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1} · {answer.references.length} éléments cités</button>):<p>Les sources d’une réponse apparaîtront ici après votre question.</p>}</details>
-      <UnderstandingExplorer key={'understanding:'+space.id+':'+(enrichedRevision?.open??'')} initialRevision={enrichedRevision?.id} api={api} scope={space.id} onChanged={()=>setUnderstandingVersion(n=>n+1)} />
-      <details className="space-metadata support-section"><summary><Icon name="info"/><span>Détails du contexte<small>Métadonnées du Space</small></span></summary><Metadata space={space}/></details>
-      </aside></div>{sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}</article> :
-        <Notice>Chargement du Context Space…</Notice>}
-  </section>;
+function Detail({id,api,origin}:{id:string;api:QhApi;origin?:string}){
+ const [space,setSpace]=useState<ContextSpace|null>(null),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
+ const [tab,setTab]=useState<SpaceTab>('Discussion'),[addRequest,setAddRequest]=useState(0),[draftRequest,setDraftRequest]=useState<{id:number;text:string}>();
+ const [answers,setAnswers]=useState<ChatAnswer[]>([]),[sourceIndex,setSourceIndex]=useState<number|null>(null),[understandingVersion,setUnderstandingVersion]=useState(0),[enrichedRevision,setEnrichedRevision]=useState<{id:string;open:number}|null>(null);
+ const organization=useOrganization(api,space!==null),openEvent=useRef(crypto.randomUUID());
+ const from=organization.value?.domains.find(d=>d.id===(origin??organization.value?.primary_domains[id])&&organization.value?.memberships[id]?.includes(d.id));
+ const title=useRef<HTMLHeadingElement>(null);
+ useEffect(()=>{if(space)title.current?.focus();},[space]);
+ useEffect(()=>{let active=true;setSpace(null);setError('');api.get(id).then(value=>{if(active){setSpace(value);void api.opened(id,openEvent.current).catch(()=>{});}}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[id,api,refresh]);
+ const answersChanged=useCallback((next:ChatAnswer[])=>setAnswers(next),[]);
+ const openProposal=useCallback((revision:string)=>{setEnrichedRevision(previous=>({id:revision,open:(previous?.open??0)+1}));setTab('Éléments');},[]);
+ function starter(text:string){setTab('Discussion');setDraftRequest(previous=>({id:(previous?.id??0)+1,text}));}
+ return <section className="context-page"><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span></nav>
+ {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<Notice>Chargement du Context Space…</Notice>:<article className="detail definitive-space">
+ <header className="space-heading"><Orb/><div className="space-title"><div className="space-name-line"><h1 ref={title} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Modifier le Space" title="Modifier le Space" onClick={()=>{setTab('Paramètres');requestAnimationFrame(()=>document.getElementById('edit-space-name')?.focus());}}><Icon name="edit"/></button></div>{organization.value?.space_descriptions?.[space.id]&&<p>{organization.value.space_descriptions[space.id]}</p>}</div>{tab!=='Paramètres'&&<SpaceActions space={space} state={organization}/>}</header>
+ <SpaceTabs value={tab} onChange={setTab}/>
+ <Chat key={'chat:'+space.id+':'+understandingVersion} api={api} scope={space.id} tab={tab} addRequest={addRequest} draftRequest={draftRequest} onAnswersChange={answersChanged} onOpenProposal={openProposal}/>
+ <section hidden={tab!=='Éléments'} role="tabpanel" id="space-panel-1" aria-labelledby="space-tab-1" className="space-tab-content elements-panel"><div className="section-heading"><h2>Éléments</h2><button type="button" className="secondary" onClick={()=>setAddRequest(n=>n+1)}><Icon name="sources"/>Ajouter un élément</button></div>
+ <details className="element-section"><summary><span className="card-icon"><Icon name="sources"/></span><span><strong>Sources</strong><small>Éléments cités dans les réponses</small></span></summary><div className="element-content">{answers.length?answers.map((answer,i)=><button key={i} className="secondary" type="button" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1} · {answer.references.length} éléments cités</button>):<p>Les sources citées apparaîtront ici après une réponse. Les sources conservées sont aussi accessibles depuis chaque élément de compréhension.</p>}</div></details>
+ <UnderstandingExplorer standalone key={'understanding:'+space.id+':'+(enrichedRevision?.open??'')} initialRevision={enrichedRevision?.id} api={api} scope={space.id} onChanged={()=>setUnderstandingVersion(n=>n+1)}/>
+ <details className="element-section"><summary><span className="card-icon"><Icon name="info"/></span><span><strong>Détails du contexte</strong><small>Métadonnées du Space</small></span></summary><div className="element-content"><Metadata space={space}/></div></details></section>
+ <section hidden={tab!=='Conseils'} role="tabpanel" id="space-panel-3" aria-labelledby="space-tab-3" className="space-tab-content advice-panel"><h2>Conseils</h2><div className="advice-grid">{[['Faire le point','Préparer un point sur la situation actuelle.','sources','Peux-tu m’aider à faire le point sur ce contexte à partir des éléments disponibles ?'],['Clarifier les priorités','Mettre mes objectifs en perspective.','advice','Peux-tu m’aider à clarifier mes priorités et les questions qui restent ouvertes dans ce contexte ?'],['Préparer la prochaine discussion','Choisir les questions utiles à poser.','discussion','Quelles questions pourrions-nous aborder lors de notre prochaine discussion sur ce contexte ?']].map(([name,description,icon,text])=><button type="button" className="advice-card" key={name} onClick={()=>starter(text)}><span className="card-icon"><Icon name={icon as 'sources'|'advice'|'discussion'}/></span><span><strong>{name}</strong><small>{description}</small></span><span className="advice-chevron" aria-hidden="true">›</span></button>)}</div><p className="advice-note muted">Choisissez un point de départ, puis adaptez votre question avant de l’envoyer.</p></section>
+ <section hidden={tab!=='Paramètres'} role="tabpanel" id="space-panel-4" aria-labelledby="space-tab-4" className="space-tab-content context-settings"><ContextSettings space={space} api={api} state={organization} onChanged={setSpace}/><div className="product-card"><span className="card-icon"><Icon name="settings"/></span><div><h3>Actions</h3><SpaceActions space={space} state={organization}/></div></div></section>
+ {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
+ </article>}</section>;
 }
-function Environment({ api }: { api: QhApi }) {
+function Environment({api,logout}:{api:QhApi;logout:()=>void}) {
   const path = usePath();
   const [recent, setRecent] = useState<ContextSpace | null>(null);
   const [identity, setIdentity] = useState('');
@@ -167,14 +161,20 @@ function Environment({ api }: { api: QhApi }) {
   if (!identity) return <Notice>Vérification de votre identité QH…</Notice>;
   const route=parseRoute(path);
   return <>
-    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces key={path} api={api} recent={recent} onCreated={setRecent} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api}/>:route.kind==='settings'?<Settings api={api}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
+    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces key={path} api={api} recent={recent} onCreated={setRecent} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
 
-    <details className="identity small muted"><summary>Informations du compte QH</summary><p>Identité QH : {identity}</p></details>
+
   </>;
 }
-function Settings({api}:{api:QhApi}){
- const state=useOrganization(api);const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{heading.current?.focus();},[]);
- return <section><nav className="breadcrumbs" aria-label="Fil d’Ariane"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">Paramètres</span></nav><h1 tabIndex={-1} ref={heading}>Mon profil & mes préférences</h1><OrganizationEditor state={state}/><div className="secondary-navigation"><Link to="/spaces">Tous les domaines</Link><Link to="/spaces/unclassified">Non classés</Link></div><details><summary>Préférences personnelles</summary><p>Le profil de compréhension personnel et les préférences partagées ne sont pas encore disponibles.</p></details></section>;
+function Settings({api,identity,logout}:{api:QhApi;identity:string;logout:()=>void}){
+ const state=useOrganization(api),heading=useRef<HTMLHeadingElement>(null);
+ useEffect(()=>{heading.current?.focus();},[]);
+ return <section className="global-settings"><nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">Paramètres</span></nav><h1 tabIndex={-1} ref={heading}>Paramètres</h1><div className="settings-stack">
+ <section className="product-card"><span className="card-icon"><Icon name="user"/></span><div><h2>Profil</h2><p className="muted">Votre environnement personnel QH.</p><dl className="setting-rows"><div><dt>Accès</dt><dd>Compte personnel</dd></div></dl></div></section>
+ <section className="product-card"><span className="card-icon"><Icon name="sources"/></span><div><h2>Mes domaines</h2><p className="muted">Organisez vos espaces par domaine.</p><OrganizationEditor state={state}/></div></section>
+ <section className="product-card"><span className="card-icon"><Icon name="settings"/></span><div><h2>Préférences</h2><p className="muted">Présentation actuelle de votre environnement.</p><dl className="setting-rows"><div><dt>Langue de l’interface</dt><dd>Français</dd></div><div><dt>Apparence</dt><dd>Clair</dd></div></dl></div></section>
+ <section className="product-card"><span className="card-icon"><Icon name="info"/></span><div><h2>Compte QH</h2><p className="muted">Gérez votre connexion.</p><details><summary>Informations du compte</summary><p>Identité QH : <span className="account-identifier">{identity}</span></p></details><button type="button" className="text-button" onClick={logout}><Icon name="logout"/>Se déconnecter</button></div></section>
+ </div></section>;
 }
 function Reconnect({session}:{session:BrowserSession}){
  const dialog=useRef<HTMLDialogElement>(null);const [copied,setCopied]=useState('');
@@ -185,10 +185,11 @@ export default function App({ session }: { session: BrowserSession }) {
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
   const api = useMemo(() => new QhApi(session.readyToken??session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
+  const logout=useCallback(()=>{let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke. */}api.revokeSessionsBeforeLogout(credential);void session.logout();},[api,session]);
   return <div className={'app-shell'+(state==='authenticated'?' signed-in':'')}><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Votre contexte, sous votre contrôle.</span></a>
     {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={() => { let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke a grant. */}api.revokeSessionsBeforeLogout(credential); void session.logout(); }}><Icon name="logout"/></button></nav>}</header>
     <main id="main-content" tabIndex={-1}>
-      {state === 'authenticated'||state==='expired'&&session.preserveDrafts ? <><Environment api={api}/>{state==='expired'&&<Reconnect session={session}/>}</> : <section className="signin">
+      {state === 'authenticated'||state==='expired'&&session.preserveDrafts ? <><Environment api={api} logout={logout}/>{state==='expired'&&<Reconnect session={session}/>}</> : <section className="signin">
         {state === 'starting' ? <Notice>Connexion en cours…</Notice> : <>
           {state === 'expired' && <Notice error>Votre session a expiré. Reconnectez-vous pour continuer.</Notice>}
           {state === 'error' && <Notice error>La connexion n’a pas abouti. Veuillez recommencer.</Notice>}

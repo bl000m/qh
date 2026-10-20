@@ -549,3 +549,40 @@ classification or confirmation. App source remains on the single QH-50 hot-reloa
 branch; this is not a product release or merge. Infrastructure containers, realm,
 provider authorization and ledgers are preserved. See [QH-50](qh-50-ux-v2.md)
 for executed checks, limits and the private recovery archive location.
+
+## 2026-10-20 — QH-52 authorized real work-session activation
+
+Owner explicitly approved the exact realm/client/two-flag delta and scoped rollback.
+PR20 merged ordinarily at797b27404e870a7e6292ae5628294fda0e83f069, preserving all eight
+commits through bebfbf9; CI39395621220 verified the identical application tree.
+Only frontend/backend were aligned via guarded dev-stop/dev-up (19.26s interruption),
+retaining the QH12 image IDs/source mounts/loopback ports. Private frontend
+VITE_QH_DEVELOPMENT_SESSION=1 and backend QH_CHAT_SESSION_BINDING=oidc; realm refresh
+rotation true/maxReuse0 plus the qh-web AUTH_TIME mapper were applied through narrow
+admin requests. TTL access300/SSOidle1800/SSOmax36000 unchanged; Keycloak image
+sha256:21451375143c0d31397f1d23cbb38aca9a872e220bd74c94d89f815635b43954,
+its container/volume/import, Alice/Bob, other dependencies and all15 canonical table
+fingerprints preserved. Schema remains0006_owner_organization; no0007.
+
+Actual Chromium waited319s without accelerated clocks: natural refresh, retained
+route/draft, rotated refresh and replay denial, verified new access credential,
+logout/draft erasure, six Bob foreign denials and anonymous denial PASS. No QH write
+or provider generation; receipt/ledger/budget unchanged. Mistral capability remains
+eligible only for the previously authorized Projet pilote, not the new budget Space.
+Protected updated backups, isolated apply/rollback proof and final execution record:
+.local-archive/qh52-activation-20261020/ACTIVATION-RESULT.md, final-preservation-and-runtime.json;
+[Jira QH52 comment10038](https://contextlab.atlassian.net/browse/QH-52?focusedCommentId=10038).
+Rollback was not needed live. Owner Mac persistence/password-manager acceptance
+remains distinct from these executed read-only runtime checks.
+
+## 2026-10-20 — QH-53 source-only UX implementation checkpoint
+
+Dedicated feat/QH-53-approved-ux branch from797b274 in /home/ubuntu/qh; owner explicitly
+requested this increment while PR19 remains open and untouched. Frontend/backend
+were stopped before the switch and restarted on the same containers/configuration
+with guarded dev-restart. Ordinary source hot reload makes UI edits visible in this
+POC before merge. No persistent lifecycle/config/schema/provider change accompanies
+the UX task; the active QH52 realm/session settings and private flags stay fixed.
+Screenshots and mutable test data belong only to isolated disposable test projects.
+Final reviewed source HEAD and CI evidence are recorded on the QH53 PR, separately
+from this preparation checkpoint. No merge or QH51/Projection activation is implied.

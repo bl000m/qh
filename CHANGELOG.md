@@ -431,3 +431,14 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
   retry. Runtime extraction is clearly labelled offline literal control only.
 - Add isolated API/SQL/Neo4j/browser/security regressions and ADR 0009. No migration,
   demo source/revision mutation, external inference, QH-39 merge or Jira DONE.
+
+### QH-53 — Approved Space product maquettes (Unreleased)
+
+- One Space header and accessible Discussion/Éléments/Modèle/Conseils/Paramètres
+  navigation; conversation and memory-only drafts survive tab changes.
+- Original QH orb, empty-Space entry, compact real model/budget cards, explicit
+  selected-message memory, owner metadata settings and honest question starters.
+- Necessary exact-content authorization moves into a dialog; preview never sends
+  an inference, consent never automatically submits, proposed inclusion remains
+  affirmative, revocation/accounting remain available in secondary controls.
+- No schema/provider/identity contract change, paid inference or fake settings.

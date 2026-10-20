@@ -579,3 +579,20 @@ Spaces can receive a first user-authored information through existing explicit
 QH-39 source/proposal persistence without an external provider. Literal retention
 is labelled and unconfirmed; QH-51 semantic extraction remains future. Normal chat
 uses an authorized real provider or explicit unavailability; mock is test/replay only.
+
+## QH-53 approved presentation refinement —2026-10-20
+
+The owner-approved definitive maquettes use a single ordered Space navigation:
+Discussion, Éléments, Modèle, Conseils, Paramètres. Browsing remains available before
+any question through Éléments, with provenance/history/review retained. The primary
+conversation avoids administrative vocabulary; actual exact-snapshot disclosure,
+affirmative proposed inclusion, separate persistence consent, backend policy and
+accounting are preserved in accessible dialogs or secondary disclosures.
+
+Adding an element accepts general user-authored meaning through existing literal
+source/proposal persistence; it introduces no mandatory semantic categories.
+Mémoriser cette conversation conserves only explicitly selected messages, without
+claiming a durable whole-chat archive, semantic extraction or human confirmation.
+Conseils are editable question starters requiring explicit send, not generated
+recommendations. Model/budget come from real capabilities; unavailable settings and
+unimplemented deletion/sharing controls are not displayed as functioning actions.

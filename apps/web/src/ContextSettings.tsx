@@ -1,0 +1,13 @@
+import {useEffect,useRef,useState} from 'react';
+import type {ContextSpace,QhApi} from './api';
+import {apiMessage,validName} from './api';
+import type {useOrganization} from './EnvironmentDomains';
+import {Icon} from './Ui';
+export default function ContextSettings({space,api,state,onChanged}:{space:ContextSpace;api:QhApi;state:ReturnType<typeof useOrganization>;onChanged:(space:ContextSpace)=>void}){
+ const [name,setName]=useState(space.name),[description,setDescription]=useState(''),[error,setError]=useState(''),[success,setSuccess]=useState(''),[busy,setBusy]=useState(false);
+ const initial=useRef(state.value),dirty=useRef(false);
+ useEffect(()=>{if(!dirty.current&&state.value){initial.current=state.value;setName(space.name);setDescription(state.value.space_descriptions?.[space.id]??'');}},[space.name,space.id,state.value]);
+ async function save(){if(busy||!initial.current)return;setBusy(true);setError('');setSuccess('');try{if(name!==space.name)onChanged(await api.rename(space.id,name));await state.save({...initial.current,space_descriptions:{...initial.current.space_descriptions,[space.id]:description}});dirty.current=false;setSuccess('Nom et description enregistrés.');}catch(e){setError(apiMessage(e)+' Le nom et la description sont enregistrés séparément. Rechargez avant de réessayer.');}finally{setBusy(false);}}
+ const primary=state.value?.domains.find(d=>d.id===state.value?.primary_domains[space.id]);
+ return <><h2>Paramètres du contexte</h2><form onSubmit={e=>{e.preventDefault();void save();}}><div className="product-card"><span className="card-icon"><Icon name="sources"/></span><div><h3>Description</h3><label className="sr-only" htmlFor="edit-space-description">Description du Space</label><textarea id="edit-space-description" maxLength={500} rows={2} value={description} disabled={busy||!state.value} onChange={e=>{dirty.current=true;setDescription(e.target.value);setSuccess('');}}/></div></div><div className="product-card"><span className="card-icon"><Icon name="edit"/></span><div><h3>Nom du contexte</h3><label className="sr-only" htmlFor="edit-space-name">Nom du Space</label><input id="edit-space-name" value={name} maxLength={256} required disabled={busy} onChange={e=>{dirty.current=true;setName(e.target.value);setSuccess('');}}/></div></div><div className="actions"><button disabled={busy||!state.value||!validName(name)}>Enregistrer le Space</button>{success&&<p role="status">{success}</p>}{error&&<p role="alert">{error}</p>}</div></form><div className="product-card"><span className="card-icon"><Icon name="link"/></span><div><h3>Domaine principal</h3><p>{primary?.name??'Non classé'}</p></div></div></>;
+}

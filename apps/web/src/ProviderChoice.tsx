@@ -4,95 +4,57 @@ import {apiMessage} from './api';
 import type {DialogueMessage} from './chat';
 import type {ProviderSession,SessionCapabilities} from './provider-session';
 import {Revision} from './Revision';
-
+import {Modal} from './SpaceActions';
+import {Icon} from './Ui';
 export const offlineFixture=import.meta.env.MODE==='test'&&import.meta.env.VITE_QH_OFFLINE_TESTS==='1';
 const defaultMode=offlineFixture?'mock':'mistral';
-type Props={api:QhApi;scope:string;include:boolean;messages:DialogueMessage[];failure:number;contextChanged?:number;completed:number;
+type Props={api:QhApi;scope:string;include:boolean;messages:DialogueMessage[];failure:number;contextChanged?:number;completed:number;request?:number;visible?:boolean;hasProposed?:boolean;onInclude?:(value:boolean)=>void;onCapabilities?:(value:SessionCapabilities|null)=>void;
  onChange:(mode:'mock'|'mistral',session:string|null,preserveDialogue?:boolean)=>void};
-export default function ProviderChoice({api,scope,include,messages,failure,contextChanged=0,completed,onChange}:Props){
- const [mode,setMode]=useState<'mock'|'mistral'>(defaultMode);
- const [caps,setCaps]=useState<SessionCapabilities|null>(null);
- const [session,setSession]=useState<ProviderSession|null>(null);
- const [consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const [expanded,setExpanded]=useState(false);
- const manage=useRef<HTMLButtonElement>(null);
- const [now,setNow]=useState(Date.now());
- const current=useRef<ProviderSession|null>(null),generation=useRef(0),prepared=useRef('');
- function forget(){const old=current.current;current.current=null;setSession(null);setConsent(false);return old;}
- async function revoke(){
-  generation.current++;const old=forget();onChange('mistral',null);setBusy(false);
-  if(old)try{await api.revokeSession(scope,old.session_id);setError('Session révoquée. Aucun nouvel envoi autorisé.');}
-  catch{setError('État local effacé. Révocation serveur non confirmée : la session reste bornée par sa courte expiration.');}
- }
- useEffect(()=>{
-  generation.current++;setCaps(null);setSession(null);current.current=null;setConsent(false);setMode(defaultMode);setError('');onChange(defaultMode,null);
-  let mounted=true;
-  api.chatCapabilities(scope).then(v=>{if(mounted)setCaps(v);}).catch(()=>{if(mounted)setError('Le fournisseur est indisponible. Vous pouvez toujours ajouter une information sans IA.');});
-  const leave=()=>{const old=current.current;if(old)void api.revokeSession(scope,old.session_id).catch(()=>{});};
-  window.addEventListener('pagehide',leave);
-  return()=>{mounted=false;generation.current++;window.removeEventListener('pagehide',leave);leave();};
- },[api,scope,include,onChange]);
- useEffect(()=>{if(failure&&mode==='mistral'){void revoke().then(()=>setError('Session arrêtée après erreur ou nouvelle discussion. Aucun nouvel essai automatique ; un nouveau consentement est requis.'));}},[failure]); // Generation failure terminates, never retries.
- useEffect(()=>{if(!contextChanged||!current.current)return;generation.current++;const old=forget();setBusy(false);onChange('mistral',null,true);void api.revokeSession(scope,old!.session_id).catch(()=>{});setError('Compréhension enrichie : nouveau contexte, nouvel aperçu et consentement requis.');},[contextChanged]);
+export default function ProviderChoice({api,scope,include,messages,failure,contextChanged=0,completed,request=0,visible=true,hasProposed=false,onInclude,onCapabilities,onChange}:Props){
+ const [mode,setMode]=useState<'mock'|'mistral'>(defaultMode),[caps,setCaps]=useState<SessionCapabilities|null>(null),[session,setSession]=useState<ProviderSession|null>(null);
+ const [consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[now,setNow]=useState(Date.now());
+ const current=useRef<ProviderSession|null>(null),generation=useRef(0),prepared=useRef(''),attempted=useRef('');
  const dialogueKey=JSON.stringify(messages);
- useEffect(()=>{if(current.current?.state==='preview'&&prepared.current!==dialogueKey){void revoke();setError('Question modifiée : préparez un nouvel aperçu avant de consentir.');}},[dialogueKey]);
- useEffect(()=>{if(!session)return;const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[session]);
+ function forget(){const old=current.current;current.current=null;setSession(null);setConsent(false);return old;}
+ async function revoke(){generation.current++;const old=forget();onChange('mistral',null);setBusy(false);if(old)try{await api.revokeSession(scope,old.session_id);setError('Autorisation retirée. Aucun nouvel envoi.');}catch{setError('Autorisation effacée dans cet onglet. Le serveur n’a pas confirmé son retrait ; elle reste limitée dans le temps.');}}
+ useEffect(()=>{
+  generation.current++;setCaps(null);onCapabilities?.(null);setSession(null);current.current=null;setConsent(false);setMode(defaultMode);setError('');attempted.current='';onChange(defaultMode,null);
+  let mounted=true;api.chatCapabilities(scope).then(v=>{if(mounted){setCaps(v);onCapabilities?.(v);}}).catch(()=>{if(mounted)setError('Le modèle est indisponible pour ce contexte. Vous pouvez toujours ajouter un élément.');});
+  const leave=()=>{const old=current.current;if(old)void api.revokeSession(scope,old.session_id).catch(()=>{});};window.addEventListener('pagehide',leave);
+  return()=>{mounted=false;generation.current++;window.removeEventListener('pagehide',leave);leave();};
+ },[api,scope,include,onChange,onCapabilities]);
+ useEffect(()=>{if(request){attempted.current='';setError('');setOpen(true);}},[request]);
+ useEffect(()=>{if(failure&&mode==='mistral')void revoke().then(()=>setError('La discussion a été arrêtée. Donnez une nouvelle autorisation avant de réessayer.'));},[failure]);
+ useEffect(()=>{if(!contextChanged||!current.current)return;generation.current++;const old=forget();setBusy(false);onChange('mistral',null,true);void api.revokeSession(scope,old!.session_id).catch(()=>{});setError('Le contexte a changé. Une nouvelle autorisation est nécessaire.');},[contextChanged]);
+ useEffect(()=>{if(current.current?.state==='preview'&&prepared.current!==dialogueKey){void revoke();}},[dialogueKey]);
+ useEffect(()=>{if(!session)return;const t=window.setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t);},[session]);
  const remaining=session?Math.max(0,Math.ceil(session.expires_at-now/1000)):0;
- useEffect(()=>{if(session&&remaining===0){generation.current++;forget();onChange('mistral',null);setError('Session expirée. Reconnectez-vous si nécessaire puis donnez un nouveau consentement.');}},[remaining,session,onChange]);
+ useEffect(()=>{if(session&&remaining===0){generation.current++;forget();onChange('mistral',null);setError('L’autorisation a expiré. Vous pouvez en donner une nouvelle.');}},[remaining,session,onChange]);
  async function preview(){
   const n=++generation.current;setBusy(true);setError('');setConsent(false);
-  try{const v=await api.previewSession(scope,messages,include);
-   if(n!==generation.current){void api.revokeSession(scope,v.session_id).catch(()=>{});return;}
-   prepared.current=dialogueKey;current.current=v;setSession(v);setNow(Date.now());
-  }catch(e){if(n===generation.current)setError(apiMessage(e));}finally{if(n===generation.current)setBusy(false);}
+  try{const v=await api.previewSession(scope,messages,include);if(n!==generation.current){void api.revokeSession(scope,v.session_id).catch(()=>{});return;}prepared.current=dialogueKey;current.current=v;setSession(v);setNow(Date.now());}
+  catch(e){if(n===generation.current)setError(apiMessage(e));}finally{if(n===generation.current)setBusy(false);}
  }
- async function authorize(){
-  if(!session||!consent)return;const n=generation.current;setBusy(true);setError('');
-  try{const v=await api.consentSession(scope,session.session_id,session.snapshot_sha256,include);
-   if(n!==generation.current){void api.revokeSession(scope,v.session_id).catch(()=>{});return;}
-   current.current=v;setSession(v);setExpanded(false);onChange('mistral',v.session_id);
-  }catch{if(n===generation.current){forget();onChange('mistral',null);setError('Consentement refusé ou contexte modifié. Préparez un nouvel aperçu.');}}
-  finally{if(n===generation.current)setBusy(false);}
- }
- async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setCaps(await api.chatCapabilities(scope));if(v.state!=='active'||v.accounting.blocked||v.accounting.calls>=v.max_calls||Number(v.accounting.committed_usd)>=Number(v.max_usd)){onChange('mistral',null,v.state==='active'&&!v.accounting.blocked);setError('Session arrêtée : plafond atteint ou budget indisponible. Le consentement ne réinitialise pas les plafonds de la session de travail.');}}
-  catch{if(n===generation.current)await revoke();}}
+ // One internal preview per explicit request/selection. It never invokes a provider.
+ useEffect(()=>{const key=include+':'+dialogueKey;if(open&&caps?.enabled&&messages.at(-1)?.content.trim()&&!current.current&&!busy&&attempted.current!==key){attempted.current=key;void preview();}},[open,caps?.enabled,include,dialogueKey]);
+ async function authorize(){if(!session||!consent)return;const n=generation.current;setBusy(true);setError('');try{const v=await api.consentSession(scope,session.session_id,session.snapshot_sha256,include);if(n!==generation.current){void api.revokeSession(scope,v.session_id).catch(()=>{});return;}current.current=v;setSession(v);setOpen(false);onChange('mistral',v.session_id);}catch{if(n===generation.current){forget();onChange('mistral',null);setError('Le contexte ou votre autorisation a changé. Rouvrez l’autorisation pour continuer.');}}finally{if(n===generation.current)setBusy(false);}}
+ async function refresh(){if(!session)return;const n=generation.current;try{const v=await api.sessionStatus(scope,session.session_id,include);if(n!==generation.current)return;current.current=v;setSession(v);setNow(Date.now());}catch{if(n===generation.current){forget();onChange('mistral',null);setError('Autorisation indisponible.');}}}
  useEffect(()=>{if(completed&&current.current?.state==='active')void refresh();},[completed]);
- const active=session?.state==='active';
- useEffect(()=>{if(active)manage.current?.focus({preventScroll:true});},[active]);
- return <div className={'provider-choice'+(active?' provider-is-active':'')}>
-  {active&&session&&<div className="provider-active-line"><p role="status">Mistral · Session active · {session.model} · {session.max_calls-session.accounting.calls} requêtes restantes · {session.accounting.committed_usd}/{session.max_usd} USD engagés · {remaining} s restantes</p><button ref={manage} type="button" className="secondary" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}>Budget et autorisation</button></div>}
-  <div hidden={active&&!expanded}>
-  {offlineFixture&&<><label htmlFor="chat-provider">Mode de discussion</label>
-  <select id="chat-provider" value={mode} onChange={e=>{
-   const next=e.target.value as 'mock'|'mistral';generation.current++;const old=forget();if(old)void api.revokeSession(scope,old.session_id).catch(()=>{});
-   setBusy(false);setMode(next);setError('');onChange(next,null);
-  }}><option value="mock">Démonstration mock — sans appel externe</option><option value="mistral">Mistral — consentement requis</option></select></>}
-  {mode==='mistral'&&<section aria-label="Consentement Mistral" className="provider-consent">
-   {!caps?.enabled?<p role="status">{caps?'Mistral n’est pas activé sur ce serveur. Aucune donnée n’est envoyée.':error?'Fournisseur indisponible. Aucun envoi autorisé.':'Vérification de la disponibilité du fournisseur. Aucun envoi autorisé.'}</p>:<>
-    <p>Disponibilité jusqu’au {new Date(caps.provider_expires_at!*1000).toLocaleString('fr-FR')}. Budget global restant : {caps.remaining_calls} requêtes / {caps.remaining_usd} USD.</p>
-    <p>Modèle : {caps.model}. Un seul Space : celui que vous consultez.</p>
-    <p>Plafond par session : {caps.max_calls} requêtes, {caps.max_usd} USD. Réservation et limites globales appliquées par le serveur. Aucun retry ni fallback automatique.</p>
-    <p className="small">Autorisation bornée à {caps.max_seconds/60} minutes. {caps.max_seconds===1800?'Le renouvellement de la connexion conserve cette autorisation pour le même contenu et la même session de travail.':'La durée restante de la connexion peut réduire cette limite.'} Les plafonds administratifs restent appliqués.</p>
-    {!session&&<button type="button" disabled={busy||!messages.at(-1)?.content.trim()} onClick={()=>{void preview();}}>Examiner les données avant envoi</button>}
-    {session&&<>
-     <p role="status">Session {session.state==='active'?'autorisée':'à autoriser'} · {remaining} s restantes · {session.accounting.calls}/{session.max_calls} requêtes · coût engagé/réservé {session.accounting.committed_usd} USD.</p>
-     <p>Visibilité : {session.include_proposed?'informations confirmées actuelles et propositions explicitement incluses':'informations confirmées actuelles uniquement'}. {session.partial_coverage?'Couverture partielle.':''}</p>
-     {session.provided_revisions.every(r=>r.validation_state==='proposed')&&<p role="note" className="notice">Tout le contexte fourni est proposé et non confirmé.</p>}
-     <details><summary>Données exactes et provenance avant envoi ({session.provided_revisions.length} révisions)</summary>
-      {session.provided_revisions.map(r=><Revision key={r.revision_id} row={r}/>)}
-      <details><summary>Messages destinés au fournisseur et empreinte</summary><pre className="json-value">{JSON.stringify({snapshot_sha256:session.snapshot_sha256,messages:session.provider_messages},null,2)}</pre></details>
-     </details>
-     {session.state==='preview'&&<>
-      <label className="chat-opt-in"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/> J’autorise l’envoi à Mistral du contexte affiché, de ma question et de cette discussion temporaire, pour ce modèle, ce Space et ces limites.</label>
-      <button type="button" disabled={!consent||busy||remaining===0} onClick={()=>{void authorize();}}>Autoriser cette session Mistral</button>
-     </>}
-     <button type="button" className="secondary" onClick={()=>{void revoke();}}>Révoquer la session</button>
-     {session.state==='active'&&<button type="button" className="secondary" onClick={()=>{void refresh();}}>Actualiser le budget</button>}
-    </>}
-    <p className="small">La révocation bloque les nouveaux envois ; les données déjà transmises ne peuvent pas être rappelées. Changer de Space, de propositions ou de mode efface la discussion. La réponse de chat seule n’ajoute rien à la compréhension canonique.</p>
-   </>}
-  </section>}
-  </div>
-  {error&&<p role="alert">{error}</p>}
- </div>;
+ function close(){setOpen(false);if(current.current?.state==='preview')void revoke();}
+ return <>
+ <section hidden={!visible} id="space-panel-2" role="tabpanel" aria-labelledby="space-tab-2" className="space-tab-content model-panel"><h2>Modèle</h2>
+  <div className="product-card"><span className="card-icon"><Icon name="model"/></span><div><h3>Modèle de discussion</h3><p>{caps?.enabled?caps.model:'Indisponible pour ce contexte'}</p>{!caps?.enabled&&<p className="muted">Vous pouvez toujours ajouter des éléments sans IA.</p>}
+  {offlineFixture&&<label>Mode de discussion<select id="chat-provider" value={mode} onChange={e=>{generation.current++;const old=forget();if(old)void api.revokeSession(scope,old.session_id).catch(()=>{});setBusy(false);setMode(e.target.value as 'mock'|'mistral');onChange(e.target.value as 'mock'|'mistral',null);}}><option value="mock">Démonstration mock — sans appel externe</option><option value="mistral">Mistral — consentement requis</option></select></label>}</div></div>
+  <div className="product-card"><span className="card-icon"><Icon name="info"/></span><div><h3>Budget restant</h3><p className="budget-value">{caps?.enabled?new Intl.NumberFormat('fr-FR',{maximumFractionDigits:8}).format(Number(caps.remaining_usd))+' USD':'—'}</p>{caps?.enabled&&<p className="muted">{caps.remaining_calls} requêtes disponibles</p>}</div></div>
+  <details className="administrative-disclosure"><summary>Autorisation et limites</summary>{offlineFixture&&hasProposed&&<label className="check"><input type="checkbox" checked={include} onChange={e=>onInclude?.(e.target.checked)}/>Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.</label>}{caps?.enabled&&<><p>Disponibilité jusqu’au {new Date(caps.provider_expires_at!*1000).toLocaleString('fr-FR')}. Au maximum {caps.max_calls} requêtes / {caps.max_usd} USD par session, pendant {caps.max_seconds/60} minutes.</p><p>Aucun envoi automatique. Un changement des informations partagées nécessite une nouvelle autorisation.</p></>}{session&&<><p role="status">{session.state==='active'?'Autorisation active':'Autorisation à confirmer'} · {remaining} s restantes · {session.accounting.calls}/{session.max_calls} requêtes · {session.accounting.committed_usd} USD.</p><button type="button" className="secondary" onClick={()=>{void revoke();}}>Révoquer la session</button>{session.state==='active'&&<button type="button" className="secondary" onClick={()=>{void refresh();}}>Actualiser le budget</button>}</>}{error&&<p role="status">{error}</p>}</details>
+ </section>
+ {open&&<Modal title="Autoriser cette discussion" onClose={close}><section aria-label="Consentement Mistral"><p>Votre question et les éléments affichés ci-dessous seront transmis à {caps?.model??'Mistral'}, uniquement pour cette discussion dans ce Space.</p>
+ {hasProposed&&<label className="check"><input type="checkbox" checked={include} disabled={busy||session?.state==='active'} onChange={e=>onInclude?.(e.target.checked)}/>Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.</label>}
+ {!caps?.enabled?<p role="status">Le modèle n’est pas disponible pour ce contexte. Aucun envoi n’a lieu.</p>:<>
+ {busy&&<p role="status">Préparation des informations à partager…</p>}
+ {session&&<><p>{session.provided_revisions.length} éléments partagés{session.partial_coverage?' · sélection partielle':''}. Autorisation limitée à {caps.max_seconds/60} minutes, avec les mêmes limites de budget.</p><details open><summary>Informations partagées</summary>{session.provided_revisions.map(r=><Revision key={r.revision_id} row={r}/>)}<details><summary>Messages et empreinte de contrôle</summary><pre className="json-value">{JSON.stringify({snapshot_sha256:session.snapshot_sha256,messages:session.provider_messages},null,2)}</pre></details></details>
+ <label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/>J’autorise l’envoi à Mistral des informations affichées et de cette discussion temporaire, dans ces limites.</label><button type="button" disabled={!consent||busy||remaining===0} onClick={()=>{void authorize();}}>Autoriser cette session Mistral</button><p className="small muted">Après cette autorisation, choisissez Envoyer pour transmettre votre question. Aucune réponse ne sera mémorisée automatiquement.</p></>}
+ {error&&<p role="alert">{error}</p>}</>}
+ </section></Modal>}
+ </>;
 }
