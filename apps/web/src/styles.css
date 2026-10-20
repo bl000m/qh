@@ -437,3 +437,10 @@ main:has(>.environment-home) {padding-top:2rem;}
 .space-workspace {align-items:stretch;}
 .signed-in .context-chat {align-self:start;}
 @media(min-width:851px){.signed-in .environment-topline h1{font-size:3.75rem;margin-bottom:24px;}.signed-in .domain-heading h1{font-size:4.25rem;}.signed-in .conversation-scroll{max-height:clamp(180px,calc(100dvh - 650px),510px);}}
+
+/* QH-39: a secondary explicit persistence action, not a new admin screen. */
+.conversation-enrichment {padding:.5rem 0;}
+.enrichment-turn {display:flex;align-items:flex-start;gap:.7rem;padding:.8rem 0;border-bottom:1px solid #ddd;}
+.enrichment-turn input {flex:0 0 auto;margin-top:.3rem;}
+.enrichment-turn span {min-width:0;overflow-wrap:anywhere;}
+.enrichment-turn .chat-text {display:block;max-height:10rem;overflow:auto;}

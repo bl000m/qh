@@ -8,6 +8,9 @@ from contextlib import asynccontextmanager
 from adapters.llm.chat_config import ChatConfigurationError, configured_chat_provider
 from adapters.llm.session_config import configured_session_factory
 from app.review.service import ReviewService
+from app.understanding.enrichment import ConversationEnrichment
+from adapters.postgres.enrichment import PostgresEnrichmentRepository
+from adapters.llm.offline import LiteralSegmentProvider
 from adapters.postgres.review import PostgresReviewRepository
 from adapters.postgres.environment import PostgresOrganizationRepository
 from app.environment.service import EnvironmentService
@@ -90,6 +93,10 @@ def create_runtime_app():
     return create_app(
         services=ApplicationServices(
             context=context,
+            enrichment=ConversationEnrichment(context=context, policy=policy,
+                repository_for=lambda subject: PostgresEnrichmentRepository(url=database_url(), subject_id=subject,
+                    connection_options='-c statement_timeout=5000 -c lock_timeout=5000'),
+                provider=LiteralSegmentProvider()),
             review=ReviewService(context=context, policy=policy, repository=PostgresReviewRepository(url=database_url())),
             environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,

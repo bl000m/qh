@@ -405,3 +405,17 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
   preserves the new container ID; isolated restored H2 startup and rollback pass.
 - Preserve realm/contracts, other five services, QH data and ledger. No inference,
   canonical migration, merge or Jira DONE. See the QH-49 delivery record.
+
+
+### QH-39 selected-conversation enrichment — 2026-10-19, in review
+
+- Add explicit source/turn selection and persistence consent within the existing chat;
+  preserve declared authorship, exact original text, canonical source/provenance and
+  immutable proposed revisions through QH-8/QH-32 and CanonicalRepository/outbox.
+- Publish source and whole validated batch atomically, with durable same-ID replay,
+  owner policy/freshness and no partial source on provider/citation/SQL failure.
+- Reuse existing proposal detail/review, refresh/re-authentication and mobile UX;
+  bound read-only projection waits after known local publication. No provider/write
+  retry. Runtime extraction is clearly labelled offline literal control only.
+- Add isolated API/SQL/Neo4j/browser/security regressions and ADR 0009. No migration,
+  demo source/revision mutation, external inference, QH-39 merge or Jira DONE.

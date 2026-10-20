@@ -4,11 +4,11 @@ import Understanding from './Understanding';
 import {Icon} from './Ui';
 
 /** Native disclosure; lazy first load, retained when folded, reset by Space key. */
-export default function UnderstandingExplorer({api,scope,onChanged}:{api:QhApi;scope:string;onChanged?:()=>void}) {
-  const [visited,setVisited]=useState(false);
+export default function UnderstandingExplorer({api,scope,onChanged,initialRevision}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string}) {
+  const [visited,setVisited]=useState(!!initialRevision);
   const summary=useRef<HTMLElement>(null);
   const content=useRef<HTMLDivElement>(null);
-  return <details className="understanding-explorer support-section" onToggle={event=>{
+  return <details open={initialRevision?true:undefined} className="understanding-explorer support-section" onToggle={event=>{
     if(event.currentTarget.open)setVisited(true);
     else if(content.current?.contains(document.activeElement))summary.current?.focus();
   }} onKeyDown={event=>{
@@ -18,6 +18,6 @@ export default function UnderstandingExplorer({api,scope,onChanged}:{api:QhApi;s
   }}>
     <summary ref={summary}><Icon name="understanding"/><span>Compréhension<small>Explorer la compréhension</small></span></summary>
     <p className="muted">Consultez les éléments conservés, leurs sources et leur historique, sans formuler de recherche.</p>
-    <div ref={content}>{visited && <Understanding api={api} scope={scope} onChanged={onChanged}/>}</div>
+    <div ref={content}>{visited && <Understanding api={api} scope={scope} onChanged={onChanged} initialRevision={initialRevision}/>}</div>
   </details>;
 }

@@ -29,6 +29,11 @@ class ReviewApplication(Protocol):
     async def apply(self, subject: SubjectId, scope: str, revision: str, operation: dict) -> dict: ...
 
 
+class EnrichmentApplication(Protocol):
+    """Explicit owner-selected conversation persistence through the Engine."""
+    async def enrich(self, subject: SubjectId, scope: str, payload: dict) -> dict: ...
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ApplicationServices:
     """Explicit inbound services; unimplemented feature facets remain unbound.
@@ -45,3 +50,4 @@ class ApplicationServices:
     chat_sessions: ProviderSessions | None = None
     environment: EnvironmentApplication | None = None
     review: ReviewApplication | None = None
+    enrichment: EnrichmentApplication | None = None

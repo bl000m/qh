@@ -5,9 +5,9 @@ import type {DialogueMessage} from './chat';
 import type {ProviderSession,SessionCapabilities} from './provider-session';
 import {Revision} from './Revision';
 
-type Props={api:QhApi;scope:string;include:boolean;messages:DialogueMessage[];failure:number;completed:number;
+type Props={api:QhApi;scope:string;include:boolean;messages:DialogueMessage[];failure:number;contextChanged?:number;completed:number;
  onChange:(mode:'mock'|'mistral',session:string|null,preserveDialogue?:boolean)=>void};
-export default function ProviderChoice({api,scope,include,messages,failure,completed,onChange}:Props){
+export default function ProviderChoice({api,scope,include,messages,failure,contextChanged=0,completed,onChange}:Props){
  const [mode,setMode]=useState<'mock'|'mistral'>('mock');
  const [caps,setCaps]=useState<SessionCapabilities|null>(null);
  const [session,setSession]=useState<ProviderSession|null>(null);
@@ -31,6 +31,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
   return()=>{mounted=false;generation.current++;window.removeEventListener('pagehide',leave);leave();};
  },[api,scope,include,onChange]);
  useEffect(()=>{if(failure&&mode==='mistral'){void revoke().then(()=>setError('Session arrêtée après erreur ou nouvelle discussion. Aucun nouvel essai automatique ; un nouveau consentement est requis.'));}},[failure]); // Generation failure terminates, never retries.
+ useEffect(()=>{if(!contextChanged||!current.current)return;generation.current++;const old=forget();setBusy(false);onChange('mistral',null,true);void api.revokeSession(scope,old!.session_id).catch(()=>{});setError('Compréhension enrichie : nouveau contexte, nouvel aperçu et consentement requis.');},[contextChanged]);
  const dialogueKey=JSON.stringify(messages);
  useEffect(()=>{if(current.current?.state==='preview'&&prepared.current!==dialogueKey){void revoke();setError('Question modifiée : préparez un nouvel aperçu avant de consentir.');}},[dialogueKey]);
  useEffect(()=>{if(!session)return;const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[session]);
@@ -86,7 +87,7 @@ export default function ProviderChoice({api,scope,include,messages,failure,compl
      <button type="button" className="secondary" onClick={()=>{void revoke();}}>Révoquer la session</button>
      {session.state==='active'&&<button type="button" className="secondary" onClick={()=>{void refresh();}}>Actualiser le budget</button>}
     </>}
-    <p className="small">La révocation bloque les nouveaux envois ; les données déjà transmises ne peuvent pas être rappelées. Changer de Space, de propositions ou de mode efface la discussion. Rien n’est ajouté à la compréhension canonique.</p>
+    <p className="small">La révocation bloque les nouveaux envois ; les données déjà transmises ne peuvent pas être rappelées. Changer de Space, de propositions ou de mode efface la discussion. La réponse de chat seule n’ajoute rien à la compréhension canonique.</p>
    </>}
   </section>}
   </div>

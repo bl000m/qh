@@ -6,6 +6,18 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-19 — QH-39 development-source boundary
+
+After the owner-authorized no-squash merge of PR #17 (`8c10bf6eb3da3a66b46d5ac6ed8062fcb16edb92`),
+frontend/backend were stopped with guarded `dev-stop`, main fast-forwarded and
+`feat/QH-39-conversation-understanding` selected in the single checkout, then apps
+restarted via `dev-up`. Existing source binds/hot reload expose this unmerged code
+for development; this is not a new image release or persistent data migration.
+QH-49's sealed Keycloak image/realm/volume, PostgreSQL/Neo4j/MCP and private provider
+configuration/ledger remain unchanged. All new source/proposal/review test writes
+are isolated; no existing demo source, revision or confirmation is changed.
+[QH-39 behavior and limitations](qh-39-living-context.md).
+
 ## 2026-10-19 — QH-49 durable new login, actually activated on VPS
 
 The owner explicitly approved replacing **only Keycloak**, after a protected cold

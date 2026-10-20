@@ -1,3 +1,5 @@
+import EnrichConversation from './EnrichConversation';
+import type {SelectedConversationTurn} from './EnrichConversation';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
 import {apiMessage,ApiError} from './api';
@@ -6,10 +8,12 @@ import SourcesPanel from './SourcesPanel';
 import ProviderChoice from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
-export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void}) {
+export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void}) {
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean;historical:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
+  const [conversationId,setConversationId]=useState(()=>crypto.randomUUID());
+  const [sourceTurns,setSourceTurns]=useState<SelectedConversationTurn[]>([]);
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
   useEffect(()=>{onAnswersChange?.(answers);},[answers,onAnswersChange]);
   const [question,setQuestion]=useState('');
@@ -17,6 +21,7 @@ export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string
   const [providerMode,setProviderMode]=useState<'mock'|'mistral'>('mock');
   const [providerSession,setProviderSession]=useState<string|null>(null);
   const [providerFailure,setProviderFailure]=useState(0);
+  const [contextChanged,setContextChanged]=useState(0);
   const [sourceIndex,setSourceIndex]=useState<number|null>(null);
   const [unread,setUnread]=useState(false);
   const viewport=useRef<HTMLDivElement>(null),latest=useRef<HTMLElement|null>(null);
@@ -25,7 +30,7 @@ export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string
   useLayoutEffect(()=>{if(follow.current)showLatest();else if(answers.length||loading)setUnread(true);},[answers.length,loading]);
   const providerChanged=useCallback((mode:'mock'|'mistral',id:string|null,preserveDialogue=false)=>{
     setProviderMode(mode);setProviderSession(id);
-    if(id===null&&!preserveDialogue){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setLoading(false);setError('');}
+    if(id===null&&!preserveDialogue){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());setLoading(false);setError('');}
   },[]);
   const [error,setError]=useState('');
   const generation=useRef(0);
@@ -44,22 +49,24 @@ export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string
           const historical=!hasCurrent&&!hasProposed ? (await api.browse(scope,{view:'history',limit:1})).items.length>0 : false;
           if(n===generation.current)setAvailable({current:hasCurrent,proposed:hasProposed,historical});
         })
-        .catch(e=>{if(n===generation.current){setError(apiMessage(e));setMessages([]);setAnswers([]);}});
+        .catch(e=>{if(n===generation.current){setError(apiMessage(e));setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());}});
     return()=>{generation.current++;};
   },[api,scope]);
-  function reset(){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setQuestion('');setError('');setLoading(false);}
+  function reset(){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());setQuestion('');setError('');setLoading(false);}
   async function submit(event:FormEvent){
     event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available || providerMode==='mistral'&&!providerSession)return;
     const n=generation.current;
     const next:DialogueMessage[]=[...messages,{role:'user',content:question}];
+    const userTurn:SelectedConversationTurn={id:crypto.randomUUID(),role:'user',content:question,captured_at:new Date().toISOString()};
     setLoading(true);setError('');
     try{
       const answer=providerMode==='mistral' ? await api.sessionChat(scope,providerSession!,next,includeProposed) : await api.chat(scope,next,includeProposed);
       if(n!==generation.current)return;
-      // No conversation is persisted or promoted to canonical understanding.
+      // Answering never persists; separate explicit enrichment consent is required.
       setMessages([...next,{role:'assistant',content:answer.answer}]);
+      setSourceTurns(previous=>[...previous,userTurn,{id:crypto.randomUUID(),role:'assistant',content:answer.answer,captured_at:new Date().toISOString()}]);
       setAnswers(previous=>[...previous,answer]);setQuestion('');
-    }catch(e){if(n!==generation.current)return;setMessages([]);setAnswers([]);
+    }catch(e){if(n!==generation.current)return;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());
       if(providerMode==='mistral'){setProviderFailure(v=>v+1);setProviderSession(null);}
       setError(e instanceof ApiError && e.status===422 ? 'La discussion dépasse les limites autorisées. Commencez une nouvelle discussion avec une question plus courte.' : e instanceof ApiError && e.status===503 ? 'Discussion indisponible : contexte non fiable ou fournisseur indisponible. Aucun nouvel essai automatique.' : apiMessage(e));
     }finally{if(n===generation.current)setLoading(false);}
@@ -97,17 +104,18 @@ export default function Chat({api,scope,onAnswersChange}:{api:QhApi;scope:string
       <form ref={composer} className={'chat-composer'+(compactComposer?' composer-persistent':'')} onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
         <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
-      {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} completed={answers.length} onChange={providerChanged}/>}
+      {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} onChange={providerChanged}/>}
         <div className="actions"><button disabled={loading || !available || !question.trim() || messages.length>=8 || providerMode==='mistral'&&!providerSession}>Envoyer la question</button>
           <button type="button" className="secondary" disabled={loading} onClick={()=>{reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button></div>
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
+      <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
       {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
       <details className="chat-help"><summary>Fonctionnement et limites</summary>
-      <p>Échanges temporaires, distincts de la compréhension conservée. Rien n’est ajouté ni confirmé dans le Context Space.</p>
+      <p>Échanges temporaires, distincts de la compréhension conservée. La réponse seule n’ajoute ni ne confirme rien. « Enrichir ce contexte » permet une conservation séparée, explicite et non confirmée.</p>
       <p>La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
       <p>Les révisions historiques et refusées sont exclues. Changer le choix des propositions efface la discussion temporaire.</p>
-      <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Aucune écriture Understanding.</p>
+      <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Seuls les messages explicitement sélectionnés via « Enrichir ce contexte » peuvent être conservés comme source et propositions.</p>
       </details>
   </section>;
 }

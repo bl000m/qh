@@ -84,6 +84,20 @@ policy change. The other five services and all QH data remain preserved. Earlier
 source-only and QH-43 records above are historical; they do not describe current
 QH-49 activation. [Release manifest](../infra/keycloak/qh-theme-release.json).
 
+### QH-39 selected conversational enrichment — 2026-10-19
+
+[ADR 0009](adr/0009-selected-conversation-enrichment.md) implements explicit selected
+chat-source acquisition through `app/understanding/ConversationEnrichment`, the
+existing QH-8 extractor/LLMProvider and QH-32 resolver. The PostgreSQL adapter
+atomically saves the original selected source and entire validated proposed batch
+using CanonicalRepository/outbox; the existing worker and graph-verified retrieval
+remain authoritative paths. Owner PROPOSE_UPDATE precedes reads/generation/writes;
+ordinary CHAT is not write or extraction disclosure consent. The UI reuses QH-46
+review without automatic confirmation. Runtime extraction is explicitly offline
+literal control only, not a new live Mistral grant or demonstrated semantic inference.
+No schema/dependency/service change, demo mutation or new paid call. See the
+[implementation and acceptance report](qh-39-living-context.md).
+
 ## Current code and planned product flows — 2026-10-17
 
 QH-8, QH-32 and QH-33 are merged into `main`; QH-33's technical scope is DONE via

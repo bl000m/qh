@@ -538,3 +538,25 @@ execution stays disabled. No destructive request, successful deletion, archive o
 promise is simulated. A future lifecycle decision must precede any enabling backend change.
 See [ADR 0008](../adr/0008-personal-organization-and-owner-review.md#later-owner-amendment--three-official-maquettes-2026-10-19)
 and the [visual comparison record](../qh-50-maquette-fidelity.md).
+
+
+## Selected chat enrichment — owner QH-39 increment, 2026-10-19
+
+Conversing, explicitly retaining a selected source/proposals, and human confirmation
+are distinct actions. `Enrichir ce contexte` previews the exact selected messages,
+requires separate persistence consent, and produces only `proposed` understanding
+through the single Engine. No chat answer itself writes or confirms understanding.
+The owner remains free to review/correct/refuse through the existing workflow.
+
+Submission identity and source acquisition time are authenticated/server recorded;
+browser dialogue roles/times are declarations. Assistant text is not human evidence.
+Source snapshots remain reconstructible with exact text, turn locators and provenance.
+Failed generation/validation/publication commits nothing; valid empty extraction is
+an explicitly labelled zero-proposal result, never fake understanding.
+
+The first implementation is a visibly labelled offline literal control, not semantic
+classification or a live Mistral extraction. Chat-provider consent/budgets do not
+extend to extraction; no external call or historical ledger reset is authorized.
+No advanced reconciliation/ranking/sharing or MCP ingress is implied. See
+[ADR 0009](../adr/0009-selected-conversation-enrichment.md) and
+[QH-39 acceptance](../qh-39-living-context.md).
