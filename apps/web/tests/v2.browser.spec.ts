@@ -1,3 +1,5 @@
+import {newDiscussion} from './navigation.browser';
+import {includeProposals} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import type {Page} from '@playwright/test';
 import {afterLogin,expandUnderstanding} from './navigation.browser';
@@ -52,13 +54,13 @@ test('UX V2 hierarchical domains, real activity, origin navigation and owner edi
  await page.getByLabel('Nouveau domaine',{exact:true}).fill('Domaine privé de contrôle');await page.getByRole('button',{name:'Ajouter le domaine',exact:true}).click();await page.getByRole('button',{name:'Enregistrer l’organisation'}).click();
  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();const privatePath=await page.getByRole('link',{name:'Domaine privé de contrôle',exact:true}).getAttribute('href');
  const context=await browser.newContext({baseURL:'http://localhost:5173'});const bob=await context.newPage();try{await bob.goto(privatePath!);await bob.getByRole('button',{name:'Se connecter',exact:true}).click();await bob.locator('#username').fill('bob');await bob.locator('#password').fill(process.env.QH_BOB_PASSWORD!);await bob.locator('#kc-login').click();await expect(bob.getByRole('alert')).toHaveText('Ce domaine est introuvable ou inaccessible.');await expect(bob.getByText('Domaine privé de contrôle',{exact:true})).toHaveCount(0);await bob.evaluate(p=>{history.pushState(null,'',p);dispatchEvent(new PopStateEvent('popstate'));},nestedPath);await expect(bob.getByRole('alert')).toHaveText('Ce Context Space est introuvable ou inaccessible.');await expect(bob.getByText('Primary domain UX control',{exact:true})).toHaveCount(0);}finally{await context.close();}
- await page.getByRole('link',{name:'Paramètres de mon environnement'}).click();await page.getByRole('link',{name:'Non classés',exact:true}).click();await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Primary domain UX control',exact:true})).toHaveCount(0);
+ await page.getByRole('link',{name:'Paramètres de mon environnement'}).click();await page.getByRole('button',{name:'Organiser mes domaines'}).click();await page.getByRole('link',{name:'Non classés',exact:true}).click();await expect(page.getByRole('link',{name:'Projet pilote',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Primary domain UX control',exact:true})).toHaveCount(0);
  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();await page.getByRole('link',{name:'Paramètres de mon environnement'}).click();await page.getByRole('button',{name:'Organiser mes domaines'}).click();await page.getByRole('button',{name:'Retirer le domaine 8',exact:true}).click();await page.getByRole('button',{name:'Enregistrer l’organisation'}).click();
  await page.evaluate(p=>{history.pushState(null,'',p);dispatchEvent(new PopStateEvent('popstate'));},privatePath!);await expect(page.getByRole('alert')).toHaveText('Ce domaine est introuvable ou inaccessible.');
 });
 test('UX V2 chat follows latest, respects deliberate scroll, source drawer traps and returns focus',async({page},info)=>{
- await login(page,fixture.demo_spaces[0].scope);await page.getByLabel('Inclure explicitement les propositions non confirmées').check();
- const original=await ask(page,'Question de contrôle');await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();
+ await login(page,fixture.demo_spaces[0].scope);await includeProposals(page);
+ const original=await ask(page,'Question de contrôle');await newDiscussion(page);
  await page.route('**/chat',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({...original,answer:Array(12).fill('Texte long de contrôle de défilement, sans inférence ni nouvelle information.').join('\n\n')})}));
  const log=page.getByRole('log',{name:'Conversation temporaire'});
  await ask(page,'Première question');await ask(page,'Deuxième question');
@@ -68,7 +70,7 @@ test('UX V2 chat follows latest, respects deliberate scroll, source drawer traps
  await ask(page,'Troisième question');await expect(page.getByRole('button',{name:'Voir la nouvelle réponse ↓'})).toBeVisible();
  expect(await log.evaluate(e=>e.scrollTop)).toBe(0);
  await page.getByRole('button',{name:'Voir la nouvelle réponse ↓'}).click();
- const source=page.getByRole('button',{name:'Voir les sources de la réponse 3',exact:true});await source.click();
+ const source=page.getByRole('button',{name:'Sources de la réponse 3',exact:true});await source.click();
  const drawer=page.getByRole('dialog',{name:'Sources & compréhension'});await expect(drawer).toBeVisible();
  await expect(drawer.getByRole('button',{name:'Fermer les sources'})).toBeFocused();await page.keyboard.press('Shift+Tab');expect(await page.evaluate(()=>document.activeElement?.closest('dialog')!==null)).toBe(true);
  await expect(drawer.getByRole('heading',{name:'Ce que cette réponse cite'})).toBeVisible();

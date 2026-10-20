@@ -125,6 +125,6 @@ jobs:
       - name: Real browser PKCE and Alice/Bob REST acceptance
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --output /tmp/qh12-browser-evidence
-      - name: QH-52 normal product UI, rotating OIDC and isolated literal bootstrap
+      - name: QH-52/QH-53 normal product UI, rotating OIDC and isolated literal bootstrap
         run: |
-          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --product-mode --browser-grep 'QH-52 product' --output /tmp/qh52-product-evidence
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --product-mode --browser-grep 'QH-52 product|QH-53 complete|QH-53 consent' --output /tmp/qh52-product-evidence

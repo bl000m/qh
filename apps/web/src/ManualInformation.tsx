@@ -17,10 +17,10 @@ export default function ManualInformation({api,scope,disabled,onSaved,onOpen,ope
   catch(e){setError(apiMessage(e)+' Aucun nouvel essai automatique. Une nouvelle tentative de ce même texte conserve son identifiant.');}
   finally{setBusy(false);}
  }
- return <section className="manual-information" aria-label="Ajouter une information sans IA">
-  {!hideAction&&<button type="button" className="secondary" disabled={disabled||busy} onClick={()=>{setError('');setOpen(true);}}>Ajouter une information</button>}
+ return <section className="manual-information" aria-label="Ajouter un élément sans IA">
+  {!hideAction&&<button type="button" className="secondary" disabled={disabled||busy} onClick={()=>{setError('');setOpen(true);}}>Ajouter un élément</button>}
   {saved&&<div role="status"><p>Votre information est conservée. Elle reste une proposition à vérifier ; rien n’est confirmé automatiquement.</p>{saved.revision_ids.map((id,i)=><button key={id} type="button" className="secondary" onClick={()=>onOpen?.(id)}>Examiner l’information {i+1}</button>)}</div>}
-  {open&&<Modal title="Ajouter une information" onClose={()=>{if(!busy)setOpen(false);}}><form onSubmit={e=>{e.preventDefault();void save();}}>
+  {open&&<Modal title="Ajouter un élément" onClose={()=>{if(!busy)setOpen(false);}}><form onSubmit={e=>{e.preventDefault();void save();}}>
    <p>Décrivez ce que vous souhaitez conserver dans ce contexte, même si la conversation est indisponible.</p>
    <label htmlFor="manual-information">Votre information</label><textarea id="manual-information" value={text} maxLength={4096} rows={5} disabled={busy} required onChange={e=>{setText(e.target.value);setConsent(false);}}/>
    <p>Le texte sera conservé tel quel, avec sa source. Aucune analyse par un modèle ni aucun envoi externe. Vous pourrez ensuite l’examiner, le corriger ou le refuser.</p>

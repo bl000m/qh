@@ -7,12 +7,20 @@ export async function afterLogin(page:Page,scope?:string) {
   if(scope)await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+scope);
 }
 export async function showSupport(page:Page){
- const toggle=page.getByRole('button',{name:'Sources & compréhension',exact:true});
- if(await toggle.isVisible())await toggle.click();
+ await page.getByRole('tab',{name:'Éléments',exact:true}).click();
 }
-export async function expandUnderstanding(page:Page) {
-  const panel=page.locator('details.understanding-explorer');
-  await panel.waitFor({state:'attached'});
-  await showSupport(page);
-  if(!await panel.evaluate((node:HTMLDetailsElement)=>node.open))await panel.locator(':scope > summary').click();
+export async function expandUnderstanding(page:Page){
+ await showSupport(page);
+ const panel=page.locator('details.understanding-explorer');await panel.waitFor({state:'attached'});
+ if(!await panel.evaluate((n:HTMLDetailsElement)=>n.open))await panel.locator(':scope > summary').click();
+}
+export async function includeProposals(page:Page,checked=true){
+ await page.getByRole('tab',{name:'Modèle',exact:true}).click();
+ const details=page.locator('.administrative-disclosure');if(!await details.evaluate((n:HTMLDetailsElement)=>n.open))await details.locator('summary').click();
+ await page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.',{exact:true}).setChecked(checked);
+ await page.getByRole('tab',{name:'Discussion',exact:true}).click();
+}
+export async function newDiscussion(page:Page){
+ const menu=page.locator('.composer-options');if(!await menu.evaluate((n:HTMLDetailsElement)=>n.open))await menu.locator('summary').click();
+ await page.getByRole('button',{name:'Nouvelle discussion',exact:true}).click();
 }
