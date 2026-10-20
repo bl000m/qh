@@ -5,6 +5,16 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## Demo B block 2 — in development, 2026-10-20
+
+- QH-14 adds canonical mutable Projection Drafts with exact item/revision scope,
+  exclusions, recipient/purpose, expiry and atomic versioned edits. The central
+  owner policy is reused; recipient metadata does not grant access.
+- Migration 0007 is prepared for isolated verification only; persistent VPS remains
+  at 0006. No approved snapshot, guest link, Editor or paid extraction.
+- QH-39 owner merge/closure and confirmed Mac-call attribution are recorded;
+  runtime semantic extraction remains the dedicated QH-51 follow-up.
+
 ## QH-50 UX V2 — in review, 2026-10-19
 
 - Conversational viewport, compact provider controls and accessible answer-specific
