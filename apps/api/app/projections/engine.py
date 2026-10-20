@@ -35,7 +35,10 @@ class ProjectionDraftService:
         await self._allow(subject, scope)
         if not isinstance(spec, DraftSpec):
             raise ValueError('Explicit draft specification required')
-        return await self._checked(subject, scope, await self.repository.create(subject, scope, spec))
+        result = await self._checked(subject, scope, await self.repository.create(subject, scope, spec))
+        if result.version != 1 or result.spec != spec:
+            raise ProjectionUnavailable('Projection unavailable')
+        return result
 
     async def read(self, subject, scope, draft_id):
         await self._allow(subject, scope)
@@ -50,8 +53,11 @@ class ProjectionDraftService:
         identifier(draft_id)
         if type(version) is not int or version < 1 or not isinstance(spec, DraftSpec):
             raise ValueError('Explicit draft and expected version required')
-        return await self._checked(subject, scope,
+        result = await self._checked(subject, scope,
             await self.repository.replace(subject, scope, draft_id, version, spec))
+        if result.id != draft_id or result.version != version + 1 or result.spec != spec:
+            raise ProjectionUnavailable('Projection unavailable')
+        return result
 
     def _resolvable(self, draft, version):
         if type(version) is not int or version < 1:

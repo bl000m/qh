@@ -55,6 +55,10 @@ class DraftSpec:
                     or any(not isinstance(ref, RevisionKey) for ref in refs)
                     or len(set(refs)) != len(refs)):
                 raise ValueError('Bounded unique exact revision pairs required')
+        # Scope is a set of exact pairs; persistence ordering must not look like
+        # an edit or a mismatched write receipt on an otherwise identical draft.
+        object.__setattr__(self, 'included', tuple(sorted(self.included)))
+        object.__setattr__(self, 'excluded', tuple(sorted(self.excluded)))
         pairs = self.included + self.excluded
         if len({p.revision_id for p in pairs}) != len({(p.item_id, p.revision_id) for p in pairs}):
             raise ValueError('Revision must identify one item')

@@ -67,7 +67,9 @@ jobs:
       - name: Existing local OIDC setup on disposable hosted runner
         run: |
           make oidc-up
-          make migrate
+          # Preserve the existing live OIDC/runtime baseline. Draft schema 0007
+          # is exercised separately in native-integration, without activation.
+          docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T backend alembic -c adapters/postgres/alembic.ini upgrade 0006_owner_organization
           make seed-oidc-demo
       - name: Existing deployed and isolated OIDC checks
         run: |

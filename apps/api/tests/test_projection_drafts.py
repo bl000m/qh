@@ -44,6 +44,7 @@ def test_exact_exclusions_win_and_never_infer_new_revisions():
     a,b=key(),key()
     assert spec(included=(a,b),excluded=(b,)).effective == (a,)
     assert spec().effective == ()
+    assert spec(included=(a,b)) == spec(included=(b,a))
     with pytest.raises(ValueError):spec(included=(a,a))
     with pytest.raises(ValueError):RevisionKey(item_id=a.item_id,revision_id='not-an-id')
     with pytest.raises(ValueError):spec(included=(a,),excluded=(replace(a,item_id=uid()),))

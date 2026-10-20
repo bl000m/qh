@@ -59,6 +59,10 @@ application boundary. The resolver receives an owner-bound CanonicalRepository
 factory and the existing native projector; it creates no worker or graph namespace.
 No production route, runtime activation or public wire schema is added in this block.
 HTTP exposure and runtime acceptance of schema 0007 require the later Editor contract.
+The existing hosted Keycloak/OIDC campaign stays explicitly on its deployed 0006
+baseline, rather than following Alembic `head` into a not-yet-enabled runtime schema.
+No existing OIDC assertions are removed. New projection fixtures upgrade through
+0007 and reuse signed OIDC verification/identity adapters on that isolated schema.
 
 | Operation | Inputs and result |
 | --- | --- |
@@ -88,3 +92,45 @@ requires a future 409 mapping. This block tests those mappings with private test
 routes; it does not add public endpoints. Automatic review rejected an attempted
 public API/runtime expansion as outside explicit authorization; that patch was not
 applied, and the internal engine increment proceeds within the approved boundary.
+
+## Criterion mapping and executed evidence
+
+| Ticket / acceptance | Classification and executed evidence |
+| --- | --- |
+| QH-14 minimal canonical draft, exact revision scope, owner, recipient/purpose, expiry/version/default deny | Implemented and tested — PASS: model/policy tests; real SQL CRUD/reopen/CAS, invalid pair/space and FK/identity constraints; no approved snapshot/share table |
+| QH-15 only included authorized revisions, exclusions before retrieval/disclosure | Implemented and tested — PASS: native exact graph verification, minimal source identities, spy proves only included revision hydrated; direct excluded/unknown IDs denied before content load; extra/foreign adapter output rejected |
+| QH-16 isolation and negative policy cases | Implemented and tested — PASS: Alice/Bob signed OIDC, same missing/denied HTTP 404 through existing mapper on private test-only route; no fake-provider request on denial, allowed payload excludes private canaries |
+| Revision changes after creation | Implemented and tested — PASS: new proposed/confirmed revision plus new current pointer and graph rebuild still return only pinned original revision; future revision ID denied |
+| Graph expansion, pending/missing/tampered assertions | Implemented and tested — PASS: relation endpoints must be explicitly included before hydration; relations never widen plain-item scope; all unavailable graph cases fail closed |
+| Inflight owner/draft/expiry/canonical change | Implemented and tested — PASS: no result after deactivation, CAS version edit, expiry or pending canonical publication |
+| Additive migration preservation | Implemented and tested — PASS: original canonical snapshot and trigger definitions preserved after isolated 0006 → 0007 upgrade; no persistent VPS migration |
+| Existing full CI, review and closure | Final hosted results recorded on the PR/Jira after publication. No merge of this block authorized; Jira status transitions are not inferred |
+
+Executed locally in Docker, on a newly created internal-network test project with
+tmpfs PostgreSQL/Neo4j, no ports or persistent volumes:
+
+- QH-14: **71 PASS** unit/policy/boundary checks, then **6 PASS / 12.07 s** SQL
+  CRUD/CAS/rollback cases. An initial harness-only missing POSTGRES_PORT was fixed;
+  only the affected SQL cases were rerun.
+- QH-15: **25 PASS / 30.16 s** engine/native checks; **57 PASS** affected model/
+  architecture checks. Ruff PASS. Counts overlap, never sum them.
+- QH-16 integration after the order-normalization correction: **122 PASS / 72.92 s**
+  across `test_projection_drafts.py`, `test_projection_drafts_sql.py`,
+  `test_projection_engine.py`, `test_projection_engine_pipeline.py`,
+  `test_projection_isolation.py`, `test_owner_policy.py`, `test_architecture.py`,
+  `test_identity_migration.py`, `test_ux_v2_architecture.py`.
+- Additional final owner/foreign-space controls: **20 PASS / 9.41 s**, 17 unrelated
+  cases deselected, using `-k 'owner_read_policy or valid_revision_in_other_space'`.
+- Existing Ruff, actionlint, Git whitespace and sealed QH-33 v1/v2 audit PASS.
+  No local frontend rebuild/full browser campaign: frontend/wire routes are unchanged;
+  the final hosted workflow exercises the existing complete gates once.
+
+The stricter write-result check exposed differing tuple order between input scope
+and sorted SQL rows (six rejected positive cases). DraftSpec now normalizes both
+lists as sorted sets of exact pairs; a regression proves order-independent equality.
+No selection, policy, graph assertion, historical binding or sealed audit was relaxed.
+
+Private preflight/test harness and protected inventories are retained under
+`.local-archive/block2-20261020/`, never published. Reproduce isolated execution with
+`infra/docker/qh30-integration.yml` in a dedicated project, generated test credentials
+and the named pytest files; never use the persistent `qh` project for these tests.
