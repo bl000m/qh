@@ -1,12 +1,13 @@
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import type {QhApi} from './api';
 import {apiMessage} from './api';
 import type {EnrichmentReceipt} from './EnrichConversation';
 import {Modal} from './SpaceActions';
 
-export default function ManualInformation({api,scope,disabled,onSaved,onOpen}:{api:QhApi;scope:string;disabled:boolean;onSaved:()=>void;onOpen?:(id:string)=>void}){
+export default function ManualInformation({api,scope,disabled,onSaved,onOpen,openRequest=0,hideAction=false}:{api:QhApi;scope:string;disabled:boolean;openRequest?:number;hideAction?:boolean;onSaved:()=>void;onOpen?:(id:string)=>void}){
  const [open,setOpen]=useState(false),[text,setText]=useState(''),[consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [saved,setSaved]=useState<EnrichmentReceipt|null>(null);
+ useEffect(()=>{if(openRequest){setError('');setOpen(true);}},[openRequest]);
  const attempt=useRef<{text:string;payload:Parameters<QhApi['enrich']>[1]}|null>(null);
  async function save(){
   if(busy||!consent||!text.trim())return;
@@ -17,7 +18,7 @@ export default function ManualInformation({api,scope,disabled,onSaved,onOpen}:{a
   finally{setBusy(false);}
  }
  return <section className="manual-information" aria-label="Ajouter une information sans IA">
-  <button type="button" className="secondary" disabled={disabled||busy} onClick={()=>{setError('');setOpen(true);}}>Ajouter une information</button>
+  {!hideAction&&<button type="button" className="secondary" disabled={disabled||busy} onClick={()=>{setError('');setOpen(true);}}>Ajouter une information</button>}
   {saved&&<div role="status"><p>Votre information est conservée. Elle reste une proposition à vérifier ; rien n’est confirmé automatiquement.</p>{saved.revision_ids.map((id,i)=><button key={id} type="button" className="secondary" onClick={()=>onOpen?.(id)}>Examiner l’information {i+1}</button>)}</div>}
   {open&&<Modal title="Ajouter une information" onClose={()=>{if(!busy)setOpen(false);}}><form onSubmit={e=>{e.preventDefault();void save();}}>
    <p>Décrivez ce que vous souhaitez conserver dans ce contexte, même si la conversation est indisponible.</p>

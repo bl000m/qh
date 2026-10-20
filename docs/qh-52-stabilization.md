@@ -210,3 +210,21 @@ owner checks. Logout dispatches grant revocation with its current in-memory acce
 credential before clearing it; it cannot wait on or initiate a renewal. The focused
 logout/current-token and in-flight/account/rotation checks pass (3 tests/typecheck).
 No timeout, policy, ledger or provenance check was weakened.
+
+
+Final browser compatibility/layout correction: Space-route restoration stays behind
+the approved development profile; the unactivated legacy profile retains its prior
+home landing (domain deep links remain supported). Both profile-boundary unit checks
+and the original protected-login/reload acceptance pass. On mobile, the edit action
+is compact and first-information opens directly from the empty-Space guide; the
+manual authoring control for populated Spaces follows the primary composer.
+The original composer position assertion (<650px) passes unchanged. product-final
+then passes both product scenarios plus the actual rotating Keycloak protocol test;
+the retained screenshots now match that final source. Zoom evidence uses CSS zoom
+and the existing200% text-reflow regression, not a native Mac browser zoom gesture.
+
+The earlier84e2593 hosted pass verified785 native integration tests without skips,
+quality and OIDC. Its browser failures identified legacy-landing incompatibility
+and mobile control height; these were corrected and targeted before publication.
+The final review verdict requires all checks on the final PR head, not reuse of a
+failed or merely partial workflow result.

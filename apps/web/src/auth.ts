@@ -88,7 +88,7 @@ export function createSession(manager = new UserManager(oidcSettings(window.loca
           // QH-52: an explicitly requested domain or Space survives reauthentication.
           // Ordinary login still lands home; never restore an implicit last Space.
           const target=safeReturnPath(user.state);
-          window.history.replaceState(null, '', target);
+          window.history.replaceState(null, '', renewalEnabled||target.startsWith('/domains/')?target:'/');
           window.dispatchEvent(new PopStateEvent('popstate'));
           const authenticatedAt=user.profile.auth_time;
           started=typeof authenticatedAt==='number'&&authenticatedAt>0&&authenticatedAt*1000<=Date.now()?authenticatedAt*1000:Date.now();

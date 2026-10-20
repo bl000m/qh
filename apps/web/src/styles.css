@@ -454,3 +454,5 @@ main:has(>.environment-home) {padding-top:2rem;}
 .enrichment-turn input {flex:0 0 auto;margin-top:.3rem;}
 .enrichment-turn span {min-width:0;overflow-wrap:anywhere;}
 .enrichment-turn .chat-text {display:block;max-height:10rem;overflow:auto;}
+
+@media(max-width:850px){.signed-in .chat-composer{margin-top:12px;}}

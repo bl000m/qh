@@ -54,3 +54,14 @@ test('QH-52 failed rotation and account changes fail closed; logout wins an in-f
  });
  expect(results).toEqual([{mode:'reused-refresh',rejected:true,state:'expired'},{mode:'different-account',rejected:true,state:'expired'},{mode:'logout-race',rejected:true,state:'signed-out'}]);
 });
+
+test('QH-52 legacy profile keeps its approved home landing until the development gate',async({page})=>{
+ await page.goto('/');
+ const result=await page.evaluate(async()=>{
+  const {createSession}=await import(String('/src/auth.ts'));const {User}=await import(String('/node_modules/.vite/deps/oidc-client-ts.js'));
+  history.replaceState(null,'','/oidc/callback');
+  const manager={events:{addAccessTokenExpired:()=>{}},clearStaleState:async()=>{},removeUser:async()=>{},signinRedirectCallback:async()=>new User({access_token:'synthetic',token_type:'Bearer',expires_at:Date.now()/1000+300,profile:{sub:'alice',iss:'issuer',aud:'client',exp:9999999999,iat:0},userState:'/context-spaces/00000000-0000-0000-0000-000000000001'})};
+  const s=createSession(manager as never,false);await s.initialize();return {state:s.snapshot(),route:location.pathname};
+ });
+ expect(result).toEqual({state:'authenticated',route:'/'});
+});

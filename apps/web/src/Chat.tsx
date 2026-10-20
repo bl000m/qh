@@ -18,6 +18,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
   useEffect(()=>{onAnswersChange?.(answers);},[answers,onAnswersChange]);
   const [question,setQuestion]=useState('');
+  const [manualOpen,setManualOpen]=useState(0);
   const [loading,setLoading]=useState(false);
   const [providerMode,setProviderMode]=useState<'mock'|'mistral'>(offlineFixture?'mock':'mistral');
   const [providerSession,setProviderSession]=useState<string|null>(null);
@@ -79,7 +80,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
         {!available.current && available.proposed && <div className="notice chat-availability"><p>Compréhension disponible : propositions non confirmées uniquement.</p>{proposalsExcluded && <p id="chat-availability-help">{proposalHelp}</p>}</div>}
         {noActive && <div className="chat-empty" role="note"><h3>{available.historical ? 'Une histoire à explorer, aucun élément actif pour discuter.' : 'Ce Space attend sa première compréhension.'}</h3>
           <p>{available.historical ? 'Des révisions sont conservées dans l’historique. Elles restent consultables dans Explorer la compréhension, mais ne sont pas transmises à la chat.' : 'Aucune révision de compréhension n’est disponible dans ce Space. Il n’y a pas encore d’éléments sur lesquels appuyer une réponse.'}</p>
-          <p className="small muted">Ajoutez votre première information ci-dessous, sans appel à un fournisseur. Elle restera proposée jusqu’à votre examen explicite.</p></div>}
+          <p className="small muted">Ajoutez votre première information ci-dessous, sans appel à un fournisseur. Elle restera proposée jusqu’à votre examen explicite.</p><button type="button" className="secondary" disabled={loading} onClick={()=>setManualOpen(n=>n+1)}>Ajouter une information</button></div>}
         <label className="chat-opt-in"><input type="checkbox" checked={includeProposed} disabled={loading} onChange={e=>{reset();setIncludeProposed(e.target.checked);}}/> Inclure explicitement les propositions non confirmées</label>
       </>}
       <div className="conversation-scroll" ref={viewport} role="log" aria-label="Conversation temporaire" aria-live="polite" aria-relevant="additions" aria-busy={loading} tabIndex={0} onScroll={()=>{const n=viewport.current;if(n&&!moving.current){follow.current=n.scrollHeight-n.clientHeight-n.scrollTop<48;if(follow.current)setUnread(false);}}}>
@@ -99,7 +100,6 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
       </div>
       {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
       <p className="generation-status" role="status">{loading?'Réponse en cours…':answers.length?'Réponse disponible. La discussion reste temporaire.':''}</p>
-      <ManualInformation api={api} scope={scope} disabled={loading} onOpen={onOpenProposal} onSaved={()=>{setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
       <form className="chat-composer" onSubmit={e=>{void submit(e);}}>
         <label htmlFor="chat-question">Votre question sur ce contexte</label>
         <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
@@ -108,6 +108,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
           <button type="button" className="secondary" disabled={loading} onClick={()=>{reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button></div>
         {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
       </form>
+      <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction={noActive} onOpen={onOpenProposal} onSaved={()=>{setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
       <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
       {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
       <details className="chat-help"><summary>Fonctionnement et limites</summary>
