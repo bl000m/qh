@@ -19,6 +19,8 @@ class ChatIdentity:
     subject_id: str
     expires_at: float
     credential_id: str
+    verified_session_id: str | None = None
+    work_expires_at: float | None = None
 
 
 @dataclass
@@ -40,7 +42,8 @@ def packet_hash(built):
 
 
 class ProviderSessions:
-    def __init__(self, *, chat, factory: ProviderSessionFactory | None = None, clock):
+    def __init__(self, *, chat, factory: ProviderSessionFactory | None = None, clock, session_binding=False):
+        self.session_binding = session_binding
         self.chat, self.factory, self.clock = chat, factory, clock
         self.grants = {}
 
@@ -48,7 +51,7 @@ class ProviderSessions:
         await self.chat._authorize(request)
         enabled = self.factory is not None and await self.factory.available(request.subject_id, request.context_id)
         return dict(enabled=enabled, model=self.factory.model if enabled else None,
-                    max_seconds=300, max_calls=self.factory.max_calls if enabled else 3,
+                    max_seconds=1800 if self.session_binding else 300, max_calls=self.factory.max_calls if enabled else 3,
                     max_usd=self.factory.max_usd if enabled else '0.01',
                     provider_expires_at=self.factory.expires_at if enabled else None,
                     **({k: v for k, v in self.factory.remaining().items() if k != 'blocked'} if enabled
@@ -67,6 +70,8 @@ class ProviderSessions:
         caps = await self.capabilities(request)
         if not caps['enabled'] or identity.expires_at <= self.clock():
             raise SessionClosed('Real provider unavailable')
+        if self.session_binding and (not identity.verified_session_id or identity.work_expires_at is None or identity.work_expires_at <= self.clock()):
+            raise SessionClosed('Verified OIDC work session required')
         self._prune()
         built, selection = await self.chat.prepare(request)
         if not self.factory.accepts_snapshot(request.subject_id, request.context_id, packet_hash(built)):
@@ -74,7 +79,8 @@ class ProviderSessions:
         if not built.revisions:
             raise ChatInputInvalid('No eligible context; explicit proposal choice may be needed')
         grant = Grant(str(uuid4()), identity, request, built, selection,
-                      min(self.clock() + 300, identity.expires_at, self.factory.expires_at))
+                      min(self.clock() + (1800 if self.session_binding else 300),
+                          identity.work_expires_at if self.session_binding else identity.expires_at, self.factory.expires_at))
         self.grants[grant.id] = grant
         return self.describe(grant)
 
@@ -86,7 +92,9 @@ class ProviderSessions:
         if (grant is None or identity.subject_id != grant.identity.subject_id
                 or request.context_id != grant.request.context_id):
             raise ContextSpaceNotFound('Context space not found')
-        if not revoke and (identity.credential_id != grant.identity.credential_id
+        same_session = (bool(identity.verified_session_id) and identity.verified_session_id == grant.identity.verified_session_id
+                        and identity.work_expires_at is not None and self.clock() < identity.work_expires_at) if self.session_binding else identity.credential_id == grant.identity.credential_id
+        if not revoke and (not same_session
                 or self.clock() >= min(grant.expires_at, identity.expires_at)
                 or self.factory is None or not await self.factory.verified(identity.subject_id, request.context_id)):
             grant.state = 'closed'
@@ -117,7 +125,7 @@ class ProviderSessions:
         await self._get(identity, request, grant_id)
         if grant.state != 'preview':
             raise SessionClosed('Preview no longer available')
-        grant.binding = self.factory.bind(grant.id, max_calls=self.factory.max_calls, max_usd=self.factory.max_usd)
+        grant.binding = self.factory.bind(grant.identity.verified_session_id if self.session_binding else grant.id, max_calls=self.factory.max_calls, max_usd=self.factory.max_usd)
         grant.state = 'active'
         return self.describe(grant)
 

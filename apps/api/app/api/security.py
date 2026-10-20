@@ -9,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from adapters.oidc import GeneralPermissionDenied, IdentityUnavailable, InvalidCredentials
 from app.core.models import ContextId, SubjectId
+from app.chat.sessions import ChatIdentity
 from app.policy.models import PolicyAction, PolicyRequest
 from app.policy.services import PolicyService
 
@@ -17,6 +18,7 @@ from app.policy.services import PolicyService
 class SecurityBindings:
     authenticate: Callable[[str], Awaitable[SubjectId]]
     policy: PolicyService
+    authenticate_session: Callable[[str], Awaitable[ChatIdentity]] | None = None
     authenticate_with_expiry: Callable[[str], Awaitable[tuple[SubjectId, float]]] | None = None
 
 
@@ -57,13 +59,14 @@ async def require_context_owner(request: Request, context_id: str,
 async def authenticated_chat_identity(request: Request,
         credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
     """Same OIDC verifier, exposing only verified expiry and a token binding hash."""
-    from app.chat.sessions import ChatIdentity
     if credentials is None or len(request.headers.getlist('authorization')) != 1:
         raise HTTPException(401, 'Invalid credentials', headers={'WWW-Authenticate': 'Bearer'})
     security = request.app.state.security
     if security is None or security.authenticate_with_expiry is None:
         raise HTTPException(503, 'Verified identity expiry unavailable')
     try:
+        if security.authenticate_session is not None:
+            return await security.authenticate_session(credentials.credentials)
         subject, expiry = await security.authenticate_with_expiry(credentials.credentials)
     except InvalidCredentials:
         raise HTTPException(401, 'Invalid credentials', headers={'WWW-Authenticate': 'Bearer'}) from None

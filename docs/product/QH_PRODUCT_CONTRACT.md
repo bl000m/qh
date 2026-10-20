@@ -560,3 +560,22 @@ extend to extraction; no external call or historical ledger reset is authorized.
 No advanced reconciliation/ranking/sharing or MCP ingress is implied. See
 [ADR 0009](../adr/0009-selected-conversation-enrichment.md) and
 [QH-39 acceptance](../qh-39-living-context.md).
+
+
+## QH-52 approved development stabilization — 2026-10-20
+
+Owner approval of contracts A/B/C in [QH-52](../qh-52-stabilization.md) permits
+implementation and isolated testing, with persistent activation separately gated.
+Bounded memory-only OIDC refresh preserves temporary drafts without browser storage.
+Optional verified-session disclosure remains tied to the same exact canonical
+snapshot, Space, model and purpose, for at most thirty minutes within the work
+session and administrative availability. Token renewal and new consent cannot reset
+durable work-session or aggregate budgets. New data or wider scope require consent;
+provider enablement, disclosure permission and epistemic confirmation remain distinct.
+
+Owner-only domain/Space descriptions are plain organizational metadata (500
+characters) in schema0006, not understanding, classification or permission. Empty
+Spaces can receive a first user-authored information through existing explicit
+QH-39 source/proposal persistence without an external provider. Literal retention
+is labelled and unconfirmed; QH-51 semantic extraction remains future. Normal chat
+uses an authorized real provider or explicit unavailability; mock is test/replay only.

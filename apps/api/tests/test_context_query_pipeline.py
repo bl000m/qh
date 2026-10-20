@@ -29,6 +29,7 @@ from tests.test_understanding_pipeline import import_extract
 
 def application(p):
     app=create_runtime_app()
+    app.state.offline_chat=True
     reader=PostgresSecurityReader(url=database_url())
     auth,_=build_auth(resolver=reader.resolve_identity)
     app.state.security=replace(app.state.security,authenticate=auth.authenticate)

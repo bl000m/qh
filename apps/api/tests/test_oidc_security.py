@@ -195,3 +195,18 @@ def test_token_jku_cannot_select_a_jwks_endpoint():
     value = jwt.encode(claims, KEY, algorithm="RS256",
                        headers={"kid": "current", "jku": "https://attacker.example/certs"})
     assert asyncio.run(auth.authenticate(value)) == QH_ALICE
+
+
+def test_qh52_session_binding_only_from_verified_claims_and_never_raw_sid():
+    auth,_=build_auth();now=int(time.time())
+    async def run():
+        first=await auth.authenticate_session(token(sid='private-raw-session',auth_time=now-20))
+        renewed=await auth.authenticate_session(token(sid='private-raw-session',auth_time=now-20,exp=now+600))
+        assert first.verified_session_id==renewed.verified_session_id
+        assert first.credential_id!=renewed.credential_id
+        assert len(first.verified_session_id)==64 and 'private-raw-session' not in repr(first)
+        assert first.work_expires_at==now-20+8*3600
+        for claims in [{},{'sid':''},{'sid':'x','auth_time':now+10},{'sid':'x','auth_time':True}]:
+            assert (await auth.authenticate_session(token(**claims))).verified_session_id is None
+        with pytest.raises(InvalidCredentials):await auth.authenticate_session(token(sid='untrusted',auth_time=now-20,iss='https://evil.invalid'))
+    asyncio.run(run())
