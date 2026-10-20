@@ -19,7 +19,7 @@ router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
 class CapabilityOutput(BaseModel):
     enabled: bool
     model: Literal['mistral-small-2603'] | None
-    max_seconds: Literal[300]
+    max_seconds: Literal[300, 1800]
     max_calls: int = Field(ge=1, le=8)
     max_usd: str
     provider_expires_at: float | None
