@@ -1,5 +1,12 @@
 # QH-54 — Later owner maquette alignment, 2026-10-21
 
+**Later review correction:** the revision-node map described below was rejected
+for wrong granularity. The [thematic contract](qh-54-thematic-map-contract.md)
+supersedes that presentation. Historical captures remain unchanged. CI39565534914
+on07d86ec failed (browser87PASS/2FAIL: mobile composer and logo asset); it is not
+green. See [the stabilization report](qh-54-thematic-stabilization.md) for the
+corrected candidate and new executed checks.
+
 Owner attachment0985c35e extends the open PR22 review in the same checkout/branch.
 Baseline8191171, existing review evidence retained. No new Jira issue/status write,
 merge, schema/realm/config change, paid provider call or persistent demo test write.
