@@ -41,3 +41,9 @@ esatti generati offline: non è un’autorizzazione alla loro trasmissione.
 Log completi degli esperimenti/test, tentativi falliti e controlli di preservazione
 sono conservati nella destinazione privata `.local-archive/qh51-20261021/`; non si
 pubblicano configurazioni, token, credenziali, dati demo o ledger.
+
+Per riprodurre QH-33 sul suo codice storico: `python3 scripts/audit_qh33_history.py`.
+Gli snapshot pubblici qui aggiunti corrispondono agli hash originali del manifest,
+non sostituiscono il runtime e non modificano archivi, metriche o audit congelati.
+Il primo avvio hosted39601957963 è fallito sui gate descritti nel rapporto (91
+test browser PASS); la CI finale sul candidato corretto è un check distinto.

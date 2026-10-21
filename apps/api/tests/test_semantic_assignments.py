@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.core.models import GenerationRequest, GenerationResult, Message, MessageRole
-from app.understanding.descriptors import qualified_assignments, theme_name
+from app.core.assignments import qualified_assignments, theme_name
 from app.understanding.semantic import SemanticExtractionProvider
 
 

@@ -56,7 +56,7 @@ class ConversationEnrichment:
             external_disclosure=False)
 
     async def _vocabulary(self, subject, scope):
-        from app.understanding.descriptors import theme_name
+        from app.core.assignments import theme_name
         names, partial = set(), False
         for view in ('current', 'proposed'):
             result = await self.context.browse(ContextRequest(subject_id=subject,

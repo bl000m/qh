@@ -39,7 +39,7 @@ QH-47 mantiene identità e riconciliazione degli item canonici.
 | Percorso / funzione | Responsabilità |
 | --- | --- |
 | `app/understanding/semantic.py:SemanticExtractionProvider` | Prompt versionato e vocabolario esatto bounded, stesso port provider |
-| `app/understanding/descriptors.py:qualified_assignments` | Dimensioni, evidenze, normalizzazione NFC/spazi, duplicati discordanti invalidi |
+| `app/core/assignments.py:qualified_assignments` | Dimensioni, evidenze, normalizzazione NFC/spazi, duplicati discordanti invalidi |
 | `app/understanding/extractor.py`, `selected.py`, `enrichment.py` | Validazione completa, risoluzione locator e pubblicazione Source/batch/outbox atomica |
 | `adapters/postgres/semantic_profiles.py:semantic_definitions` | Profili v2 espliciti, registrati soltanto nei database isolati |
 | `adapters/postgres/canonical.py:browse` | Filtro prima di LIMIT; hydration, ownership, fingerprint e freshness invariati |
@@ -119,6 +119,26 @@ si sommano come test indipendenti. Dettagli privati in
 `.local-archive/qh51-20261021/`, [evidenza pubblicabile](evidence/qh51-20261021/README.md).
 Il checkpoint hash verifica che i sorgenti applicativi delle immagini provate
 corrispondano al checkout, senza stampare configurazioni o credenziali.
+
+Il primo avvio hosted `39601957963` non ha completato il gate: l’audit storico
+QH-33 confrontava l’estrattore corrente con il codice congelato del2026-10-16;
+il controllo architetturale ha inoltre rifiutato una dipendenza review→understanding.
+Correzioni: contratto puro condiviso in Core e nuovo `scripts/audit_qh33_history.py`
+che materializza soltanto evidenze pubbliche manifestate e lo snapshot esatto
+dell’estrattore e del test architetturale storici in una capsula temporanea.
+Il checker corrente ammette `unicodedata`, libreria standard usata per NFC;
+le dipendenze verso adapter/framework rimangono vietate. Manifest, audit originali,
+metriche, capture e ledger congelati restano byte per byte identici; l’estrattore
+corrente è verificato dai gate correnti, senza fingere che abbia l’hash storico.
+Nessun secondo checkout o Engine runtime. Due regressioni verificano immutabilità
+del runtime e rigetto di snapshot/evidenze alterati. Anche l’allowlist di verifica
+OIDC include ora soltanto l’esatto GET capabilities approvato, mantenendo le
+versioni precedenti per il verificatore read-only. Controlli mirati dopo correzione:
+21 unittest QH-33, audit storico completo,63 test composizione/assegnazioni/
+architettura,6 integrazioni reali review/scope e Ruff/actionlint PASS. I91 test
+browser del primo avvio sono passati; il job si è fermato sul successivo controllo
+OIDC della medesima allowlist, ora corretto. Il candidato corretto richiede un nuovo avvio del gate hosted dopo questa
+correzione; il tentativo fallito resta documentato, senza dichiararlo CI verde.
 
 Le fixture includono intenzionalmente un’assegnazione errata Nutrition per provare
 il rifiuto. Prima della review:8/8 atomi e ruoli di riferimento,15/16 assegnazioni

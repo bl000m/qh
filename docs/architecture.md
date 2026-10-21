@@ -583,8 +583,10 @@ QH-51 and review remains QH-46. Mock chat requires explicit test composition.
 The owner approves the [versioned semantic extraction contract](qh-51-thematic-extraction-plan.md)
 for isolated implementation. `app/understanding/semantic.py` adapts semantic prompts
 through the same LLMProvider; the existing extractor/resolver and atomic selected
-source publication remain the single Engine. `descriptors.py` validates explicit
-thematic/semantic-role assignments, evidence and conservative label normalization.
+source publication remain the single Engine. `app/core/assignments.py` owns the pure
+assignment contract shared by Understanding and QH-46: explicit dimensions,
+evidence and conservative label normalization. Review does not depend on the
+extraction application; both depend inward on Core.
 No text/title classifier, new persistence service or runtime provider activation.
 Selective review has a [separate narrow decision](qh-51-assignment-review-decision.md),
 approved by the owner for isolated implementation; no VPS provisioning follows. PostgreSQL and

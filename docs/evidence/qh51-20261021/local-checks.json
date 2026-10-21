@@ -49,6 +49,16 @@
       "evidence": "semantic-browser-6.log, first scenario only",
       "passed": 1,
       "description": "two Space themes, selective rejection/name reuse, refresh and Bob; second test subsequently corrected and separately passed"
+    },
+    {
+      "evidence": "ci-gates-final.log",
+      "passed": 63,
+      "description": "current composition, Core boundaries and assignment contracts; plus21 QH-33 unittest and sealed audits PASS"
+    },
+    {
+      "evidence": "core-assignment-targeted.log",
+      "passed": 6,
+      "description": "real SQL/Neo4j review/name/scope after shared Core move"
     }
   ],
   "counts_overlap": true,
@@ -62,5 +72,15 @@
     "schema": "0006_owner_organization",
     "persistent_generic_v2_profiles": 0,
     "paid_provider_calls_executed": 0
+  },
+  "first_hosted_attempt": {
+    "run": 39601957963,
+    "result": "FAIL before completing all gates",
+    "browser_tests": 91,
+    "causes": [
+      "sealed historical extractor fingerprint compared to evolving runtime",
+      "outward review dependency, moved into Core",
+      "exact verification route allowlist missing approved capabilities GET"
+    ]
   }
 }

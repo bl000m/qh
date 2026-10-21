@@ -50,7 +50,7 @@ class PostgresReviewRepository:
                 if action == 'correct':
                     content['text'] = operation['text']
                 if action == 'review_assignments':
-                    from app.understanding.descriptors import review_assignments
+                    from app.core.assignments import review_assignments
                     binding = c.execute('SELECT * FROM item_revision_types WHERE item_revision_id=%s', (revision,)).fetchone()
                     if binding['type_version'] != 2 or binding['type_id'] not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
                         raise ValueError('Qualified semantic profile required')

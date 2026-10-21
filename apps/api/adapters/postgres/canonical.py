@@ -201,7 +201,7 @@ class CanonicalRepository:
             self._immutable(c, "source_revisions", values)
         for revision in revisions:
             if revision['type_version'] == 2 and revision['type_id'] in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
-                from app.understanding.descriptors import validate_persisted_assignments
+                from app.core.assignments import validate_persisted_assignments
                 content = revision['content']
                 citations = content.get('citations', [])
                 if not isinstance(citations, list):

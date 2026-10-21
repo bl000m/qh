@@ -1,8 +1,8 @@
 {
   "backend": {
-    "image_id": "sha256:79edd915fcd305b8ac557d9d6f020c788fe3353582db403986ce6f1675a3f476",
+    "image_id": "sha256:58ea908f9be45b8c411973fe5f01bee1143a9d9e903d72996cc2e26b6f8004a0",
     "files": 80,
-    "source_sha256": "d20fff1228d4d932a2e3a16b6ad7ca176b03deb2f15322fabee9f7e575b43f49",
+    "source_sha256": "0a509bfed40d024f1ba597166559663b4e7f99bb9c1f982fc78af7345df4a7c3",
     "tested_image_source_matches_checkout": true
   },
   "frontend": {

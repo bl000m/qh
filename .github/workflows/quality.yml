@@ -26,7 +26,7 @@ jobs:
       - name: QH-33 v1/v2 lineage and review gates
         run: |
           python3 -m unittest discover -s tests -p 'test_qh33*.py' -v
-          python3 docs/evidence/qh33-v2-20261016/audit.py
+          python3 scripts/audit_qh33_history.py
       - name: Generate runner-only credentials
         run: |
           python3 scripts/init_env.py
@@ -43,7 +43,10 @@ jobs:
         run: make verify
       - name: Stop runner services without deleting volumes
         if: always()
-        run: docker compose --env-file .env -f infra/docker/docker-compose.yml stop
+        run: |
+          if test -f .env; then
+            docker compose --env-file .env -f infra/docker/docker-compose.yml stop
+          fi
 
   oidc:
     needs: quality

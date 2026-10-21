@@ -352,7 +352,7 @@ class UnderstandingExtractor:
                             raise ValueError("Invalid assignment certainty")
                     content["descriptors"] = deepcopy(ds)
                 else:
-                    from app.understanding.descriptors import qualified_assignments
+                    from app.core.assignments import qualified_assignments
                     evidence_count = len(item['evidence']) if isinstance(item['evidence'], list) else 0
                     content['descriptors'] = [dict(d, review_state='proposed') for d in qualified_assignments(
                         ds, evidence_count, source['origin'].get('metadata', {}).get('known_themes', ())) ]

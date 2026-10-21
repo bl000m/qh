@@ -7,7 +7,7 @@ Runtime composition stays literal until separately approved provider activation.
 import json
 
 from app.core.models import GenerationRequest, Message, MessageRole
-from app.understanding.descriptors import theme_name
+from app.core.assignments import theme_name
 from app.understanding.extractor import INSTRUCTIONS, canonical_json
 
 SEMANTIC_INSTRUCTIONS = INSTRUCTIONS.replace(

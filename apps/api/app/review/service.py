@@ -73,7 +73,7 @@ class ReviewService:
         await self._allow(subject, scope, policy_action)
         target = await self._revision(subject, scope, revision)
         if action == 'review_assignments':
-            from app.understanding.descriptors import review_assignments
+            from app.core.assignments import review_assignments
             if target.type_version != 2 or target.type_id not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
                 raise ValueError('Qualified semantic profile required')
             review_assignments(target.content.get('descriptors'), decisions, len(target.content.get('citations', [])))
