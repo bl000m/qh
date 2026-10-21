@@ -202,3 +202,86 @@ def test_repository_guard_rejects_semantic_index_outside_citations_atomically(ge
     prior=counts(p)
     with pytest.raises(ValueError):p['repo'].save(revisions=siblings)
     assert counts(p)==prior
+
+
+def test_semantic_api_caps_query_review_and_foreign_owner_fail_closed(generic):
+    from fastapi.testclient import TestClient
+    from app.api.security import SecurityBindings
+    from app.composition import ApplicationServices
+    from app.main import create_app
+    from app.review.service import ReviewService
+    from adapters.postgres.review import PostgresReviewRepository
+    from tests.test_owner_review import operation
+    p=generic;register_semantic_profiles(p['repo']);service,data=semantic(p,0)
+    result=submit(p,service,data);drain(p['worker']);owner=p['repo'].subject_id
+    review=ReviewService(context=service.context,policy=service.policy,repository=PostgresReviewRepository(url=p['repo'].url))
+    async def auth(token):return owner if token=='alice' else str(uuid4())
+    app=create_app(services=ApplicationServices(context=service.context,policy=service.policy,enrichment=service,review=review),security=SecurityBindings(authenticate=auth,policy=service.policy))
+    base='/context-spaces/'+p['scope'];headers={'Authorization':'Bearer alice'}
+    with TestClient(app) as client:
+        assert client.get(base+'/enrichments/capabilities',headers=headers).json()==dict(literal=True,semantic=True,provider_mode='semantic-simulated/2',external_disclosure=False)
+        for path in ['/enrichments/capabilities','/understanding?view=proposed&descriptor_dimension=thematic&include_tentative=true&latest_pending=true']:
+            assert client.get(base+path,headers={'Authorization':'Bearer bob'}).status_code==404
+        selected=client.get(base+'/understanding?view=proposed&descriptor_dimension=thematic&descriptor=Sommeil&include_tentative=true&latest_pending=true&limit=1',headers=headers)
+        assert selected.status_code==200 and len(selected.json()['items'])==1
+        row=selected.json()['items'][0];op=operation({'id':row['revision_id']},'review_assignments',assignment_decisions=[dict(index=0,state='rejected')])
+        path=base+'/understanding/'+row['revision_id']+'/review'
+        prior=counts(p)
+        assert client.post(path,headers={'Authorization':'Bearer bob'},json=op).status_code==404
+        assert client.post(path,headers=headers,json=dict(op,actor_id=owner)).status_code==422
+        bad=dict(op,assignment_decisions=[dict(index=True,state='accepted')]);assert client.post(path,headers=headers,json=bad).status_code==422
+        assert counts(p)==prior
+        response=client.post(path,headers=headers,json=op);assert response.status_code==200
+        assert response.json()['action']=='review_assignments'
+
+
+def test_graph_unavailable_prevents_semantic_disclosure_even_for_empty_vocabulary(generic):
+    from app.core.models import ContextRetrievalUnavailable
+    from unittest.mock import AsyncMock
+    p=generic;register_semantic_profiles(p['repo']);service,data=semantic(p,0)
+    service.context.browse=AsyncMock(side_effect=ContextRetrievalUnavailable('unavailable'))
+    prior=counts(p)
+    with pytest.raises(ContextRetrievalUnavailable):submit(p,service,data)
+    assert service.semantic_provider.calls==0 and counts(p)==prior
+
+
+def test_two_space_fixture_evaluation_separates_semantics_themes_evidence_and_vocabulary(generic):
+    import json
+    from adapters.context.incremental import ProjectionWorker
+    from tests.semantic_fixtures import ExactSemanticFixtureProvider, WELLBEING, PROFESSIONAL
+    p=generic;register_semantic_profiles(p['repo']);service,context,policy=setup(p)
+    provider=ExactSemanticFixtureProvider();service.semantic_provider=provider
+    worker=ProjectionWorker(p['repo'],p['projector'],(p['scope'],p['sibling']))
+    gold={
+        'Retrouver sept heures de sommeil':({'Sommeil','Habitudes de vie'},'objectif'),
+        'Choisir une marche douce après le déjeuner':({'Activité physique','Habitudes de vie'},'décision'),
+        'Réduire les écrans pourrait faciliter l’endormissement':({'Sommeil','Habitudes de vie'},'hypothèse'),
+        'Examiner l’effet de la marche sur l’énergie':({'Activité physique','Énergie'},'question ouverte'),
+        'Isoler les données personnelles par service':({'Architecture','Protection des données'},'objectif'),
+        'Choisir PostgreSQL comme stockage canonique':({'Architecture','Données persistantes'},'décision'),
+        'Subordonner la livraison à un audit de sécurité':({'Livraison','Protection des données'},'contrainte'),
+        'Déterminer le niveau de disponibilité à garantir':({'Fiabilité'},'question ouverte'),
+    }
+    rows=[];scope_themes=[]
+    for scope,texts in [(p['scope'],WELLBEING),(p['sibling'],PROFESSIONAL)]:
+        submit(p,service,dict(payload(*texts),extraction_mode='semantic'),scope);drain(worker)
+        page=asyncio.run(p['service'].browse(ContextRequest(subject_id=p['repo'].subject_id,query=ContextBrowse(context_id=scope,view='proposed',latest_pending=True))))
+        rows.extend(page.revisions)
+        scope_themes.append({d['value'] for r in page.revisions for d in r.content['descriptors'] if d['dimension']=='thematic'})
+    assert scope_themes[0].isdisjoint(scope_themes[1])
+    assert provider.requests[0]['known_themes']==provider.requests[1]['known_themes']==[]
+    matched=role_matches=themes_generated=themes_correct=evidence_matches=0
+    for row in rows:
+        reference=gold[row.content['text']];matched+=1
+        themes={d['value'] for d in row.content['descriptors'] if d['dimension']=='thematic'}
+        roles={d['value'] for d in row.content['descriptors'] if d['dimension']=='semantic_role'}
+        themes_generated+=len(themes);themes_correct+=len(themes&reference[0]);role_matches+=reference[1] in roles
+        sources=p['repo'].read_sources((row.context_space_id,),(row.provenance[0].source_revision_id,))
+        for cite in row.content['citations']:
+            evidence_matches+=sources[0]['content'][cite['start']:cite['end']]==cite['quote']
+    metrics=dict(mode='hand_authored_fixture_conformance_not_model_quality',atomic_reference_matches=matched,atomic_reference_count=len(gold),role_matches=role_matches,
+        theme_correct_assignments=themes_correct,theme_generated_assignments=themes_generated,theme_reference_assignments=sum(len(g[0]) for g in gold.values()),
+        exact_evidence_matches=evidence_matches,evidence_count=sum(len(r.content['citations']) for r in rows),distinct_space_themes=True,foreign_vocabulary_disclosed=False,
+        real_provider_semantic_quality='NOT TESTED',name_reuse_quality='NOT TESTED on a real provider; explicit same-Space reuse/foreign-name rejection tested separately')
+    assert matched==role_matches==8 and themes_correct==15 and themes_generated==16 and evidence_matches==8
+    print('QH51_METRICS '+json.dumps(metrics,sort_keys=True))

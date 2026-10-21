@@ -66,6 +66,9 @@ class PostgresReviewRepository:
                     raise ReviewConflict('Only the pending latest proposal can be reviewed')
                 if action in ('correct', 'review_assignments') and not ((status['pending'] and str(latest['id']) == revision) or status['current_revision_id'] == revision):
                     raise ReviewConflict('Only current understanding or a pending latest proposal can be corrected')
+                state = c.execute('SELECT desired_version,applied_version FROM context_projection_state WHERE context_space_id=%s FOR UPDATE', (scope,)).fetchone()
+                if state is None or state['desired_version'] != state['applied_version']:
+                    raise ContextRetrievalUnavailable('Context projection is not ready')
                 if action == 'review_assignments':
                     for decision in operation['assignment_decisions']:
                         name = decision.get('reuse_value')
@@ -76,9 +79,6 @@ class PostgresReviewRepository:
                             AND EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array' THEN r.content->'descriptors' ELSE '[]'::jsonb END) d
                               WHERE d->>'dimension'='thematic' AND d->>'value'=%s AND d->>'review_state' IN ('proposed','accepted') AND NOT d ? 'name_candidate') LIMIT 1''', (scope,name)).fetchone():
                             raise ReviewConflict('Theme reuse scope changed')
-                state = c.execute('SELECT desired_version,applied_version FROM context_projection_state WHERE context_space_id=%s FOR UPDATE', (scope,)).fetchone()
-                if state is None or state['desired_version'] != state['applied_version']:
-                    raise ContextRetrievalUnavailable('Context projection is not ready')
                 binding = c.execute('SELECT * FROM item_revision_types WHERE item_revision_id=%s', (revision,)).fetchone()
                 relation = c.execute('SELECT * FROM relation_revision_details WHERE item_revision_id=%s', (revision,)).fetchone()
                 sources = c.execute('SELECT source_revision_id FROM item_revision_provenance WHERE item_revision_id=%s ORDER BY source_revision_id', (revision,)).fetchall()
