@@ -17,17 +17,18 @@ async def browse_context(context_id: UUID, request: Request, response: Response,
                          limit: Annotated[int, Query(ge=1, le=100)] = 20,
                          after_revision_id: UUID | None = None,
                          descriptor: Annotated[str | None, Query(min_length=1)] = None,
-                         include_tentative: bool = False,
+                         descriptor_dimension: Literal['thematic', 'semantic_role'] | None = None,
+                         latest_pending: bool = False, include_tentative: bool = False,
                          kind: Literal['item', 'entity', 'relation'] | None = None,
                          unclassified: bool = False, item_id: UUID | None = None,
                          revision_id: UUID | None = None, related_item_id: UUID | None = None,
                          subject: SubjectId = Depends(authenticated_subject)):
     allowed_query(request, {'view', 'limit', 'after_revision_id', 'descriptor', 'include_tentative',
-                            'kind', 'unclassified', 'item_id', 'revision_id', 'related_item_id'})
+                            'kind', 'unclassified', 'item_id', 'revision_id', 'related_item_id', 'descriptor_dimension', 'latest_pending'})
     try:
         query = ContextBrowse(context_id=str(context_id), view=view, limit=limit,
             after_revision_id=str(after_revision_id) if after_revision_id else None,
-            descriptor=descriptor, include_tentative=include_tentative, kind=kind,
+            descriptor=descriptor, descriptor_dimension=descriptor_dimension, latest_pending=latest_pending, include_tentative=include_tentative, kind=kind,
             unclassified=unclassified, item_id=str(item_id) if item_id else None,
             revision_id=str(revision_id) if revision_id else None,
             related_item_id=str(related_item_id) if related_item_id else None)

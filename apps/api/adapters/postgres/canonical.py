@@ -200,6 +200,14 @@ class CanonicalRepository:
                 values["created_at"] = source["created_at"]
             self._immutable(c, "source_revisions", values)
         for revision in revisions:
+            if revision['type_version'] == 2 and revision['type_id'] in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+                from app.understanding.descriptors import validate_persisted_assignments
+                content = revision['content']
+                citations = content.get('citations', [])
+                if not isinstance(citations, list):
+                    raise ValueError('Semantic citations required')
+                original = content.get('descriptors', [])
+                validate_persisted_assignments(original, len(citations))
             self._identity(
                 c,
                 "understanding_items",
@@ -349,10 +357,13 @@ class CanonicalRepository:
                   AND (%s::uuid IS NULL OR r.item_id=%s::uuid)
                   AND (%s::uuid IS NULL OR r.id=%s::uuid)
                   AND (%s::uuid IS NULL OR d.source_item_id=%s::uuid OR d.target_item_id=%s::uuid)
-                  AND (%s::text IS NULL OR EXISTS (
+                  AND (NOT %s OR (NOT EXISTS (SELECT 1 FROM understanding_item_revisions child WHERE child.based_on_revision_id=r.id)
+                    AND NOT EXISTS (SELECT 1 FROM understanding_item_revisions newer WHERE newer.item_id=r.item_id AND newer.revision_no>r.revision_no)))
+                  AND ((%s::text IS NULL AND %s::text IS NULL) OR EXISTS (
                     SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
                         THEN r.content->'descriptors' ELSE '[]'::jsonb END) a
-                    WHERE jsonb_typeof(a->'value')='string' AND a->>'value'=%s
+                    WHERE jsonb_typeof(a->'value')='string' AND (%s::text IS NULL OR a->>'value'=%s)
+                      AND (%s::text IS NULL OR (a->>'dimension'=%s AND a->>'review_state' IN ('proposed','accepted') AND NOT a ? 'name_candidate'))
                       AND a->>'certainty'=ANY(%s::text[])))
                   AND (NOT %s OR NOT EXISTS (
                     SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array'
@@ -363,7 +374,9 @@ class CanonicalRepository:
             ''', (scopes,after,after,query.view,query.view,query.view,
                   query.kind,query.kind,query.item_id,query.item_id,query.revision_id,query.revision_id,
                   query.related_item_id,query.related_item_id,query.related_item_id,
-                  query.descriptor,query.descriptor,['asserted','tentative'] if query.include_tentative else ['asserted'],
+                  query.latest_pending,query.descriptor,query.descriptor_dimension,
+                  query.descriptor,query.descriptor,query.descriptor_dimension,query.descriptor_dimension,
+                  ['asserted','tentative'] if query.include_tentative else ['asserted'],
                   query.unclassified,query.limit+1)).fetchall())
 
     def read_snapshot(self, context_ids, revision_ids=None):

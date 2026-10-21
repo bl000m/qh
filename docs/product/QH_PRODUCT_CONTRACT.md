@@ -643,3 +643,25 @@ The approved [presentation contract](../qh-54-thematic-map-contract.md) is disti
 from the [QH-51 technical proposal](../qh-51-thematic-extraction-plan.md), pending
 approval before schema/contract changes or inference. No migration or provider call
 is authorized by this amendment.
+
+## QH-51 semantic assignments — approved isolated increment, 2026-10-21
+
+The owner approves version2 of generic profiles with explicit thematic/semantic_role
+dimensions, open values, assignment certainty and exact citation references, without
+rewriting old profiles or revisions. The same Engine/provider port, resolver and
+atomic Source/proposed/outbox pipeline apply. Literal manual retention remains
+available; semantic processing is an explicit choice when separately enabled.
+
+The [selective-review decision](../qh-51-assignment-review-decision.md) is approved:
+backend-only assignment review_state proposed/accepted/rejected, optional exact
+Space name_candidate, and QH-46 review_assignments creating an immutable proposed
+successor. Text, certainty, sources and current pointer are preserved. Item validity,
+assignment validity, extractor certainty and human confirmation remain independent.
+No model-assigned human state, lexical/vector merge, global theme taxonomy or
+separate review store. Proposed name equivalences require explicit owner choice.
+
+Authorized thematic map nodes open bounded exact member lists, keep provenance and
+states, and declare partial coverage. No node from a revision/title or legacy role.
+All new profiles and semantic adapters are verified only with simulated/replay
+providers and disposable synthetic data. Real provider experiment and VPS profile
+provisioning/activation remain separately gated; no new paid call is authorized.

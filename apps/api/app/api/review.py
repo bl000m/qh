@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, StrictInt
 
 from app.api.context_spaces import allowed_query, call
 from app.api.security import authenticated_subject
@@ -14,13 +14,21 @@ from app.review.service import ReviewConflict
 router = APIRouter(prefix='/context-spaces/{context_id}', tags=['review'])
 
 
+class AssignmentDecision(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    index: Annotated[StrictInt, Field(ge=0, le=99)]
+    state: Literal['accepted', 'rejected']
+    reuse_value: StrictStr | None = Field(default=None, min_length=1, max_length=256)
+
+
 class ReviewOperation(BaseModel):
     model_config = ConfigDict(extra='forbid')
     operation_id: UUID
-    action: Literal['confirm', 'reject', 'correct']
+    action: Literal['confirm', 'reject', 'correct', 'review_assignments']
     expected_latest_revision_id: UUID
     expected_current_revision_id: UUID | None
     text: StrictStr | None = Field(default=None, min_length=1, max_length=16000)
+    assignment_decisions: list[AssignmentDecision] | None = Field(default=None, min_length=1, max_length=100)
 
 
 class ReviewStatus(BaseModel):
@@ -33,7 +41,7 @@ class ReviewStatus(BaseModel):
 
 class ReviewReceipt(BaseModel):
     revision_id: UUID
-    action: Literal['confirm','reject','correct']
+    action: Literal['confirm','reject','correct','review_assignments']
     replayed: bool
 
 
@@ -67,7 +75,7 @@ async def review(context_id: UUID, revision_id: UUID, operation: ReviewOperation
                  request: Request, response: Response, subject: SubjectId = Depends(authenticated_subject)):
     service = bound(request, response)
     try:
-        return await call(service.apply(subject, str(context_id), str(revision_id), operation.model_dump(mode='json')))
+        return await call(service.apply(subject, str(context_id), str(revision_id), operation.model_dump(mode='json', exclude_none=True) | {'text': operation.text, 'expected_current_revision_id': str(operation.expected_current_revision_id) if operation.expected_current_revision_id else None}))
     except ReviewConflict:
         raise HTTPException(409, 'Review conflict or profile constraint; reload before acting') from None
     except ValueError:

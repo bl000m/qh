@@ -5,6 +5,16 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 semantic understanding — in progress, 2026-10-21
+
+- Version explicit thematic and semantic-role assignments with exact evidence,
+  independent certainty and QH-46 selective owner review; preserve legacy profiles.
+- Reuse the existing Engine and atomic source/proposal/outbox publication with
+  explicit semantic selection and a provider-neutral adapter. Runtime stays literal.
+- Prepare bounded graph-verified thematic navigation and actual membership nodes;
+  no taxonomy, title classifier, autonomous identity merge or historical rewrite.
+- New profile provisioning, paid inference and VPS activation remain separately gated.
+
 ## QH-54 owner review corrections — 2026-10-21
 
 - Preserve the Space orb with a truthful thematic-unavailable state; remove nodes

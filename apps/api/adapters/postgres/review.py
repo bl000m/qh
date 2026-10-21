@@ -49,6 +49,12 @@ class PostgresReviewRepository:
                 content['qh_review'] = receipt
                 if action == 'correct':
                     content['text'] = operation['text']
+                if action == 'review_assignments':
+                    from app.understanding.descriptors import review_assignments
+                    binding = c.execute('SELECT * FROM item_revision_types WHERE item_revision_id=%s', (revision,)).fetchone()
+                    if binding['type_version'] != 2 or binding['type_id'] not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+                        raise ValueError('Qualified semantic profile required')
+                    content['descriptors'] = review_assignments(content.get('descriptors'), operation['assignment_decisions'], len(content.get('citations', [])))
                 existing = c.execute('SELECT * FROM understanding_item_revisions WHERE id=%s', (new_id,)).fetchone()
                 if existing:
                     if existing['content'] != content or str(existing['based_on_revision_id']) != revision or str(existing['context_space_id']) != scope:
@@ -58,8 +64,18 @@ class PostgresReviewRepository:
                     raise ReviewConflict('Review changed; reload before acting')
                 if action in ('confirm', 'reject') and (not status['pending'] or str(latest['id']) != revision):
                     raise ReviewConflict('Only the pending latest proposal can be reviewed')
-                if action == 'correct' and not ((status['pending'] and str(latest['id']) == revision) or status['current_revision_id'] == revision):
+                if action in ('correct', 'review_assignments') and not ((status['pending'] and str(latest['id']) == revision) or status['current_revision_id'] == revision):
                     raise ReviewConflict('Only current understanding or a pending latest proposal can be corrected')
+                if action == 'review_assignments':
+                    for decision in operation['assignment_decisions']:
+                        name = decision.get('reuse_value')
+                        if name is not None and not c.execute('''SELECT 1 FROM understanding_item_revisions r
+                            JOIN understanding_items i ON i.id=r.item_id
+                            WHERE r.context_space_id=%s AND (r.id=i.current_revision_id OR
+                              (r.validation_state='proposed' AND NOT EXISTS (SELECT 1 FROM understanding_item_revisions n WHERE n.item_id=r.item_id AND n.revision_no>r.revision_no)))
+                            AND EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(r.content->'descriptors')='array' THEN r.content->'descriptors' ELSE '[]'::jsonb END) d
+                              WHERE d->>'dimension'='thematic' AND d->>'value'=%s AND d->>'review_state' IN ('proposed','accepted') AND NOT d ? 'name_candidate') LIMIT 1''', (scope,name)).fetchone():
+                            raise ReviewConflict('Theme reuse scope changed')
                 state = c.execute('SELECT desired_version,applied_version FROM context_projection_state WHERE context_space_id=%s FOR UPDATE', (scope,)).fetchone()
                 if state is None or state['desired_version'] != state['applied_version']:
                     raise ContextRetrievalUnavailable('Context projection is not ready')
@@ -70,8 +86,8 @@ class PostgresReviewRepository:
                 record = dict(id=new_id, item_id=str(target['item_id']), context_space_id=scope,
                     revision_no=latest['revision_no']+1, type_id=binding['type_id'], type_version=binding['type_version'],
                     content=content, origin_kind='human' if action=='correct' else target['origin_kind'],
-                    validation_state={'confirm':'confirmed','reject':'rejected','correct':'proposed'}[action],
-                    validated_by=None if action=='correct' else str(subject), validated_at=None if action=='correct' else now,
+                    validation_state={'confirm':'confirmed','reject':'rejected','correct':'proposed','review_assignments':'proposed'}[action],
+                    validated_by=None if action in ('correct','review_assignments') else str(subject), validated_at=None if action in ('correct','review_assignments') else now,
                     based_on_revision_id=revision, created_at=now,
                     provenance=[str(s['source_revision_id']) for s in sources], **{k:binding[k] for k in TEMPORAL})
                 if relation:

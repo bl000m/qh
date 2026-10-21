@@ -51,7 +51,7 @@ class ReviewService:
 
     async def apply(self, subject, scope, revision, operation):
         action = operation['action']
-        if action not in ('confirm', 'reject', 'correct'):
+        if action not in ('confirm', 'reject', 'correct', 'review_assignments'):
             raise ValueError('Invalid review action')
         UUID(operation['operation_id'])
         for field in ('expected_latest_revision_id', 'expected_current_revision_id'):
@@ -63,8 +63,29 @@ class ReviewService:
                 raise ValueError('Nonempty bounded correction required')
         elif text is not None:
             raise ValueError('Only correction accepts text')
-        policy_action = PolicyAction.PROPOSE_UPDATE if action == 'correct' else PolicyAction.CONFIRM_UPDATE
+        decisions = operation.get('assignment_decisions')
+        if action == 'review_assignments':
+            if not isinstance(decisions, list) or not decisions:
+                raise ValueError('Explicit assignment decisions required')
+        elif decisions is not None:
+            raise ValueError('Assignment decisions require their review action')
+        policy_action = PolicyAction.PROPOSE_UPDATE if action in ('correct', 'review_assignments') else PolicyAction.CONFIRM_UPDATE
         await self._allow(subject, scope, policy_action)
-        await self._revision(subject, scope, revision)
+        target = await self._revision(subject, scope, revision)
+        if action == 'review_assignments':
+            from app.understanding.descriptors import review_assignments
+            if target.type_version != 2 or target.type_id not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+                raise ValueError('Qualified semantic profile required')
+            review_assignments(target.content.get('descriptors'), decisions, len(target.content.get('citations', [])))
+            for decision in decisions:
+                if decision.get('reuse_value') is not None:
+                    matches = []
+                    for view in ('current', 'proposed'):
+                        page = await self.context.browse(ContextRequest(subject_id=subject, query=ContextBrowse(
+                            context_id=scope, view=view, limit=1, descriptor=decision['reuse_value'],
+                            descriptor_dimension='thematic', include_tentative=True, latest_pending=view=='proposed')))
+                        matches.extend(page.revisions)
+                    if not matches:
+                        raise ReviewConflict('Theme name is no longer available in this Space')
         await self._allow(subject, scope, policy_action)
         return await self.repository.apply(subject, scope, revision, operation)

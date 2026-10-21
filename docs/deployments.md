@@ -6,6 +6,17 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-21 — PR22 ordinary merge and QH-51 isolated development
+
+Owner-authorized PR22 merge5b9c0f3 preserves40cd6e7 and all source commits;
+existing CI39579596448 verified all four jobs SUCCESS, without manual rerun.
+Checkout main fast-forwarded to origin/main, then dedicated QH-51 branch created.
+Guarded app stop/up for that switch preserved existing container IDs/images/mounts
+and all infrastructure; no replacement or persistent configuration change.
+QH-51 adds source code under the existing binds, with runtime composition still
+literal and no profile2 provisioned on the VPS. All semantic publication and review
+checks run on dedicated disposable test data; no demo/ledger/budget/OIDC change.
+
 ## 2026-10-21 — QH-54 thematic fallback and targeted regression corrections
 
 Existing PR22 branch/source binds only: remove revision map nodes, restore original

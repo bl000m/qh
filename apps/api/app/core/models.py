@@ -155,6 +155,8 @@ class ContextBrowse:
     limit: int = 20
     after_revision_id: UnderstandingRevisionId | None = None
     descriptor: str | None = None
+    descriptor_dimension: str | None = None
+    latest_pending: bool = False
     include_tentative: bool = False
     kind: str | None = None
     unclassified: bool = False
@@ -173,7 +175,12 @@ class ContextBrowse:
             raise ValueError('Invalid structural kind')
         if self.descriptor is not None and (not isinstance(self.descriptor, str) or not self.descriptor):
             raise ValueError('Nonempty exact descriptor required')
-        if self.include_tentative and self.descriptor is None or self.unclassified and self.descriptor is not None:
+        if self.descriptor_dimension not in (None, 'thematic', 'semantic_role'):
+            raise ValueError('Explicit supported descriptor dimension required')
+        if type(self.latest_pending) is not bool or self.latest_pending and self.view != 'proposed':
+            raise ValueError('Latest pending selection requires proposed view')
+        selected = self.descriptor is not None or self.descriptor_dimension is not None
+        if self.include_tentative and not selected or self.unclassified and selected:
             raise ValueError('Incompatible navigation filters')
 
     @property

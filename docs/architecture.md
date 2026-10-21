@@ -577,3 +577,16 @@ remains an outbound responsibility. Organization descriptions reuse schema0006
 JSON with policy and SQL ownership fencing. Manual first information uses QH-39's
 existing enrichment application and literal provider; semantic extraction remains
 QH-51 and review remains QH-46. Mock chat requires explicit test composition.
+
+### QH-51 — approved isolated semantic increment, 2026-10-21
+
+The owner approves the [versioned semantic extraction contract](qh-51-thematic-extraction-plan.md)
+for isolated implementation. `app/understanding/semantic.py` adapts semantic prompts
+through the same LLMProvider; the existing extractor/resolver and atomic selected
+source publication remain the single Engine. `descriptors.py` validates explicit
+thematic/semantic-role assignments, evidence and conservative label normalization.
+No text/title classifier, new persistence service or runtime provider activation.
+Selective review has a [separate narrow decision](qh-51-assignment-review-decision.md),
+approved by the owner for isolated implementation; no VPS provisioning follows. PostgreSQL and
+profile provisioning remain canonical/explicit; the VPS stays on legacy profiles
+and literal extraction until separately authorized.

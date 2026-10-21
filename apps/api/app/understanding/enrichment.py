@@ -15,6 +15,7 @@ from app.understanding.extractor import digest, canonical_json, timestamp
 from app.understanding.selected import propose_selected_conversation
 
 EXTRACTION_KEY = 'qh39-selected-segment/1-resolved'
+SEMANTIC_KEY = 'qh51-selected-semantic/2-resolved'
 
 
 class EnrichmentConflict(ValueError):
@@ -32,9 +33,10 @@ class EnrichmentRepository(Protocol):
 
 
 class ConversationEnrichment:
-    def __init__(self, *, context, policy, repository_for, provider, clock=None):
+    def __init__(self, *, context, policy, repository_for, provider, clock=None, semantic_provider=None):
         self.context, self.policy = context, policy
         self.repository_for, self.provider = repository_for, provider
+        self.semantic_provider = semantic_provider
         self.clock = clock or (lambda: datetime.now(timezone.utc).isoformat())
         self._busy = set()
 
@@ -44,9 +46,39 @@ class ConversationEnrichment:
         if not decision.allowed:
             raise ContextSpaceNotFound('Context space not found')
 
+    async def capabilities(self, subject, scope):
+        await self._allow(subject, scope)
+        await self.context.browse(ContextRequest(subject_id=subject,
+            query=ContextBrowse(context_id=scope, view='history', limit=1)))
+        await self._allow(subject, scope)
+        return dict(literal=True, semantic=self.semantic_provider is not None,
+            provider_mode='semantic-simulated/2' if self.semantic_provider is not None else None,
+            external_disclosure=False)
+
+    async def _vocabulary(self, subject, scope):
+        from app.understanding.descriptors import theme_name
+        names, partial = set(), False
+        for view in ('current', 'proposed'):
+            result = await self.context.browse(ContextRequest(subject_id=subject,
+                query=ContextBrowse(context_id=scope, view=view, limit=20,
+                    descriptor_dimension='thematic', include_tentative=True, latest_pending=view=='proposed')))
+            partial |= result.next_after_revision_id is not None
+            for row in result.revisions:
+                if row.type_version != 2 or not row.type_id.startswith('qh.generic.'):
+                    continue
+                for d in row.content.get('descriptors', []):
+                    if d.get('dimension') == 'thematic' and d.get('review_state') in ('proposed','accepted') and 'name_candidate' not in d:
+                        names.add(theme_name(d['value']))
+        return tuple(sorted(names)[:40]), partial or len(names)>40
+
     async def enrich(self, subject, scope, payload):
         # Authorization before private reads, idempotency lookup or provider work.
         await self._allow(subject, scope)
+        mode = payload.get('extraction_mode', 'literal')
+        if mode not in ('literal', 'semantic'):
+            raise ValueError('Explicit supported extraction mode required')
+        if mode == 'semantic' and self.semantic_provider is None:
+            raise EnrichmentUnavailable('Semantic extraction is not activated; no fallback')
         UUID(scope)
         UUID(payload['conversation_id'])
         UUID(payload['operation_id'])
@@ -82,17 +114,25 @@ class ConversationEnrichment:
             raise EnrichmentUnavailable('An enrichment is already in progress; no automatic retry')
         self._busy.add(key)
         try:
+            from app.understanding.semantic import SemanticExtractionProvider
+            vocabulary, partial = await self._vocabulary(subject, scope) if mode=='semantic' else ((), False)
+            extraction_key = SEMANTIC_KEY if mode=='semantic' else EXTRACTION_KEY
+            provider = SemanticExtractionProvider(self.semantic_provider, known_themes=vocabulary,
+                vocabulary_partial=partial) if mode=='semantic' else self.provider
             conversation = dict(id=conversation_id, revision_no=1, acquired_at=self.clock(),
                 turns=[dict(id=t['id'], speaker='user (owner-declared)' if t['role']=='user' else 'assistant (unverified dialogue)', text=t['content']) for t in turns],
                 metadata=dict(submission_kind='owner_selected_browser_segment', submitted_by=str(subject),
                     conversation_id=payload['conversation_id'], operation_id=payload['operation_id'],
-                    request_sha256=fingerprint, extraction_key=EXTRACTION_KEY,
-                    provider_mode='offline-literal/1',
+                    request_sha256=fingerprint, extraction_key=extraction_key,
+                    provider_mode='semantic-simulated/2' if mode=='semantic' else 'offline-literal/1',
                     turn_declarations=[dict(turn_id=t['id'], role=t['role'], captured_at=t['captured_at'],
                         timestamp_authority='browser-declared') for t in turns]))
+            if mode=='semantic':
+                conversation['metadata'].update(known_themes=list(vocabulary), vocabulary_coverage='partial' if partial else 'complete')
             try:
                 source, revisions = await propose_selected_conversation(subject_id=subject, context_id=scope,
-                    conversation=conversation, extraction_key=EXTRACTION_KEY, policy=self.policy, provider=self.provider)
+                    conversation=conversation, extraction_key=extraction_key, policy=self.policy, provider=provider,
+                    descriptor_version=2 if mode=='semantic' else 1)
             except PermissionError:
                 raise ContextSpaceNotFound('Context space not found') from None
             except ValueError:

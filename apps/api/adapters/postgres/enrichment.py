@@ -24,9 +24,9 @@ class PostgresEnrichmentRepository(CanonicalRepository):
             WHERE p.source_revision_id=%s AND r.context_space_id=%s
               AND r.revision_no=1 AND r.origin_kind='ai'
               AND r.content->'extraction'->>'key'=%s ORDER BY r.id''',
-            (source_id, scope, EXTRACTION_KEY)).fetchall()
+            (source_id, scope, metadata.get('extraction_key', EXTRACTION_KEY))).fetchall()
         return dict(context_id=scope, source_revision_id=source_id,
-            revision_ids=[str(r['id']) for r in rows], replayed=True, provider_mode='offline-literal/1')
+            revision_ids=[str(r['id']) for r in rows], replayed=True, provider_mode=metadata.get('provider_mode', 'offline-literal/1'))
 
     def _operation(self, scope, source_id, fingerprint, source=None, revisions=()):
         try:
@@ -46,7 +46,7 @@ class PostgresEnrichmentRepository(CanonicalRepository):
                 c.execute('SET CONSTRAINTS ALL IMMEDIATE')
                 return dict(context_id=scope, source_revision_id=source_id,
                     revision_ids=sorted(r['id'] for r in revisions), replayed=False,
-                    provider_mode='offline-literal/1')
+                    provider_mode=source['origin']['metadata'].get('provider_mode', 'offline-literal/1'))
         except (psycopg.errors.CheckViolation, psycopg.errors.ForeignKeyViolation, psycopg.errors.UniqueViolation):
             raise EnrichmentConflict('Publication rejected atomically; nothing added') from None
         except PermissionError:

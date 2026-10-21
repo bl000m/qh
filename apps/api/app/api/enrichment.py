@@ -27,6 +27,7 @@ class EnrichmentInput(BaseModel):
     operation_id: UUID
     turns: list[SelectedTurn] = Field(min_length=1, max_length=8)
     persist_consent: StrictBool
+    extraction_mode: Literal['literal', 'semantic'] = 'literal'
 
 
 class EnrichmentReceipt(BaseModel):
@@ -34,7 +35,7 @@ class EnrichmentReceipt(BaseModel):
     source_revision_id: UUID
     revision_ids: list[UUID]
     replayed: bool
-    provider_mode: Literal['offline-literal/1']
+    provider_mode: Literal['offline-literal/1', 'semantic-simulated/2']
 
 
 @router.post('/enrichments', response_model=EnrichmentReceipt)
@@ -47,10 +48,25 @@ async def enrich(context_id: UUID, payload: EnrichmentInput, request: Request,
     if services is None or services.enrichment is None:
         raise HTTPException(503, 'Enrichment unavailable')
     try:
-        return await call(services.enrichment.enrich(subject, str(context_id), payload.model_dump(mode='json')))
+        document = payload.model_dump(mode='json')
+        if document['extraction_mode']=='literal':
+            document.pop('extraction_mode')  # Preserve immutable legacy operation fingerprints.
+        return await call(services.enrichment.enrich(subject, str(context_id), document))
     except EnrichmentConflict:
         raise HTTPException(409, 'Conflicting submission; no automatic retry') from None
     except EnrichmentUnavailable:
         raise HTTPException(503, 'Extraction unavailable; no automatic retry') from None
     except ValueError:
         raise HTTPException(422, 'Invalid segment or extraction; nothing published') from None
+
+
+@router.get('/enrichments/capabilities')
+async def capabilities(context_id: UUID, request: Request, response: Response,
+                       subject: SubjectId = Depends(authenticated_subject)):
+    allowed_query(request, set())
+    response.headers['Cache-Control'] = 'private, no-store'
+    response.headers['Vary'] = 'Authorization'
+    services = request.app.state.services
+    if services is None or services.enrichment is None:
+        raise HTTPException(503, 'Enrichment unavailable')
+    return await call(services.enrichment.capabilities(subject, str(context_id)))

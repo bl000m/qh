@@ -112,8 +112,11 @@ def literal_timestamp(value, quote):
 
 
 class UnderstandingExtractor:
-    def __init__(self, *, repository, policy, provider: LLMProvider):
+    def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1):
+        if type(descriptor_version) is not int or descriptor_version not in (1, 2):
+            raise ValueError('Trusted descriptor profile version required')
         self.repository, self.policy, self.provider = repository, policy, provider
+        self.descriptor_version = descriptor_version
 
     async def _authorize(self, subject_id, context_id):
         if str(subject_id) != self.repository.subject_id:
@@ -341,12 +344,18 @@ class UnderstandingExtractor:
                 ds = item["descriptors"]
                 if not isinstance(ds, list) or len(ds) > 100:
                     raise ValueError("Bounded descriptor assignments required")
-                for d in ds:
-                    object_fields(d, ("value", "certainty"))
-                    nonempty(d["value"])
-                    if d["certainty"] not in ("asserted", "tentative"):
-                        raise ValueError("Invalid assignment certainty")
-                content["descriptors"] = deepcopy(ds)
+                if self.descriptor_version == 1:
+                    for d in ds:
+                        object_fields(d, ("value", "certainty"))
+                        nonempty(d["value"])
+                        if d["certainty"] not in ("asserted", "tentative"):
+                            raise ValueError("Invalid assignment certainty")
+                    content["descriptors"] = deepcopy(ds)
+                else:
+                    from app.understanding.descriptors import qualified_assignments
+                    evidence_count = len(item['evidence']) if isinstance(item['evidence'], list) else 0
+                    content['descriptors'] = [dict(d, review_state='proposed') for d in qualified_assignments(
+                        ds, evidence_count, source['origin'].get('metadata', {}).get('known_themes', ())) ]
             if "properties" in item:
                 if not isinstance(item["properties"], dict):
                     raise ValueError("Properties object required")
@@ -394,7 +403,7 @@ class UnderstandingExtractor:
                 context_space_id=source["context_space_id"],
                 revision_no=1,
                 type_id="qh.generic." + item["shape"],
-                type_version=1,
+                type_version=self.descriptor_version,
                 content=content,
                 origin_kind="ai",
                 validation_state="proposed",

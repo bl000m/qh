@@ -32,6 +32,7 @@ class ReviewApplication(Protocol):
 class EnrichmentApplication(Protocol):
     """Explicit owner-selected conversation persistence through the Engine."""
     async def enrich(self, subject: SubjectId, scope: str, payload: dict) -> dict: ...
+    async def capabilities(self, subject: SubjectId, scope: str) -> dict: ...
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
