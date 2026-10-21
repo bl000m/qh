@@ -864,3 +864,10 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
  /* Keep the mark and readable copy together; status badges take the next row. */
  .model-option>div{flex:1 1 calc(100% - 56px)}
 }
+
+/* QH-54 owner thematic-map correction: keep the orb without invented nodes. */
+.signed-in:has(.definitive-space) .topbar .brand.space-brand>img{width:56px;height:auto;object-fit:contain}
+@media(max-width:650px){
+ .space-discussion-grid>.assistant-card{grid-row:1}
+ .space-discussion-grid>.space-context-column{grid-row:2}
+}

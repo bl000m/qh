@@ -6,6 +6,14 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-21 — QH-54 thematic fallback and targeted regression corrections
+
+Existing PR22 branch/source binds only: remove revision map nodes, restore original
+logo, correct mobile composer order. No runtime configuration/container/image,
+Keycloak, schema, allowlist, ledger or budget change; no provider call or canonical
+demo write. [Stabilization evidence](qh-54-thematic-stabilization.md) and
+[separate QH-51 proposal](qh-51-thematic-extraction-plan.md).
+
 ## 2026-10-21 — QH-54 owner review in the existing development checkout
 
 Later maquette alignment and the explicitly approved bounded draft recovery are

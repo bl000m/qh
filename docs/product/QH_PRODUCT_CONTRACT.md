@@ -626,3 +626,20 @@ Remove the stored copy upon restoration, logout, account change or explicit
 typing remains in memory. No tokens, conversation history, automatic submission
 or canonical save are permitted. All token, TTL, disclosure and budget contracts
 remain unchanged. See [the review amendment](../qh-54-maquette-alignment.md).
+
+## QH-54 thematic map — owner amendment, 2026-10-21
+
+Map nodes represent explicit Space-specific **themes**, not individual revisions.
+Themes concern what an element is about; semantic roles concern its function.
+Neither organizational domains, structural kinds, generic legacy descriptors nor
+item titles establish thematic membership. Themes are open and multiple per item;
+assignment certainty, provenance and human validation remain independent.
+
+Only verifiable thematic assignments may produce nodes and member navigation;
+pagination/partial coverage must remain explicit. Where no qualified assignments
+are available, preserve the orb, a minimal truthful state and access to Éléments.
+No keyword/title classifier, retroactive classification or fixed taxonomy follows.
+The approved [presentation contract](../qh-54-thematic-map-contract.md) is distinct
+from the [QH-51 technical proposal](../qh-51-thematic-extraction-plan.md), pending
+approval before schema/contract changes or inference. No migration or provider call
+is authorized by this amendment.

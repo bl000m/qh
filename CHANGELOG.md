@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-54 owner review corrections — 2026-10-21
+
+- Preserve the Space orb with a truthful thematic-unavailable state; remove nodes
+  derived from single revisions. Éléments remains accessible without a question.
+- Restore the original logo asset in Space navigation and place the mobile chat
+  before the map so the composer is immediately reachable.
+- Document the approved thematic/semantic-role distinction and a separately gated
+  QH-51 extraction, evidence, naming and review proposal. No schema/provider change.
+
 ## QH-52 development readiness — in progress, 2026-10-20
 
 - Prepare bounded memory-only OIDC renewal and exact-snapshot disclosure stable
