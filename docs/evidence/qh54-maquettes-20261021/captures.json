@@ -1,0 +1,76 @@
+{
+  "ticket": "QH-54",
+  "run": "screens-delivery",
+  "composition": "isolated normal-product UI; real OIDC/PostgreSQL/Neo4j; no provider inference in maquette cases",
+  "source_src_sha256": "6178689afca43088f74e02b4994899df160602b1836f4d1a3c8a508bfe475d19",
+  "paid_calls": 0,
+  "live_qh_test_access": false,
+  "images": {
+    "qh53-api:review": "sha256:f8c9776a9bffd8ebffce98f4bc4d11a6243b96ca6db9e8645041fdd521fab675",
+    "qh54-web:review": "sha256:0885e8e54d5763f1808b537bec9ba01495bb97e638f83bc8ea5f62e06f02cbd6",
+    "qh54-browser:review": "sha256:304954c6099fdb76469c50b27339b5af5f2a6d15055814f4807fec5c8c248c24"
+  },
+  "captures": [
+    {
+      "file": "empty-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "30e94492b2010427e53a68fd6fb25eac4ab9b725be002036beead22aeb459347"
+    },
+    {
+      "file": "empty-mobile.png",
+      "width": 390,
+      "height": 1272,
+      "sha256": "811d231b15a757c8a9742f2e4c4ae48e9879b2232cae224ab927fd4ef14cbd85"
+    },
+    {
+      "file": "populated-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "a52b1483b25cf04a9c17382f155c652bc205ca52b398a688e63e1db1f99ffab1"
+    },
+    {
+      "file": "populated-mobile.png",
+      "width": 390,
+      "height": 1533,
+      "sha256": "c6376d0b1005bb3057b161f49900b368b1e53687b4802db99eedafe3ce5070a6"
+    },
+    {
+      "file": "populated-zoom200.png",
+      "width": 836,
+      "height": 1544,
+      "sha256": "5bcc0d03328f49ad68c8c25e32eeea2d99f4c174e406eb70d961b8e4bf0ec206"
+    },
+    {
+      "file": "timeout-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "4f0ab47b3307b787a3f69fdb8bc5ea66c9710a62d210bb57d1d4d0753a48c5be"
+    },
+    {
+      "file": "timeout-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "84bd446712248158b212f549fb063056d0ad5d295d53600ffa72117824960faf"
+    },
+    {
+      "file": "models-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "02b4ef7e79161f538ec80375e19a29e7fa4a022fa770b8281a9fce68b323c883"
+    },
+    {
+      "file": "models-mobile.png",
+      "width": 390,
+      "height": 1637,
+      "sha256": "1ad4e815549a86124a752d540f07588e79db9a10b8c3243832ff7a96cf646446"
+    },
+    {
+      "file": "models-unavailable.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "14df1494d2ce037b44e28748cf991a534a2ca5404c21df7ac4053cce4f14238b"
+    }
+  ],
+  "source_commit": "d28a54e66de7e538d5372d070fb4629d7d03e005"
+}
