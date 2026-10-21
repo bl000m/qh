@@ -89,7 +89,7 @@ certezza tematica, origine e stato dell’item restano indipendenti.
 
 Proporre un read model tematico bounded nello stesso servizio Understanding,
 con Space, valore esatto, certezza delle assegnazioni, revisioni membri e copertura.
-Prima dell’implementazione approvare l’estensione del contratto pubblico: filtro
+L’approvazione owner del2026-10-21 comprende l’estensione del contratto pubblico: filtro
 **dimensione + valore** applicato prima del LIMIT, paginazione dei membri e lista
 dei temi con indicatore di copertura. L’attuale filtro `descriptor` da solo non
 separa temi e ruoli omonimi. La scoperta globale delle facet è differita da ADR0005:

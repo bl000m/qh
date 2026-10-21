@@ -25,6 +25,9 @@ def create_app():
         raise RuntimeError('Disposable browser harness only')
     expected = json.loads(os.environ['QH12_EXPECTED_JSON'])
     app = create_runtime_app()
+    if os.environ.get('QH51_SEMANTIC_BROWSER_TEST')=='1':
+        from tests.semantic_fixtures import ExactSemanticFixtureProvider
+        app.state.services.enrichment.semantic_provider=ExactSemanticFixtureProvider()
     private = tempfile.TemporaryDirectory(prefix='qh45-browser-')
     root = Path(private.name)
     now = datetime.now(timezone.utc)

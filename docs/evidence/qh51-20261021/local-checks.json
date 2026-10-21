@@ -1,0 +1,66 @@
+{
+  "local_targeted_checks": [
+    {
+      "evidence": "contract-final-targeted.log",
+      "passed": 41,
+      "description": "assignment/adapter and legacy contracts"
+    },
+    {
+      "evidence": "backend-final-targeted.log",
+      "passed": 54,
+      "description": "real SQL/Neo4j semantic pipeline, review and legacy enrichment"
+    },
+    {
+      "evidence": "api-security-targeted.log",
+      "passed": 4,
+      "description": "API ownership, capabilities and freshness"
+    },
+    {
+      "evidence": "quality-targeted.log",
+      "passed": 2,
+      "description": "two-Space authored fixture evaluation"
+    },
+    {
+      "evidence": "name-lock-targeted.log",
+      "passed": 2,
+      "description": "locked exact name reuse and foreign-name denial"
+    },
+    {
+      "evidence": "web-targeted.log",
+      "passed": 11,
+      "description": "thematic grouping, provenance, drafts and layout"
+    },
+    {
+      "evidence": "legacy-review-fixed.log",
+      "passed": 1,
+      "description": "legacy QH-39 selected source, replay, confirmation and Bob"
+    },
+    {
+      "evidence": "legacy-product.log",
+      "passed": 4,
+      "description": "literal direct, synthetic review, failure retention and four compositions"
+    },
+    {
+      "evidence": "semantic-conversation-7.log",
+      "passed": 1,
+      "description": "selected original conversation semantic consent/source"
+    },
+    {
+      "evidence": "semantic-browser-6.log, first scenario only",
+      "passed": 1,
+      "description": "two Space themes, selective rejection/name reuse, refresh and Bob; second test subsequently corrected and separately passed"
+    }
+  ],
+  "counts_overlap": true,
+  "full_ci": "Separate final PR gate, not these local checks",
+  "real_mistral_calls": 0,
+  "real_provider_quality": "NOT TESTED",
+  "preservation": {
+    "protected_files_byte_equal": true,
+    "original_containers_images_mounts_equal": true,
+    "infrastructure_start_times_equal": true,
+    "schema": "0006_owner_organization",
+    "persistent_generic_v2_profiles": 0,
+    "paid_provider_calls_executed": 0
+  }
+}

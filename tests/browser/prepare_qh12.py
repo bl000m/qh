@@ -29,6 +29,9 @@ with repo.connect() as connection:
     assert connection.execute('SELECT version_num FROM alembic_version').fetchone()['version_num'] == '0006_owner_organization'
     connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Démo QH-8')", (scope, owner))
 register_generic_profiles(repo)
+if os.environ.get('QH51_SEMANTIC_BROWSER_TEST')=='1':
+    from adapters.postgres.semantic_profiles import register_semantic_profiles
+    register_semantic_profiles(repo)
 policy = OwnerPolicyService(owner_for=PostgresSecurityReader(url=repo.url).owner_for)
 p = {'repo': repo, 'scope': scope, 'service': SimpleNamespace(policy=policy)}
 usecase, provider, source_ref, checkpoint = import_extract(p, CASES[0], key='qh12-offline-demo')

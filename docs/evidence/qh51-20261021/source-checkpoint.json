@@ -1,0 +1,20 @@
+{
+  "backend": {
+    "image_id": "sha256:79edd915fcd305b8ac557d9d6f020c788fe3353582db403986ce6f1675a3f476",
+    "files": 80,
+    "source_sha256": "d20fff1228d4d932a2e3a16b6ad7ca176b03deb2f15322fabee9f7e575b43f49",
+    "tested_image_source_matches_checkout": true
+  },
+  "frontend": {
+    "image_id": "sha256:c863c98182c7ef173de70744045009beaf217b0270c2b30b7ebffa73f21c7372",
+    "files": 42,
+    "source_sha256": "73e0f4cb0fd982807be38fc58dc9e139502d687b4899a201b4f101278628cfc6",
+    "tested_image_source_matches_checkout": true
+  },
+  "browser": {
+    "image_id": "sha256:d524615dcc36cc021fc78cfb4dac9f83177b941c596c954ef040e8c27ecada62",
+    "files": 29,
+    "source_sha256": "6b41f26fc58022a42bbd8cd281182bf416fc7bff3ee7dac94310a58eb0cc5166",
+    "tested_image_source_matches_checkout": true
+  }
+}

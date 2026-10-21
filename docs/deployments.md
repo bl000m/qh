@@ -16,6 +16,10 @@ and all infrastructure; no replacement or persistent configuration change.
 QH-51 adds source code under the existing binds, with runtime composition still
 literal and no profile2 provisioned on the VPS. All semantic publication and review
 checks run on dedicated disposable test data; no demo/ledger/budget/OIDC change.
+Read-only final checks confirm schema0006 and zero generic v2 profiles on the VPS;
+protected files match the task checkpoint and original service IDs/images/mounts
+remain intact. [Implementation/evidence](qh-51-implementation.md); paid experiment
+is proposed separately and remains unauthorized.
 
 ## 2026-10-21 — QH-54 thematic fallback and targeted regression corrections
 

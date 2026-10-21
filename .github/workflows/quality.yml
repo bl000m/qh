@@ -112,7 +112,7 @@ jobs:
 
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -128,3 +128,7 @@ jobs:
       - name: QH-52/QH-53 normal product UI, rotating OIDC and isolated literal bootstrap
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --product-mode --browser-grep 'QH-52 product|QH-53 complete|QH-53 consent|QH-54 direct|QH-54 synthetic|QH-54 manual|QH-54 maquettes' --output /tmp/qh52-product-evidence
+
+      - name: QH-51 semantic assignments, selective review and thematic map on disposable fixtures
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --semantic-mode --browser-grep 'QH-51 semantic' --output /tmp/qh51-semantic-evidence
