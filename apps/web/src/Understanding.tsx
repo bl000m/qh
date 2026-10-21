@@ -65,21 +65,21 @@ function GuidedCards({rows,onOpen}:{rows:CanonicalRevision[];onOpen:(row:Canonic
  const group=(row:CanonicalRevision)=>{const label=meaning(row);return groups.includes(label)?label:'Autres éléments';};
  return <div className="guided-understanding"><p className="small muted">Groupes fondés sur les descripteurs explicitement attribués, uniquement dans les pages chargées. Aucun classement automatique des autres significations.</p>{groups.map(label=>{const selected=rows.filter(r=>group(r)===label);return selected.length>0&&<section key={label} aria-label={label}><h4>{label}</h4><Cards rows={selected} onOpen={onOpen}/></section>;})}</div>;
 }
-export default function Understanding({api,scope,onChanged,initialRevision}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string}) {
+export default function Understanding({api,scope,onChanged,initialRevision,refreshKey=0}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string;refreshKey?:number}) {
   const [reviewOnly,setReviewOnly]=useState(false);
   const [revisionRefresh,setRevisionRefresh]=useState(0);
   const [mode,setMode]=useState<'overview'|'explore'|'detail'>(initialRevision?'detail':'overview');
   const [filter,setFilter]=useState<BrowseQuery>({view:'current',limit:20});
   const [selected,setSelected]=useState<string|null>(initialRevision??null);
-  const overview=mode==='overview';
-  const current=usePage(api,scope,overview ? {view:'current',limit:5} : null);
-  const proposed=usePage(api,scope,overview ? {view:'proposed',limit:5} : null);
-  const history=usePage(api,scope,overview ? {view:'history',limit:1} : null);
-  const explored=usePage(api,scope,mode==='explore' ? filter : null,reviewOnly,revisionRefresh);
-  const detail=usePage(api,scope,mode==='detail' && selected ? {view:'history',limit:1,revision_id:selected} : null,false,revisionRefresh,!!initialRevision||revisionRefresh>0);
+  const overview=mode==='overview',refresh=refreshKey+revisionRefresh;
+  const current=usePage(api,scope,overview ? {view:'current',limit:5} : null,false,refresh,refresh>0);
+  const proposed=usePage(api,scope,overview ? {view:'proposed',limit:5} : null,false,refresh,refresh>0);
+  const history=usePage(api,scope,overview ? {view:'history',limit:1} : null,false,refresh,refresh>0);
+  const explored=usePage(api,scope,mode==='explore' ? filter : null,reviewOnly,refresh,refresh>0);
+  const detail=usePage(api,scope,mode==='detail' && selected ? {view:'history',limit:1,revision_id:selected} : null,false,refresh,!!initialRevision||refresh>0);
   const row=detail.rows[0];
-  const revisions=usePage(api,scope,row ? {view:'history',limit:20,item_id:row.item_id} : null);
-  const related=usePage(api,scope,row ? {view:'history',limit:20,related_item_id:row.item_id} : null);
+  const revisions=usePage(api,scope,row ? {view:'history',limit:20,item_id:row.item_id} : null,false,refresh,refresh>0);
+  const related=usePage(api,scope,row ? {view:'history',limit:20,related_item_id:row.item_id} : null,false,refresh,refresh>0);
   const heading=useRef<HTMLHeadingElement>(null);
   useEffect(()=>{if(mode!=='overview')heading.current?.focus();},[mode,selected]);
   function explore(query:BrowseQuery) {setReviewOnly(false);setFilter(query);setMode('explore');setSelected(null);}
