@@ -6,6 +6,15 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-21 — QH-54 owner review in the existing development checkout
+
+Later maquette alignment and the explicitly approved bounded draft recovery are
+implemented on the existing PR22 branch, in `/home/ubuntu/qh`. Existing approved
+source binds expose source changes through HMR. No branch switch, app recreation,
+Keycloak change, image replacement, migration, paid request or persistent demo write
+is performed for this review. Schema remains0006; PR19/0007 remain separate.
+[Visual review and preservation evidence](qh-54-maquette-alignment.md).
+
 ## 2026-10-20 — QH-52 application source, persistent activation deferred
 
 The owner explicitly authorized independent stabilization while PR19 remains open.

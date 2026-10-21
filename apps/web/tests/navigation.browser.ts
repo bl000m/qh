@@ -18,7 +18,7 @@ export async function expandUnderstanding(page:Page){
 }
 export async function includeProposals(page:Page,checked=true){
  await closeUnderstanding(page);
- await page.getByRole('tab',{name:'Modèle',exact:true}).click();
+ await page.getByRole('tab',{name:'Modèles',exact:true}).click();
  const details=page.locator('.administrative-disclosure');if(!await details.evaluate((n:HTMLDetailsElement)=>n.open))await details.locator('summary').click();
  await page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.',{exact:true}).setChecked(checked);
  await page.getByRole('tab',{name:'Discussion',exact:true}).click();

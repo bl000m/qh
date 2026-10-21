@@ -228,3 +228,14 @@ quality and OIDC. Its browser failures identified legacy-landing incompatibility
 and mobile control height; these were corrected and targeted before publication.
 The final review verdict requires all checks on the final PR head, not reuse of a
 failed or merely partial workflow result.
+
+
+## Later QH-54 draft exception — owner approval 2026-10-21
+
+The owner approved only unsent message/manual-element recovery in sessionStorage
+for explicit reconnection, max30minutes and the exact verified QH owner/owned Space.
+Stored text is removed after restoration, logout, account change or explicit clear;
+no tokens/history, automatic submission or canonical writes. This supersedes the
+earlier memory-only draft restriction for that narrow path. OIDC refresh/rotation,
+TTL, disclosure, work-session and administrative budget contracts remain unchanged.
+[Implementation and isolated verification](qh-54-maquette-alignment.md).

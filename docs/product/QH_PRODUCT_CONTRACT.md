@@ -613,3 +613,16 @@ lifecycle remains proposed; the real state stays inspectable. AI proposals remai
 new-human-proposal rules. No formal lifecycle change or auto-confirmation follows.
 A primary list/detail and complementary data-derived overview open through
 Éléments → Compréhension; source/history/audit remain accessible secondarily.
+
+
+## QH-54 owner-approved temporary draft recovery — 2026-10-21
+
+The later owner approval permits a narrow exception to QH-52's memory-only draft
+contract: the unsent message and manual-element text may enter sessionStorage
+only for explicit reconnection, for at most30 minutes. Restoration requires the
+same backend-verified QH owner and successfully authorized exact Context Space.
+Remove the stored copy upon restoration, logout, account change or explicit
+“Effacer les brouillons”; reject expired, malformed and mismatched data. Ordinary
+typing remains in memory. No tokens, conversation history, automatic submission
+or canonical save are permitted. All token, TTL, disclosure and budget contracts
+remain unchanged. See [the review amendment](../qh-54-maquette-alignment.md).

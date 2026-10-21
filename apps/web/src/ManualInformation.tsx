@@ -3,9 +3,11 @@ import type {QhApi} from './api';
 import {apiMessage} from './api';
 import type {EnrichmentReceipt} from './EnrichConversation';
 import {Modal} from './SpaceActions';
+import useDraft from './useDraft';
 
 export default function ManualInformation({api,scope,disabled,onSaved,openRequest=0,hideAction=false}:{api:QhApi;scope:string;disabled:boolean;openRequest?:number;hideAction?:boolean;onSaved:(receipt:EnrichmentReceipt)=>void}){
- const [open,setOpen]=useState(false),[text,setText]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [text,setText]=useDraft('element');
+ const [open,setOpen]=useState(!!text),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [saved,setSaved]=useState<'added'|'source'|null>(null);
  useEffect(()=>{if(openRequest){setError('');setSaved(null);setOpen(true);}},[openRequest]);
  const attempt=useRef<{text:string;payload:Parameters<QhApi['enrich']>[1]}|null>(null);

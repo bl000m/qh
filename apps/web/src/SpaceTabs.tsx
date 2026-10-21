@@ -1,6 +1,6 @@
 import {useRef} from 'react';
 import {Icon} from './Ui';
-export const spaceTabs=['Discussion','Éléments','Modèle','Conseils','Paramètres'] as const;
+export const spaceTabs=['Discussion','Éléments','Modèles','Conseils','Paramètres'] as const;
 export type SpaceTab=typeof spaceTabs[number];
 export default function SpaceTabs({value,onChange}:{value:SpaceTab;onChange:(tab:SpaceTab)=>void}){
  const refs=useRef<(HTMLButtonElement|null)[]>([]);

@@ -455,3 +455,14 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
 - New list/detail and complementary data-derived understanding overview; source and
   audit remain accessible. No semantic extraction, invented graph, schema change or
   provider/allowlist/budget activation.
+
+### QH-54 — Latest Space maquettes (owner review, 2026-10-21)
+
+- Align empty two-card and populated map/chat layouts with the four new references;
+  actual domain pills, QH home navigation and plural Modèles tab.
+- Read-only map nodes use owned canonical titles and states. Sharing/import controls
+  are visibly disabled; the model catalogue/budget reflects backend availability.
+- Owner-approved temporary recovery of unsent message/manual-element drafts only:
+  explicit reconnection, sessionStorage, thirty minutes, exact verified owner and
+  Space; clear on restoration/logout/account change/explicit erasure. Tokens and
+  conversation history remain memory-only; no automatic submission or data write.
