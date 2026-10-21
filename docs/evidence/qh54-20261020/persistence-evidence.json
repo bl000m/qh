@@ -1,0 +1,9 @@
+{
+  "canonical_state": "proposed",
+  "single_click": true,
+  "no_self_checkbox": true,
+  "restored_after_refresh": true,
+  "correction_new_human_proposal": true,
+  "bob_denied": true,
+  "provider_calls": 0
+}

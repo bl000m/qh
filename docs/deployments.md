@@ -6,6 +6,23 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-21 — QH-54 thematic fallback and targeted regression corrections
+
+Existing PR22 branch/source binds only: remove revision map nodes, restore original
+logo, correct mobile composer order. No runtime configuration/container/image,
+Keycloak, schema, allowlist, ledger or budget change; no provider call or canonical
+demo write. [Stabilization evidence](qh-54-thematic-stabilization.md) and
+[separate QH-51 proposal](qh-51-thematic-extraction-plan.md).
+
+## 2026-10-21 — QH-54 owner review in the existing development checkout
+
+Later maquette alignment and the explicitly approved bounded draft recovery are
+implemented on the existing PR22 branch, in `/home/ubuntu/qh`. Existing approved
+source binds expose source changes through HMR. No branch switch, app recreation,
+Keycloak change, image replacement, migration, paid request or persistent demo write
+is performed for this review. Schema remains0006; PR19/0007 remain separate.
+[Visual review and preservation evidence](qh-54-maquette-alignment.md).
+
 ## 2026-10-20 — QH-52 application source, persistent activation deferred
 
 The owner explicitly authorized independent stabilization while PR19 remains open.
@@ -586,3 +603,14 @@ the UX task; the active QH52 realm/session settings and private flags stay fixed
 Screenshots and mutable test data belong only to isolated disposable test projects.
 Final reviewed source HEAD and CI evidence are recorded on the QH53 PR, separately
 from this preparation checkpoint. No merge or QH51/Projection activation is implied.
+
+## 2026-10-20 — QH-53 integrated; QH-54 source-only refinement
+
+Owner authorized ordinary PR21 merge at approved de2b99c with four green checks.
+Merge c5af9b36d65ebc82e0835b0f00b3b598e569ebeb preserves all four source commits;
+main fast-forwarded safely after guarded app stop and process/mount/import checks.
+QH-53 evidence/merge recorded in Jira comment10039; status unchanged. Owner explicitly
+requested the subsequent separate QH-54 branch, even while PR19 remains open.
+Frontend/backend restarted on their existing images/config/mounts; Keycloak/MCP/
+SQL/Neo4j unchanged, schema0006. Ordinary source hot reload remains active; no new
+persistent deployment/config/allowlist/budget change, paid inference or0007 follows.

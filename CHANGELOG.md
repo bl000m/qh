@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-54 owner review corrections — 2026-10-21
+
+- Preserve the Space orb with a truthful thematic-unavailable state; remove nodes
+  derived from single revisions. Éléments remains accessible without a question.
+- Restore the original logo asset in Space navigation and place the mobile chat
+  before the map so the composer is immediately reachable.
+- Document the approved thematic/semantic-role distinction and a separately gated
+  QH-51 extraction, evidence, naming and review proposal. No schema/provider change.
+
 ## QH-52 development readiness — in progress, 2026-10-20
 
 - Prepare bounded memory-only OIDC renewal and exact-snapshot disclosure stable
@@ -445,3 +454,24 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
 
 - QH-53 provider failures retain their sanitized error after automatic grant
   revocation; no retry or fallback. The regression checks the settled revoked state.
+
+### QH-54 — Context understanding refinement (Unreleased)
+
+- Direct manual text is retained with one explicit Ajouter au contexte action,
+  without a second self-confirmation checkbox or an administrative review jump.
+- Canonical provenance distinguishes personal declarations from QH interpretations;
+  proposed state, source evidence, immutable history and human review remain intact.
+- New list/detail and complementary data-derived understanding overview; source and
+  audit remain accessible. No semantic extraction, invented graph, schema change or
+  provider/allowlist/budget activation.
+
+### QH-54 — Latest Space maquettes (owner review, 2026-10-21)
+
+- Align empty two-card and populated map/chat layouts with the four new references;
+  actual domain pills, QH home navigation and plural Modèles tab.
+- Read-only map nodes use owned canonical titles and states. Sharing/import controls
+  are visibly disabled; the model catalogue/budget reflects backend availability.
+- Owner-approved temporary recovery of unsent message/manual-element drafts only:
+  explicit reconnection, sessionStorage, thirty minutes, exact verified owner and
+  Space; clear on restoration/logout/account change/explicit erasure. Tokens and
+  conversation history remain memory-only; no automatic submission or data write.

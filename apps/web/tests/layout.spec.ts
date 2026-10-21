@@ -15,7 +15,7 @@ test('chat reflow at 320 pixels and 200 percent preserves composer and sources',
 test('QH-53 tab keys preserve the draft and empty conversation offers no fake memory action',async({page})=>{
  await page.goto('/tests/fixtures/chat-layout.html');
  await page.getByLabel('Votre question sur ce contexte').fill('Une décision à clarifier.');
- const tabs=page.getByRole('tab');await expect(tabs).toHaveText(['Discussion','Éléments','Modèle','Conseils','Paramètres']);
+ const tabs=page.getByRole('tab');await expect(tabs).toHaveText(['Discussion','Éléments','Modèles','Conseils','Paramètres']);
  await tabs.first().focus();await page.keyboard.press('ArrowRight');await expect(tabs.nth(1)).toBeFocused();await expect(tabs.nth(1)).toHaveAttribute('aria-selected','true');
  await page.keyboard.press('End');await expect(tabs.last()).toBeFocused();await page.keyboard.press('Home');await expect(tabs.first()).toBeFocused();
  await expect(page.getByLabel('Votre question sur ce contexte')).toHaveValue('Une décision à clarifier.');

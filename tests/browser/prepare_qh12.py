@@ -95,7 +95,15 @@ review_p = {'repo':repo,'scope':review_scope,'service':SimpleNamespace(policy=po
 review_usecase, _, _, review_cp = import_extract(review_p, CASES[0], key='qh50-isolated-review')
 asyncio.run(review_usecase.publish(subject_id=owner,checkpoint=review_cp))
 
-print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces, 'review_scope':review_scope,
+# Dedicated QH-54 interpretation review: no mutation of shared chat/review fixtures.
+understanding_scope = str(uuid4())
+with repo.connect() as connection:
+    connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Compréhension QH-54 isolée')", (understanding_scope,owner))
+understanding_p = {'repo':repo,'scope':understanding_scope,'service':SimpleNamespace(policy=policy)}
+understanding_usecase, _, _, understanding_cp = import_extract(understanding_p, CASES[0], key='qh54-isolated-interpretation')
+asyncio.run(understanding_usecase.publish(subject_id=owner,checkpoint=understanding_cp))
+
+print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces, 'review_scope':review_scope, 'understanding_scope':understanding_scope,
                   'original_ids': [r['id'] for r in original],
                   'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],

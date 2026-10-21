@@ -58,13 +58,14 @@ test('proposed-only Space needs explicit choice and empty context invents no evi
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
  await expect(page.getByRole('tab',{name:'Discussion',exact:true})).toHaveAttribute('aria-selected','true');await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.getByRole('heading',{name:'Construisez et explorez votre contexte',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'J’ajoute un élément',exact:true})).toBeVisible();
  r=await ask(page);expect((await r.json()).references).toHaveLength(0);
 });
 
 test('history-only Space is not labelled empty; history verification errors fail closed',async({page})=>{
  await open(page,expected.historical_scope);
- await expect(page.getByRole('heading',{name:'Construisez et explorez votre contexte',exact:true})).toBeVisible();
+ await expect(page.getByRole('region',{name:'Carte thématique de ce contexte',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'J’ajoute un élément',exact:true})).toHaveCount(0);
  await expect(page.getByText('Ce Space attend sa première compréhension.',{exact:true})).toHaveCount(0);
  await page.route('**/understanding?*',route=>new URL(route.request().url()).searchParams.get('view')==='history'
   ?route.fulfill({status:503,contentType:'application/json',body:'{"detail":"unavailable"}'}) :route.continue());
@@ -104,6 +105,7 @@ test('real Bob OIDC cannot chat with Alice Space, arbitrary IDs reveal no privat
 
 
 test('Alice navigates all three fixture Spaces without duplicate keys or retained dialogue',async({page})=>{
+ test.setTimeout(90000); // Four real Space visits, including their separate canonical workspace reads.
  expect(expected.demo_spaces).toHaveLength(3);
  await open(page,expected.demo_spaces[0].scope);
  const visits=[...expected.demo_spaces,expected.demo_spaces[0]];

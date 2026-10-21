@@ -1,0 +1,43 @@
+{
+  "source_src_sha256": "62cdbaedc7d5d88005a099a4f302dfaba7467039c7100604dcfb74afe6727584",
+  "images": {
+    "frontend": "sha256:c68272437cf2b4bdbf52ee843702f20353f42687886651b1679fb9f37bd96ccd",
+    "browser_actual": "sha256:8686b0f3a2003ee910c7566687316143eff89af0c1c3aed1ca7f30c511891908",
+    "backend": "sha256:f8c9776a9bffd8ebffce98f4bc4d11a6243b96ca6db9e8645041fdd521fab675"
+  },
+  "captures": [
+    {
+      "file": "empty-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "5fd5ef51858f4868fb78a601b52b56fa9b3d1235d072b2d479a08b1d686dc24a"
+    },
+    {
+      "file": "empty-mobile.png",
+      "width": 390,
+      "height": 1279,
+      "sha256": "6df633cc15c100f9c1ec026e1f1a89a6b62461cdc4101559ec0d56ca9d94a534"
+    },
+    {
+      "file": "populated-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "ee0e621411f164c41eda1406c1101fd7839fe205fb5e7a0deb048e24cf65cbf6"
+    },
+    {
+      "file": "populated-mobile.png",
+      "width": 390,
+      "height": 1540,
+      "sha256": "16af78204f240f55cbff70684e164b21eebd5ba7ca92aba6d4bd8102c1bf4731"
+    },
+    {
+      "file": "populated-zoom200.png",
+      "width": 836,
+      "height": 1544,
+      "sha256": "d95becd0b40e800d12ea5d1e9a9481c446334724658d64cf138e584396f25cb6"
+    }
+  ],
+  "paid_calls": 0,
+  "persistent_demo_test_writes": 0,
+  "browser_image_note": "Actual executing browser image captured from container; final rebuilt tag differs only in history test region name. Served frontend source independently verified identical to checkout."
+}

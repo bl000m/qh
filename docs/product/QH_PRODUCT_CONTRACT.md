@@ -596,3 +596,50 @@ claiming a durable whole-chat archive, semantic extraction or human confirmation
 Conseils are editable question starters requiring explicit send, not generated
 recommendations. Model/budget come from real capabilities; unavailable settings and
 unimplemented deletion/sharing controls are not displayed as functioning actions.
+
+## QH-54 direct declaration and understanding presentation — owner amendment, 2026-10-20
+
+The explicit manual **Ajouter au contexte** button expresses consent to preserve
+that supplied text; no second self-confirmation checkbox is needed. QH-39 retains
+the source, provenance and proposed canonical revision without certifying truth or
+performing semantic classification. Selected conversation memory and external
+provider disclosure retain their distinct consents and scopes.
+
+Understanding distinguishes literal owner declarations (only when established by
+stored provider/locator/source evidence) from actual QH interpretations. Direct
+information is presented as **Vos informations** even while its current backend
+lifecycle remains proposed; the real state stays inspectable. AI proposals remain
+**À vérifier** until QH-46 human review. Corrections preserve immutable revision and
+new-human-proposal rules. No formal lifecycle change or auto-confirmation follows.
+A primary list/detail and complementary data-derived overview open through
+Éléments → Compréhension; source/history/audit remain accessible secondarily.
+
+
+## QH-54 owner-approved temporary draft recovery — 2026-10-21
+
+The later owner approval permits a narrow exception to QH-52's memory-only draft
+contract: the unsent message and manual-element text may enter sessionStorage
+only for explicit reconnection, for at most30 minutes. Restoration requires the
+same backend-verified QH owner and successfully authorized exact Context Space.
+Remove the stored copy upon restoration, logout, account change or explicit
+“Effacer les brouillons”; reject expired, malformed and mismatched data. Ordinary
+typing remains in memory. No tokens, conversation history, automatic submission
+or canonical save are permitted. All token, TTL, disclosure and budget contracts
+remain unchanged. See [the review amendment](../qh-54-maquette-alignment.md).
+
+## QH-54 thematic map — owner amendment, 2026-10-21
+
+Map nodes represent explicit Space-specific **themes**, not individual revisions.
+Themes concern what an element is about; semantic roles concern its function.
+Neither organizational domains, structural kinds, generic legacy descriptors nor
+item titles establish thematic membership. Themes are open and multiple per item;
+assignment certainty, provenance and human validation remain independent.
+
+Only verifiable thematic assignments may produce nodes and member navigation;
+pagination/partial coverage must remain explicit. Where no qualified assignments
+are available, preserve the orb, a minimal truthful state and access to Éléments.
+No keyword/title classifier, retroactive classification or fixed taxonomy follows.
+The approved [presentation contract](../qh-54-thematic-map-contract.md) is distinct
+from the [QH-51 technical proposal](../qh-51-thematic-extraction-plan.md), pending
+approval before schema/contract changes or inference. No migration or provider call
+is authorized by this amendment.

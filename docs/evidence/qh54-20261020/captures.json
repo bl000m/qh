@@ -1,0 +1,71 @@
+{
+  "ticket": "QH-54",
+  "run": "regressions-final",
+  "composition": "isolated native-understanding test profile; offline mock confined to test composition; no provider generation in mandatory intake",
+  "source_src_sha256": "2a2884c6c35887e8064b1d54a536b83845cefae098e2bab45a40b3baa35885a1",
+  "paid_calls": 0,
+  "live_qh_access": false,
+  "images": {
+    "qh53-api:review": "sha256:f8c9776a9bffd8ebffce98f4bc4d11a6243b96ca6db9e8645041fdd521fab675",
+    "qh54-web:review": "sha256:8390ea6282bae60b54fa221b1e10ed20168b159a6a05b4abd57bdb97596ee427",
+    "qh54-browser:review": "sha256:38311be4bb4b64c837f1e1277f3e75999bf381989a07c88ba09b4a5a31e163e2"
+  },
+  "captures": [
+    {
+      "file": "understanding-list-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "5af9efd722818e0ff27683c374f65d1787b7930d174cf7c4b4cf5e72945628e6"
+    },
+    {
+      "file": "understanding-list-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "17531ae10a2757955c4be6509c0fc5686dac680298bc85e182c2ac26972beb23"
+    },
+    {
+      "file": "understanding-overview-desktop.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "a02b970a07cae5c37593955b148b9b5b9e4492b26e48f124f82c0ca1e3fe76b2"
+    },
+    {
+      "file": "understanding-overview-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "e77e099c8348b44d1020c6e943a084fad7d1d45a02b437fdec7f78f6e59fc3f1"
+    },
+    {
+      "file": "manual-intake.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "da0c7906468560b5abde68d6753f2c04a6cdb12e90ebe2250b07a31359e78cf9"
+    },
+    {
+      "file": "saved-feedback.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "d1c3bac549cc1a7776aad1efe3b7d15ed87438786141318ccab686f4a20f5e6a"
+    },
+    {
+      "file": "restored-after-refresh.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "e8e3afb843917dddfbe20cfba52e5efd9527408eed107dc22ea72454ce10de20"
+    },
+    {
+      "file": "ai-interpretation-pending.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "c816e5b857f85492e6bb6d3cb19ade036c4d9a0d64045d61f91eba69599362bf"
+    },
+    {
+      "file": "overview-explicit-relations.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "4eb89ddf42489e9ab05b750c787b10a7cc59e33c8ccda308cb229f0f413156a5"
+    }
+  ],
+  "running_frontend_source_hash_verified_equal": true,
+  "source_file_count": 36
+}

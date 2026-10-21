@@ -1,0 +1,15 @@
+{
+  "check": "read-only live preservation comparison",
+  "protected_configuration_realm_provider_authorization_and_ledger_equal": true,
+  "original_container_image_mount_and_nonapp_start_equal": true,
+  "schema": "0006_owner_organization",
+  "concurrent_runtime_changes_preserved": [
+    "context_projection_state",
+    "context_spaces",
+    "owner_organization"
+  ],
+  "other_canonical_source_revision_governance_tables_equal": true,
+  "agent_live_canonical_test_writes": 0,
+  "agent_paid_provider_calls": 0,
+  "attribution": "Concurrent changes retained; actor not inferred from hashes."
+}
