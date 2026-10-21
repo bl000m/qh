@@ -48,11 +48,17 @@ export class QhApi {
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
-  async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean}):Promise<EnrichmentReceipt>{
+  async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean;extraction_mode?:'semantic'}):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);
     const r=await this.request('/context-spaces/'+scope+'/enrichments','POST',payload) as EnrichmentReceipt;
-    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||r.provider_mode!=='offline-literal/1')throw new ApiError(502);
+    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2'].includes(r.provider_mode))throw new ApiError(502);
     return r;
+  }
+  async enrichmentCapabilities(scope:string):Promise<{semantic:boolean;external_disclosure:false}> {
+    if(!isUuid(scope))throw new ApiError(404);
+    const value=await this.request('/context-spaces/'+scope+'/enrichments/capabilities') as {semantic:boolean;external_disclosure:false};
+    if(!value||typeof value.semantic!=='boolean'||value.external_disclosure!==false)throw new ApiError(502);
+    return value;
   }
   async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
@@ -60,7 +66,7 @@ export class QhApi {
     if(!s||s.revision_id!==revision||!isUuid(s.latest_revision_id)||typeof s.pending!=='boolean'||!(s.current_revision_id===null||isUuid(s.current_revision_id))||!(s.successor_revision_id===null||isUuid(s.successor_revision_id)))throw new ApiError(502);
     return s;
   }
-  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct';expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
+  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct'|'review_assignments';assignment_decisions?:{index:number;state:'accepted'|'rejected';reuse_value?:string}[];expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
     const r=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review','POST',operation) as {revision_id:string;action:string;replayed:boolean};
     if(!r||!isUuid(r.revision_id)||r.action!==operation.action||typeof r.replayed!=='boolean')throw new ApiError(502);return r;

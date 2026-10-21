@@ -14,7 +14,7 @@ function status(row:CanonicalRevision) {
 }
 function text(row:CanonicalRevision) {return typeof row.content.text==='string' ? row.content.text : 'Élément structuré — ouvrir le contenu';}
 function assignments(row:CanonicalRevision) {return (Array.isArray(row.content.descriptors) ? row.content.descriptors : []).flatMap(a=>{const v=descriptorAssignment(a);return v ? [v] : [];});}
-export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection=false) {
+export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection:boolean|number=false) {
   const [refresh,setRefresh]=useState(0);
   const key=scope+JSON.stringify(query)+refresh+pending+refreshKey+waitForProjection;
   const version=useRef(0);
@@ -26,12 +26,14 @@ export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=fa
     try {
       async function read(){
         // A known successful local publication can precede its derived projection.
-        // At most four GETs over 1.5 seconds; never retry a write/provider call or
+        // Four GETs normally; a known semantic batch may request at most sixteen
+        // GETs over7.5 seconds. Never retry a write/provider call or
         // turn graph failure into a SQL-only success. Stop on navigation/change.
-        for(let attempt=0;attempt<4;attempt++){
+        const attempts=typeof waitForProjection==='number'?Math.min(16,Math.max(1,Math.floor(waitForProjection))):4;
+        for(let attempt=0;attempt<attempts;attempt++){
           if(expected!==version.current)return null;
           try{return pending?await api.pendingReview(scope,query!.limit,after):await api.browse(scope,{...query!,...(after ? {after_revision_id:after} : {})});}
-          catch(error){if(!waitForProjection||!(error instanceof ApiError)||error.status!==503||attempt===3)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
+          catch(error){if(!waitForProjection||!(error instanceof ApiError)||error.status!==503||attempt===attempts-1)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
         }
         return null;
       }

@@ -1,3 +1,4 @@
+import {qualifiedAssignments} from './thematic';
 import {Revision} from './Revision';
 import {descriptorAssignment,recognizedCitations} from './understanding';
 import type {CanonicalRevision,Json} from './understanding';
@@ -6,7 +7,7 @@ const labels:Record<string,string>={decision:'Décision déclarée',hypothesis:'
 export function meaning(row:CanonicalRevision):string {
  if(row.structural_kind==='entity')return 'Entité';
  if(row.structural_kind==='relation')return 'Relation explicite';
- const values=Array.isArray(row.content.descriptors)?row.content.descriptors.map(descriptorAssignment).filter(a=>a!==null&&a.certainty==='asserted'):[];
+ const values=row.type_version===2?qualifiedAssignments(row).filter(({assignment:d})=>d.dimension==='semantic_role'&&d.review_state!=='rejected'&&d.certainty==='asserted').map(({assignment:d})=>({value:d.value,certainty:d.certainty})):Array.isArray(row.content.descriptors)?row.content.descriptors.map(descriptorAssignment).filter(a=>a!==null&&a.certainty==='asserted'):[];
  return values.map(a=>labels[a!.value]).find(Boolean)||'Élément de compréhension';
 }
 export function validationLabel(row:CanonicalRevision){

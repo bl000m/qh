@@ -1,3 +1,4 @@
+import {qualifiedAssignments} from './thematic';
 import {isUuid} from './transport';
 import {descriptorAssignment,recognizedCitations} from './understanding';
 import type {CanonicalRevision,Json} from './understanding';
@@ -23,5 +24,5 @@ export function contentOrigin(row:CanonicalRevision,ownerId?:string):ContentOrig
 export function itemText(row:CanonicalRevision){return typeof row.content.text==='string'?row.content.text:'Contenu structuré disponible dans les détails.';}
 export function itemTitle(row:CanonicalRevision){const title=typeof row.content.title==='string'?row.content.title:itemText(row).split('\n')[0];return title.length>76?title.slice(0,73)+'…':title;}
 export function itemState(row:CanonicalRevision,ownerId?:string){return row.validation_state==='rejected'?'Refusé':row.is_current_confirmed?'Confirmé':row.validation_state==='proposed'?(contentOrigin(row,ownerId)==='personal'?'Ajouté par vous':'À vérifier'):'Version conservée';}
-export function groupsIn(rows:CanonicalRevision[]){return [...new Set(rows.flatMap(r=>Array.isArray(r.content.descriptors)?r.content.descriptors.flatMap(d=>{const a=descriptorAssignment(d);return a?[a.value]:[];}):[]))];}
+export function groupsIn(rows:CanonicalRevision[]){return [...new Set(rows.flatMap(r=>r.type_version===2?qualifiedAssignments(r).filter(({assignment:d})=>d.review_state!=='rejected').map(({assignment:d})=>(d.dimension==='thematic'?'Thème : ':'Rôle : ')+d.value):Array.isArray(r.content.descriptors)?r.content.descriptors.flatMap(d=>{const a=descriptorAssignment(d);return a?[a.value]:[];}):[]))];}
 export function sourceLabel(row:CanonicalRevision,ownerId?:string){return contentOrigin(row,ownerId)==='personal'?'Vos propos conservés':row.origin_kind==='ai'?'Source de l’interprétation':'Source conservée';}

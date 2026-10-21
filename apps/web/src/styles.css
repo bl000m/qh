@@ -871,3 +871,13 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
  .space-discussion-grid>.assistant-card{grid-row:1}
  .space-discussion-grid>.space-context-column{grid-row:2}
 }
+
+/* Explicit thematic assignments preserve the approved orbital composition. */
+.map-coverage{position:absolute;bottom:0;left:22px;right:22px;font-size:11px;color:#64718b;text-align:center;margin:4px 0}
+.theme-membership-scope{font-size:14px;color:#536580;padding:8px 14px;background:#f5f7fc;border-radius:12px}
+
+.assignment-review-row{padding:12px;margin:10px 0;border:1px solid #e2e7f0;border-radius:12px;background:#fafbfe}.assignment-review-row p{font-size:14px}.assignment-review-row label{display:block;margin-top:10px}.assignment-review-row select{width:100%;max-width:100%}.assignment-review-row blockquote{overflow-wrap:anywhere}
+.map-coverage{line-height:1.35}
+@media(max-width:650px){.space-context-map:not(:fullscreen):has(.context-orbit-node){height:390px}}
+
+.assignment-summary ul{margin:8px 0;padding-left:20px}.assignment-summary li{font-size:14px;line-height:1.55;margin-bottom:6px}.workspace-card .assignment-summary li strong,.theme-membership-scope strong,.workspace-card .assignment-review-row p strong{display:inline;font-size:inherit;line-height:inherit}

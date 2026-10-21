@@ -4,7 +4,7 @@ import useDraft from './useDraft';
 import type {SelectedConversationTurn} from './EnrichConversation';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
-import {apiMessage,ApiError} from './api';
+import {ApiError,apiMessage} from './api';
 import type {QhApi} from './api';
 import SourcesPanel from './SourcesPanel';
 import {Orb,Icon} from './Ui';
@@ -14,7 +14,7 @@ import type {SessionCapabilities} from './provider-session';
 import ProviderChoice,{offlineFixture} from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
-export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Discussion',addRequest=0,draftRequest,onContextSaved,refreshKey=0,onExploreContext}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void;tab?:SpaceTab;addRequest?:number;draftRequest?:{id:number;text:string};onContextSaved?:()=>void;refreshKey?:number;onExploreContext?:()=>void}) {
+export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Discussion',addRequest=0,draftRequest,onContextSaved,refreshKey=0,onExploreContext,onTheme}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void;tab?:SpaceTab;addRequest?:number;draftRequest?:{id:number;text:string};onContextSaved?:()=>void;refreshKey?:number;onExploreContext?:()=>void;onTheme?:(value:string)=>void}) {
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean;historical:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
@@ -50,17 +50,27 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Disc
   useEffect(()=>{
     const n=++generation.current;
     setAvailable(null);setError('');
-      Promise.all([api.browse(scope,{view:'current',limit:1}),api.browse(scope,{view:'proposed',limit:1})])
+      async function read(view:'current'|'proposed'|'history'){
+        const attempts=refreshKey>0?16:1;
+        for(let attempt=0;attempt<attempts;attempt++){
+          if(n!==generation.current)return null;
+          try{return await api.browse(scope,{view,limit:1});}
+          catch(error){if(!(error instanceof ApiError)||error.status!==503||attempt===attempts-1)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
+        }
+        return null;
+      }
+      Promise.all([read('current'),read('proposed')])
         .then(async([current,proposed])=>{
+          if(!current||!proposed||n!==generation.current)return;
           const hasCurrent=current.items.length>0,hasProposed=proposed.items.length>0;
           // A lack of active support does not establish an empty Space. Reuse the
           // authorized, graph-verified history view; never infer absence on error.
-          const historical=!hasCurrent&&!hasProposed ? (await api.browse(scope,{view:'history',limit:1})).items.length>0 : false;
+          const historical=!hasCurrent&&!hasProposed ? ((await read('history'))?.items.length??0)>0 : false;
           if(n===generation.current)setAvailable({current:hasCurrent,proposed:hasProposed,historical});
         })
         .catch(e=>{if(n===generation.current){setError(apiMessage(e));setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());}});
     return()=>{generation.current++;};
-  },[api,scope]);
+  },[api,scope,refreshKey]);
   function reset(){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());setQuestion('');setError('');setLoading(false);}
   async function submit(event:FormEvent){
     event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available)return;
@@ -88,7 +98,7 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Disc
   <section hidden={tab!=='Discussion'} id="space-panel-0" role="tabpanel" aria-labelledby="space-tab-0" className={'context-chat product-discussion space-discussion-grid '+(empty?'space-empty-layout':'space-populated-layout')}>
     <h2 id="chat-title" className="sr-only">Discussion</h2>
     {!available&&!error&&<p role="status">Chargement…</p>}
-    <aside className="space-context-column">{available&&(empty?<section className="space-add-card"><span className="card-icon"><Icon name="sources"/></span><h2>J’ajoute un élément</h2><p>J’ajoute une information utile<br/>à ce contexte.</p><button type="button" onClick={()=>setManualOpen(n=>n+1)}><Icon name="plus"/>Ajouter un élément</button></section>:<><ContextMap onExplore={onExploreContext} onAdd={()=>setManualOpen(n=>n+1)}/><UsefulActions/></>)}</aside>
+    <aside className="space-context-column">{available&&(empty?<section className="space-add-card"><span className="card-icon"><Icon name="sources"/></span><h2>J’ajoute un élément</h2><p>J’ajoute une information utile<br/>à ce contexte.</p><button type="button" onClick={()=>setManualOpen(n=>n+1)}><Icon name="plus"/>Ajouter un élément</button></section>:<><ContextMap api={api} scope={scope} refreshKey={refreshKey} onTheme={onTheme} onExplore={onExploreContext} onAdd={()=>setManualOpen(n=>n+1)}/><UsefulActions/></>)}</aside>
     <section className="assistant-card" ref={assistant}><header><span className="card-icon"><Icon name="discussion"/></span><h2>Je discute avec l’assistant</h2>{!empty&&<button type="button" className="secondary assistant-expand" aria-label="Agrandir la discussion" onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen();else void assistant.current?.requestFullscreen?.().catch(()=>{});}}><Icon name="expand"/></button>}</header>{answers.length===0&&!loading&&<p className="assistant-intro">Je pose une question pour mieux comprendre, organiser et décider.</p>}
     <div className="conversation-scroll" ref={viewport} role="log" aria-label="Conversation temporaire" aria-live="polite" aria-relevant="additions" aria-busy={loading} tabIndex={0} onScroll={()=>{const n=viewport.current;if(n&&!moving.current){follow.current=n.scrollHeight-n.clientHeight-n.scrollTop<48;if(follow.current)setUnread(false);}}}>
       {answers.map((answer,i)=><article ref={i===answers.length-1&&!loading?latest:undefined} className="chat-turn" key={i} aria-label={'Échange '+(i+1)}><div className="chat-question-message"><h3 className="sr-only">Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p></div><div className="chat-answer-message"><span className="answer-brand"><Orb/></span><h3 className="sr-only">{answer.model==='qh-mock-extractive/1'?'Extraits de démonstration — sans compréhension de la question':'Réponse de l’IA'}</h3><p className="chat-text">{answer.answer}</p>{answer.insufficient_context&&<p className="muted">Les éléments disponibles ne suffisent pas à répondre à cette question.</p>}<div className="answer-source-link"><button type="button" className="text-button" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1}</button>{(answer.references.some(r=>r.validation_state==='proposed')||answer.provided_revisions.length>0&&answer.provided_revisions.every(r=>r.validation_state==='proposed'))&&<span role="note" className="small muted">Éléments à vérifier</span>}</div><details className="answer-details"><summary>Détails de cette réponse</summary><p>Modèle : {answer.model}</p>{answer.provided_revisions.length>0&&answer.provided_revisions.every(r=>r.validation_state==='proposed')&&<p>Tout le contexte fourni est proposé ; aucune révision confirmée courante n’a été transmise.</p>}<p>Les sources permettent de retrouver les informations utilisées ; elles ne confirment pas automatiquement la réponse.</p>{answer.partial_coverage&&<p>Seule une partie des éléments a été utilisée.</p>}</details></div></article>)}
