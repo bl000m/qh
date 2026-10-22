@@ -31,7 +31,7 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await expect(page.locator('.space-title>p')).toBeVisible();
  await closeUnderstanding(page);await page.getByRole('link',{name:'Paramètres de mon environnement',exact:true}).click();
  await page.getByRole('button',{name:'Organiser mes domaines',exact:true}).click();await page.getByLabel('Nom du domaine 1',{exact:true}).fill('Organisation QH-52');await page.getByLabel('Description du domaine 1',{exact:true}).fill('Description organisationnelle du domaine.');await page.getByRole('button',{name:'Enregistrer l’organisation',exact:true}).click();
- await page.getByRole('link',{name:'Mon environnement',exact:true}).first().click();await page.getByRole('link',{name:'Organisation QH-52',exact:true}).click();await expect(page.getByText('Description organisationnelle du domaine.',{exact:true})).toBeVisible();await page.getByRole('link',{name:'Budget personnel synthétique',exact:true}).click();
+ await page.getByRole('link',{name:'QH — accueil',exact:true}).first().click();await page.getByRole('link',{name:'Organisation QH-52',exact:true}).click();await expect(page.getByText('Description organisationnelle du domaine.',{exact:true})).toBeVisible();await page.getByRole('link',{name:'Budget personnel synthétique',exact:true}).click();
  for(const [label,width,height,zoom] of [['desktop',1448,1086,1],['mobile',390,844,1],['desktop-200',1448,1086,2],['keyboard',390,450,1]] as const){
   await page.setViewportSize({width,height});await page.evaluate(z=>{document.documentElement.style.zoom=String(z);},zoom);
   await page.getByLabel('Votre question sur ce contexte').fill('Brouillon conservé en mémoire');
