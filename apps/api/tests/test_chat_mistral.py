@@ -40,7 +40,7 @@ def test_concrete_adapter_reuses_port_and_http_mock_only(tmp_path,monkeypatch):
         assert json.loads(p['messages'][1]['content'])['allowed_reference_aliases']=={'R1':'revision'}
         assert p['model']==MODEL and p['max_tokens']==1000 and p['response_format']=={'type':'json_object'}
         return httpx.Response(200,json=dict(model=MODEL,usage=dict(prompt_tokens=100,completion_tokens=30),
-            choices=[dict(finish_reason='stop',message=dict(content='{"answer":"ok","reference_aliases":["R1"],"insufficient_context":false}'))]))
+            choices=[dict(finish_reason='stop',message=dict(content='{"answer":"ok","reference_aliases":["R1"],"insufficient_context":false,"support_basis":"canonical"}'))]))
     provider=ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger,transport=httpx.MockTransport(handler))
     assert isinstance(provider,LLMProvider)
     context=built((revision(),))

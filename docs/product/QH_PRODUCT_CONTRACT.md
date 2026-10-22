@@ -4,6 +4,17 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Risposte fondate sul dialogo — owner amendment, 2026-10-22
+
+Un messaggio esplicitamente inviato può sostenere una risposta anche senza revisioni
+canoniche. `support_basis` distingue dialogue/canonical/mixed/insufficient; QH ne
+verifica compatibilità con gli input e le citazioni realmente trasmessi, non la
+verità tramite la dichiarazione del modello. Alias canonici validi obbligatori
+per canonical/mixed; nessuna invenzione o riconciliazione euristica. Dialogo e
+risposta restano temporanei; estrazione UUM e conferma QH46 sono azioni distinte.
+Gli errori owner/provenance/JSON/snapshot/budget bloccano, gli avvisi epistemici
+restano separati. [Contratto tecnico approvato](../qh-51-response-support.md).
+
 ## UUM e nuovo ambiente dati — owner amendment, 2026-10-21
 
 La successiva decisione owner adotta sei dimensioni universali di navigazione:

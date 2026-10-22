@@ -54,3 +54,10 @@ EUR5 bound, original six calls/charges preserved. No new paid call. Validation
 admission remains unchanged; empty-Space canonical-reference requirement is audited
 and its functional replacement awaits owner approval. See
 `docs/qh-51-validation-audit.md` and `docs/qh-51-diagnostics-report.md`.
+
+
+Approved response-support increment: mandatory dialogue/canonical/mixed/insufficient
+basis checked against actual sent dialogue and exact aliases, warning without
+automatic knowledge writes. Historical harness error payloads remain private-only;
+429 stops without raw.json/retry/publication. Current contract and verification:
+`docs/qh-51-response-support.md`, `docs/qh-51-response-verification.md`.

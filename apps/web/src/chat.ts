@@ -4,9 +4,9 @@ import type {CanonicalRevision} from './understanding';
 export interface DialogueMessage {role:'user'|'assistant';content:string}
 export interface ChatAnswer {
   context_id:string;answer:string;model:string;references:CanonicalRevision[];provided_revisions:CanonicalRevision[];
-  insufficient_context:boolean;partial_coverage:boolean;input_bound:number;context_bytes:number;generation_seconds:number|null;
+  support_basis:'dialogue'|'canonical'|'mixed'|'insufficient';insufficient_context:boolean;partial_coverage:boolean;input_bound:number;context_bytes:number;generation_seconds:number|null;
 }
-export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean):ChatAnswer {
+export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean,dialogue:DialogueMessage[]):ChatAnswer {
   const a=raw as ChatAnswer;
   if(!a || a.context_id!==scope || typeof a.answer!=='string' || !a.answer.trim() || [...a.answer].length>4096 ||
     typeof a.model!=='string' || !a.model || a.model.length>128 || typeof a.insufficient_context!=='boolean' || typeof a.partial_coverage!=='boolean' ||
@@ -17,6 +17,10 @@ export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean):Cha
   const references=revisionPage({view:'history',items:a.references,next_after_revision_id:null},query).items;
   for(const r of provided)if(!(r.validation_state==='confirmed' && r.is_current_confirmed || includeProposed && r.validation_state==='proposed'))throw new ApiError(502);
   for(const r of references)if(!provided.some(p=>p.revision_id===r.revision_id && JSON.stringify(p)===JSON.stringify(r)))throw new ApiError(502);
-  if(!a.insufficient_context && !references.length)throw new ApiError(502);
+  if(!['dialogue','canonical','mixed','insufficient'].includes(a.support_basis)||
+    a.insufficient_context!==(a.support_basis==='insufficient')||
+    ['canonical','mixed'].includes(a.support_basis)&&!references.length||
+    a.support_basis==='dialogue'&&references.length||
+    ['dialogue','mixed'].includes(a.support_basis)&&!dialogue.some(m=>m.role==='user'&&m.content.trim()))throw new ApiError(502);
   return a;
 }

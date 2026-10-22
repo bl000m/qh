@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 from app.core.models import CanonicalRevision, ContextId, ContextQuery, Message, SubjectId
 
@@ -19,6 +20,7 @@ class ChatResponse:
     model: str = "unbound"
     references: tuple[CanonicalRevision, ...] = ()
     provided_revisions: tuple[CanonicalRevision, ...] = ()
+    support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
     insufficient_context: bool = True
     partial_coverage: bool = False
     input_bound: int = 0

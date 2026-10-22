@@ -32,6 +32,7 @@ class ChatOutput(BaseModel):
     model: str
     references: tuple[CanonicalRevision, ...]
     provided_revisions: tuple[CanonicalRevision, ...]
+    support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient']
     insufficient_context: bool
     partial_coverage: bool
     input_bound: int
@@ -58,6 +59,6 @@ async def chat(context_id: UUID, payload: ChatInput, request: Request, response:
     response.headers['Vary'] = 'Authorization'
     return ChatOutput(context_id=context_id, answer=result.message.content, model=result.model,
         references=result.references, provided_revisions=result.provided_revisions,
-        insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
+        support_basis=result.support_basis, insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
         input_bound=result.input_bound, context_bytes=result.context_bytes,
         generation_seconds=result.generation_seconds)

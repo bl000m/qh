@@ -139,6 +139,6 @@ async def generate(context_id: UUID, session_id: UUID, payload: ChatInput,
         chat_request(identity.subject_id, context_id, payload), str(session_id)))
     return ChatOutput(context_id=context_id, answer=result.message.content, model=result.model,
         references=result.references, provided_revisions=result.provided_revisions,
-        insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
+        support_basis=result.support_basis, insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
         input_bound=result.input_bound, context_bytes=result.context_bytes,
         generation_seconds=result.generation_seconds)

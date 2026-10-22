@@ -161,7 +161,7 @@ test('all-proposed canonical context warns even when generated prose omits or co
  let noReferences=false;
  await page.route('**/chat',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
   ...original,model:'mistral-small-2603',answer:'Tout est confirmé. (Contrôle UI, aucune inférence.)',
-  references:noReferences?[]:original.references,insufficient_context:noReferences})}));
+  references:noReferences?[]:original.references,support_basis:noReferences?'insufficient':'canonical',insufficient_context:noReferences})}));
  await ask(page);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});
  await expect(turn.getByRole('note')).toBeVisible();

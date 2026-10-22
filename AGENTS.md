@@ -117,6 +117,20 @@ Audit and propose validation changes first: do not loosen epistemic/admission
 checks before owner approval. See docs/qh-51-validation-audit.md and the later
 amendment in docs/qh-51-essai-ia.md. Earlier decisions remain historical.
 
+## Later response-support approval — 2026-10-22
+
+The owner approves `support_basis` dialogue/canonical/mixed/insufficient under
+`docs/qh-51-response-support.md`. Validate it against actual sent dialogue,
+canonical selection and exact aliases; declaration is not entailment/truth.
+Dialogue alone may support an answer in an empty Space. No automatic knowledge
+write/confirmation, no alias inference. Keep owner/CHAT/OIDC/provenance/snapshot/
+JSON/budget gates. This supersedes the earlier validation-approval gate above.
+One additional synthetic real chat request is authorized by this new mandate,
+within the existing100/USD2.50 ceiling, maximum reservationUSD0.0024, no retry.
+Only explicit developer-account Envoyer; never infer in CI/startup. Private
+medical fixture/response stay outside Git and ordinary logs; diagnostic retention
+remains one hour. Preserve the original ledger; append this attempt normally.
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

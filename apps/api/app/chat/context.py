@@ -32,9 +32,17 @@ Context revisions inherit common_metadata; provenance IDs resolve to exact recor
 in the sources map. This encoding changes neither validation state nor authority.
 Return ONLY a JSON object with answer (plain text), reference_aliases (an array of
 distinct exact keys from allowed_reference_aliases, e.g. R1, R2), and
-insufficient_context (boolean). Only these request-local aliases may be returned
+insufficient_context (boolean), plus support_basis (dialogue|canonical|mixed|insufficient). Only these request-local aliases may be returned
 as references. Never put item_id, revision_id UUIDs, source IDs or relation anchors
 in reference_aliases. QH resolves each allowed alias to its exact canonical revision.
+The explicitly submitted user dialogue is usable even when no canonical revisions
+are supplied. Use dialogue with no aliases when answering from that dialogue alone;
+canonical requires at least one allowed alias; mixed requires both user dialogue and
+at least one allowed alias. Use insufficient iff insufficient_context is true;
+valid aliases may identify relevant but inadequate support in that case. Never
+claim canonical support without aliases. Dialogue and assistant replies are not
+confirmed QH knowledge; answering does not persist or confirm them. Support basis
+is a declaration checked against sent inputs, not a proof of truth or entailment.
 Do not invent aliases, references or quotes. Citations only
 establish which retrieved revisions you declare, not independently verified truth.
 """
@@ -146,7 +154,7 @@ def decode_answer(message, context, observer=None):
         value = json.loads(message.content, object_pairs_hook=unique_keys)
         passed()
         rule = 'chat.exact_envelope'
-        if type(value) is not dict or set(value) != {'answer', 'reference_aliases', 'insufficient_context'}:
+        if type(value) is not dict or set(value) != {'answer', 'reference_aliases', 'insufficient_context', 'support_basis'}:
             raise ValueError()
         passed()
         rule = 'chat.answer_nonempty_length'
@@ -173,11 +181,20 @@ def decode_answer(message, context, observer=None):
         if any(not isinstance(i, str) or i not in aliases for i in ids) or len(ids) != len(set(ids)):
             raise ValueError()
         passed()
-        rule = 'chat.canonical_reference_required_unless_insufficient'
-        if not insufficient and not ids:
+        rule = 'chat.support_basis_matches_transmitted_inputs'
+        basis = value['support_basis']
+        if type(basis) is not str or basis not in ('dialogue', 'canonical', 'mixed', 'insufficient'):
+            raise ValueError()
+        dialogue = context.request.messages[2:]
+        has_user_dialogue = any(m.role == MessageRole.USER and isinstance(m.content, str)
+            and bool(m.content.strip()) for m in dialogue)
+        if (insufficient != (basis == 'insufficient')
+            or basis in ('canonical', 'mixed') and not ids
+            or basis == 'dialogue' and (ids or not has_user_dialogue)
+            or basis == 'mixed' and not has_user_dialogue):
             raise ValueError()
         passed()
-        return answer, tuple(allowed[aliases[i]] for i in ids), insufficient
+        return answer, tuple(allowed[aliases[i]] for i in ids), insufficient, basis
     except (ValueError, TypeError, KeyError, AttributeError, IndexError, UnicodeError, RecursionError):
         if observer:
             observer(rule, False, rule)

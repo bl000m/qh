@@ -5,6 +5,16 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — approved dialogue support and CI integrity, 2026-10-22
+
+- Accept conversation-grounded answers without canonical references; require and
+  validate support_basis against actual sent inputs. Display the declared basis
+  and unconfirmed-dialogue warning; chat never writes knowledge.
+- Keep exact canonical citations, authorization, JSON, snapshot and budget gates.
+- Make non-200 response capture explicit to private diagnostics; preserve the
+  historical harness's no-raw-artifact/no-retry/no-publication invariant on429.
+- Verify compact empty-Space insertion and six real empty dimensions in readiness.
+
 ## QH-51 — private AI diagnostics and development envelope, 2026-10-22
 
 - Keep original Mistral response and accounting separate from QH admission results,

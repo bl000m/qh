@@ -74,7 +74,7 @@ export class QhApi {
   }
   async automaticChat(scope:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer>{
     if(!isUuid(scope))throw new ApiError(404);
-    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include,messages);
   }
   async proposeWithAI(scope:string,payload:Parameters<QhApi['enrich']>[1]):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);
@@ -132,7 +132,7 @@ export class QhApi {
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);
     return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{
-      messages,include_proposed:includeProposed}),scope,includeProposed);
+      messages,include_proposed:includeProposed}),scope,includeProposed,messages);
   }
   async chatCapabilities(scope:string) {
     if(!isUuid(scope))throw new ApiError(404);
@@ -162,7 +162,7 @@ export class QhApi {
   }
   async sessionChat(scope:string,id:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
-    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/messages','POST',{messages,include_proposed:include}),scope,include);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/messages','POST',{messages,include_proposed:include}),scope,include,messages);
   }
   async query(query: RevisionQuery): Promise<RevisionPage> {
     return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);

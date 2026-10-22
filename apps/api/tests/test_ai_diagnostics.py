@@ -69,7 +69,7 @@ def test_budget_amendment_required_and_insufficient_usd_zero_http(tmp_path, monk
 
 def test_completed_http_200_rejected_chat_full_response_captured_before_cleanup(tmp_path, monkeypatch, capsys):
     raw = dict(id='synthetic-response', model='mistral-small-2603', usage=dict(prompt_tokens=1079, completion_tokens=536),
-        choices=[dict(finish_reason='stop', message=dict(content=json.dumps(dict(answer='Synthetic private dossier answer.', reference_aliases=[], insufficient_context=False))))])
+        choices=[dict(finish_reason='stop', message=dict(content=json.dumps(dict(answer='Synthetic private dossier answer.', reference_aliases=[], support_basis='canonical', insufficient_context=False))))])
     ai, who, _, _, calls, ledger, _, _ = setup(tmp_path, monkeypatch, lambda _: httpx.Response(200, json=raw))
     with pytest.raises(ChatProviderUnavailable):
         asyncio.run(ai.respond(who, request()))
@@ -78,7 +78,7 @@ def test_completed_http_200_rejected_chat_full_response_captured_before_cleanup(
     assert record['raw_response'] == raw and record['outcome'] == 'rejected'
     assert record['attempt_index'] == 0 and record['accounting']['status'] == 'completed'
     assert record['accounting']['observed_usd'] == '0.00048345'
-    assert record['checks'][-2]['rule'] == 'chat.canonical_reference_required_unless_insufficient'
+    assert record['checks'][-2]['rule'] == 'chat.support_basis_matches_transmitted_inputs'
     assert record['checks'][-2]['result'] == 'FAIL'
     assert all(c['result'] == 'PASS' for c in record['checks'][:-2])
     text = next(ai.factory.diagnostics.path.glob('*.json')).read_text()

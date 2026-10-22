@@ -84,12 +84,12 @@ class ContextualChatService:
             observer("chat.pre_disclosure_policy_graph_selection", True)
         elapsed = None
         if not built.revisions and not allow_empty:
-            answer, references, insufficient = 'Le contexte disponible est insuffisant pour répondre.', (), True
+            answer, references, insufficient, basis = 'Le contexte disponible est insuffisant pour répondre.', (), True, 'insufficient'
         else:
             started = self.clock() if self.clock else None
             try:
                 generated = await (provider or self.provider).generate(built.request)
-                answer, references, insufficient = decode_answer(generated.message, built, observer=observer)
+                answer, references, insufficient, basis = decode_answer(generated.message, built, observer=observer)
             except ProviderBudgetExceeded:
                 raise
             except Exception:
@@ -109,6 +109,6 @@ class ContextualChatService:
             observer('chat.post_generation_policy_graph_snapshot', True)
         return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=answer),
             context_ids=(request.context_id,), model=model or self.model, references=references,
-            provided_revisions=built.revisions, insufficient_context=insufficient,
+            provided_revisions=built.revisions, insufficient_context=insufficient, support_basis=basis,
             partial_coverage=built.partial, input_bound=built.input_bound,
             context_bytes=built.context_bytes, generation_seconds=elapsed)

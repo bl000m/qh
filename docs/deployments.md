@@ -719,3 +719,29 @@ permission to overwrite current accounting. Existing application/image rollback
 procedures remain guarded. No Keycloak/volume/PR19 changes; PR23 remains unmerged.
 The [validation audit and functional proposal](qh-51-validation-audit.md) are separate:
 canonical-citation admission checks have not been relaxed.
+
+### 22 October2026 — approved conversation support on the same development branch
+
+The owner approves mandatory support_basis and empty-canonical-Space dialogue,
+with exact input/alias coherence checks and unchanged ownership, provenance,
+snapshot and economic gates. Guarded frontend/backend stop/up prevents a partial
+DTO transition. No dependency, image, Keycloak, private configuration, schema,
+profile, ledger ceiling or existing canonical record is changed by this code cutover.
+The same source-bound images/containers remain selected; only app start times change.
+[Approved contract](qh-51-response-support.md) distinguishes declarations from proof.
+
+Verification uses disposable SQL/Neo4j/OIDC and simulated provider responses first.
+The authorized one-call live reproduction is executed after the candidate's CI,
+through the normal owner UI in a new explicitly created empty synthetic Space,
+with a maximum USD0.0024 reservation on the existing aggregate ledger. No automatic
+source/revision write, retry, fallback or UUM extraction. A successful chat appends
+only its accounting attempt and the existing one-hour private diagnostic record;
+normal explicit Space creation is metadata, not confirmed understanding.
+
+The durable operational result, actual CI run/HEAD, remaining calls/cost, permitted
+metadata delta and preservation checks are recorded without payloads in
+`.local-archive/qh51-support-basis-20261022/SAFE-RESULTS.json` after execution.
+Original provider JSON and checks stay in the private diagnostic store for its
+unchanged one-hour retention, owner-authenticated reading/deletion only. Synthetic
+medical input/output are never published in Git/CI/ordinary logs. No merge or Jira
+transition follows this runtime operation; PR19 remains untouched.

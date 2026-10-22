@@ -47,7 +47,7 @@ def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
             return handler(r)
         return httpx.Response(200, json=dict(model='mistral-small-2603',
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
-            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], insufficient_context=False))))]))
+            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], support_basis='canonical', insufficient_context=False))))]))
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
                                    transport=httpx.MockTransport(simulated), pricing=offline_pricing())
     chat, context, _, owner = case(rows)
@@ -177,7 +177,7 @@ def test_provider_failure_stops_session_without_retry(tmp_path,monkeypatch,failu
     def handler(r):
         if failure in ['429','401']:return httpx.Response(int(failure),json={'message':'private-provider-error'})
         if failure=='timeout':raise httpx.ReadTimeout('private',request=r)
-        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],insufficient_context=False))
+        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],support_basis='canonical', insufficient_context=False))
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=20),choices=[dict(finish_reason='stop',message=dict(content=content))]))
     s,who,_,_,calls,ledger,_=setup(tmp_path,monkeypatch,handler)
     async def run():

@@ -40,7 +40,7 @@ def setup(tmp_path, monkeypatch, handler=None):
 
 def answer(_):
     return httpx.Response(200, json=dict(model='mistral-small-2603', usage=dict(prompt_tokens=100, completion_tokens=30),
-        choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer='Précisez votre objectif.',reference_aliases=[],insufficient_context=True))))]))
+        choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer='Précisez votre objectif.',reference_aliases=[],support_basis='insufficient', insufficient_context=True))))]))
 
 
 def test_ordinary_send_empty_and_new_space_no_activation_or_session_budget(tmp_path,monkeypatch):

@@ -59,14 +59,14 @@ def create_app():
                 turn=context['turns'][0];quote=context['text'][turn['start']:turn['end']]
                 value=dict(format='qh.atomic-understanding/1',items=[dict(text=quote,primary_dimension='objectives_intentions',assignment_certainty='asserted',evidence=[dict(quote=quote)])])
             else:
-                value=dict(answer='Réponse de test simulée, sans réseau externe.',reference_aliases=list(context['allowed_reference_aliases'])[:1],insufficient_context=not context['allowed_reference_aliases'])
+                value=dict(answer='Réponse de test simulée, sans réseau externe.',reference_aliases=list(context['allowed_reference_aliases'])[:1],support_basis='canonical' if context['allowed_reference_aliases'] else 'dialogue',insufficient_context=False)
             return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=60),choices=[dict(finish_reason='stop',message=dict(content=json.dumps(value)))]))
         assert context['context_space_id'] in {g['context_id'] for g in receipt['grants']}
         assert 'R1' in context['allowed_reference_aliases']
         return httpx.Response(200, json=dict(model='mistral-small-2603',
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
             message=dict(content=json.dumps(dict(answer='Simulation hors réseau, aucune inférence réelle. Le support reste non confirmé lorsqu’il est proposé.',
-                reference_aliases=['R1'], insufficient_context=False))))]))
+                reference_aliases=['R1'], support_basis='canonical', insufficient_context=False))))]))
 
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
                                    transport=httpx.MockTransport(simulate), pricing=offline_pricing())

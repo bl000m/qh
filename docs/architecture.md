@@ -625,3 +625,13 @@ GET/DELETE diagnostics and React exposes them only for automatic development mod
 No new service/schema. Global reservation uses the same original locked/fsynced
 ledger with an explicit private budget amendment; historical adapters retain their
 original default caps. See [audit and unapproved validation proposal](qh-51-validation-audit.md).
+
+
+### Approved response support —22 October2026
+
+The existing pure chat decoder and ChatResponse/HTTP/TypeScript DTOs carry mandatory
+`support_basis`; no new Engine/schema/adapter. The declaration must match sent
+dialogue and exact canonical aliases; no semantic-entailment claim follows. UI
+keeps dialogue support and human confirmation distinct. Non-200 body capture is
+explicitly private-development-only; historical experiment last_exchange retains
+its successful-JSON meaning and the historical writer independently requires200.
