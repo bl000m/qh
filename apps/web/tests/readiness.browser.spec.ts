@@ -46,7 +46,7 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await page.getByLabel('Votre information',{exact:true}).fill(text);await expect(page.getByRole('button',{name:'Ajouter au contexte',exact:true})).toBeEnabled();
  await expect(page.getByRole('dialog').getByRole('checkbox')).toHaveCount(0);
  const saving=page.waitForResponse(r=>r.url().endsWith('/enrichments')&&r.request().method()==='POST');await page.getByRole('button',{name:'Ajouter au contexte',exact:true}).click();
- const response=await saving;expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.provider_mode).toBe('offline-literal/1');expect(receipt.revision_ids).toHaveLength(1);
+ const response=await saving;expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.provider_mode).toBe('uum-offline-literal/3');expect(receipt.revision_ids).toHaveLength(1);
  await expect(page.getByText('Élément ajouté au contexte',{exact:true})).toBeVisible();await page.getByRole('tab',{name:'Éléments',exact:true}).click();await page.locator('.understanding-explorer>summary').click();await expect(page.locator('.context-literal')).toHaveText(text);await page.getByRole('button',{name:'Voir la source',exact:true}).click();await expect(page.locator('blockquote').filter({hasText:text}).first()).toBeVisible();
  await page.screenshot({path:info.outputPath('qh52-first-information.png'),fullPage:true});
  await page.reload();await page.getByRole('button',{name:'Se connecter',exact:true}).click();

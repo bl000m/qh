@@ -38,7 +38,7 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  const repeated=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/enrichments'));
  await dialog.getByRole('button',{name:'Conserver et proposer',exact:true}).click();const replay=await repeated;
  expect(replay.status()).toBe(200);expect((await replay.json()).revision_ids).toEqual(receipt.revision_ids);expect(replay.request().postDataJSON().operation_id).toBe(payload.operation_id);
- await writeFile(info.outputPath('qh39-canonical-receipt.json'),JSON.stringify({scope:created.id,proposed_receipt:receipt,source_text:claim,replay_same_ids:true,provider:'offline-literal/1',paid_calls:0},null,2));
+ await writeFile(info.outputPath('qh39-canonical-receipt.json'),JSON.stringify({scope:created.id,proposed_receipt:receipt,source_text:claim,replay_same_ids:true,provider:receipt.provider_mode,paid_calls:0},null,2));
  await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expandUnderstanding(page);
  await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText(claim);

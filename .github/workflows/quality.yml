@@ -132,6 +132,6 @@ jobs:
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --product-mode --browser-grep 'QH-52 product|QH-53 complete|QH-53 consent|QH-54 direct|QH-54 synthetic|QH-54 manual|QH-54 maquettes' --output /tmp/qh52-product-evidence
 
-      - name: QH-51 semantic assignments, selective review and thematic map on disposable fixtures
+      - name: QH-51 UUM primary review and universal dimensions on a clean disposable dataset
         run: |
-          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --semantic-mode --browser-grep 'QH-51 semantic' --output /tmp/qh51-semantic-evidence
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --browser-grep 'QH-51 UUM' --output /tmp/qh51-semantic-evidence

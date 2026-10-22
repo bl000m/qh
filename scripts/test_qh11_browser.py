@@ -38,6 +38,7 @@ def main():
     parser.add_argument('--qh-login-theme', action='store_true',
                         help='Preview source-only QH theme on this disposable IdP; never alters the VPS realm')
     parser.add_argument('--product-mode',action='store_true',help='QH-52 isolated session renewal/rotation and real-provider UI; simulated HTTP only')
+    parser.add_argument('--uum-mode',action='store_true',help='Clean UUM-only fixture, no legacy application records')
     parser.add_argument('--semantic-mode',action='store_true',help='QH-51 isolated explicit profile2 and exact synthetic provider only')
     parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
     parser.add_argument('--focused-browser-only', action='store_true', help='Local focused UI checks only; never a full acceptance verdict')
@@ -47,6 +48,8 @@ def main():
         raise SystemExit('Product tests require packaged frontend, native understanding and simulated session factory')
     if args.semantic_mode and not args.product_mode:
         raise SystemExit('Semantic fixtures require the disposable product stack')
+    if args.uum_mode and not args.product_mode:
+        raise SystemExit('UUM fixture requires disposable product stack')
     if args.focused_browser_only and (not args.browser_grep or os.environ.get('CI')):
         raise SystemExit('Focused mode requires a local explicit filter; CI acceptance cannot use it')
     docker = ['sudo', '-n', 'docker'] if args.sudo_docker else ['docker']
@@ -105,6 +108,7 @@ def main():
             'QH45_SESSION_BROWSER_TEST': '1' if args.chat_sessions else '0',
             'QH52_PRODUCT_BROWSER_TEST':'1' if args.product_mode else '0',
             'QH51_SEMANTIC_BROWSER_TEST':'1' if args.semantic_mode else '0',
+            'QH_UUM_BROWSER_TEST':'1' if args.uum_mode else '0',
             'QH_CHAT_SESSION_BINDING':'oidc' if args.product_mode else 'credential',
         }
         if args.understanding:
@@ -194,7 +198,7 @@ def main():
             values['QH_BROWSER_EXTERNAL_SERVER'] = '1' if args.frontend_image else '0'
             browser_env = restricted_env('browser.env', ['QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD',
                                                        'QH12_BROWSER_TEST', 'QH12_EXPECTED_JSON',
-                                                       'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST', 'QH52_PRODUCT_BROWSER_TEST', 'QH51_SEMANTIC_BROWSER_TEST',
+                                                       'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST', 'QH52_PRODUCT_BROWSER_TEST', 'QH51_SEMANTIC_BROWSER_TEST', 'QH_UUM_BROWSER_TEST',
                                                        'QH_BROWSER_EXTERNAL_SERVER'])
             with env.open('a') as stream:
                 stream.write('QH_BROWSER_EXTERNAL_SERVER=' + ('1' if args.frontend_image else '0') + '\n')

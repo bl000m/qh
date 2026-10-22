@@ -1,3 +1,6 @@
+import {DIMENSIONS} from './uum';
+import type {PrimaryDimension} from './uum';
+export interface DimensionPresence {context_id:string;view:'current'|'proposed';dimensions:Record<PrimaryDimension,boolean>;unclassified:boolean}
 import type {SelectedConversationTurn,EnrichmentReceipt} from './EnrichConversation';
 import type {ReviewStatus} from './ReviewControls';
 import {organization} from './environment';
@@ -51,7 +54,7 @@ export class QhApi {
   async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean;extraction_mode?:'semantic'}):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);
     const r=await this.request('/context-spaces/'+scope+'/enrichments','POST',payload) as EnrichmentReceipt;
-    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2'].includes(r.provider_mode))throw new ApiError(502);
+    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2','uum-offline-literal/3','uum-simulated/3'].includes(r.provider_mode))throw new ApiError(502);
     return r;
   }
   async enrichmentCapabilities(scope:string):Promise<{semantic:boolean;external_disclosure:false}> {
@@ -66,10 +69,16 @@ export class QhApi {
     if(!s||s.revision_id!==revision||!isUuid(s.latest_revision_id)||typeof s.pending!=='boolean'||!(s.current_revision_id===null||isUuid(s.current_revision_id))||!(s.successor_revision_id===null||isUuid(s.successor_revision_id)))throw new ApiError(502);
     return s;
   }
-  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct'|'review_assignments';assignment_decisions?:{index:number;state:'accepted'|'rejected';reuse_value?:string}[];expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
+  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct'|'review_assignments'|'review_primary';primary_decision?:{state:'proposed'|'accepted'|'rejected';value?:string;evidence_refs?:number[]};assignment_decisions?:{index:number;state:'accepted'|'rejected';reuse_value?:string}[];expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
     const r=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review','POST',operation) as {revision_id:string;action:string;replayed:boolean};
     if(!r||!isUuid(r.revision_id)||r.action!==operation.action||typeof r.replayed!=='boolean')throw new ApiError(502);return r;
+  }
+  async dimensionPresence(scope:string,view:'current'|'proposed'):Promise<DimensionPresence>{
+    if(!isUuid(scope))throw new ApiError(404);
+    const r=await this.request('/context-spaces/'+scope+'/understanding-presence?view='+view) as DimensionPresence;
+    if(!r||r.context_id!==scope||r.view!==view||typeof r.unclassified!=='boolean'||!r.dimensions||Object.keys(r.dimensions).length!==6||DIMENSIONS.some(([id])=>typeof r.dimensions[id]!=='boolean'))throw new ApiError(502);
+    return r;
   }
   async pendingReview(scope:string,limit=20,after?:string){
     if(!isUuid(scope))throw new ApiError(404);

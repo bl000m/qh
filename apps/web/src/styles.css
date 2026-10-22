@@ -881,3 +881,10 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
 @media(max-width:650px){.space-context-map:not(:fullscreen):has(.context-orbit-node){height:390px}}
 
 .assignment-summary ul{margin:8px 0;padding-left:20px}.assignment-summary li{font-size:14px;line-height:1.55;margin-bottom:6px}.workspace-card .assignment-summary li strong,.theme-membership-scope strong,.workspace-card .assignment-review-row p strong{display:inline;font-size:inherit;line-height:inherit}
+
+/* UUM controls occupy their own row; all six orbital nodes remain clickable. */
+.space-context-map:not(:fullscreen):has(.context-orbit-node){height:auto}
+.space-context-map .map-tools{position:static;flex-direction:row;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.space-context-map .map-tools select{flex:1;min-width:0;max-width:260px;font-size:13px}
+.space-context-map .map-coverage{position:static;margin:10px 0;line-height:1.45}
+.space-context-map .orbit-node-copy strong{white-space:normal;overflow-wrap:anywhere}

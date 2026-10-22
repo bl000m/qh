@@ -4,7 +4,7 @@ import type {QhApi} from './api';
 import {Modal} from './SpaceActions';
 
 export interface SelectedConversationTurn {id:string;role:'user'|'assistant';content:string;captured_at:string}
-export interface EnrichmentReceipt {context_id:string;source_revision_id:string;revision_ids:string[];replayed:boolean;provider_mode:'offline-literal/1'|'semantic-simulated/2'}
+export interface EnrichmentReceipt {context_id:string;source_revision_id:string;revision_ids:string[];replayed:boolean;provider_mode:'offline-literal/1'|'semantic-simulated/2'|'uum-offline-literal/3'|'uum-simulated/3'}
 
 export default function EnrichConversation({api,scope,conversationId,turns,disabled,onOpen,onSaved}:{api:QhApi;scope:string;conversationId:string;turns:SelectedConversationTurn[];disabled:boolean;onOpen?:(id:string)=>void;onSaved?:(receipt:EnrichmentReceipt)=>void}){
  const [open,setOpen]=useState(false),[selected,setSelected]=useState<string[]>([]),[consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');

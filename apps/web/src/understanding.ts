@@ -25,6 +25,7 @@ export interface RevisionPage { view: RevisionView; items: CanonicalRevision[]; 
 export interface BrowseQuery {
   view: RevisionView; limit: number; after_revision_id?: string; descriptor?: string;
   descriptor_dimension?: 'thematic' | 'semantic_role'; latest_pending?: boolean;
+  primary_dimension?: string; primary_unclassified?: boolean;
   include_tentative?: boolean; kind?: 'item' | 'entity' | 'relation'; unclassified?: boolean;
   item_id?: string; revision_id?: string; related_item_id?: string;
 }

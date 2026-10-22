@@ -2,7 +2,7 @@ import {recognizedCitations} from './understanding';
 import type {CanonicalRevision,Json} from './understanding';
 export interface QualifiedAssignment {dimension:'thematic'|'semantic_role';value:string;certainty:'asserted'|'tentative';evidence_refs:number[];review_state:'proposed'|'accepted'|'rejected';name_candidate?:string}
 export function qualifiedAssignments(row:CanonicalRevision):{index:number;assignment:QualifiedAssignment}[]{
- if(row.type_version!==2||!['qh.generic.item','qh.generic.entity','qh.generic.relation'].includes(row.type_id)||!Array.isArray(row.content.descriptors)||!Array.isArray(row.content.citations))return [];
+ if(![2,3].includes(row.type_version)||!['qh.generic.item','qh.generic.entity','qh.generic.relation'].includes(row.type_id)||!Array.isArray(row.content.descriptors)||!Array.isArray(row.content.citations))return [];
  const citations=row.content.citations,recognized=recognizedCitations(row);
  return row.content.descriptors.flatMap((value:Json,index)=>{
   if(!value||typeof value!=='object'||Array.isArray(value))return [];

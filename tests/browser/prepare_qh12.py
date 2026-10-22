@@ -21,6 +21,10 @@ from tests.test_understanding import CASES
 from tests.test_understanding_pipeline import import_extract
 
 assert os.environ.get('QH12_BROWSER_TEST') == '1'
+if os.environ.get('QH_UUM_BROWSER_TEST')=='1':
+    import runpy
+    runpy.run_path('/workspace/tests/browser/prepare_uum.py',run_name='__main__')
+    raise SystemExit(0)
 assert os.environ['POSTGRES_HOST'] == 'postgres' and os.environ['POSTGRES_DB'] == 'qh'
 owner = str(DEMO_IDENTITIES[0][1])
 repo = CanonicalRepository(url=database_url(), subject_id=owner)
@@ -29,6 +33,8 @@ with repo.connect() as connection:
     assert connection.execute('SELECT version_num FROM alembic_version').fetchone()['version_num'] == '0006_owner_organization'
     connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Démo QH-8')", (scope, owner))
 register_generic_profiles(repo)
+from adapters.postgres.semantic_profiles import register_uum_profiles
+register_uum_profiles(repo)
 if os.environ.get('QH51_SEMANTIC_BROWSER_TEST')=='1':
     from adapters.postgres.semantic_profiles import register_semantic_profiles
     register_semantic_profiles(repo)
