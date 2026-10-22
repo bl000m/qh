@@ -689,3 +689,33 @@ supplied revisions; total5/8 calls, USD0.00249735 spent,3 calls/USD0.19750265 re
 No subsequent paid inference. [Evidence, limits and receipt-only rollback](qh-51-development-ai-runtime.md).
 The ledger is never restored by rollback. Owner Mac/visual review and PR23 merge
 remain separate and pending; no Jira transition.
+
+### 22 October2026 — QH-51 private diagnostics and approved budget amendment
+
+Owner's new debug mandate authorizes the same development principal, 100 cumulative
+chat/UUM API attempts and EUR5 ceiling. Existing private QH45 receipt gains the exact
+`development_budget` amendment (USD2.50, conservative EUR2/USD); the same ledger gains
+new ceiling metadata and an append-only amendment with prior hashes. All six calls
+and charges are unchanged: USD0.00298080 spent,94 calls/USD2.49701920 remain.
+Original model, availability expiry and historical/session fields remain recorded.
+No paid call, reset, schema/profile change or application data write was performed.
+
+Guarded app-only stop/up avoids activating partially edited economic controls.
+All fifteen canonical SQL table hashes, protected .env/realm bytes, container
+IDs/images/mounts and infrastructure start times compare equal; only the two app
+start times change. Schema remains0006. Private one-hour diagnostics use the existing
+backend-only writable provider mount; startup and thirty-second housekeeping prune
+expired files. Authenticated read-only Mac-equivalent Chromium probe verifies
+100-call capability,94 remaining and scoped diagnostics HTTP200/private,no-store.
+All application writes/provider POSTs were blocked by that probe.
+
+Private backups and repeatable activation/preservation/probe evidence remain under
+`.local-archive/qh51-diagnostics-20261022/` and the preservation record under
+`.local-archive/qh51-map-target-20261022/`. Never restore an old ledger during rollback.
+Disable new spending before any code rollback; preserve calls and append a reviewed
+ceiling amendment if limits are reduced. Restore only private authorization/config
+as appropriate for compatible code. The pre-change JSON copies are evidence, not
+permission to overwrite current accounting. Existing application/image rollback
+procedures remain guarded. No Keycloak/volume/PR19 changes; PR23 remains unmerged.
+The [validation audit and functional proposal](qh-51-validation-audit.md) are separate:
+canonical-citation admission checks have not been relaxed.

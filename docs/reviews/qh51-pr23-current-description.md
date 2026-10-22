@@ -46,3 +46,11 @@ PR19 remains unchanged; no0007, new reset, Jira write or PR23 merge.
 
 Owner visual/Mac review remains distinct from technical tests. Do not merge
 without the owner's explicit approval.
+
+
+Later debug mandate,22 October: private one-hour response diagnostics, exact owner/
+Space access and controlled deletion; cumulative100 calls/USD2.50 with conservative
+EUR5 bound, original six calls/charges preserved. No new paid call. Validation
+admission remains unchanged; empty-Space canonical-reference requirement is audited
+and its functional replacement awaits owner approval. See
+`docs/qh-51-validation-audit.md` and `docs/qh-51-diagnostics-report.md`.

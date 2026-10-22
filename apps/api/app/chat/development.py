@@ -46,32 +46,68 @@ class DevelopmentAI:
             enabled = await self.factory.available(identity.subject_id, request.context_id)
         return dict(automatic=bool(eligible), plafond_reached=bool(eligible and exhausted), enabled=enabled,
             model=self.factory.model if enabled else None, max_seconds=1800,
-            max_calls=8, max_usd='0.20', provider_expires_at=self.factory.expires_at if enabled else None,
+            max_calls=self.factory.aggregate_calls, max_usd=self.factory.aggregate_usd, provider_expires_at=self.factory.expires_at if enabled else None,
             **remaining)
 
-    def _provider(self, identity, request):
+    def _provider(self, identity, request, diagnostic):
         owner = self
-        raw = self.factory.bind_global()
+        raw = self.factory.bind_global(diagnostic=diagnostic)
         class Guarded:
             async def generate(self, generated):
                 await owner._authorize(identity, request, reserve=True)
                 return await raw.generate(generated)
         return Guarded()
 
+    async def diagnostics(self, identity, request, delete_id=None):
+        # Diagnostics remain readable when price/quota is unavailable; never HTTP to Mistral.
+        await self.chat._authorize(request)
+        if (identity.subject_id != request.subject_id or not self.factory.eligible_identity(identity)
+            or not identity.verified_session_id or not identity.work_expires_at
+            or self.clock() >= min(identity.expires_at, identity.work_expires_at)):
+            raise ContextSpaceNotFound('Context space not found')
+        store = self.factory.diagnostics
+        if delete_id is not None:
+            store.delete(subject=identity.subject_id, scope=request.context_id, identity=delete_id)
+            return dict(deleted=True)
+        return dict(retention_seconds=store.retention,
+            items=store.records(subject=identity.subject_id, scope=request.context_id))
+
     async def respond(self, identity, request):
         await self._authorize(identity, request, reserve=True)
-        result = await self.chat.respond(request, provider=self._provider(identity, request),
-            model=self.factory.model, allow_empty=True)
-        await self._authorize(identity, request)
-        return result
+        diagnostic = self.factory.diagnostic_call(identity.subject_id, request.context_id, 'chat')
+        try:
+            result = await self.chat.respond(request, provider=self._provider(identity, request, diagnostic),
+                model=self.factory.model, allow_empty=True, observer=diagnostic.check)
+            try:
+                await self._authorize(identity, request)
+            except Exception:
+                diagnostic.check('development.post_response_identity_policy', False, 'Verified identity, receipt or CHAT no longer valid')
+                raise
+            diagnostic.check('development.post_response_identity_policy', True)
+            diagnostic.finish('accepted', 'chat_return')
+            return result
+        except Exception as exc:
+            diagnostic.check('chat.application_return', False, type(exc).__name__)
+            diagnostic.finish('rejected', 'chat')
+            raise
 
     async def enrich(self, identity, scope, payload):
         request = ChatRequest(subject_id=identity.subject_id, context_id=scope, messages=())
         await self._authorize(identity, request)
         if payload.get('extraction_mode') != 'semantic' or not self.enrichment.uum:
             raise ValueError('Explicit UUM semantic request required')
+        diagnostic = self.factory.diagnostic_call(identity.subject_id, scope, 'uum')
         async def before_publish():
             await self._authorize(identity, request)
-        return await self.enrichment.enrich(identity.subject_id, scope, payload,
-            semantic_provider=self._provider(identity, request), provider_mode='uum-mistral/3',
-            before_publish=before_publish)
+            diagnostic.check('uum.pre_publication_identity_policy_graph', True)
+        try:
+            result = await self.enrichment.enrich(identity.subject_id, scope, payload,
+                semantic_provider=self._provider(identity, request, diagnostic), provider_mode='uum-mistral/3',
+                before_publish=before_publish, observer=diagnostic.check)
+            diagnostic.check('uum.atomic_proposed_publication', True)
+            diagnostic.finish('accepted', 'uum_publication')
+            return result
+        except Exception as exc:
+            diagnostic.check('uum.application_publication', False, type(exc).__name__)
+            diagnostic.finish('rejected', 'uum')
+            raise

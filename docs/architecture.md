@@ -612,3 +612,16 @@ outbound provider factory. ApplicationServices binds this explicitly. It adds no
 production service/schema or alternate Engine. The original durable global ledger
 is shared by chat and extraction; request-local guards and canonical validation
 remain. Envoyer/Proposer are the user action, no activation or approval popup.
+
+
+### Private development diagnostics —22 October2026
+
+`adapters/llm/diagnostics.py` owns bounded response-only temporary files under the
+existing private provider mount, not canonical understanding or transcript storage.
+A request-local observer reports validation checkpoints through existing chat and
+Understanding applications; it cannot admit rejected output or confirm facts.
+The composition root schedules expiry cleanup; FastAPI adds authenticated scoped
+GET/DELETE diagnostics and React exposes them only for automatic development mode.
+No new service/schema. Global reservation uses the same original locked/fsynced
+ledger with an explicit private budget amendment; historical adapters retain their
+original default caps. See [audit and unapproved validation proposal](qh-51-validation-audit.md).

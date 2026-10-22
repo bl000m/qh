@@ -1,3 +1,4 @@
+import type {AIDiagnostic} from './AIDiagnostics';
 import {DIMENSIONS} from './uum';
 import type {PrimaryDimension} from './uum';
 export interface DimensionPresence {context_id:string;view:'current'|'proposed';dimensions:Record<PrimaryDimension,boolean>;unclassified:boolean}
@@ -60,6 +61,16 @@ export class QhApi {
     const value=await this.request('/context-spaces/'+scope+'/enrichments/capabilities') as {semantic:boolean;external_disclosure:boolean};
     if(!value||typeof value.semantic!=='boolean'||typeof value.external_disclosure!=='boolean')throw new ApiError(502);
     return value;
+  }
+  async aiDiagnostics(scope:string):Promise<AIDiagnostic[]> {
+    if(!isUuid(scope))throw new ApiError(404);
+    const value=await this.request('/context-spaces/'+scope+'/ai/diagnostics') as {retention_seconds:number;items:AIDiagnostic[]};
+    if(!value||value.retention_seconds!==3600||!Array.isArray(value.items)||value.items.length>100||value.items.some(r=>!r||!isUuid(r.id)||r.context_id!==scope||!Number.isFinite(r.expires_at)||!Array.isArray(r.checks)))throw new ApiError(502);
+    return value.items;
+  }
+  async deleteAIDiagnostic(scope:string,id:string):Promise<void> {
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    await this.request('/context-spaces/'+scope+'/ai/diagnostics/'+id,'DELETE');
   }
   async automaticChat(scope:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer>{
     if(!isUuid(scope))throw new ApiError(404);

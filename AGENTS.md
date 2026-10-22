@@ -104,6 +104,19 @@ Historical decisions remain in ADR0007/QH45/QH52. General STOP AND ASK and paid
 external-call protections below still apply outside this exact scope. See
 [the current development contract](docs/qh-51-essai-ia.md).
 
+## Later development diagnostic/budget decision — 2026-10-22
+
+The owner's latest mandate supersedes the 8-call/USD0.20 ceiling above for the
+same exact development principal: 100 aggregate attempts, EUR5 maximum shared by
+chat/UUM. Use USD2.50 and the documented conservative EUR2/USD bound, historical
+spend included; preserve original expiry and every old call. No new paid calls
+for this diagnostics task. Private response-only diagnostics: one-hour retention,
+0700/0600 outside Git, authenticated exact owner + current-Space CHAT, controlled
+delete; no raw JSON/prompts/health content/secrets in ordinary logs, CI or Git.
+Audit and propose validation changes first: do not loosen epistemic/admission
+checks before owner approval. See docs/qh-51-validation-audit.md and the later
+amendment in docs/qh-51-essai-ia.md. Earlier decisions remain historical.
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

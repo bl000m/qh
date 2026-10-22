@@ -112,11 +112,12 @@ def literal_timestamp(value, quote):
 
 
 class UnderstandingExtractor:
-    def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1):
+    def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1, observer=None):
         if type(descriptor_version) is not int or descriptor_version not in (1, 2, 3):
             raise ValueError('Trusted descriptor profile version required')
         self.repository, self.policy, self.provider = repository, policy, provider
         self.descriptor_version = descriptor_version
+        self.observer = observer
 
     async def _authorize(self, subject_id, context_id):
         if str(subject_id) != self.repository.subject_id:
@@ -311,6 +312,17 @@ class UnderstandingExtractor:
         return tuple(r["id"] for r in revisions)
 
     def _resolve(self, checkpoint, source):
+        try:
+            rows = self._resolve_checked(checkpoint, source)
+        except ValueError as exc:
+            if self.observer:
+                self.observer('uum.canonical_batch_profile_provenance', False, str(exc))
+            raise
+        if self.observer:
+            self.observer('uum.canonical_batch_profile_provenance', True)
+        return rows
+
+    def _resolve_checked(self, checkpoint, source):
         if checkpoint["input_sha256"] != self.source_hash(source):
             raise ValueError("Extraction input fingerprint mismatch")
         nonempty(checkpoint["extraction_key"])
@@ -319,7 +331,7 @@ class UnderstandingExtractor:
             raise ValueError("Extraction too large")
         if self.descriptor_version == 3:
             from app.understanding.uum import normalize_output
-            output = normalize_output(output, source)
+            output = normalize_output(output, source, observer=self.observer)
             if not output['items']:
                 return ()
         object_fields(output, ("items",))

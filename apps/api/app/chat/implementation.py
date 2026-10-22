@@ -78,8 +78,10 @@ class ContextualChatService:
         await self._authorize(request)  # Separate CHAT gate immediately before disclosure.
         return built, expected
 
-    async def respond(self, request: ChatRequest, *, provider=None, model=None, allow_empty=False) -> ChatResponse:
+    async def respond(self, request: ChatRequest, *, provider=None, model=None, allow_empty=False, observer=None) -> ChatResponse:
         built, expected = await self.prepare(request)
+        if observer:
+            observer("chat.pre_disclosure_policy_graph_selection", True)
         elapsed = None
         if not built.revisions and not allow_empty:
             answer, references, insufficient = 'Le contexte disponible est insuffisant pour répondre.', (), True
@@ -87,7 +89,7 @@ class ContextualChatService:
             started = self.clock() if self.clock else None
             try:
                 generated = await (provider or self.provider).generate(built.request)
-                answer, references, insufficient = decode_answer(generated.message, built)
+                answer, references, insufficient = decode_answer(generated.message, built, observer=observer)
             except ProviderBudgetExceeded:
                 raise
             except Exception:
@@ -95,9 +97,16 @@ class ContextualChatService:
                 raise ChatProviderUnavailable('Chat provider unavailable') from None
             elapsed = self.clock() - started if self.clock and started is not None else None
         # No transaction spans generation. Reject changed selection, lost policy or graph trust.
-        if fingerprint(await self._collect(request)) != expected:
-            raise ChatContextUnavailable('Context changed during generation')
-        await self._authorize(request)
+        try:
+            if fingerprint(await self._collect(request)) != expected:
+                raise ChatContextUnavailable('Context changed during generation')
+            await self._authorize(request)
+        except Exception:
+            if observer:
+                observer('chat.post_generation_policy_graph_snapshot', False, 'Context changed, graph unavailable or CHAT denied')
+            raise
+        if observer:
+            observer('chat.post_generation_policy_graph_snapshot', True)
         return ChatResponse(message=Message(role=MessageRole.ASSISTANT, content=answer),
             context_ids=(request.context_id,), model=model or self.model, references=references,
             provided_revisions=built.revisions, insufficient_context=insufficient,

@@ -76,9 +76,20 @@ def create_runtime_app():
             await asyncio.to_thread(runtime.start)
             application.state.native_context = runtime
             running["runtime"] = runtime
+        async def purge_diagnostics():
+            while True:
+                if factory and factory.diagnostics:
+                    await asyncio.to_thread(factory.diagnostics.purge_expired)
+                await asyncio.sleep(30)
+        housekeeping = asyncio.create_task(purge_diagnostics())
         try:
             yield
         finally:
+            housekeeping.cancel()
+            try:
+                await housekeeping
+            except asyncio.CancelledError:
+                pass
             running.clear()
             if runtime is not None:
                 await asyncio.to_thread(runtime.stop)

@@ -12,10 +12,10 @@ export function capabilities(raw:unknown):SessionCapabilities {
  const v=raw as SessionCapabilities;
  if(!v||typeof v.enabled!=='boolean'||v.automatic!==undefined&&typeof v.automatic!=='boolean'||v.plafond_reached!==undefined&&typeof v.plafond_reached!=='boolean'||!(v.enabled?v.model==='mistral-small-2603':v.model===null)||
   (v.enabled?(!Number.isFinite(v.provider_expires_at)||!v.provider_expires_at):v.provider_expires_at!==null)||
-  !Number.isInteger(v.remaining_calls)||v.remaining_calls<0||v.remaining_calls>8||
-  typeof v.remaining_usd!=='string'||!Number.isFinite(Number(v.remaining_usd))||Number(v.remaining_usd)<0||Number(v.remaining_usd)>.20||
-  ![300,1800].includes(v.max_seconds)||!Number.isInteger(v.max_calls)||v.max_calls<1||v.max_calls>8||
-  typeof v.max_usd!=='string'||!Number.isFinite(Number(v.max_usd))||Number(v.max_usd)<=0||Number(v.max_usd)>.20)throw new ApiError(502);
+  !Number.isInteger(v.remaining_calls)||v.remaining_calls<0||v.remaining_calls>(v.automatic?100:8)||
+  typeof v.remaining_usd!=='string'||!Number.isFinite(Number(v.remaining_usd))||Number(v.remaining_usd)<0||Number(v.remaining_usd)>(v.automatic?2.50:.20)||
+  ![300,1800].includes(v.max_seconds)||!Number.isInteger(v.max_calls)||v.max_calls<1||v.max_calls>(v.automatic?100:8)||
+  typeof v.max_usd!=='string'||!Number.isFinite(Number(v.max_usd))||Number(v.max_usd)<=0||Number(v.max_usd)>(v.automatic?2.50:.20))throw new ApiError(502);
  return v;
 }
 export function providerSession(raw:unknown,scope:string,include:boolean):ProviderSession {

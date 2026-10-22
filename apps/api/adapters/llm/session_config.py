@@ -7,6 +7,7 @@ import json
 import os
 
 from adapters.llm.pricing import OfficialPricing
+from adapters.llm.diagnostics import PrivateDiagnostics, DiagnosticCall
 from adapters.llm.chat_config import private_json, ChatConfigurationError
 from adapters.llm.mistral import (ExperimentBudget, MistralProvider, MODEL,
                                   INPUT_USD_PER_M, OUTPUT_USD_PER_M)
@@ -54,6 +55,14 @@ class PrivateSessionFactory:
             expires = datetime.fromisoformat(r['expires_at'])
             activated = datetime.fromisoformat(r.get('activated_at', r['pricing_verified_at']))
             fx = Decimal(r['eur_per_usd_upper_bound'])
+            envelope = r.get('development_budget')
+            call_cap, usd_cap = 8, Decimal('0.20')
+            if envelope is not None:
+                if (not r.get('development_account') or fx != Decimal('2') or type(envelope) is not dict
+                    or envelope != dict(max_calls=100, max_usd='2.50', max_eur='5.00', eur_per_usd_upper_bound='2')):
+                    raise ValueError('Exact approved development budget required')
+                call_cap, usd_cap = 100, Decimal('2.50')
+            self.aggregate_calls, self.aggregate_usd = call_cap, str(usd_cap)
             if (r['purpose'] != 'QH-45 interactive chat' or r['owner_authorized'] is not True
                 or r['model'] != MODEL or expires <= now or activated > now
                 or not 0 < (expires - activated).total_seconds() <= 30 * 86400
@@ -61,8 +70,8 @@ class PrivateSessionFactory:
                 or Decimal(r['input_usd_per_million']) != INPUT_USD_PER_M
                 or Decimal(r['output_usd_per_million']) != OUTPUT_USD_PER_M
                 or state.get('purpose') != 'QH-45 interactive chat'
-                or type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= 8
-                or not Decimal('0') < Decimal(state['max_usd']) <= Decimal('0.20')):
+                or type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= call_cap
+                or not Decimal('0') < Decimal(state['max_usd']) <= usd_cap):
                 raise ValueError()
             trial = r.get('development_account')
             if trial is not None and (type(trial) is not dict
@@ -90,7 +99,8 @@ class PrivateSessionFactory:
             if (type(self.max_usd) is not str or type(self.max_calls) is not int or not 1 <= self.max_calls <= min(3, state['max_calls'])
                 or not Decimal('0') < Decimal(self.max_usd) <= min(Decimal('0.01'), Decimal(state['max_usd']))):
                 raise ValueError()
-            self.ledger = ExperimentBudget(ledger_path)
+            self.ledger = ExperimentBudget(ledger_path, max_calls=call_cap, max_usd=str(usd_cap))
+            self.diagnostics = PrivateDiagnostics(self.ledger.path.parent / 'diagnostics') if trial else None
             self.transport = transport
         except Exception:
             raise ChatConfigurationError('Interactive chat authorization/ledger invalid') from None
@@ -113,8 +123,8 @@ class PrivateSessionFactory:
                     raise ValueError('Invalid ledger amounts')
                 spent += value
             blocked = state['blocked'] or any(r['status'] == 'pending' for r in state['calls'])
-            return dict(remaining_calls=max(0, min(state['max_calls'], 8)-len(state['calls'])),
-                remaining_usd=str(max(Decimal(0), min(Decimal(state['max_usd']), Decimal('0.20'))-spent)),
+            return dict(remaining_calls=max(0, min(state['max_calls'], self.aggregate_calls)-len(state['calls'])),
+                remaining_usd=str(max(Decimal(0), min(Decimal(state['max_usd']), Decimal(self.aggregate_usd))-spent)),
                 blocked=blocked)
         return self.ledger.read(read)
 
@@ -143,10 +153,13 @@ class PrivateSessionFactory:
         expected = self.snapshots.get((subject_id, context_id))
         return expected is None or expected == digest
 
-    def bind_global(self):
+    def diagnostic_call(self, subject, scope, kind):
+        return DiagnosticCall(self.diagnostics, subject, scope, kind)
+
+    def bind_global(self, diagnostic=None):
         """Owner-approved development mode: the original aggregate ledger only."""
         raw = MistralProvider(budget=self.ledger, max_input_tokens=12000,
-            max_output_tokens=1000, transport=self.transport)
+            max_output_tokens=1000, transport=self.transport, observer=diagnostic.check if diagnostic else None)
         checker = self.pricing
         class GlobalProvider:
             async def generate(self, request):
@@ -155,13 +168,28 @@ class PrivateSessionFactory:
                 try:
                     if not await checker.verify():
                         raise ChatConfigurationError('Official price verification unavailable')
-                    return await raw.generate(request)
+                    if diagnostic:
+                        diagnostic.begin()  # Storage must work before any paid HTTP.
+                    result = await raw.generate(request)
+                    if diagnostic:
+                        diagnostic.check('provider.transport_usage_model_completion', True)
+                    return result
                 except MistralBudgetExceeded:
                     raise ProviderBudgetExceeded() from None
+                except Exception as exc:
+                    from adapters.llm.mistral import MistralError
+                    if diagnostic:
+                        diagnostic.check('provider.transport_usage_model_completion', False,
+                            str(exc) if isinstance(exc, MistralError) else 'Provider/configuration unavailable')
+                    raise
                 finally:
-                    raw.last_request = raw.last_exchange = None
-                    if raw.last_failure:
-                        raw.last_failure.pop('message', None)
+                    try:
+                        if diagnostic:
+                            diagnostic.capture(raw)
+                    finally:
+                        raw.last_request = raw.last_exchange = None
+                        if raw.last_failure:
+                            raw.last_failure.pop('message', None)
         return GlobalProvider()
 
     def bind(self, session_id, *, max_calls, max_usd):

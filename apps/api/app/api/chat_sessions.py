@@ -22,10 +22,10 @@ class CapabilityOutput(BaseModel):
     enabled: bool
     model: Literal['mistral-small-2603'] | None
     max_seconds: Literal[300, 1800]
-    max_calls: int = Field(ge=1, le=8)
+    max_calls: int = Field(ge=1, le=100)
     max_usd: str
     provider_expires_at: float | None
-    remaining_calls: int = Field(ge=0, le=8)
+    remaining_calls: int = Field(ge=0, le=100)
     remaining_usd: str
 
 

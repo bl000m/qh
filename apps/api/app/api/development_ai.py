@@ -58,3 +58,17 @@ async def messages(context_id: UUID, payload: ChatInput, request: Request, respo
 async def proposals(context_id: UUID, payload: EnrichmentInput, request: Request, response: Response,
                     identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).enrich(identity, str(context_id), payload.model_dump(mode='json')))
+
+
+@router.get('/diagnostics')
+async def diagnostics(context_id: UUID, request: Request, response: Response,
+                      identity=Depends(authenticated_chat_identity)):
+    return await execute(service(request, response).diagnostics(identity,
+        chat_request(identity.subject_id, context_id)))
+
+
+@router.delete('/diagnostics/{diagnostic_id}')
+async def delete_diagnostic(context_id: UUID, diagnostic_id: UUID, request: Request, response: Response,
+                            identity=Depends(authenticated_chat_identity)):
+    return await execute(service(request, response).diagnostics(identity,
+        chat_request(identity.subject_id, context_id), delete_id=str(diagnostic_id)))

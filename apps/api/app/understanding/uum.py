@@ -49,25 +49,49 @@ class UumExtractionProvider:
             Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS), request.messages[-1])))
 
 
-def normalize_output(output, source):
+def normalize_output(output, source, observer=None):
+    try:
+        result = _normalize_output(output, source, observer)
+    except ValueError as exc:
+        if observer:
+            issues = getattr(exc, "issues", ())
+            observer("uum.atomic_format_dimension_exact_evidence", False,
+                json.dumps(issues) if issues else str(exc))
+        raise
+    if observer:
+        observer("uum.atomic_format_dimension_exact_evidence", True)
+    return result
+
+
+def _normalize_output(output, source, observer):
     object_fields(output, ('format', 'items'))
     if output['format'] != FORMAT or not isinstance(output['items'], list) or len(output['items']) > 100:
         raise ValueError('Explicit bounded UUM envelope required')
+    if observer:
+        observer('uum.envelope_format_and_item_count', True)
     items = []
     for index, item in enumerate(output['items']):
         object_fields(item, ('text', 'primary_dimension', 'evidence'), ('assignment_certainty',))
+        if observer:
+            observer(f'uum.item.{index}.fields', True)
         text = nonempty(item['text'])
         if len(text) > 16000 or '\0' in text:
             raise ValueError('Bounded atomic text required')
+        if observer:
+            observer(f'uum.item.{index}.bounded_atomic_text', True)
         primary = item['primary_dimension']
         if primary is None:
             if 'assignment_certainty' in item:
                 raise ValueError('Unclassified item cannot assert assignment certainty')
         elif primary not in PRIMARY_DIMENSIONS or item.get('assignment_certainty') not in ('asserted', 'tentative'):
             raise ValueError('Explicit primary dimension and certainty required')
+        if observer:
+            observer(f'uum.item.{index}.dimension_and_certainty', True)
         evidence = item['evidence']
         if not isinstance(evidence, list) or not 1 <= len(evidence) <= 100:
             raise ValueError('Exact evidence required')
+        if observer:
+            observer(f'uum.item.{index}.evidence_count', True)
         refs = []
         for ref in evidence:
             object_fields(ref, ('quote',))
@@ -79,5 +103,8 @@ def normalize_output(output, source):
         items.append(normalized)
     if not items:
         return {'items': []}
-    derived, _audit = resolve_output_citations({'items': items}, source=source)
+    derived, audit = resolve_output_citations({'items': items}, source=source)
+    if observer:
+        for citation in audit['citations']:
+            observer(f"uum.item.{citation['item_index']}.evidence.{citation['evidence_index']}.exact_unique_original_turn", True)
     return derived

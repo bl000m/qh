@@ -132,19 +132,33 @@ def unique_keys(pairs):
     return result
 
 
-def decode_answer(message, context):
+def decode_answer(message, context, observer=None):
     """Verify declared references, not natural-language semantic entailment."""
+    rule = 'chat.assistant_role_and_response_bytes'
+    def passed():
+        if observer:
+            observer(rule, True)
     try:
         if message.role != MessageRole.ASSISTANT or len(message.content.encode()) > 12000:
             raise ValueError()
+        passed()
+        rule = 'chat.json_unique_fields'
         value = json.loads(message.content, object_pairs_hook=unique_keys)
+        passed()
+        rule = 'chat.exact_envelope'
         if type(value) is not dict or set(value) != {'answer', 'reference_aliases', 'insufficient_context'}:
             raise ValueError()
+        passed()
+        rule = 'chat.answer_nonempty_length'
         answer, ids, insufficient = value['answer'], value['reference_aliases'], value['insufficient_context']
         if not isinstance(answer, str) or not answer.strip() or len(answer) > MAX_OUTPUT_CHARS:
             raise ValueError()
+        passed()
+        rule = 'chat.reference_and_insufficient_types'
         if type(insufficient) is not bool or type(ids) is not list or len(ids) > MAX_REVISIONS:
             raise ValueError()
+        passed()
+        rule = 'chat.sent_context_integrity'
         packet = json.loads(context.request.messages[1].content, object_pairs_hook=unique_keys)
         rows = expand_model_context(packet)
         # The untrusted output cannot supply a map; the actual sent map must also
@@ -152,12 +166,19 @@ def decode_answer(message, context):
         if (encoded(rows) != encoded([asdict(r) for r in context.revisions])
                 or packet['partial_coverage'] != context.partial):
             raise ValueError()
+        passed()
+        rule = 'chat.reference_alias_membership_unique'
         aliases = packet['allowed_reference_aliases']
         allowed = {r.revision_id: r for r in context.revisions}
         if any(not isinstance(i, str) or i not in aliases for i in ids) or len(ids) != len(set(ids)):
             raise ValueError()
+        passed()
+        rule = 'chat.canonical_reference_required_unless_insufficient'
         if not insufficient and not ids:
             raise ValueError()
+        passed()
         return answer, tuple(allowed[aliases[i]] for i in ids), insufficient
     except (ValueError, TypeError, KeyError, AttributeError, IndexError, UnicodeError, RecursionError):
+        if observer:
+            observer(rule, False, rule)
         raise ChatProviderUnavailable('Invalid provider answer') from None

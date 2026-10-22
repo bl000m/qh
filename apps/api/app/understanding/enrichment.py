@@ -74,7 +74,7 @@ class ConversationEnrichment:
         return tuple(sorted(names)[:40]), partial or len(names)>40
 
     async def enrich(self, subject, scope, payload, *, semantic_provider=None,
-                     provider_mode=None, before_publish=None):
+                     provider_mode=None, before_publish=None, observer=None):
         # Authorization before private reads, idempotency lookup or provider work.
         await self._allow(subject, scope)
         mode = payload.get('extraction_mode', 'literal')
@@ -139,7 +139,7 @@ class ConversationEnrichment:
             try:
                 source, revisions = await propose_selected_conversation(subject_id=subject, context_id=scope,
                     conversation=conversation, extraction_key=extraction_key, policy=self.policy, provider=provider,
-                    descriptor_version=3 if self.uum else (2 if mode=='semantic' else 1))
+                    descriptor_version=3 if self.uum else (2 if mode=='semantic' else 1), observer=observer)
             except ProviderBudgetExceeded:
                 raise
             except PermissionError:

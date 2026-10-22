@@ -5,6 +5,17 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — private AI diagnostics and development envelope, 2026-10-22
+
+- Keep original Mistral response and accounting separate from QH admission results,
+  in private one-hour owner/Space-scoped diagnostics with authenticated deletion.
+- Authorize 100 global chat/UUM attempts and USD2.50 (conservative EUR5 envelope),
+  preserving prior spend, expiry, atomic reservation and zero automatic retry.
+- Audit canonical-citation restrictions for empty-Space dialogue; admission and
+  epistemic checks remain unchanged pending the owner's functional decision.
+- Correct the standard-library architecture allowlist and legacy browser
+  expectations for retained dialogue when proposal inclusion changes.
+
 ## QH-51 — stable radial map and ordinary development AI,2026-10-22
 
 - Match the owner’s radial desktop/mobile targets with a central original orb,
