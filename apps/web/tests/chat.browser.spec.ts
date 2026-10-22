@@ -64,7 +64,8 @@ test('proposed-only Space needs explicit choice and empty context invents no evi
 
 test('history-only Space is not labelled empty; history verification errors fail closed',async({page})=>{
  await open(page,expected.historical_scope);
- await expect(page.getByRole('region',{name:'Carte thématique de ce contexte',exact:true})).toBeVisible();
+ await expect(page.getByRole('region',{name:'Dimensions de compréhension',exact:true})).toBeVisible();
+ await expect(page.locator('.context-orbit-node')).toHaveCount(6);
  await expect(page.getByRole('heading',{name:'J’ajoute un élément',exact:true})).toHaveCount(0);
  await expect(page.getByText('Ce Space attend sa première compréhension.',{exact:true})).toHaveCount(0);
  await page.route('**/understanding?*',route=>new URL(route.request().url()).searchParams.get('view')==='history'

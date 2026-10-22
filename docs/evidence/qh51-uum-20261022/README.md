@@ -30,6 +30,21 @@ Conteggi sovrapposti: **non sommarli**. I controlli completi hosted del candidat
 pubblicato sono consultabili nei check della [PR #23](https://github.com/bl000m/qh/pull/23);
 non sono sostituiti dai test mirati di questo report.
 
+Il primo avvio hosted sul checkpoint `624f84e`,
+[39734120735](https://github.com/bl000m/qh/actions/runs/39734120735), ha quality,
+OIDC e native-integration verdi (**899 PASS, zero skip**). Browser: **91 PASS,
+1 FAIL**, perché il test storico cercava ancora il nome accessibile « Carte
+thématique de ce contexte ». La correzione aggiorna il selettore a « Dimensions
+de compréhension » e verifica anche i sei nodi, mantenendo tutte le asserzioni
+di storico e fail-closed. Nessun codice applicativo o dato è cambiato per correggere
+questo test. Il risultato fallito resta conservato; i check del nuovo HEAD
+determinano la readiness finale, senza attribuire al vecchio commit una CI verde.
+Ricontrollo mirato: caso storico **1 PASS**, 19,1 s, sullo stesso profilo di sessione
+legacy del job principale; maquette e recupero bozze **2 PASS** sul profilo prodotto.
+Un primo lancio combinato usava il profilo prodotto anche per il driver storico
+che richiede la home dopo login: errore di configurazione del test, conservato
+nei log privati e corretto separando i due profili, senza cambiare l'applicazione.
+
 Comandi locali: `python3 .local-archive/qh51-uum-reset-20261021/run_targeted.py`
 con i moduli elencati sopra; Docker con bind readonly di app, tests e scripts,
 credenziali dedicate temporanee e soli server `qh30-sql-test` e
