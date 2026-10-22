@@ -23,14 +23,14 @@ class DevelopmentAI:
             or self.clock() >= min(identity.expires_at, identity.work_expires_at)
             or not self.factory.allowed(identity.subject_id, request.context_id)):
             raise ContextSpaceNotFound('Context space not found')
-        if not await self.factory.verified(identity.subject_id, request.context_id):
-            raise ChatProviderUnavailable('Verified provider unavailable')
         if reserve:
             remaining = self.factory.remaining()
             if not remaining['remaining_calls'] or Decimal(remaining['remaining_usd']) < Decimal('0.0024'):
                 raise ProviderBudgetExceeded()
             if remaining['blocked']:
                 raise ChatProviderUnavailable('Provider accounting requires review')
+        if not await self.factory.verified(identity.subject_id, request.context_id):
+            raise ChatProviderUnavailable('Verified provider unavailable')
 
     async def capabilities(self, identity, request):
         await self.chat._authorize(request)

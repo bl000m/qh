@@ -187,3 +187,12 @@ def test_bob_owned_space_and_missing_credentials_never_available(tmp_path,monkey
     monkeypatch.delenv('MISTRAL_API_KEY')
     assert not asyncio.run(ai.capabilities(who,request()))['enabled']
     assert not calls and not json.loads(ledger.read_text())['calls']
+
+
+def test_exhaustion_message_precedes_unavailable_price_fetch_without_disclosure(tmp_path,monkeypatch):
+    ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer)
+    state=json.loads(ledger.read_text());state['max_usd']='0.0023';ledger.write_text(json.dumps(state))
+    ai.factory.pricing.verify=AsyncMock(return_value=False)
+    with pytest.raises(ProviderBudgetExceeded):asyncio.run(ai.respond(who,request()))
+    ai.factory.pricing.verify.assert_not_awaited()
+    assert not calls and not json.loads(ledger.read_text())['calls']
