@@ -5,6 +5,17 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 UUM map — responsive readability correction, 2026-10-22
+
+- Replace fixed absolute card coordinates with intrinsic Grid rows and named
+  container queries; reserve space for the original orb, labels and status text.
+- Keep six colors/icons, complete French labels, empty/current/proposed states,
+  node navigation, keyboard operation and fullscreen readable at narrow widths
+  and enlarged text. Bound the image and collapse the tablet empty-Space columns.
+- Preserve wrapping view controls; remove fixed decorative paths that cannot
+  match the adaptive layout. Add screenshot, geometry and keyboard regressions.
+  [Executed evidence and live metadata activity exception](docs/qh-51-uum-map-layout.md).
+
 ## QH-51 UUM — approved pivot, isolated implementation, 2026-10-22
 
 - Replace primary thematic map grouping with six universal dimensions and optional

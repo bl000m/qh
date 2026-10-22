@@ -6,6 +6,27 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-22 — Authorized UUM cutover, followed by frontend map correction
+
+After the owner's explicit final approval, the prepared reset/cutover was executed
+on6d8f2f2:197 application rows in11 tables and92 QH graph nodes/40 edges removed;
+three v3 profiles added, original14 definitions and schema0006 retained. Guarded
+`dev-up` restarted only frontend/backend; all six original containers healthy.
+Backup/economic/configuration hashes matched. The private durable execution record
+is `.local-archive/qh51-uum-cutover-20261022/ACTIVATION-RESULT.md`; the preceding
+preparation entry below is a historical checkpoint, superseded by this execution.
+
+The owner then created one new empty Space and reported the UUM map unreadable.
+The authorized correction changes frontend layout only, through the existing binds;
+no service restart, new container/image, migration, registration or provider call.
+Actual VPS read-only browser smoke confirms four widths/fullscreen and six keyboard
+member dialogs. Canonical content, identities and profiles remain exact. The
+organization fingerprint changed during development: two ordinary opening-activity
+POSTs from a connected client during hot reload; this exception is documented,
+not hidden by a metadata restore. Other14 tables,39 protected file hashes and16
+backup-manifest files remain exact. PR23 stays open, PR19 intact.
+[Correction and acceptance evidence](qh-51-uum-map-layout.md).
+
 ## 2026-10-21/22 — UUM preparation; application data reset NOT executed
 
 Owner approved the UUM architecture and a clean application dataset, with a final
