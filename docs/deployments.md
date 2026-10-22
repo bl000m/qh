@@ -667,3 +667,25 @@ requested the subsequent separate QH-54 branch, even while PR19 remains open.
 Frontend/backend restarted on their existing images/config/mounts; Keycloak/MCP/
 SQL/Neo4j unchanged, schema0006. Ordinary source hot reload remains active; no new
 persistent deployment/config/allowlist/budget change, paid inference or0007 follows.
+
+
+## 2026-10-22 — QH51 ordinary owner AI, app-only radial refinement
+
+Owner explicitly authorized ordinary Mistral use by the exact verified development
+account in all owned Spaces, replacing historical UI activation/consent and
+session economic gates. Core implementation4fc2a81, existing PR23 branch in the
+single checkout. The final frontend/test/report commits are listed in PR23 history;
+this is a development source-bind cutover, no merge/product release/image change.
+
+Guarded dev-stop during preparation and dev-up after private receipt verification;
+only frontend/backend app starts. Receipt gains development_account only; model,
+expiry, all old fields and original ledger retained. No .env, Keycloak, TTL, schema,
+profile, backup, canonical data or PR19 modification. SQL15 table fingerprints,
+protected files, container identities/images/mounts and infrastructure starts
+compare equal before/after the one real synthetic browser smoke.
+
+Actual smoke:1POST mistral-small-2603, USD0.00010005, zero canonical writes or
+supplied revisions; total5/8 calls, USD0.00249735 spent,3 calls/USD0.19750265 remain.
+No subsequent paid inference. [Evidence, limits and receipt-only rollback](qh-51-development-ai-runtime.md).
+The ledger is never restored by rollback. Owner Mac/visual review and PR23 merge
+remain separate and pending; no Jira transition.

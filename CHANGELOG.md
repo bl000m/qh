@@ -5,6 +5,19 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — stable radial map and ordinary development AI,2026-10-22
+
+- Match the owner’s radial desktop/mobile targets with a central original orb,
+  measured links, six stable nodes and compact manual insertion, independent of
+  empty/proposed/confirmed content. Preserve conversation, draft and review flow.
+- Enable ordinary Envoyer and explicit UUM Proposer for the exact development
+  OIDC owner across owned Spaces, with automatic authorization and one original
+  aggregate ledger. Historical session/snapshot UI consents no longer apply here.
+- Preserve8-call/USD0.20 ceiling, expiry and historical accounting; block before
+  HTTP on insufficient reservation. No session refill, retry or fallback.
+- [Executed real smoke, preservation and limits](docs/qh-51-development-ai-runtime.md).
+  PR23 remains open; no merge, migration, reset, Keycloak or PR19 change.
+
 ## QH-51 UUM map — responsive readability correction, 2026-10-22
 
 - Replace fixed absolute card coordinates with intrinsic Grid rows and named
