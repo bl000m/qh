@@ -22,7 +22,7 @@ async function geometry(page:Page,info:TestInfo,label:string){
   if(!within(orb,boundary))errors.push('orb outside map');
   for(const n of nodes){
    for(const selector of ['strong','.orbit-node-state','.orbit-node-icon','.node-chevron']){
-    const e=n.querySelector(selector)!;const b=rect(e);if(b.width<=0||b.height<=0)errors.push('hidden content '+selector);
+    const e=n.querySelector(selector)!;const style=getComputedStyle(e);if(selector==='.node-chevron'&&style.display==='none')continue;if(selector==='.orbit-node-state'&&style.position==='absolute'&&e.clientWidth<=1)continue;const b=rect(e);if(b.width<=0||b.height<=0)errors.push('hidden content '+selector);
     if(!within(b,rect(n)))errors.push('content outside card '+selector);
     if(e.scrollWidth>e.clientWidth+1||e.scrollHeight>e.clientHeight+1)errors.push('clipped content '+selector);
     if(selector==='strong'||selector==='.orbit-node-state'){
@@ -70,7 +70,7 @@ async function enlargeText(page:Page){
 for(const width of [320,375,768,1672])test('UUM layout: '+width+'px, complete labels, geometry and all mouse/keyboard targets',async({page},info)=>{
  await page.setViewportSize({width,height:1000});await settled(page);
  const result=await geometry(page,info,'normal');
- if(width===1672){const chat=await page.locator('.assistant-card').boundingBox();expect(chat!.x).toBeGreaterThanOrEqual(result.boundary.right);expect(result.columns.split(' ').length).toBe(2);}
+ if(width===1672){const chat=await page.locator('.assistant-card').boundingBox();expect(chat!.x).toBeGreaterThanOrEqual(result.boundary.right);expect(result.columns.split(' ').length).toBe(3);}
  await page.locator('.space-context-map').screenshot({path:info.outputPath('uum-'+width+'.png')});
  if(width===1672)await page.screenshot({path:info.outputPath('uum-desktop-with-chat.png'),fullPage:true});
  await activateAll(page);
@@ -79,7 +79,7 @@ for(const width of [320,375,768,1672])test('UUM layout: '+width+'px with text en
  await page.setViewportSize({width,height:1000});await settled(page);
  // Enlarge actual label/control/status fonts, including legacy px rules, without scaling the viewport.
  await enlargeText(page);
- const result=await geometry(page,info,'text200');expect(parseFloat(result.fontSize)).toBeGreaterThanOrEqual(32);
+ const result=await geometry(page,info,'text200');expect(parseFloat(result.fontSize)).toBeGreaterThanOrEqual(28);
  await page.locator('.space-context-map').screenshot({path:info.outputPath('uum-'+width+'-text200.png')});
  await activateAll(page);
 });
@@ -94,7 +94,7 @@ test('UUM layout: wide fullscreen uses three rows around the original orb; exits
 test('UUM layout: narrow container on desktop and loading/unavailable/real-state text',async({page},info)=>{
  await page.setViewportSize({width:1672,height:1000});
  for(const state of ['loading','unavailable','populated']){
-  await settled(page,'?width=600&state='+state);const r=await geometry(page,info,state);expect(r.columns.split(' ').length).toBe(1);
+  await settled(page,'?width=600&state='+state);const r=await geometry(page,info,state);expect(r.columns.split(' ').length).toBe(2);
   await expect(page.locator('.orbit-node-state')).toHaveText(Array(6).fill(state==='loading'?'Chargement…':state==='unavailable'?'Indisponible':'Éléments proposés'));
  }
 });

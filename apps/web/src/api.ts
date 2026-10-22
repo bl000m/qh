@@ -53,15 +53,27 @@ export class QhApi {
   }
   async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean;extraction_mode?:'semantic'}):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);
-    const r=await this.request('/context-spaces/'+scope+'/enrichments','POST',payload) as EnrichmentReceipt;
-    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2','uum-offline-literal/3','uum-simulated/3'].includes(r.provider_mode))throw new ApiError(502);
-    return r;
+    return this.enrichmentReceipt(await this.request('/context-spaces/'+scope+'/enrichments','POST',payload),scope);
   }
-  async enrichmentCapabilities(scope:string):Promise<{semantic:boolean;external_disclosure:false}> {
+  async enrichmentCapabilities(scope:string):Promise<{semantic:boolean;external_disclosure:boolean}> {
     if(!isUuid(scope))throw new ApiError(404);
-    const value=await this.request('/context-spaces/'+scope+'/enrichments/capabilities') as {semantic:boolean;external_disclosure:false};
-    if(!value||typeof value.semantic!=='boolean'||value.external_disclosure!==false)throw new ApiError(502);
+    const value=await this.request('/context-spaces/'+scope+'/enrichments/capabilities') as {semantic:boolean;external_disclosure:boolean};
+    if(!value||typeof value.semantic!=='boolean'||typeof value.external_disclosure!=='boolean')throw new ApiError(502);
     return value;
+  }
+  async automaticChat(scope:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer>{
+    if(!isUuid(scope))throw new ApiError(404);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include);
+  }
+  async proposeWithAI(scope:string,payload:Parameters<QhApi['enrich']>[1]):Promise<EnrichmentReceipt>{
+    if(!isUuid(scope))throw new ApiError(404);
+    const receipt=this.enrichmentReceipt(await this.request('/context-spaces/'+scope+'/ai/proposals','POST',payload),scope);
+    if(receipt.provider_mode!=='uum-mistral/3')throw new ApiError(502);return receipt;
+  }
+  private enrichmentReceipt(raw:unknown,scope:string):EnrichmentReceipt{
+    const r=raw as EnrichmentReceipt;
+    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2','uum-offline-literal/3','uum-simulated/3','uum-mistral/3'].includes(r.provider_mode))throw new ApiError(502);
+    return r;
   }
   async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);

@@ -115,7 +115,7 @@ jobs:
 
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -135,3 +135,7 @@ jobs:
       - name: QH-51 UUM primary review and universal dimensions on a clean disposable dataset
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --browser-grep 'QH-51 UUM' --output /tmp/qh51-semantic-evidence
+
+      - name: Ordinary development AI and stable radial lifecycle, simulated provider only
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --development-ai-mode --browser-grep 'QH-51 radial lifecycle|QH-51 ordinary AI' --output /tmp/qh51-ordinary-ai-evidence
