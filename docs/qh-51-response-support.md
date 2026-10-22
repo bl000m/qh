@@ -28,8 +28,17 @@ al vecchio protocollo: campo assente o incoerente viene respinto. Le evidenze st
 non vengono riscritte. Il precedente divieto di implementazione era un gate ora
 soddisfatto, non una regola funzionale permanente.
 
-La sola verifica reale autorizzata da questo mandato usa il modello pinned
+Il protocollo iniziale di verifica reale usa il modello pinned
 mistral-small-2603 e l'endpoint già approvato, una richiesta sintetica entro il
 plafond residuo, prenotazione massima USD0.0024, zero retry/fallback. Nessuna
 inferenza di startup o test automatico/CI; payload e JSON sanitari fittizi rimangono
 privati. Le altre prove usano provider simulato. Non estende disponibilità o budget.
+
+
+Il primo protocollo live a invio singolo è stato fermato su un formato reale errato
+(reference_aliases object invece di array), conservando costo/JSON/stop marker.
+Il mandato owner sul plafond attuale copre una verifica controllata del candidato
+corretto: stesso payload/Space, un nuovo Envoyer dopo test offline/CI verde,
+prenotazioneUSD0.0024 e nessun retry/fallback automatico. Nessun errore del modello
+viene convertito euristicamente o cancellato dal ledger. Il prompt esplicita array
+ed esempio vuoto, mentre il decoder continua a rifiutare anche l'object vuoto{}.

@@ -125,8 +125,12 @@ canonical selection and exact aliases; declaration is not entailment/truth.
 Dialogue alone may support an answer in an empty Space. No automatic knowledge
 write/confirmation, no alias inference. Keep owner/CHAT/OIDC/provenance/snapshot/
 JSON/budget gates. This supersedes the earlier validation-approval gate above.
-One additional synthetic real chat request is authorized by this new mandate,
-within the existing100/USD2.50 ceiling, maximum reservationUSD0.0024, no retry.
+The initial one-call live protocol was stopped after a malformed real response.
+The current owner mandate uses the existing100/USD2.50 ceiling for controlled
+verification: after offline-verified prompt correction and green candidate CI,
+one fresh explicit send of the same frozen input/owned Space may verify the fix,
+maximum reservationUSD0.0024. No transport retry, fallback or automatic resend
+from an error handler; retain the failed attempt and its original stop marker.
 Only explicit developer-account Envoyer; never infer in CI/startup. Private
 medical fixture/response stay outside Git and ordinary logs; diagnostic retention
 remains one hour. Preserve the original ledger; append this attempt normally.

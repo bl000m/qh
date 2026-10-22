@@ -26,15 +26,16 @@ human confirmation and real-world truth are separate; a confirmed hypothesis is
 still a hypothesis. Prior assistant messages are unverified dialogue, never canonical
 evidence. Answering never persists or confirms knowledge.
 Revisions inherit common_metadata; provenance IDs resolve to exact sources records.
-Return ONLY JSON with exactly answer (plain text), reference_aliases (distinct exact
-allowed_reference_aliases keys), insufficient_context (boolean), and support_basis:
+Return ONLY JSON with exactly answer (plain text), reference_aliases (JSON array of distinct exact
+allowed_reference_aliases keys; [] if none, NEVER an object), insufficient_context (boolean), and support_basis:
 dialogue|canonical|mixed|insufficient. Dialogue alone is usable even with no canonical
 revisions: dialogue requires sent user text and zero aliases; canonical requires
 valid cited aliases; mixed requires both. insufficient iff insufficient_context=true;
 valid aliases may cite relevant but inadequate support then. Never return UUIDs,
 item/revision/source IDs or relationship anchors as aliases; QH resolves the exact
 request-local keys. The declared basis and citations establish input/reference
-membership, not semantic entailment, truth or human validation."""
+membership, not semantic entailment, truth or human validation.
+Dialogue-only example: {"answer":"...","reference_aliases":[],"insufficient_context":false,"support_basis":"dialogue"}."""
 
 
 class ChatInputInvalid(ValueError):
@@ -132,6 +133,7 @@ def unique_keys(pairs):
 def decode_answer(message, context, observer=None):
     """Verify declared references, not natural-language semantic entailment."""
     rule = 'chat.assistant_role_and_response_bytes'
+    rejection_reason = None
     def passed():
         if observer:
             observer(rule, True)
@@ -152,7 +154,11 @@ def decode_answer(message, context, observer=None):
             raise ValueError()
         passed()
         rule = 'chat.reference_and_insufficient_types'
-        if type(insufficient) is not bool or type(ids) is not list or len(ids) > MAX_REVISIONS:
+        if type(insufficient) is not bool:
+            rejection_reason = 'insufficient_context must be a JSON boolean'
+            raise ValueError()
+        if type(ids) is not list or len(ids) > MAX_REVISIONS:
+            rejection_reason = 'reference_aliases must be a JSON array of at most 40 aliases; use [] for none'
             raise ValueError()
         passed()
         rule = 'chat.sent_context_integrity'
@@ -186,5 +192,5 @@ def decode_answer(message, context, observer=None):
         return answer, tuple(allowed[aliases[i]] for i in ids), insufficient, basis
     except (ValueError, TypeError, KeyError, AttributeError, IndexError, UnicodeError, RecursionError):
         if observer:
-            observer(rule, False, rule)
+            observer(rule, False, rejection_reason or rule)
         raise ChatProviderUnavailable('Invalid provider answer') from None

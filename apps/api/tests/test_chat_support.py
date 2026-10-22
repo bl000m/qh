@@ -78,3 +78,23 @@ def test_empty_space_rich_dialogue_accepted_without_knowledge_or_source_write(tm
     assert record['raw_response'] == raw and record['outcome'] == 'accepted'
     assert all(c['result'] == 'PASS' for c in record['checks'])
     assert len(calls) == 1 and len(json.loads(ledger.read_text())['calls']) == 1
+
+
+def test_real_empty_object_alias_failure_stays_rejected_with_precise_private_reason():
+    data = json.loads(output('dialogue').content)
+    data['reference_aliases'] = {}  # Actual real-provider protocol failure, no repair.
+    observed = []
+    with pytest.raises(ChatProviderUnavailable):
+        decode_answer(Message(role=MessageRole.ASSISTANT, content=json.dumps(data)), built(),
+            observer=lambda *args: observed.append(args))
+    assert observed[-1][0] == 'chat.reference_and_insufficient_types'
+    assert observed[-1][1] is False and 'JSON array' in observed[-1][2]
+
+
+def test_active_prompt_explicitly_specifies_array_and_boolean_dialogue_example():
+    from app.chat.context import SYSTEM
+    example = json.loads(SYSTEM.split('Dialogue-only example: ')[1].rstrip('.'))
+    assert example['reference_aliases'] == [] and example['support_basis'] == 'dialogue'
+    assert example['insufficient_context'] is False
+    assert 'JSON array' in SYSTEM and 'NEVER an object' in SYSTEM
+    assert decode_answer(Message(role=MessageRole.ASSISTANT, content=json.dumps(example)), built())[3] == 'dialogue'

@@ -85,3 +85,32 @@ di quel singolo evento al margine resta un'inferenza. Il difetto di headroom è
 invece riprodotto deterministicamente dal nuovo test limite (vecchio prompt FAIL,
 compatto PASS). Gli ulteriori assert browser rendono esplicito questo dato nelle
 campagne successive, senza mascherare eventuali altre cause di errore HTTP.
+
+
+## Primo invio reale dopo CI verde e correzione del tipo indicato nel prompt
+
+CI39843014907/4e57ce4: tutti4 job verdi, Native905 PASS, browser114 base +48 outage
++1 restore/rebuild +9 prodotto +2 UUM +6 ciclo radiale/IA ordinaria. La prova reale
+è stata eseguita **una volta** con quel candidato e non è stata ripetuta dal gestore
+di errore: HTTP Mistral200,620 input/144 output, USD0.00017940 completed, HTTP QH503.
+Il modello ha restituito `reference_aliases: {}` (object), pur dichiarando dialogue
+con insufficient_context=false. Il decoder ha correttamente respinto il tipo errato.
+Il prompt compatto aveva omesso la parola array: correzione del prompt, non del JSON
+originale o della regola. Ora specifica JSON array,[] se vuoto,mai object, e fornisce
+un esempio dialogico eseguibile validato dallo stesso decoder. Una regressione
+con il tipo effettivo{} resta bloccata e il motivo privato indica il campo esatto.
+
+Il primo invio, il suo stop marker, il costo e la risposta diagnostica rimangono
+immutati; nessun backfill o riparazione silenziosa. La creazione esplicita ha lasciato
+lo Space con0 fonti/elementi/revisioni. Il ledger aveva7 chiamate prima della prova
+(una ulteriore chiamata owner durante l'attesa),8 dopo:92 richieste/USD2.49642760.
+La verifica del candidato corretto usa lo stesso input congelato e lo stesso Space,
+con un nuovo invio esplicito separato dopo test offline e CI verde. È nel plafond
+owner attuale, massimoUSD0.0024, senza retry HTTP/fallback o reset contabile; nessun
+meccanismo applicativo invia nuovamente automaticamente dopo un errore.
+
+Dopo la correzione array/esempio:126 test mirati PASS nel container candidato
+con le evidenze storiche montate/copia corretta e Ruff PASS. Una prima esecuzione
+nel container runtime aveva123 PASS/3 errori di fixture assente (docs/evidence non
+montato); non erano fallimenti delle assertion. La ripetizione nel candidato con
+le fixture originali ha verificato tutti126 casi, compresi margine e rifiuti.
