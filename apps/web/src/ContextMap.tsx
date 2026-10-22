@@ -30,7 +30,7 @@ export default function ContextMap({api,scope,refreshKey,onExplore,onAdd,onDimen
   </div>
   {error&&<div><p role="alert">La compréhension est indisponible. Cela ne signifie pas que le Space est vide.</p><button type="button" className="text-button" onClick={()=>setRetry(n=>n+1)}>Réessayer</button></div>}
   <button type="button" className="text-button" onClick={()=>leave(()=>onExplore?.())}>Voir les éléments</button>
-  <p className="map-coverage">Six dimensions universelles · {view==='proposed'?'dernières propositions, sans confirmation implicite':'révisions courantes confirmées'}. Aucun classement depuis les titres.</p>
+  <p className="map-coverage">Six dimensions universelles · {view==='proposed'?'dernières propositions, sans confirmation implicite':'révisions courantes confirmées'}.</p>
   <button type="button" className="text-button" onClick={()=>leave(()=>onDimension?.('unclassified:'+view))}>Non classés{visible?.unclassified?' · éléments disponibles':''}</button>
  </section>;
 }

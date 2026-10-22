@@ -8,7 +8,7 @@ async function login(page:Page,user='alice'){
  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();
  const input=page.locator('#username'),home=page.getByRole('heading',{name:'Mon environnement',exact:true});await expect(input.or(home)).toBeVisible();if(await input.isVisible()){await input.fill(user);await page.locator('#password').fill(process.env[user==='alice'?'QH_ALICE_PASSWORD':'QH_BOB_PASSWORD']!);await page.locator('#kc-login').click();}await expect(home).toBeVisible();
 }
-async function open(page:Page,id:string){await page.evaluate(s=>{history.pushState(null,'','/context-spaces/'+s);dispatchEvent(new PopStateEvent('popstate'));},id);await expect(page.getByLabel('Votre question sur ce contexte')).toBeVisible();}
+async function open(page:Page,id:string){await page.evaluate(s=>{history.pushState(null,'','/context-spaces/'+s);dispatchEvent(new PopStateEvent('popstate'));},id);await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();}
 if(enabled)test('QH-51 UUM: five clean Spaces, six universal nodes, exact members, primary review, refresh and isolation',async({page},info)=>{
  test.setTimeout(180000);await page.setViewportSize({width:1672,height:941});await login(page);
  for(const s of fixture.demo_spaces){
@@ -22,7 +22,7 @@ if(enabled)test('QH-51 UUM: five clean Spaces, six universal nodes, exact member
   await w.getByRole('button',{name:'Examiner la dimension',exact:true}).click();await w.getByRole('combobox',{name:'Décision sur la dimension',exact:true}).selectOption('accepted');await w.getByRole('button',{name:'Enregistrer la dimension',exact:true}).click();await expect(w).toContainText('affectation acceptée');
   await expect(w.locator('.context-item-detail .item-state')).toHaveText('À vérifier');await w.getByRole('button',{name:'Revenir aux éléments',exact:true}).click();
  }
- await open(page,fixture.demo_spaces[0].scope);await page.screenshot({path:info.outputPath('uum-map-desktop.png')});
+ await open(page,fixture.demo_spaces[0].scope);for(const node of await page.locator('.context-orbit-node').all())await expect(node).toContainText('Éléments proposés');await page.screenshot({path:info.outputPath('uum-map-desktop.png')});
  await page.setViewportSize({width:390,height:844});await expect(page.locator('.context-orbit-node')).toHaveCount(6);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await page.screenshot({path:info.outputPath('uum-map-mobile.png'),fullPage:true});
  await page.reload();await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('.context-orbit-node').filter({hasText:'Objectifs & intentions'})).toContainText('Éléments proposés');
  await page.getByRole('button',{name:'Se déconnecter',exact:true}).click();await page.waitForURL(/:8080.*logout/);await login(page,'bob');const denied=page.waitForResponse(r=>r.url().endsWith('/api/context-spaces/'+fixture.scope));await page.evaluate(s=>{history.pushState(null,'','/context-spaces/'+s);dispatchEvent(new PopStateEvent('popstate'));},fixture.scope);expect((await denied).status()).toBe(404);await expect(page.locator('.context-orbit-node')).toHaveCount(0);

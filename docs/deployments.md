@@ -6,6 +6,23 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-21/22 — UUM preparation; application data reset NOT executed
+
+Owner approved the UUM architecture and a clean application dataset, with a final
+destructive confirmation still required. `sudo -n make dev-stop` stopped only
+frontend/backend before source changes, because their hot-reload binds use this
+checkout. They remain stopped pending the reviewed cutover. Keycloak, PostgreSQL,
+Neo4j and MCP retain their original images, volumes and configuration.
+
+Read-only inventory: QH schema0006, 15 tables; 11 application tables selected for
+the proposed reset, identities/profile registry/schema history preserved. Full
+SQL and typed logical graph backups were restored on disposable tmpfs containers;
+selective reset/rollback rehearsed there only. Runtime SQL, graph and economic
+files remain intact; no profile3 registered on the VPS. Candidate app/profile/UI
+tests use separate disposable data and images, with no provider HTTP call.
+[Exact scope, backups, rollback and final gate](qh-51-uum-reset-plan.md).
+PR #23 remains open; PR #19/0007 unchanged. This entry authorizes no reset or startup.
+
 ## 2026-10-21 — PR22 ordinary merge and QH-51 isolated development
 
 Owner-authorized PR22 merge5b9c0f3 preserves40cd6e7 and all source commits;

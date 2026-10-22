@@ -5,7 +5,20 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
-## QH-51 semantic understanding — isolated review increment, 2026-10-21
+## QH-51 UUM — approved pivot, isolated implementation, 2026-10-22
+
+- Replace primary thematic map grouping with six universal dimensions and optional
+  single primary assignments. Empty, proposed, current and unavailable stay distinct.
+- Add generic profile3, a quote-only atomic extraction format, selective QH-46
+  primary review and graph-verified presence/member navigation in the same Engine.
+- Keep manual literal input unclassified, preserve provenance and immutable new
+  revisions, and retain original code, benchmarks and captured provider output.
+- Prepare an inventoried application-data reset with verified SQL/graph backups,
+  selective deletion rehearsal and rollback; preserve identities and economic data.
+  No v1/v2 semantic migration, Mistral call, PR merge or persistent reset performed.
+  VPS cutover remains subject to the owner's final destructive-scope confirmation.
+
+## QH-51 semantic understanding — historical isolated increment, 2026-10-21
 
 - Version explicit thematic and semantic-role assignments with exact evidence,
   independent certainty and QH-46 selective owner review; preserve legacy profiles.
