@@ -29,6 +29,10 @@ class MistralError(RuntimeError):
     """Redacted failure; never includes SDK messages, response bodies or secrets."""
 
 
+class MistralBudgetExceeded(MistralError):
+    """No HTTP performed: insufficient aggregate calls or USD reservation."""
+
+
 def cost(prompt, completion):
     return (
         Decimal(prompt) * INPUT_USD_PER_M + Decimal(completion) * OUTPUT_USD_PER_M
@@ -65,6 +69,11 @@ class ExperimentBudget:
             f.flush()
             os.fsync(f.fileno())
             return result
+
+    def read(self, operation):
+        with self.path.open('r') as f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            return operation(json.load(f))
 
     def reconcile_reviewed_429(self, *, reason):
         """Explicit owner-reviewed resumption; retain failed attempts/reservations."""
@@ -111,10 +120,12 @@ class ExperimentBudget:
             if (
                 state["blocked"]
                 or any(c["status"] == "pending" for c in state["calls"])
-                or len(state["calls"]) >= min(state["max_calls"], 8)
-                or spent + maximum > min(Decimal(state["max_usd"]), Decimal("0.20"))
+
             ):
                 raise MistralError("Experiment call/budget gate closed")
+            if (len(state['calls']) >= min(state['max_calls'], 8)
+                or spent + maximum > min(Decimal(state['max_usd']), Decimal('0.20'))):
+                raise MistralBudgetExceeded('Aggregate AI ceiling reached before HTTP')
             if session_id is not None:
                 records = [c for c in state['calls'] if c.get('session_id') == session_id]
                 committed = sum(Decimal(c.get('observed_usd', c['reserved_usd'])) for c in records)

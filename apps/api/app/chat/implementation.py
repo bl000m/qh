@@ -6,6 +6,7 @@ from typing import Callable
 
 from app.chat.context import (build_context, decode_answer, ChatContextUnavailable,
                               ChatInputInvalid, ChatProviderUnavailable)
+from app.core.models import ProviderBudgetExceeded
 from app.chat.models import ChatRequest, ChatResponse
 from app.core.models import (ContextBrowse, ContextRequest, ContextSpaceNotFound,
                              Message, MessageRole)
@@ -77,16 +78,18 @@ class ContextualChatService:
         await self._authorize(request)  # Separate CHAT gate immediately before disclosure.
         return built, expected
 
-    async def respond(self, request: ChatRequest, *, provider=None, model=None) -> ChatResponse:
+    async def respond(self, request: ChatRequest, *, provider=None, model=None, allow_empty=False) -> ChatResponse:
         built, expected = await self.prepare(request)
         elapsed = None
-        if not built.revisions:
+        if not built.revisions and not allow_empty:
             answer, references, insufficient = 'Le contexte disponible est insuffisant pour répondre.', (), True
         else:
             started = self.clock() if self.clock else None
             try:
                 generated = await (provider or self.provider).generate(built.request)
                 answer, references, insufficient = decode_answer(generated.message, built)
+            except ProviderBudgetExceeded:
+                raise
             except Exception:
                 # Never disclose provider bodies, prompts, URLs or credential-bearing errors.
                 raise ChatProviderUnavailable('Chat provider unavailable') from None

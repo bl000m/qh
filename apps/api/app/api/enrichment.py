@@ -35,7 +35,7 @@ class EnrichmentReceipt(BaseModel):
     source_revision_id: UUID
     revision_ids: list[UUID]
     replayed: bool
-    provider_mode: Literal['offline-literal/1', 'semantic-simulated/2', 'uum-offline-literal/3', 'uum-simulated/3']
+    provider_mode: Literal['offline-literal/1', 'semantic-simulated/2', 'uum-offline-literal/3', 'uum-simulated/3', 'uum-mistral/3']
 
 
 @router.post('/enrichments', response_model=EnrichmentReceipt)
@@ -69,4 +69,12 @@ async def capabilities(context_id: UUID, request: Request, response: Response,
     services = request.app.state.services
     if services is None or services.enrichment is None:
         raise HTTPException(503, 'Enrichment unavailable')
-    return await call(services.enrichment.capabilities(subject, str(context_id)))
+    result = await call(services.enrichment.capabilities(subject, str(context_id)))
+    if services.development_ai is not None:
+        from app.api.security import authenticated_chat_identity, bearer
+        from app.api.chat_sessions import chat_request
+        identity = await authenticated_chat_identity(request, await bearer(request))
+        caps = await call(services.development_ai.capabilities(identity, chat_request(subject, context_id)))
+        result.update(semantic=caps['enabled'], external_disclosure=caps['enabled'],
+            provider_mode='uum-mistral/3' if caps['enabled'] else None)
+    return result

@@ -688,3 +688,28 @@ states, and declare partial coverage. No node from a revision/title or legacy ro
 All new profiles and semantic adapters are verified only with simulated/replay
 providers and disposable synthetic data. Real provider experiment and VPS profile
 provisioning/activation remain separately gated; no new paid call is authorized.
+
+
+## Superseding development AI decision — 2026-10-22
+
+The owner explicitly replaces prior development UI snapshot/session consents and
+Alice/Projet pilote eligibility with ordinary AI use by the exact verified owner
+OIDC account in all its owned Spaces, present/future. **Envoyer** authorizes one
+chat processing request; **Proposer avec Mistral** authorizes one selected-source
+UUM extraction. There is no preliminary activation, provider checkbox, mandatory
+snapshot preview/confirmation or per-Space/conversation grant. No inference on
+opening a page. The active model and transmitted data scope are visible. Only
+confirmed-current Space elements and the explicitly submitted dialogue are sent
+by default; proposed inclusion is a separate user choice. Chat never confirms or
+persists facts; UUM creates proposed revisions reviewed through QH46.
+
+This exception retains verified OIDC/CHAT/owner policy, graph freshness, exact
+source validation, immutable revisions and isolated ownership. Only development,
+one configured OIDC principal, Mistral AI/mistral-small-2603. Preserve the original
+QH45 ledger and aggregate8 requests/USD0.20, old entries and absolute expiry; no
+QH51 allocation transfer or reset. Historical3 requests/USD0.01 session limits do
+not apply in this mode. Reserve the bounded maximum cost atomically before HTTP;
+concurrent requests cannot overspend. No retry/fallback. Insufficient global
+reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
+before sending. Previous decisions above remain historical and continue outside
+this precisely scoped development mode. See [implementation contract](../qh-51-essai-ia.md).

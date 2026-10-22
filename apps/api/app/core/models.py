@@ -229,3 +229,7 @@ class GenerationRequest:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GenerationResult:
     message: Message
+
+
+class ProviderBudgetExceeded(RuntimeError):
+    """The outbound provider cannot reserve the bounded aggregate request cost."""

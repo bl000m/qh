@@ -35,6 +35,13 @@ class EnrichmentApplication(Protocol):
     async def capabilities(self, subject: SubjectId, scope: str) -> dict: ...
 
 
+class DevelopmentAIApplication(Protocol):
+    """Owner-approved development ingress; automatic access and global budget gates."""
+    async def capabilities(self, identity, request) -> dict: ...
+    async def respond(self, identity, request): ...
+    async def enrich(self, identity, scope: str, payload: dict) -> dict: ...
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ApplicationServices:
     """Explicit inbound services; unimplemented feature facets remain unbound.
@@ -52,3 +59,4 @@ class ApplicationServices:
     environment: EnvironmentApplication | None = None
     review: ReviewApplication | None = None
     enrichment: EnrichmentApplication | None = None
+    development_ai: "DevelopmentAIApplication | None" = None

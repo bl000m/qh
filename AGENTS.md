@@ -84,14 +84,25 @@ safe progress. Stop the affected operation; continue independent authorized work
 Missing structural decisions still require approval under the following section.
 Never bypass a tool/GitHub safety refusal; report its exact action/reason if blocked.
 
-QH-45's specific authorization allows 30 days from actual activation for **Alice /
-Projet pilote / mistral-small-2603 only**, with fresh official price verification,
-backend-only activation/rollback, maximum one Codex smoke POST and owner manual
-requests within cumulative 8 POST/0.20 USD and 3 POST/0.01 USD per session. Separate
-in-app proposed/disclosure consents, token-bounded five-minute grants, exact snapshot,
-CHAT/graph checks, no retry/fallback and no canonical chat writes remain mandatory.
-No daily/session budget reset, extension past 30 days, merge or Jira DONE is implied.
-This exception supersedes preparation-only QH-45 instructions within this scope.
+**Current development AI decision — 2026-10-22 (supersedes the historical
+Alice/Projet pilote scope and QH45/QH52 UI consent/session economy):** only the
+owner's exact verified development OIDC account, all present/future owned Spaces,
+Mistral AI `mistral-small-2603` only. An explicit Envoyer authorizes that one chat
+request; an explicit semantic Proposer authorizes that one UUM extraction. No
+activation, provider checkbox, snapshot confirmation or per-Space/conversation
+grant. No inference on page load. Proposed inclusion remains a separate choice;
+canonical persistence/review and human confirmation remain separate from chat.
+Backend OIDC/CHAT/owner, current-Space-only graph/source checks, pinned model,
+fresh official pricing and atomic maximum-cost reservation remain mandatory.
+Use the unchanged original QH45 aggregate ledger:8 calls/USD0.20 including all
+historical calls, absolute expiry2026-11-18T04:30:42.744367Z. No refill, transfer
+from QH51, session3-call/USD0.01 restriction, retry or fallback in this mode.
+One synthetic Codex paid smoke in total is authorized by the current task; all
+repeated tests are simulated. Insufficient reservation returns before HTTP:
+« Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
+Historical decisions remain in ADR0007/QH45/QH52. General STOP AND ASK and paid
+external-call protections below still apply outside this exact scope. See
+[the current development contract](docs/qh-51-essai-ia.md).
 
 ## Autonomy and STOP AND ASK
 

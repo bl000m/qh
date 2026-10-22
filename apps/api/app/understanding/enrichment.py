@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Protocol
 from uuid import UUID, uuid5
 
+from app.core.models import ProviderBudgetExceeded
 from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound
 from app.policy.models import PolicyAction, PolicyRequest
 from app.understanding.extractor import digest, canonical_json, timestamp
@@ -72,13 +73,15 @@ class ConversationEnrichment:
                         names.add(theme_name(d['value']))
         return tuple(sorted(names)[:40]), partial or len(names)>40
 
-    async def enrich(self, subject, scope, payload):
+    async def enrich(self, subject, scope, payload, *, semantic_provider=None,
+                     provider_mode=None, before_publish=None):
         # Authorization before private reads, idempotency lookup or provider work.
         await self._allow(subject, scope)
         mode = payload.get('extraction_mode', 'literal')
         if mode not in ('literal', 'semantic'):
             raise ValueError('Explicit supported extraction mode required')
-        if mode == 'semantic' and self.semantic_provider is None:
+        delegate = semantic_provider or self.semantic_provider
+        if mode == 'semantic' and delegate is None:
             raise EnrichmentUnavailable('Semantic extraction is not activated; no fallback')
         UUID(scope)
         UUID(payload['conversation_id'])
@@ -118,17 +121,17 @@ class ConversationEnrichment:
             from app.understanding.semantic import SemanticExtractionProvider
             vocabulary, partial = await self._vocabulary(subject, scope) if mode=='semantic' and not self.uum else ((), False)
             extraction_key = ('qh51-uum-semantic/3' if mode=='semantic' else 'qh51-uum-literal/3') if self.uum else (SEMANTIC_KEY if mode=='semantic' else EXTRACTION_KEY)
-            provider = SemanticExtractionProvider(self.semantic_provider, known_themes=vocabulary,
+            provider = SemanticExtractionProvider(delegate, known_themes=vocabulary,
                 vocabulary_partial=partial) if mode=='semantic' else self.provider
             if self.uum:
                 from app.understanding.uum import UumExtractionProvider
-                provider = UumExtractionProvider(self.semantic_provider if mode=='semantic' else self.provider, literal=mode=='literal')
+                provider = UumExtractionProvider(delegate if mode=='semantic' else self.provider, literal=mode=='literal')
             conversation = dict(id=conversation_id, revision_no=1, acquired_at=self.clock(),
                 turns=[dict(id=t['id'], speaker='user (owner-declared)' if t['role']=='user' else 'assistant (unverified dialogue)', text=t['content']) for t in turns],
                 metadata=dict(submission_kind='owner_selected_browser_segment', submitted_by=str(subject),
                     conversation_id=payload['conversation_id'], operation_id=payload['operation_id'],
                     request_sha256=fingerprint, extraction_key=extraction_key,
-                    provider_mode=('uum-simulated/3' if self.uum else 'semantic-simulated/2') if mode=='semantic' else ('uum-offline-literal/3' if self.uum else 'offline-literal/1'),
+                    provider_mode=provider_mode or ('uum-simulated/3' if self.uum else 'semantic-simulated/2') if mode=='semantic' else ('uum-offline-literal/3' if self.uum else 'offline-literal/1'),
                     turn_declarations=[dict(turn_id=t['id'], role=t['role'], captured_at=t['captured_at'],
                         timestamp_authority='browser-declared') for t in turns]))
             if mode=='semantic' and not self.uum:
@@ -137,6 +140,8 @@ class ConversationEnrichment:
                 source, revisions = await propose_selected_conversation(subject_id=subject, context_id=scope,
                     conversation=conversation, extraction_key=extraction_key, policy=self.policy, provider=provider,
                     descriptor_version=3 if self.uum else (2 if mode=='semantic' else 1))
+            except ProviderBudgetExceeded:
+                raise
             except PermissionError:
                 raise ContextSpaceNotFound('Context space not found') from None
             except ValueError:
@@ -147,6 +152,8 @@ class ConversationEnrichment:
             await self.context.browse(ContextRequest(subject_id=subject,
                 query=ContextBrowse(context_id=scope, view='history', limit=1)))
             await self._allow(subject, scope)
+            if before_publish is not None:
+                await before_publish()
             return await repository.publish(scope, source, revisions, fingerprint)
         finally:
             self._busy.remove(key)

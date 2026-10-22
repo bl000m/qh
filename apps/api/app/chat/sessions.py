@@ -21,6 +21,7 @@ class ChatIdentity:
     credential_id: str
     verified_session_id: str | None = None
     work_expires_at: float | None = None
+    principal_id: str | None = None
 
 
 @dataclass
@@ -49,7 +50,7 @@ class ProviderSessions:
 
     async def capabilities(self, request):
         await self.chat._authorize(request)
-        enabled = self.factory is not None and await self.factory.available(request.subject_id, request.context_id)
+        enabled = self.factory is not None and not getattr(self.factory, 'development_account', None) and await self.factory.available(request.subject_id, request.context_id)
         return dict(enabled=enabled, model=self.factory.model if enabled else None,
                     max_seconds=1800 if self.session_binding else 300, max_calls=self.factory.max_calls if enabled else 3,
                     max_usd=self.factory.max_usd if enabled else '0.01',

@@ -601,3 +601,14 @@ Selective review has a [separate narrow decision](qh-51-assignment-review-decisi
 approved by the owner for isolated implementation; no VPS provisioning follows. PostgreSQL and
 profile provisioning remain canonical/explicit; the VPS stays on legacy profiles
 and literal extraction until separately authorized.
+
+
+### Ordinary owner development AI —22 October2026
+
+The [current owner contract](qh-51-essai-ia.md) supersedes obsolete development-only
+consent/session limits above. app/chat/development.py coordinates the existing
+chat and Understanding applications with a verified OIDC identity and one private
+outbound provider factory. ApplicationServices binds this explicitly. It adds no
+production service/schema or alternate Engine. The original durable global ledger
+is shared by chat and extraction; request-local guards and canonical validation
+remain. Envoyer/Proposer are the user action, no activation or approval popup.

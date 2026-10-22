@@ -17,6 +17,8 @@ router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
 
 
 class CapabilityOutput(BaseModel):
+    automatic: bool = False
+    plafond_reached: bool = False
     enabled: bool
     model: Literal['mistral-small-2603'] | None
     max_seconds: Literal[300, 1800]
@@ -96,7 +98,13 @@ async def execute(operation):
 @router.get('/{context_id}/chat-sessions', response_model=CapabilityOutput)
 async def capabilities(context_id: UUID, request: Request, response: Response,
                        subject=Depends(authenticated_subject)):
-    return await execute(service(request, response).capabilities(chat_request(subject, context_id)))
+    legacy = service(request, response)
+    automatic = request.app.state.services.development_ai
+    if automatic is not None:
+        from app.api.security import bearer
+        identity = await authenticated_chat_identity(request, await bearer(request))
+        return await execute(automatic.capabilities(identity, chat_request(subject, context_id)))
+    return await execute(legacy.capabilities(chat_request(subject, context_id)))
 
 
 @router.post('/{context_id}/chat-sessions/preview', response_model=SessionOutput)

@@ -31,7 +31,7 @@ class SessionBudget:
             return dict(calls=len(rows), committed_usd=str(sum(
                 (Decimal(r.get('observed_usd', r['reserved_usd'])) for r in rows), Decimal(0))),
                 blocked=state['blocked'] or any(r['status'] == 'pending' for r in state['calls']))
-        return self.ledger._change(read)
+        return self.ledger.read(read)
 
 
 @dataclass
@@ -64,6 +64,14 @@ class PrivateSessionFactory:
                 or type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= 8
                 or not Decimal('0') < Decimal(state['max_usd']) <= Decimal('0.20')):
                 raise ValueError()
+            trial = r.get('development_account')
+            if trial is not None and (type(trial) is not dict
+                or set(trial) != {'environment', 'subject_id', 'principal_id'}
+                or trial['environment'] != 'development'
+                or any(not isinstance(trial[k], str) or not trial[k] for k in ('subject_id','principal_id'))
+                or len(trial['principal_id']) != 64):
+                raise ValueError('Explicit verified development account required')
+            self.development_account = trial
             grants = r['grants']
             if (not isinstance(grants, list) or not grants or len(grants) > 100
                 or any(type(g) is not dict or set(g) not in ({'subject_id', 'context_id'}, {'subject_id', 'context_id', 'snapshot_sha256'})
@@ -72,7 +80,7 @@ class PrivateSessionFactory:
             self.authorization_path = authorization_path
             self.authorization_hash = hashlib.sha256(json.dumps(r, sort_keys=True).encode()).hexdigest()
             self.snapshots = {(g['subject_id'], g['context_id']): g.get('snapshot_sha256') for g in grants}
-            if transport is None and any(not isinstance(v, str) or len(v) != 64 or any(c not in '0123456789abcdef' for c in v) for v in self.snapshots.values()):
+            if trial is None and transport is None and any(not isinstance(v, str) or len(v) != 64 or any(c not in '0123456789abcdef' for c in v) for v in self.snapshots.values()):
                 raise ValueError('Live authorization requires exact context snapshots')
             self.pricing = pricing or OfficialPricing()
             self.scopes = frozenset((g['subject_id'], g['context_id']) for g in grants)
@@ -90,7 +98,7 @@ class PrivateSessionFactory:
     def allowed(self, subject_id, context_id):
         try:
             current = private_json(self.authorization_path)
-            return ((subject_id, context_id) in self.scopes
+            return ((self.development_account is not None and subject_id == self.development_account['subject_id'] or (subject_id, context_id) in self.scopes)
                 and datetime.now(timezone.utc).timestamp() < self.expires_at
                 and hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest() == self.authorization_hash)
         except Exception:
@@ -108,13 +116,13 @@ class PrivateSessionFactory:
             return dict(remaining_calls=max(0, min(state['max_calls'], 8)-len(state['calls'])),
                 remaining_usd=str(max(Decimal(0), min(Decimal(state['max_usd']), Decimal('0.20'))-spent)),
                 blocked=blocked)
-        return self.ledger._change(read)
+        return self.ledger.read(read)
 
     async def verified(self, subject_id, context_id):
         return self.allowed(subject_id, context_id) and await self.pricing.verify()
 
     async def available(self, subject_id, context_id):
-        if not self.allowed(subject_id, context_id):
+        if not self.allowed(subject_id, context_id) or (self.development_account and not os.environ.get('MISTRAL_API_KEY', '').strip()):
             return False
         try:
             remaining = self.remaining()
@@ -124,9 +132,37 @@ class PrivateSessionFactory:
         except Exception:
             return False
 
+    def eligible_identity(self, identity):
+        return (self.development_account is not None
+            and identity.subject_id == self.development_account['subject_id']
+            and identity.principal_id == self.development_account['principal_id'])
+
     def accepts_snapshot(self, subject_id, context_id, digest):
+        if self.development_account is not None:
+            return subject_id == self.development_account['subject_id']
         expected = self.snapshots.get((subject_id, context_id))
         return expected is None or expected == digest
+
+    def bind_global(self):
+        """Owner-approved development mode: the original aggregate ledger only."""
+        raw = MistralProvider(budget=self.ledger, max_input_tokens=12000,
+            max_output_tokens=1000, transport=self.transport)
+        checker = self.pricing
+        class GlobalProvider:
+            async def generate(self, request):
+                from adapters.llm.mistral import MistralBudgetExceeded
+                from app.core.models import ProviderBudgetExceeded
+                try:
+                    if not await checker.verify():
+                        raise ChatConfigurationError('Official price verification unavailable')
+                    return await raw.generate(request)
+                except MistralBudgetExceeded:
+                    raise ProviderBudgetExceeded() from None
+                finally:
+                    raw.last_request = raw.last_exchange = None
+                    if raw.last_failure:
+                        raw.last_failure.pop('message', None)
+        return GlobalProvider()
 
     def bind(self, session_id, *, max_calls, max_usd):
         budget = SessionBudget(self.ledger, session_id, max_calls, max_usd)
