@@ -62,3 +62,26 @@ Evidenze private/durevoli: `.local-archive/qh51-support-basis-20261022/`;
 contenuti/prompt. Il JSON provider resta nel solo archivio diagnostico privato,
 scade un'ora dopo la chiamata e non viene copiato in un artefatto CI/repository.
 La prova reale non effettua UUM o conferma; non misura la qualità semantica generale.
+
+
+## Regressione del primo candidato e correzione
+
+La campagna39839733344 sul candidato2dcbf76 ha Quality/OIDC verdi e Native903 PASS.
+Browser113 PASS/1 FAIL: secondo turno nel flusso storico QH45. La selezione trasmessa
+è vincolata al grant e non può restringersi silenziosamente quando cresce il dialogo.
+Il nuovo prompt aveva2767 byte contro2054 precedenti, riducendo il margine entro il
+bound12000. Una nuova regressione con sei record vicini al limite8KB riproduce il
+rifiuto sul vecchio prompt; il prompt compatto conserva le istruzioni e il nuovo
+contratto in1894 byte, senza aumentare limiti/token/costi o indebolire lo snapshot.
+Il test verifica sia il follow-up entro bound con gli stessi sei record/prefix,
+sia il rifiuto prima dell'HTTP di un follow-up troppo lungo. Il browser verifica
+anche il bound calcolato e HTTP200 prima dell'esistenza del secondo turno.
+La precedente verifica browser focalizzata, da sola, non aveva dimostrato il margine
+sulla campagna completa. La nuova campagna resta obbligatoria sul candidato corretto.
+
+Il log del singolo fallimento CI non conteneva il bound della preview, e la sola
+ripetizione focalizzata è passata anche prima della compattazione: l'attribuzione
+di quel singolo evento al margine resta un'inferenza. Il difetto di headroom è
+invece riprodotto deterministicamente dal nuovo test limite (vecchio prompt FAIL,
+compatto PASS). Gli ulteriori assert browser rendono esplicito questo dato nelle
+campagne successive, senza mascherare eventuali altre cause di errore HTTP.

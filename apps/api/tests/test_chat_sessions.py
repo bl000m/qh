@@ -344,3 +344,28 @@ def test_qh52_session_binding_fail_closed(tmp_path,monkeypatch,invalid):
         with pytest.raises((SessionClosed,ChatContextUnavailable)):
             await s.status(candidate,request(),p['session_id'])
     asyncio.run(run());assert not calls
+
+@pytest.mark.parametrize('followup_chars', [30, 2000])
+def test_six_record_snapshot_retains_followup_headroom_and_blocks_excess(tmp_path, monkeypatch, followup_chars):
+    # Six authorized records close to the 8KB canonical-context bound. Adding the
+    # response-support contract must not consume the ordinary follow-up headroom.
+    rows = [revision(revision_id=f'rev-{i}', item_id=f'item-{i}', current_revision_id=f'rev-{i}',
+        content={'text':'x'*905}) for i in range(6)]
+    sessions, who, _, _, calls, _, _ = setup(tmp_path, monkeypatch, rows=rows)
+    async def run():
+        initial = request(messages=(Message(role=MessageRole.USER, content='Di che cosa parla questo Context Space?'),))
+        preview = await sessions.preview(who, initial)
+        assert len(preview['provided_revisions']) == 6
+        await sessions.consent(who, initial, preview['session_id'], snapshot_sha256=preview['snapshot_sha256'], consent=True)
+        first = await sessions.respond(who, initial, preview['session_id'])
+        followup = replace(initial, messages=(*initial.messages, first.message,
+            Message(role=MessageRole.USER, content='q'*followup_chars)))
+        if followup_chars == 30:
+            second = await sessions.respond(who, followup, preview['session_id'])
+            assert len(second.provided_revisions) == 6
+            assert len(calls) == 2 and calls[0]['messages'][:2] == calls[1]['messages'][:2]
+        else:
+            with pytest.raises(ChatProviderUnavailable):
+                await sessions.respond(who, followup, preview['session_id'])
+            assert len(calls) == 1  # Changed bounded snapshot rejected before provider HTTP.
+    asyncio.run(run())
