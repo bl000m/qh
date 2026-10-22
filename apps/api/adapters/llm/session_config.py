@@ -159,7 +159,7 @@ class PrivateSessionFactory:
     def bind_global(self, diagnostic=None):
         """Owner-approved development mode: the original aggregate ledger only."""
         raw = MistralProvider(budget=self.ledger, max_input_tokens=12000,
-            max_output_tokens=1000, transport=self.transport, observer=diagnostic.check if diagnostic else None)
+            max_output_tokens=1000, transport=self.transport, observer=diagnostic.check if diagnostic else None, capture_private_errors=diagnostic is not None)
         checker = self.pricing
         class GlobalProvider:
             async def generate(self, request):

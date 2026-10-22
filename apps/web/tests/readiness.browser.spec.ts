@@ -21,7 +21,9 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
  await page.getByLabel('Nom du Context Space',{exact:true}).fill('QH-52 budget synthetic');await page.getByLabel('Domaine principal',{exact:true}).selectOption({index:1});await page.getByRole('button',{name:'Créer',exact:true}).click();
  await page.getByRole('link',{name:'Ouvrir ce Space',exact:true}).click();
- await expect(page.getByRole('heading',{name:'J’ajoute un élément'})).toBeVisible();
+ await expect(page.locator('.context-orbit-node')).toHaveCount(6);
+ await expect(page.locator('.orbit-node-state')).toHaveText(Array(6).fill('Aucun élément dans cette vue'));
+ await expect(page.getByRole('button',{name:'Ajouter un élément',exact:true})).toBeVisible();
  const scope=new URL(page.url()).pathname.split('/').at(-1)!;
  await expect(page.getByLabel('Mode de discussion',{exact:true})).toHaveCount(0);await expect(page.locator('body')).not.toContainText('Démonstration mock');
  await expect(page.getByRole('button',{name:'Envoyer la question',exact:true})).toBeDisabled();
@@ -36,7 +38,13 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
   await page.setViewportSize({width,height});await page.evaluate(z=>{document.documentElement.style.zoom=String(z);},zoom);
   await page.getByLabel('Votre question sur ce contexte').fill('Brouillon conservé en mémoire');
   const bounds=await page.evaluate(()=>({notice:document.querySelector('.assistant-intro')!.getBoundingClientRect().bottom,composer:document.querySelector('.chat-composer')!.getBoundingClientRect().top,width:innerWidth,scroll:document.documentElement.scrollWidth}));
-  if(width===390)expect(await page.locator('.space-title').evaluate(n=>n.getBoundingClientRect().width)).toBeGreaterThanOrEqual(width/2);
+  if(width===390){
+   // The approved compact header carries the visible Space name; the H1 stays
+   // accessible via display:contents, whose wrapper intentionally has no box.
+   const title=page.locator('.mobile-breadcrumbs>summary');await expect(title).toBeVisible();await expect(title).toHaveText('Budget personnel synthétique');
+   await expect(page.getByRole('heading',{name:'Budget personnel synthétique',exact:true})).toBeAttached();
+   const box=await title.boundingBox();expect(box).not.toBeNull();expect(box!.width).toBeGreaterThan(0);expect(box!.height).toBeGreaterThan(0);expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width+1);
+  }
   expect(bounds.notice).toBeLessThanOrEqual(bounds.composer);expect(bounds.scroll).toBeLessThanOrEqual(bounds.width+1);
   await page.screenshot({path:info.outputPath('qh52-empty-'+label+'.png'),fullPage:true});
  }

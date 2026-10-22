@@ -166,7 +166,7 @@ class ExperimentBudget:
 
 class MistralProvider:
     def __init__(
-        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None, observer=None
+        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None, observer=None, capture_private_errors=False
     ):
         self._key = os.environ.get("MISTRAL_API_KEY", "").strip()
         if not self._key:
@@ -180,6 +180,7 @@ class MistralProvider:
         )
         self.transport = transport
         self.observer = observer
+        self.capture_private_errors = capture_private_errors
         self.last_exchange = None
         self.last_failure = None
         self.last_attempt = None
@@ -211,12 +212,15 @@ class MistralProvider:
                         "Content-Type": "application/json",
                     },
                 )
-            try:
-                captured = response.json()
-            except ValueError:
-                captured = dict(non_json_response=response.text)
-            self.last_exchange = dict(response=captured, attempt=attempt,
-                latency_seconds=time.perf_counter()-started, http_status=response.status_code)
+            # Historical experiment harnesses interpret last_exchange as a successful
+            # JSON capture. Error bodies are opt-in for the private development store.
+            if self.capture_private_errors:
+                try:
+                    captured = response.json()
+                except ValueError:
+                    captured = dict(non_json_response=response.text)
+                self.last_exchange = dict(response=captured, attempt=attempt,
+                    latency_seconds=time.perf_counter()-started, http_status=response.status_code)
             self._check('provider.http_200', response.status_code == 200,
                 None if response.status_code == 200 else 'HTTP '+str(response.status_code))
             if response.status_code != 200:
