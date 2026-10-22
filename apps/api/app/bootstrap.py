@@ -99,7 +99,7 @@ def create_runtime_app():
             enrichment=ConversationEnrichment(context=context, policy=policy,
                 repository_for=lambda subject: PostgresEnrichmentRepository(url=database_url(), subject_id=subject,
                     connection_options='-c statement_timeout=5000 -c lock_timeout=5000'),
-                provider=LiteralSegmentProvider()),
+                provider=LiteralSegmentProvider(), uum=True),
             review=ReviewService(context=context, policy=policy, repository=PostgresReviewRepository(url=database_url())),
             environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,

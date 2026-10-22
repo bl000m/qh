@@ -49,12 +49,19 @@ class PostgresReviewRepository:
                 content['qh_review'] = receipt
                 if action == 'correct':
                     content['text'] = operation['text']
+                    content.pop('primary_dimension', None)  # A changed proposition requires a new assignment.
                 if action == 'review_assignments':
                     from app.core.assignments import review_assignments
                     binding = c.execute('SELECT * FROM item_revision_types WHERE item_revision_id=%s', (revision,)).fetchone()
-                    if binding['type_version'] != 2 or binding['type_id'] not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+                    if binding['type_version'] not in (2, 3) or binding['type_id'] not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
                         raise ValueError('Qualified semantic profile required')
                     content['descriptors'] = review_assignments(content.get('descriptors'), operation['assignment_decisions'], len(content.get('citations', [])))
+                if action == 'review_primary':
+                    from app.core.uum import review_primary
+                    binding = c.execute('SELECT * FROM item_revision_types WHERE item_revision_id=%s', (revision,)).fetchone()
+                    if binding['type_version'] != 3 or binding['type_id'] not in ('qh.generic.item','qh.generic.entity','qh.generic.relation'):
+                        raise ValueError('UUM profile required')
+                    content['primary_dimension'] = review_primary(content, operation['primary_decision'])
                 existing = c.execute('SELECT * FROM understanding_item_revisions WHERE id=%s', (new_id,)).fetchone()
                 if existing:
                     if existing['content'] != content or str(existing['based_on_revision_id']) != revision or str(existing['context_space_id']) != scope:
@@ -64,7 +71,7 @@ class PostgresReviewRepository:
                     raise ReviewConflict('Review changed; reload before acting')
                 if action in ('confirm', 'reject') and (not status['pending'] or str(latest['id']) != revision):
                     raise ReviewConflict('Only the pending latest proposal can be reviewed')
-                if action in ('correct', 'review_assignments') and not ((status['pending'] and str(latest['id']) == revision) or status['current_revision_id'] == revision):
+                if action in ('correct', 'review_assignments', 'review_primary') and not ((status['pending'] and str(latest['id']) == revision) or status['current_revision_id'] == revision):
                     raise ReviewConflict('Only current understanding or a pending latest proposal can be corrected')
                 state = c.execute('SELECT desired_version,applied_version FROM context_projection_state WHERE context_space_id=%s FOR UPDATE', (scope,)).fetchone()
                 if state is None or state['desired_version'] != state['applied_version']:
@@ -86,8 +93,8 @@ class PostgresReviewRepository:
                 record = dict(id=new_id, item_id=str(target['item_id']), context_space_id=scope,
                     revision_no=latest['revision_no']+1, type_id=binding['type_id'], type_version=binding['type_version'],
                     content=content, origin_kind='human' if action=='correct' else target['origin_kind'],
-                    validation_state={'confirm':'confirmed','reject':'rejected','correct':'proposed','review_assignments':'proposed'}[action],
-                    validated_by=None if action in ('correct','review_assignments') else str(subject), validated_at=None if action in ('correct','review_assignments') else now,
+                    validation_state={'confirm':'confirmed','reject':'rejected','correct':'proposed','review_assignments':'proposed','review_primary':'proposed'}[action],
+                    validated_by=None if action in ('correct','review_assignments','review_primary') else str(subject), validated_at=None if action in ('correct','review_assignments','review_primary') else now,
                     based_on_revision_id=revision, created_at=now,
                     provenance=[str(s['source_revision_id']) for s in sources], **{k:binding[k] for k in TEMPORAL})
                 if relation:

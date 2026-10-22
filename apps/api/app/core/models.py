@@ -156,6 +156,8 @@ class ContextBrowse:
     after_revision_id: UnderstandingRevisionId | None = None
     descriptor: str | None = None
     descriptor_dimension: str | None = None
+    primary_dimension: str | None = None
+    primary_unclassified: bool = False
     latest_pending: bool = False
     include_tentative: bool = False
     kind: str | None = None
@@ -179,6 +181,11 @@ class ContextBrowse:
             raise ValueError('Explicit supported descriptor dimension required')
         if type(self.latest_pending) is not bool or self.latest_pending and self.view != 'proposed':
             raise ValueError('Latest pending selection requires proposed view')
+        from app.core.uum import PRIMARY_DIMENSIONS
+        if self.primary_dimension is not None and self.primary_dimension not in PRIMARY_DIMENSIONS:
+            raise ValueError('Invalid primary dimension')
+        if type(self.primary_unclassified) is not bool or self.primary_unclassified and self.primary_dimension is not None:
+            raise ValueError('Incompatible primary navigation')
         selected = self.descriptor is not None or self.descriptor_dimension is not None
         if self.include_tentative and not selected or self.unclassified and selected:
             raise ValueError('Incompatible navigation filters')
@@ -193,6 +200,7 @@ class ContextResult:
     hits: tuple[ContextSearchHit, ...]
     revisions: tuple[CanonicalRevision, ...] = ()
     next_after_revision_id: UnderstandingRevisionId | None = None
+    projection_token: tuple = ()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

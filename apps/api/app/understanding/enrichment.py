@@ -33,10 +33,11 @@ class EnrichmentRepository(Protocol):
 
 
 class ConversationEnrichment:
-    def __init__(self, *, context, policy, repository_for, provider, clock=None, semantic_provider=None):
+    def __init__(self, *, context, policy, repository_for, provider, clock=None, semantic_provider=None, uum=False):
         self.context, self.policy = context, policy
         self.repository_for, self.provider = repository_for, provider
         self.semantic_provider = semantic_provider
+        self.uum = uum
         self.clock = clock or (lambda: datetime.now(timezone.utc).isoformat())
         self._busy = set()
 
@@ -52,7 +53,7 @@ class ConversationEnrichment:
             query=ContextBrowse(context_id=scope, view='history', limit=1)))
         await self._allow(subject, scope)
         return dict(literal=True, semantic=self.semantic_provider is not None,
-            provider_mode='semantic-simulated/2' if self.semantic_provider is not None else None,
+            provider_mode=('uum-simulated/3' if self.uum else 'semantic-simulated/2') if self.semantic_provider is not None else None,
             external_disclosure=False)
 
     async def _vocabulary(self, subject, scope):
@@ -115,24 +116,27 @@ class ConversationEnrichment:
         self._busy.add(key)
         try:
             from app.understanding.semantic import SemanticExtractionProvider
-            vocabulary, partial = await self._vocabulary(subject, scope) if mode=='semantic' else ((), False)
-            extraction_key = SEMANTIC_KEY if mode=='semantic' else EXTRACTION_KEY
+            vocabulary, partial = await self._vocabulary(subject, scope) if mode=='semantic' and not self.uum else ((), False)
+            extraction_key = ('qh51-uum-semantic/3' if mode=='semantic' else 'qh51-uum-literal/3') if self.uum else (SEMANTIC_KEY if mode=='semantic' else EXTRACTION_KEY)
             provider = SemanticExtractionProvider(self.semantic_provider, known_themes=vocabulary,
                 vocabulary_partial=partial) if mode=='semantic' else self.provider
+            if self.uum:
+                from app.understanding.uum import UumExtractionProvider
+                provider = UumExtractionProvider(self.semantic_provider if mode=='semantic' else self.provider, literal=mode=='literal')
             conversation = dict(id=conversation_id, revision_no=1, acquired_at=self.clock(),
                 turns=[dict(id=t['id'], speaker='user (owner-declared)' if t['role']=='user' else 'assistant (unverified dialogue)', text=t['content']) for t in turns],
                 metadata=dict(submission_kind='owner_selected_browser_segment', submitted_by=str(subject),
                     conversation_id=payload['conversation_id'], operation_id=payload['operation_id'],
                     request_sha256=fingerprint, extraction_key=extraction_key,
-                    provider_mode='semantic-simulated/2' if mode=='semantic' else 'offline-literal/1',
+                    provider_mode=('uum-simulated/3' if self.uum else 'semantic-simulated/2') if mode=='semantic' else ('uum-offline-literal/3' if self.uum else 'offline-literal/1'),
                     turn_declarations=[dict(turn_id=t['id'], role=t['role'], captured_at=t['captured_at'],
                         timestamp_authority='browser-declared') for t in turns]))
-            if mode=='semantic':
+            if mode=='semantic' and not self.uum:
                 conversation['metadata'].update(known_themes=list(vocabulary), vocabulary_coverage='partial' if partial else 'complete')
             try:
                 source, revisions = await propose_selected_conversation(subject_id=subject, context_id=scope,
                     conversation=conversation, extraction_key=extraction_key, policy=self.policy, provider=provider,
-                    descriptor_version=2 if mode=='semantic' else 1)
+                    descriptor_version=3 if self.uum else (2 if mode=='semantic' else 1))
             except PermissionError:
                 raise ContextSpaceNotFound('Context space not found') from None
             except ValueError:

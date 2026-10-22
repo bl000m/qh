@@ -1,5 +1,14 @@
 # QH architecture
 
+The owner-approved [ADR 0010](adr/0010-universal-understanding-model.md) introduces
+the optional UUM primary classification and six universal map nodes, superseding
+primary thematic grouping. Implementation uses additive generic profile3, the same
+Understanding Engine/QH-32, QH-46 review and graph-verified canonical retrieval.
+The owner opts for a clean application dataset, without semantic v1/v2 backfill
+or new compatibility adapters. Persistent reset/cutover is still gated by the
+[verified backup and exact reset scope](qh-51-uum-reset-plan.md). Historical
+checkpoints below retain their original meaning; no VPS activation follows.
+
 Read the [QH Product Contract](product/QH_PRODUCT_CONTRACT.md) before decisions
 about the domain or persistence. It is the functional reference; this document
 and ADRs describe technical boundaries. Conflicts require STOP AND ASK, not

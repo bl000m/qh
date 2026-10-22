@@ -51,7 +51,7 @@ class ReviewService:
 
     async def apply(self, subject, scope, revision, operation):
         action = operation['action']
-        if action not in ('confirm', 'reject', 'correct', 'review_assignments'):
+        if action not in ('confirm', 'reject', 'correct', 'review_assignments', 'review_primary'):
             raise ValueError('Invalid review action')
         UUID(operation['operation_id'])
         for field in ('expected_latest_revision_id', 'expected_current_revision_id'):
@@ -69,12 +69,23 @@ class ReviewService:
                 raise ValueError('Explicit assignment decisions required')
         elif decisions is not None:
             raise ValueError('Assignment decisions require their review action')
-        policy_action = PolicyAction.PROPOSE_UPDATE if action in ('correct', 'review_assignments') else PolicyAction.CONFIRM_UPDATE
+        primary = operation.get('primary_decision')
+        if action == 'review_primary':
+            if not isinstance(primary, dict):
+                raise ValueError('Explicit primary decision required')
+        elif primary is not None:
+            raise ValueError('Primary decision requires its own action')
+        policy_action = PolicyAction.PROPOSE_UPDATE if action in ('correct', 'review_assignments', 'review_primary') else PolicyAction.CONFIRM_UPDATE
         await self._allow(subject, scope, policy_action)
         target = await self._revision(subject, scope, revision)
+        if action == 'review_primary':
+            from app.core.uum import review_primary
+            if target.type_version != 3 or target.type_id not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+                raise ValueError('UUM profile required')
+            review_primary(target.content, primary)
         if action == 'review_assignments':
             from app.core.assignments import review_assignments
-            if target.type_version != 2 or target.type_id not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
+            if target.type_version not in (2, 3) or target.type_id not in ('qh.generic.item', 'qh.generic.entity', 'qh.generic.relation'):
                 raise ValueError('Qualified semantic profile required')
             review_assignments(target.content.get('descriptors'), decisions, len(target.content.get('citations', [])))
             for decision in decisions:

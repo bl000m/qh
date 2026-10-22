@@ -4,6 +4,29 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## UUM e nuovo ambiente dati — owner amendment, 2026-10-21
+
+La successiva decisione owner adotta sei dimensioni universali di navigazione:
+`situation_information`, `objectives_intentions`, `decisions_actions`,
+`constraints_preferences`, `hypotheses_uncertainties`, `open_questions`.
+Ogni elemento atomico ha una primaria oppure rimane non classificato. La mappa
+mostra sempre sei nodi con presenza/vuoti verificati e click sui membri reali;
+Non classés ed Éléments mantengono accessibile il contenuto senza primaria.
+Non sono domini organizzativi né tipi strutturali; entità e relazioni restano
+trasversali. Temi specifici dello Space diventano metadati aperti facoltativi.
+Provenance, epistemica, temporalità, certezza e review restano indipendenti.
+Frasi con significati autonomi richiedono proposte distinte con evidenze proprie.
+
+Questa decisione sostituisce i nodi tematici primari QH-54/QH-51 e la precedente
+strategia di migrazione funzionale: i dati sperimentali v1/v2 saranno abbandonati
+nel nuovo ambiente attivo, senza backfill o adapter di conversione. Non riscrive
+profili, benchmark, output originali o storia; l'immutabilità vale per i nuovi dati.
+Il reset persistente resta soggetto a inventario, backup verificato e conferma
+finale owner. Identità/Keycloak, segreti, ledger, budget e audit economici restano
+conservati. [ADR 0010](../adr/0010-universal-understanding-model.md) e
+[piano operativo](../qh-51-uum-reset-plan.md) distinguono autorizzazione e attivazione.
+Nessuna inferenza, merge #23 o modifica PR #19/0007 è implicata.
+
 ## Browse-first understanding — owner amendment, 2026-10-17
 
 > QH does not require users to know what to search for before showing them what their Context Space understands. Browsing is the primary experience; search is a complementary capability.

@@ -113,7 +113,7 @@ def literal_timestamp(value, quote):
 
 class UnderstandingExtractor:
     def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1):
-        if type(descriptor_version) is not int or descriptor_version not in (1, 2):
+        if type(descriptor_version) is not int or descriptor_version not in (1, 2, 3):
             raise ValueError('Trusted descriptor profile version required')
         self.repository, self.policy, self.provider = repository, policy, provider
         self.descriptor_version = descriptor_version
@@ -317,6 +317,11 @@ class UnderstandingExtractor:
         output = checkpoint["output"]
         if len(canonical_json(output).encode()) > MAX_JSON:
             raise ValueError("Extraction too large")
+        if self.descriptor_version == 3:
+            from app.understanding.uum import normalize_output
+            output = normalize_output(output, source)
+            if not output['items']:
+                return ()
         object_fields(output, ("items",))
         items = output["items"]
         if not isinstance(items, list) or not 1 <= len(items) <= 100:
@@ -327,7 +332,7 @@ class UnderstandingExtractor:
             object_fields(
                 item,
                 ("local_id", "shape", "text", "evidence"),
-                ("descriptors", "properties", "relation", "temporal"),
+                ("descriptors", "properties", "relation", "temporal", "primary_dimension") if self.descriptor_version == 3 else ("descriptors", "properties", "relation", "temporal"),
             )
             local = nonempty(item["local_id"])
             if local in ids or item["shape"] not in SHAPES:
@@ -356,6 +361,9 @@ class UnderstandingExtractor:
                     evidence_count = len(item['evidence']) if isinstance(item['evidence'], list) else 0
                     content['descriptors'] = [dict(d, review_state='proposed') for d in qualified_assignments(
                         ds, evidence_count, source['origin'].get('metadata', {}).get('known_themes', ())) ]
+            if self.descriptor_version == 3 and 'primary_dimension' in item:
+                from app.core.uum import validate_primary
+                content['primary_dimension'] = validate_primary(item['primary_dimension'], len(item['evidence']))
             if "properties" in item:
                 if not isinstance(item["properties"], dict):
                     raise ValueError("Properties object required")
@@ -397,6 +405,10 @@ class UnderstandingExtractor:
                     input_sha256=checkpoint["input_sha256"],
                 ),
             )
+            if self.descriptor_version == 3:
+                content['extraction'].update(format='qh.atomic-understanding/1',
+                    original_output_sha256=digest(checkpoint['output']),
+                    original_candidate=deepcopy(checkpoint['output']['items'][int(item['local_id'])]))
             row = dict(
                 id=ids[item["local_id"]]["revision_id"],
                 item_id=ids[item["local_id"]]["item_id"],

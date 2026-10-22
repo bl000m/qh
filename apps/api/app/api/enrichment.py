@@ -35,7 +35,7 @@ class EnrichmentReceipt(BaseModel):
     source_revision_id: UUID
     revision_ids: list[UUID]
     replayed: bool
-    provider_mode: Literal['offline-literal/1', 'semantic-simulated/2']
+    provider_mode: Literal['offline-literal/1', 'semantic-simulated/2', 'uum-offline-literal/3', 'uum-simulated/3']
 
 
 @router.post('/enrichments', response_model=EnrichmentReceipt)

@@ -21,13 +21,21 @@ class AssignmentDecision(BaseModel):
     reuse_value: StrictStr | None = Field(default=None, min_length=1, max_length=256)
 
 
+class PrimaryDecision(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    state: Literal['proposed', 'accepted', 'rejected']
+    value: Annotated[StrictStr, Field(min_length=1, max_length=64)] | None = None
+    evidence_refs: list[StrictInt] | None = Field(default=None, min_length=1, max_length=100)
+
+
 class ReviewOperation(BaseModel):
     model_config = ConfigDict(extra='forbid')
     operation_id: UUID
-    action: Literal['confirm', 'reject', 'correct', 'review_assignments']
+    action: Literal['confirm', 'reject', 'correct', 'review_assignments', 'review_primary']
     expected_latest_revision_id: UUID
     expected_current_revision_id: UUID | None
     text: StrictStr | None = Field(default=None, min_length=1, max_length=16000)
+    primary_decision: PrimaryDecision | None = None
     assignment_decisions: list[AssignmentDecision] | None = Field(default=None, min_length=1, max_length=100)
 
 
@@ -41,7 +49,7 @@ class ReviewStatus(BaseModel):
 
 class ReviewReceipt(BaseModel):
     revision_id: UUID
-    action: Literal['confirm','reject','correct','review_assignments']
+    action: Literal['confirm','reject','correct','review_assignments','review_primary']
     replayed: bool
 
 

@@ -69,6 +69,8 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
             if result.message.role != MessageRole.ASSISTANT:
                 return result  # The unchanged Engine rejects the role.
             output = decode_output(result.message.content)
+            if descriptor_version == 3:
+                return result  # UUM normalization occurs inside the same Engine, raw checkpoint retained.
             if output == {'items': []}:
                 raise _EmptyResult('Explicit successful empty extraction')
             derived, _audit = resolve_output_citations(output, source=source)
