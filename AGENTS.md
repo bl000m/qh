@@ -135,6 +135,17 @@ Only explicit developer-account Envoyer; never infer in CI/startup. Private
 medical fixture/response stay outside Git and ordinary logs; diagnostic retention
 remains one hour. Preserve the original ledger; append this attempt normally.
 
+## Later response-support independence correction — 2026-10-22
+
+The owner explicitly separates `support_basis` from `insufficient_context`.
+Do not infer/equate sufficiency with provenance: dialogue/true/[] is valid with
+sent user dialogue; canonical/mixed still require exact authorized citations.
+Keep the boolean's incomplete-information meaning and display its warning
+independently. No automatic knowledge write, semantic repair, retry or new paid
+verification for this correction. Record the journal decision→completed-action
+error as a future semantic-fidelity benchmark case; no second agent.
+See [current contract](docs/qh-51-response-support.md).
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

@@ -6,6 +6,14 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-22 — response support independence correction
+
+Owner-approved application-only correction on the existing QH-51 branch/source
+binds: independent provenance and sufficiency flags in Python and TypeScript,
+shared warnings in Chat/Sources. No service recreation/configuration/migration,
+profile registration or paid inference. Full isolated CI verifies the candidate;
+PR23 remains open. [Contract and verification](qh-51-independent-support.md).
+
 ## 2026-10-22 — Authorized UUM cutover, followed by frontend map correction
 
 After the owner's explicit final approval, the prepared reset/cutover was executed

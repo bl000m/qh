@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — independent provenance and sufficiency, 2026-10-22
+
+- Show useful conversation-grounded answers with insufficient_context=true;
+  validate provenance/citations independently of the completeness warning.
+- Preserve the boolean unchanged across backend/DTO/UI and display both incomplete
+  information and unconfirmed-dialogue warnings in the answer and Sources.
+- Retain canonical citation, owner/scope/snapshot/budget gates and zero automatic
+  retry or knowledge write. Add the journal decision/action fidelity benchmark case.
+
 ## QH-51 — approved dialogue support and CI integrity, 2026-10-22
 
 - Accept conversation-grounded answers without canonical references; require and

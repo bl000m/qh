@@ -12,6 +12,12 @@ verifica compatibilità con gli input e le citazioni realmente trasmessi, non la
 verità tramite la dichiarazione del modello. Alias canonici validi obbligatori
 per canonical/mixed; nessuna invenzione o riconciliazione euristica. Dialogo e
 risposta restano temporanei; estrazione UUM e conferma QH46 sono azioni distinte.
+Rettifica owner successiva: `insufficient_context` è indipendente da
+`support_basis`, indica insufficienza per una risposta completa e non vieta una
+risposta utile parziale. La combinazione dialogue/true/[] è ammessa con dialogo
+inviato; canonical/mixed richiedono sempre citazioni canoniche valide. La UI mostra
+avviso di incompletezza separato da provenienza e conferma. Non dedurre il booleano
+dalla categoria o dall'assenza di revisioni.
 Gli errori owner/provenance/JSON/snapshot/budget bloccano, gli avvisi epistemici
 restano separati. [Contratto tecnico approvato](../qh-51-response-support.md).
 

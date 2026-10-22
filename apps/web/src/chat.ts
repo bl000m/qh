@@ -18,7 +18,6 @@ export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean,dial
   for(const r of provided)if(!(r.validation_state==='confirmed' && r.is_current_confirmed || includeProposed && r.validation_state==='proposed'))throw new ApiError(502);
   for(const r of references)if(!provided.some(p=>p.revision_id===r.revision_id && JSON.stringify(p)===JSON.stringify(r)))throw new ApiError(502);
   if(!['dialogue','canonical','mixed','insufficient'].includes(a.support_basis)||
-    a.insufficient_context!==(a.support_basis==='insufficient')||
     ['canonical','mixed'].includes(a.support_basis)&&!references.length||
     a.support_basis==='dialogue'&&references.length||
     ['dialogue','mixed'].includes(a.support_basis)&&!dialogue.some(m=>m.role==='user'&&m.content.trim()))throw new ApiError(502);

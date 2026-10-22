@@ -31,9 +31,13 @@ def output(basis, aliases=(), insufficient=False):
     ('dialogue', ('R1',), False, (revision(),), False),
     ('canonical', ('R999',), False, (revision(),), False),
     ('canonical', ('R1', 'R1'), False, (revision(),), False),
-    ('dialogue', (), True, (), False),
-    ('insufficient', (), False, (), False),
-    ('mixed', ('R1',), True, (revision(),), False),
+    ('dialogue', (), True, (), True),  # Actual owner-reported response: useful but incomplete.
+    ('insufficient', (), False, (), True),  # No inferred equivalence with the boolean.
+    ('canonical', ('R1',), True, (revision(),), True),
+    ('mixed', ('R1',), True, (revision(),), True),
+    ('canonical', (), True, (), False),
+    ('mixed', (), True, (), False),
+    ('dialogue', ('R1',), True, (revision(),), False),
     ('invented-basis', (), False, (), False),
 ])
 def test_support_declaration_must_match_actual_sent_context(basis, ids, insufficient, rows, valid):
@@ -48,11 +52,12 @@ def test_support_declaration_must_match_actual_sent_context(basis, ids, insuffic
 
 
 @pytest.mark.parametrize('basis,ids', [('dialogue', ()), ('mixed', ('R1',))])
-def test_declaration_cannot_manufacture_user_dialogue(basis, ids):
+@pytest.mark.parametrize('insufficient', [False, True])
+def test_declaration_cannot_manufacture_user_dialogue(basis, ids, insufficient):
     context = built((revision(),))
     no_dialogue = replace(context, request=replace(context.request, messages=context.request.messages[:2]))
     with pytest.raises(ChatProviderUnavailable):
-        decode_answer(output(basis, ids), no_dialogue)
+        decode_answer(output(basis, ids, insufficient), no_dialogue)
 
 
 def test_missing_basis_is_not_heuristically_inferred():
@@ -62,16 +67,17 @@ def test_missing_basis_is_not_heuristically_inferred():
         decode_answer(replace(message, content=json.dumps(value)), built())
 
 
-def test_empty_space_rich_dialogue_accepted_without_knowledge_or_source_write(tmp_path, monkeypatch):
+@pytest.mark.parametrize('insufficient', [False, True])
+def test_empty_space_rich_dialogue_accepted_without_knowledge_or_source_write(tmp_path, monkeypatch, insufficient):
     # Domain-neutral synthetic CI fixture. The medical reproduction stays private.
     text = 'Dossier fictif : objectif explicite, historique déclaré et trois questions non résolues. Résume uniquement ces informations.'
-    raw = dict(model='mistral-small-2603', usage=dict(prompt_tokens=1079, completion_tokens=536),
-        choices=[dict(finish_reason='stop', message=dict(content=output('dialogue').content))])
+    raw = dict(model='mistral-small-2603', usage=dict(prompt_tokens=968, completion_tokens=445),
+        choices=[dict(finish_reason='stop', message=dict(content=output('dialogue', (), insufficient).content))])
     ai, who, context, _, calls, ledger, _, repository = setup(tmp_path, monkeypatch,
         lambda _: httpx.Response(200, json=raw))
     before = context.values[:]
     result = asyncio.run(ai.respond(who, request(messages=(Message(role=MessageRole.USER, content=text),))))
-    assert result.support_basis == 'dialogue' and not result.insufficient_context
+    assert result.support_basis == 'dialogue' and result.insufficient_context is insufficient
     assert not result.references and not result.provided_revisions
     assert context.values == before == [] and repository.calls == 0 and not repository.saved
     record, = asyncio.run(ai.diagnostics(who, request()))['items']
@@ -95,6 +101,6 @@ def test_active_prompt_explicitly_specifies_array_and_boolean_dialogue_example()
     from app.chat.context import SYSTEM
     example = json.loads(SYSTEM.split('Dialogue-only example: ')[1].rstrip('.'))
     assert example['reference_aliases'] == [] and example['support_basis'] == 'dialogue'
-    assert example['insufficient_context'] is False
+    assert example['insufficient_context'] is True
     assert 'JSON array' in SYSTEM and 'NEVER an object' in SYSTEM
     assert decode_answer(Message(role=MessageRole.ASSISTANT, content=json.dumps(example)), built())[3] == 'dialogue'

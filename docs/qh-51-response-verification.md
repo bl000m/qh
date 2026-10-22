@@ -8,7 +8,7 @@ storico. Questo incremento non costituisce conferma umana della comprensione.
 | Criterio | Classificazione / verifica |
 | --- | --- |
 | Risposta da dialogo con zero canonico | Implementato e testato: decoder, ChatResponse, tre ingressi HTTP, DTO/validator TypeScript e UI, senza fallback al vecchio formato |
-| Coerenza dichiarazione/input/alias | Implementato e testato:19 casi supporto, inclusi canonical/mixed senza alias, alias inventati/duplicati, dialogue senza utente o con riferimenti, booleano incoerente e campo assente |
+| Coerenza dichiarazione/input/alias | Implementato e testato:19 casi supporto, inclusi canonical/mixed senza alias, alias inventati/duplicati, dialogue senza utente o con riferimenti, tipo booleano errato e campo assente |
 | Dichiarazione non equivale a verità | UI e contratto espliciti; controlli di appartenenza/presenza, non un verificatore automatico generale di entailment. Epistemica e review rimangono indipendenti |
 | Nessuna conoscenza automatica | Implementato e testato: risposte dialogiche senza Source/revisioni; UUM/review restano azioni distinte. Policy/snapshot/JSON/budget/provenance conservati |
 | Vecchio harness non scrive raw su429 | Implementato e testato su SQL/Neo4j: cattura errori opt-in solo nella factory privata; writer storico richiede200. Test sia default-off sia cattura forzata; GET+POST poi STOP, nessun retry, nessuna pubblicazione |
@@ -20,8 +20,11 @@ storico. Questo incremento non costituisce conferma umana della comprensione.
 I test di supporto controllano la compatibilità dichiarativa con gli input. Canonical
 può includere una revisione proposta solo se esplicitamente autorizzata: significa
 provenienza persistita, non verità/approvazione umana. Insufficient può citare fonti
-valide ma inadeguate; il bool deve essere true esattamente in questo caso. Gli avvisi
-su proposte e copertura parziale rimangono anche quando il modello non li menziona.
+valide ma inadeguate. La successiva rettifica owner elimina l'equivalenza fra
+provenienza e sufficienza: la vecchia matrice bool/basis resta storica, sostituita
+dal [contratto corrente](qh-51-response-support.md) e dalle
+[verifiche della rettifica](qh-51-independent-support.md). Gli avvisi su proposte
+e copertura parziale rimangono anche quando il modello non li menziona.
 
 ## Cause della CI39827829662
 

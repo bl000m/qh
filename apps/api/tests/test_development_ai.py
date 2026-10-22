@@ -132,8 +132,14 @@ def test_invalid_umm_output_no_silent_repair_or_publication(tmp_path,monkeypatch
     assert repo.calls==0 and len(calls)==1 and len(json.loads(ledger.read_text())['calls'])==1
 
 
-def test_authenticated_http_send_and_plafond_message_without_grant_endpoints(tmp_path,monkeypatch):
-    ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer)
+@pytest.mark.parametrize('basis', ['insufficient', 'dialogue'])
+def test_authenticated_http_send_and_plafond_message_without_grant_endpoints(tmp_path,monkeypatch,basis):
+    def response(req):
+        raw=answer(req).json()
+        value=json.loads(raw['choices'][0]['message']['content']); value['support_basis']=basis
+        raw['choices'][0]['message']['content']=json.dumps(value)
+        return httpx.Response(200,json=raw)
+    ai,who,context,_,calls,ledger,_,repo=setup(tmp_path,monkeypatch,response)
     scope=str(uuid4());ai.chat._authorize=AsyncMock()
     async def auth(token):
         if token!='synthetic':
@@ -147,6 +153,10 @@ def test_authenticated_http_send_and_plafond_message_without_grant_endpoints(tmp
         assert client.post('/context-spaces/'+scope+'/ai/messages',json=data).status_code==401
         result=client.post('/context-spaces/'+scope+'/ai/messages',headers={'Authorization':'Bearer synthetic'},json=data)
         assert result.status_code==200 and len(calls)==1
+        dto=result.json()
+        assert dto['support_basis']==basis and dto['insufficient_context'] is True
+        assert dto['references']==[] and dto['provided_revisions']==[]
+        assert context.values==[] and repo.calls==0 and not repo.saved
         state=json.loads(ledger.read_text());state['max_calls']=1;ledger.write_text(json.dumps(state))
         result=client.post('/context-spaces/'+scope+'/ai/messages',headers={'Authorization':'Bearer synthetic'},json=data)
         assert result.status_code==402 and result.json()['detail']=='Plafond IA atteint. Aucune nouvelle requête ne sera facturée.' and len(calls)==1

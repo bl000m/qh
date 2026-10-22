@@ -21,7 +21,7 @@ class ChatResponse:
     references: tuple[CanonicalRevision, ...] = ()
     provided_revisions: tuple[CanonicalRevision, ...] = ()
     support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
-    insufficient_context: bool = True
+    insufficient_context: bool = True  # Completeness warning, independent of support_basis.
     partial_coverage: bool = False
     input_bound: int = 0
     context_bytes: int = 0

@@ -180,7 +180,7 @@ synthetic transport only. Validation admission rules are unchanged; the proposed
 [functional contract and audit](../qh-51-validation-audit.md) await owner approval.
 
 
-## Contratto di risposta approvato — 22 ottobre 2026
+## Primo contratto di risposta — 22 ottobre 2026 (storico, rettificato sotto)
 
 L'owner approva il contratto dell'audit con `support_basis` obbligatorio:
 
@@ -212,3 +212,15 @@ mistral-small-2603 e l'endpoint già approvato, una richiesta sintetica entro il
 plafond residuo, prenotazione massima USD0.0024, zero retry/fallback. Nessuna
 inferenza di startup o test automatico/CI; payload e JSON sanitari fittizi rimangono
 privati. Le altre prove usano provider simulato. Non estende disponibilità o budget.
+
+
+## Rettifica owner successiva — provenienza e sufficienza indipendenti
+
+La precedente matrice accoppiava erroneamente `insufficient_context` a
+`support_basis == insufficient`. Questa equivalenza è ritirata dalla decisione
+esplicita del Product Owner: provenienza e sufficienza sono indipendenti.
+`dialogue / true / []` è ammesso e mostrato con avvisi, senza conoscenza automatica.
+Canonical/mixed mantengono citazioni valide obbligatorie anche con flag true;
+JSON, scope, owner, provenance, snapshot e plafond restano bloccanti. La struttura
+DTO non cambia. Nessuna nuova inferenza o retry per questa correzione.
+[Contratto corrente](../qh-51-response-support.md).

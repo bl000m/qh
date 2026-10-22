@@ -27,9 +27,24 @@ test('support basis checks actual dialogue and exact cited canonical records wit
  const dialogue={...answer,support_basis:'dialogue',references:[],provided_revisions:[],insufficient_context:false};
  expect(chatAnswer(dialogue,id,false,messages).support_basis).toBe('dialogue');
  expect(()=>chatAnswer(dialogue,id,false,[])).toThrow();
- for(const change of [{support_basis:'canonical'},{support_basis:'mixed'},{support_basis:'insufficient'},
+ for(const change of [{support_basis:'canonical'},{support_basis:'mixed'},
   {support_basis:'invented'},{support_basis:undefined},{references:[row],provided_revisions:[row]}])expect(()=>chatAnswer({...dialogue,...change},id,true,messages)).toThrow();
  expect(chatAnswer({...answer,support_basis:'mixed'},id,true,messages).support_basis).toBe('mixed');
  expect(()=>chatAnswer({...answer,support_basis:'mixed'},id,true,[])).toThrow();
  expect(chatAnswer({...dialogue,support_basis:'insufficient',insufficient_context:true},id,false,messages).insufficient_context).toBe(true);
+});
+
+test('support provenance and insufficient context are independent without bypassing citation integrity',()=>{
+ const messages=[{role:'user' as const,content:'Informations explicites, question encore partiellement ouverte.'}];
+ for(const insufficient_context of [false,true]){
+  for(const support_basis of ['dialogue','insufficient']){
+   const value={...answer,support_basis,insufficient_context,references:[],provided_revisions:[]};
+   expect(chatAnswer(value,id,false,messages)).toEqual(value);
+  }
+  for(const support_basis of ['canonical','mixed']){
+   expect(chatAnswer({...answer,support_basis,insufficient_context},id,true,messages).insufficient_context).toBe(insufficient_context);
+   expect(()=>chatAnswer({...answer,support_basis,insufficient_context,references:[]},id,true,messages)).toThrow();
+  }
+ }
+ expect(()=>chatAnswer({...answer,support_basis:'dialogue',insufficient_context:true,references:[],provided_revisions:[]},id,false,[])).toThrow();
 });

@@ -30,12 +30,13 @@ Return ONLY JSON with exactly answer (plain text), reference_aliases (JSON array
 allowed_reference_aliases keys; [] if none, NEVER an object), insufficient_context (boolean), and support_basis:
 dialogue|canonical|mixed|insufficient. Dialogue alone is usable even with no canonical
 revisions: dialogue requires sent user text and zero aliases; canonical requires
-valid cited aliases; mixed requires both. insufficient iff insufficient_context=true;
-valid aliases may cite relevant but inadequate support then. Never return UUIDs,
+valid cited aliases; mixed requires both. insufficient_context independently flags
+missing information for a full answer; it may be true with ANY support_basis,
+including useful dialogue-only answers. Never return UUIDs,
 item/revision/source IDs or relationship anchors as aliases; QH resolves the exact
 request-local keys. The declared basis and citations establish input/reference
 membership, not semantic entailment, truth or human validation.
-Dialogue-only example: {"answer":"...","reference_aliases":[],"insufficient_context":false,"support_basis":"dialogue"}."""
+Dialogue-only example: {"answer":"...","reference_aliases":[],"insufficient_context":true,"support_basis":"dialogue"}."""
 
 
 class ChatInputInvalid(ValueError):
@@ -183,8 +184,7 @@ def decode_answer(message, context, observer=None):
         dialogue = context.request.messages[2:]
         has_user_dialogue = any(m.role == MessageRole.USER and isinstance(m.content, str)
             and bool(m.content.strip()) for m in dialogue)
-        if (insufficient != (basis == 'insufficient')
-            or basis in ('canonical', 'mixed') and not ids
+        if (basis in ('canonical', 'mixed') and not ids
             or basis == 'dialogue' and (ids or not has_user_dialogue)
             or basis == 'mixed' and not has_user_dialogue):
             raise ValueError()

@@ -1,16 +1,31 @@
 # QH-51 — supporto dialogico e canonico
 
 
-## Contratto di risposta approvato — 22 ottobre 2026
+## Contratto di risposta approvato e rettificato — 22 ottobre 2026
 
 L'owner approva il contratto dell'audit con `support_basis` obbligatorio:
 
 | Valore | Condizioni controllate sugli input effettivamente inviati |
 | --- | --- |
-| dialogue | Messaggio utente esplicito non vuoto; nessun alias citato; insufficient_context=false. Può esistere contesto canonico disponibile ma non dichiarato come supporto |
-| canonical | Almeno un alias esatto, distinto e risolvibile fra quelli trasmessi; insufficient_context=false |
-| mixed | Condizioni canonical più presenza del dialogo utente effettivamente inviato; insufficient_context=false |
-| insufficient | insufficient_context=true; eventuali riferimenti devono comunque essere validi e possono indicare supporto pertinente ma inadeguato |
+| dialogue | Messaggio utente esplicito non vuoto; nessun alias citato. Può esistere contesto canonico disponibile ma non dichiarato come supporto |
+| canonical | Almeno un alias esatto, distinto e risolvibile fra quelli trasmessi |
+| mixed | Condizioni canonical più presenza del dialogo utente effettivamente inviato |
+| insufficient | Valore esistente per appui non stabilito; eventuali riferimenti devono comunque essere validi. Non determina il booleano |
+
+**Rettifica successiva del Product Owner:** provenienza e sufficienza sono assi
+indipendenti. `insufficient_context` resta un booleano che indica informazioni
+insufficienti per rispondere completamente alla domanda, anche quando una risposta
+parziale è utile. Non significa errore strutturale, assenza di canonico o assenza
+di supporto dialogico. Nessuna equivalenza o implicazione col valore di
+`support_basis`: tutti i valori già esistenti ammettono entrambi i booleani, sempre
+nel rispetto delle condizioni su dialogo e riferimenti della tabella. Il valore
+storico `insufficient` è conservato senza nuovi enum o migrazione; l'interfaccia
+lo presenta come appui non stabilito, senza dedurne la sufficienza.
+
+Caso vincolante: `dialogue / true / []` è valido con dialogo utente inviato. La UI
+mostra la risposta, il supporto dialogico, l'avviso di risposta incompleta e quello
+di assenza di conferma/memorizzazione. Gli stessi avvisi compaiono in Sources.
+Nessun nuovo retry, salvataggio canonico o indebolimento degli alias.
 
 Il backend verifica packet/snapshot/record/alias e presenza del dialogo, **non**
 entailment o verità del testo. Il frontend verifica il DTO rispetto allo Space,
@@ -42,3 +57,7 @@ corretto: stesso payload/Space, un nuovo Envoyer dopo test offline/CI verde,
 prenotazioneUSD0.0024 e nessun retry/fallback automatico. Nessun errore del modello
 viene convertito euristicamente o cancellato dal ledger. Il prompt esplicita array
 ed esempio vuoto, mentre il decoder continua a rifiutare anche l'object vuoto{}.
+
+Per questa rettifica le verifiche sono esclusivamente offline/CI: nessuna nuova
+chiamata reale. I protocolli live sopra sono evidenze storiche concluse, non un
+mandato a ripeterli. [Regressione e DoD](qh-51-independent-support.md).
