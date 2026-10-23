@@ -3,10 +3,10 @@ import type {ReactNode} from 'react';
 import type {ContextSpace} from './api';
 import type {useOrganization} from './EnvironmentDomains';
 import {Icon} from './Ui';
-export function Modal({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}){
+export function Modal({title,children,onClose,className=''}:{title:string;children:ReactNode;onClose:()=>void;className?:string}){
  const dialog=useRef<HTMLDialogElement>(null),heading=useId();
  useEffect(()=>{const n=dialog.current;const opener=document.activeElement as HTMLElement|null;n?.showModal();return()=>{n?.close();if(opener?.isConnected)opener.focus({preventScroll:true});};},[]);
- return <dialog ref={dialog} className="space-action-dialog" aria-labelledby={heading} onCancel={e=>{e.preventDefault();onClose();}}><header><h2 id={heading}>{title}</h2><button className="secondary" type="button" onClick={onClose} aria-label="Fermer la fenêtre" autoFocus>×</button></header>{children}</dialog>;
+ return <dialog ref={dialog} className={"space-action-dialog "+className} aria-labelledby={heading} onCancel={e=>{e.preventDefault();onClose();}}><header><h2 id={heading}>{title}</h2><button className="secondary" type="button" onClick={onClose} aria-label="Fermer la fenêtre" autoFocus>×</button></header>{children}</dialog>;
 }
 function Assignment({space,state,onClose}:{space:ContextSpace;state:ReturnType<typeof useOrganization>;onClose:()=>void}){
  const initial=useRef(state.value!);const [selected,setSelected]=useState(initial.current.memberships[space.id]??[]),[primary,setPrimary]=useState(initial.current.primary_domains[space.id]??'');const [error,setError]=useState('');

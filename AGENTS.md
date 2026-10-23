@@ -146,6 +146,17 @@ verification for this correction. Record the journal decision→completed-action
 error as a future semantic-fidelity benchmark case; no second agent.
 See [current contract](docs/qh-51-response-support.md).
 
+## Later POC chat/memory decision — 2026-10-23
+
+The owner authorizes EUR10 total including history (USD5 under the retained
+EUR2/USD conservative bound), no development call/session/token micro ceilings.
+Ordinary Mistral omits max_tokens and reserves the full provider context worst-case
+cost before HTTP; incomplete JSON/finish=length remain rejected, no paid retry.
+Mémoriser → Continuer authorizes the entire current conversation as source and
+semantic proposals via the same Engine; Voir la proposition opens QH46. No turn
+checkboxes/literal-vs-semantic choice, no automatic confirmation. Only offline
+checks/one ordinary CI; no paid call, migration, canonical reset or merge.
+
 ## Autonomy and STOP AND ASK
 
 Structural decisions require user approval: domain meaning, canonical data,

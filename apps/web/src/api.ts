@@ -74,7 +74,7 @@ export class QhApi {
   }
   async automaticChat(scope:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer>{
     if(!isUuid(scope))throw new ApiError(404);
-    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include,messages);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include,messages,true);
   }
   async proposeWithAI(scope:string,payload:Parameters<QhApi['enrich']>[1]):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);

@@ -5,7 +5,7 @@ import {test,expect} from '@playwright/test';
 import {afterLogin,showSupport} from './navigation.browser';
 const fixture=JSON.parse(process.env.QH12_EXPECTED_JSON||'{}');
 
-test('QH-39 browser selected conversation persists, reopens, reviews and denies Bob',async({page,browser},info)=>{
+test('QH-39 literal API persistence/replay/review/isolation survives while memory UI refuses implicit literal fallback',async({page,browser},info)=>{
  test.setTimeout(90000);
  let aliceToken='';page.on('request',r=>{if(r.url().endsWith('/auth/me'))aliceToken=r.headers()['authorization']||'';});
  await page.goto('/');await page.getByRole('button',{name:'Se connecter',exact:true}).click();
@@ -15,37 +15,24 @@ test('QH-39 browser selected conversation persists, reopens, reviews and denies 
  const creation=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/environment/spaces'));
  await page.getByRole('button',{name:'Créer',exact:true}).click();const created=await (await creation).json();
  await page.getByRole('link',{name:'Ouvrir ce Space',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toBeDisabled();
  const claim='Nous proposons un pilote réversible avec Jo, sans commande approuvée. 🌱';
  await page.getByLabel('Votre question sur ce contexte').fill(claim);await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Mémoriser cette conversation',exact:false}).click();const dialog=page.getByRole('dialog',{name:'Mémoriser cette conversation',exact:false});
- await expect(dialog).toContainText('sans analyse par une IA');
- const selections=dialog.locator('.enrichment-turn input');await expect(selections.nth(0)).toBeChecked();await expect(selections.nth(1)).not.toBeChecked();
- await expect(dialog.getByRole('button',{name:'Conserver et proposer',exact:true})).toBeDisabled();
- await dialog.getByRole('checkbox',{name:'J’autorise la conservation',exact:false}).check();
- await page.screenshot({path:info.outputPath('qh39-selected-source-desktop.png'),fullPage:true});
- const published=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/enrichments'));
- await dialog.getByRole('button',{name:'Conserver et proposer',exact:true}).click();const response=await published;expect(response.status()).toBe(200);const receipt=await response.json();
- expect(receipt.revision_ids).toHaveLength(1);await expect(page.getByText('1 nouvelle proposition à vérifier.',{exact:false})).toBeVisible();
- // Exact same browser submission replay is durable, not a second model invocation.
+ await expect(dialog.getByRole('checkbox')).toHaveCount(0);await expect(dialog.getByRole('button',{name:'Continuer',exact:true})).toBeDisabled();await expect(dialog).toContainText('extraction sémantique est indisponible');await dialog.getByRole('button',{name:'Fermer la fenêtre',exact:true}).click();
+ const payload={conversation_id:crypto.randomUUID(),operation_id:crypto.randomUUID(),turns:[{id:crypto.randomUUID(),role:'user',content:claim,captured_at:new Date().toISOString()}],persist_consent:true};
+ const response=await page.request.post('/api/context-spaces/'+created.id+'/enrichments',{headers:{Authorization:aliceToken},data:payload});expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.revision_ids).toHaveLength(1);
  await expect.poll(async()=>{const r=await page.request.get('/api/context-spaces/'+created.id+'/understanding?view=proposed&limit=20',{headers:{Authorization:aliceToken}});return r.status();}).toBe(200);
- const payload=response.request().postDataJSON();
- await page.getByRole('button',{name:'Mémoriser cette conversation',exact:false}).click();
- await expect(dialog.locator('.enrichment-turn input').nth(0)).not.toBeChecked();
- await expect(dialog).toContainText('Déjà conservé dans une source sélectionnée');
- await dialog.locator('.enrichment-turn input').nth(0).check();await dialog.getByRole('checkbox',{name:'J’autorise la conservation',exact:false}).check();
- const repeated=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/enrichments'));
- await dialog.getByRole('button',{name:'Conserver et proposer',exact:true}).click();const replay=await repeated;
- expect(replay.status()).toBe(200);expect((await replay.json()).revision_ids).toEqual(receipt.revision_ids);expect(replay.request().postDataJSON().operation_id).toBe(payload.operation_id);
+ const replay=await page.request.post('/api/context-spaces/'+created.id+'/enrichments',{headers:{Authorization:aliceToken},data:payload});expect(replay.status()).toBe(200);expect((await replay.json()).revision_ids).toEqual(receipt.revision_ids);
  await writeFile(info.outputPath('qh39-canonical-receipt.json'),JSON.stringify({scope:created.id,proposed_receipt:receipt,source_text:claim,replay_same_ids:true,provider:receipt.provider_mode,paid_calls:0},null,2));
- await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expandUnderstanding(page);
+ await expandUnderstanding(page);await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();await page.locator('.understanding-card').filter({hasText:claim}).click();
  await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText(claim);
  await expect(page.getByRole('region',{name:'Détail de l’élément'})).toContainText('Proposé');
  await page.screenshot({path:info.outputPath('qh39-proposed-with-source-desktop.png'),fullPage:true});
  await closeUnderstanding(page);await expect(page.locator('.human-revision')).not.toBeVisible();await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();
- await page.getByRole('button',{name:'Examiner la proposition 1',exact:true}).click();await expandUnderstanding(page);await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
+ await expandUnderstanding(page);await page.getByRole('button',{name:'Examiner les propositions en attente',exact:true}).click();await page.locator('.understanding-card').filter({hasText:claim}).click();await expect(page.locator('.human-revision[data-revision-id="'+receipt.revision_ids[0]+'"]')).toBeVisible();
  // Fresh page + actual OIDC reauthentication: ephemeral conversation is gone,
  // canonical proposal and original source remain retrievable through the product.
  await page.reload();await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();await page.getByRole('button',{name:'Se connecter',exact:true}).click();

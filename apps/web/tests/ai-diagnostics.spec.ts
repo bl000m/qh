@@ -22,3 +22,9 @@ test('diagnostic client scopes authenticated reads and deletes, rejects foreign 
   await expect(api.aiDiagnostics('../foreign')).rejects.toMatchObject({status:404});
  }finally{globalThis.fetch=original;}
 });
+
+
+test('development POC has no call/session quota and retains the one economic envelope',()=>{
+ const value={automatic:true,enabled:true,model:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:Date.now()/1000+3600,remaining_calls:null,remaining_usd:'4.999'};
+ expect(capabilities(value)).toEqual(value);expect(()=>capabilities({...value,remaining_usd:'5.01'})).toThrow();
+});

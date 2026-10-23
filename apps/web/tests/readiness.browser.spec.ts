@@ -37,7 +37,7 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  for(const [label,width,height,zoom] of [['desktop',1448,1086,1],['mobile',390,844,1],['desktop-200',1448,1086,2],['keyboard',390,450,1]] as const){
   await page.setViewportSize({width,height});await page.evaluate(z=>{document.documentElement.style.zoom=String(z);},zoom);
   await page.getByLabel('Votre question sur ce contexte').fill('Brouillon conservé en mémoire');
-  const bounds=await page.evaluate(()=>({notice:document.querySelector('.assistant-intro')!.getBoundingClientRect().bottom,composer:document.querySelector('.chat-composer')!.getBoundingClientRect().top,width:innerWidth,scroll:document.documentElement.scrollWidth}));
+  const bounds=await page.evaluate(()=>({composerBottom:document.querySelector('.chat-composer')!.getBoundingClientRect().bottom,memoryTop:document.querySelector('.memory-card')!.getBoundingClientRect().top,width:innerWidth,scroll:document.documentElement.scrollWidth}));
   if(width===390){
    // The approved compact header carries the visible Space name; the H1 stays
    // accessible via display:contents, whose wrapper intentionally has no box.
@@ -45,7 +45,7 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
    await expect(page.getByRole('heading',{name:'Budget personnel synthétique',exact:true})).toBeAttached();
    const box=await title.boundingBox();expect(box).not.toBeNull();expect(box!.width).toBeGreaterThan(0);expect(box!.height).toBeGreaterThan(0);expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width+1);
   }
-  expect(bounds.notice).toBeLessThanOrEqual(bounds.composer);expect(bounds.scroll).toBeLessThanOrEqual(bounds.width+1);
+  expect(bounds.composerBottom).toBeLessThanOrEqual(bounds.memoryTop);expect(bounds.scroll).toBeLessThanOrEqual(bounds.width+1);
   await page.screenshot({path:info.outputPath('qh52-empty-'+label+'.png'),fullPage:true});
  }
  await page.evaluate(()=>{document.documentElement.style.zoom='1';});await page.setViewportSize({width:1448,height:1086});

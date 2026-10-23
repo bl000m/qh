@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — provider defaults and whole-conversation memory, 2026-10-23
+
+- Remove ordinary Mistral output/call/session micro ceilings; reserve full model
+  capacity against the sole EUR10 aggregate, preserving historical spend.
+- Place multiline composer and memory action above the scrolling chat, with
+  effective model/budget footer; retain outer layout and universal map.
+- Replace selections/checkboxes with Continuer → semantic atomic proposals →
+  Voir la proposition. Preserve roles, exact evidence and human review.
+
 ## QH-51 — independent provenance and sufficiency, 2026-10-22
 
 - Show useful conversation-grounded answers with insufficient_context=true;

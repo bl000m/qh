@@ -4,6 +4,18 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Chat et mémorisation — owner amendment, 2026-10-23
+
+Le panneau chat place composer puis Mémoriser au-dessus de la conversation, avec
+modèle/disponibilité/budget réel au pied. Le reste de la page et la carte restent
+inchangés. Mémoriser ouvre trois explications: Comprendre, Proposer, Enregistrer.
+Continuer autorise une fois l'analyse Mistral et la conservation de toute la
+conversation courante (rôles/provenance préservés) comme source et propositions
+non confirmées. Même Understanding Engine, citations exactes, publication atomique,
+idempotence, aucune confirmation globale. Voir la proposition ouvre la review.
+En cas de transport ambigu, ne pas prétendre qu'aucune écriture n'a eu lieu;
+une nouvelle tentative explicite conserve la même identité d'opération.
+
 ## Risposte fondate sul dialogo — owner amendment, 2026-10-22
 
 Un messaggio esplicitamente inviato può sostenere una risposta anche senza revisioni

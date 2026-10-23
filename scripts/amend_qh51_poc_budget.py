@@ -1,7 +1,7 @@
 """Owner-authorized 23-Oct POC envelope amendment; never runs at startup/CI.
 
 Existing calls, identity, expiry and blocked/pending protections remain unchanged.
-Run only with frontend/backend stopped; backups stay private outside Git.
+Run only with backend stopped; frontend stays running. Backups stay private.
 """
 import argparse
 from datetime import datetime,timezone
@@ -51,9 +51,9 @@ def amend(auth,ledger,backup):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--runtime',type=Path,required=True);parser.add_argument('--backup',type=Path,required=True);args=parser.parse_args()
-    for name in ('qh-frontend-1','qh-backend-1'):
+    for name in ('qh-backend-1',):
         state=json.loads(subprocess.check_output(['docker','inspect',name],text=True))[0]['State']
-        if state['Running']:raise SystemExit('Stop only apps with guarded make dev-stop before amendment')
+        if state['Running']:raise SystemExit('Stop backend with guarded make dev-stop DEV_SERVICE=backend before amendment')
     changed=amend(args.runtime/'authorization.json',args.runtime/'ledger.json',args.backup)
     print(json.dumps(dict(amended=changed,max_eur='10.00',max_usd='5.00',max_calls=None,historical_calls_preserved=True)))
 

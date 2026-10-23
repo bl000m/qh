@@ -6,6 +6,18 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-23 — POC application candidate; budget activation pending
+
+Current branch source binds carry the local chat/memory correction. The prepared,
+owner-authorized amendment targets only private availability receipt and aggregate
+ledger metadata: EUR10/USD5 with no call quota, retaining every historical call.
+It has not been applied: the recovery mandate completes publication and CI only.
+The runtime therefore retains its previous 100-attempt/USD2.50 envelope.
+Source/SQL preservation evidence remains in
+`.local-archive/qh51-chat-memory-20261023/`. The prepared procedure stops/starts only
+backend with guarded commands; frontend can preserve the temporary dialogue.
+No provider inference, migration, schema/profile/IdP change or merge.
+
 ## 2026-10-22 — response support independence correction
 
 Owner-approved application-only correction on the existing QH-51 branch/source
