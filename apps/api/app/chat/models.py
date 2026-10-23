@@ -11,6 +11,7 @@ class ChatRequest:
     context_query: ContextQuery | None = None
     context_id: ContextId | None = None
     include_proposed: bool = False
+    extended_dialogue: bool = False  # Trusted development composition, never a client flag.
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -10,7 +10,7 @@ from adapters.llm.pricing import OfficialPricing
 from adapters.llm.diagnostics import PrivateDiagnostics, DiagnosticCall
 from adapters.llm.chat_config import private_json, ChatConfigurationError
 from adapters.llm.mistral import (ExperimentBudget, MistralProvider, MODEL,
-                                  INPUT_USD_PER_M, OUTPUT_USD_PER_M)
+                                  INPUT_USD_PER_M, OUTPUT_USD_PER_M, MODEL_CONTEXT_TOKENS, cost)
 
 
 class SessionBudget:
@@ -58,10 +58,13 @@ class PrivateSessionFactory:
             envelope = r.get('development_budget')
             call_cap, usd_cap = 8, Decimal('0.20')
             if envelope is not None:
-                if (not r.get('development_account') or fx != Decimal('2') or type(envelope) is not dict
-                    or envelope != dict(max_calls=100, max_usd='2.50', max_eur='5.00', eur_per_usd_upper_bound='2')):
+                old = dict(max_calls=100, max_usd='2.50', max_eur='5.00', eur_per_usd_upper_bound='2')
+                poc = dict(max_calls=None, max_usd='5.00', max_eur='10.00', eur_per_usd_upper_bound='2')
+                if not r.get('development_account') or fx != Decimal('2') or envelope not in (old,poc):
                     raise ValueError('Exact approved development budget required')
-                call_cap, usd_cap = 100, Decimal('2.50')
+                call_cap, usd_cap = envelope['max_calls'], Decimal(envelope['max_usd'])
+            self.poc = call_cap is None
+            self.reservation_usd = cost(0, MODEL_CONTEXT_TOKENS)
             self.aggregate_calls, self.aggregate_usd = call_cap, str(usd_cap)
             if (r['purpose'] != 'QH-45 interactive chat' or r['owner_authorized'] is not True
                 or r['model'] != MODEL or expires <= now or activated > now
@@ -70,7 +73,7 @@ class PrivateSessionFactory:
                 or Decimal(r['input_usd_per_million']) != INPUT_USD_PER_M
                 or Decimal(r['output_usd_per_million']) != OUTPUT_USD_PER_M
                 or state.get('purpose') != 'QH-45 interactive chat'
-                or type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= call_cap
+                or (state['max_calls'] is not None if self.poc else type(state['max_calls']) is not int or not 1 <= state['max_calls'] <= call_cap)
                 or not Decimal('0') < Decimal(state['max_usd']) <= usd_cap):
                 raise ValueError()
             trial = r.get('development_account')
@@ -96,7 +99,7 @@ class PrivateSessionFactory:
             self.expires_at = expires.timestamp()
             self.max_calls = r.get('max_session_calls', 3)
             self.max_usd = r.get('max_session_usd', '0.01')
-            if (type(self.max_usd) is not str or type(self.max_calls) is not int or not 1 <= self.max_calls <= min(3, state['max_calls'])
+            if (type(self.max_usd) is not str or type(self.max_calls) is not int or not 1 <= self.max_calls <= min(3, state['max_calls'] or 3)
                 or not Decimal('0') < Decimal(self.max_usd) <= min(Decimal('0.01'), Decimal(state['max_usd']))):
                 raise ValueError()
             self.ledger = ExperimentBudget(ledger_path, max_calls=call_cap, max_usd=str(usd_cap))
@@ -123,7 +126,7 @@ class PrivateSessionFactory:
                     raise ValueError('Invalid ledger amounts')
                 spent += value
             blocked = state['blocked'] or any(r['status'] == 'pending' for r in state['calls'])
-            return dict(remaining_calls=max(0, min(state['max_calls'], self.aggregate_calls)-len(state['calls'])),
+            return dict(remaining_calls=None if self.poc else max(0, min(state['max_calls'], self.aggregate_calls)-len(state['calls'])),
                 remaining_usd=str(max(Decimal(0), min(Decimal(state['max_usd']), Decimal(self.aggregate_usd))-spent)),
                 blocked=blocked)
         return self.ledger.read(read)
@@ -136,7 +139,7 @@ class PrivateSessionFactory:
             return False
         try:
             remaining = self.remaining()
-            if remaining['blocked'] or not remaining['remaining_calls'] or Decimal(remaining['remaining_usd']) < Decimal('0.0024'):
+            if remaining['blocked'] or remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.reservation_usd:
                 return False
             return await self.pricing.verify()
         except Exception:
@@ -158,8 +161,7 @@ class PrivateSessionFactory:
 
     def bind_global(self, diagnostic=None):
         """Owner-approved development mode: the original aggregate ledger only."""
-        raw = MistralProvider(budget=self.ledger, max_input_tokens=12000,
-            max_output_tokens=1000, transport=self.transport, observer=diagnostic.check if diagnostic else None, capture_private_errors=diagnostic is not None)
+        raw = MistralProvider(budget=self.ledger, provider_defaults=True, transport=self.transport, observer=diagnostic.check if diagnostic else None, capture_private_errors=diagnostic is not None)
         checker = self.pricing
         class GlobalProvider:
             async def generate(self, request):

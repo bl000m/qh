@@ -2,7 +2,11 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
-from app.api.chat import ChatInput, ChatOutput
+from app.api.chat import ChatInput, ChatOutput, DialogueMessage
+from app.api.enrichment import SelectedTurn
+from pydantic import Field, StrictStr
+from typing import Annotated
+
 from app.api.chat_sessions import chat_request
 from app.api.context_spaces import allowed_query, call
 from app.api.enrichment import EnrichmentInput, EnrichmentReceipt
@@ -11,6 +15,19 @@ from app.chat.context import ChatProviderUnavailable
 from app.core.models import ProviderBudgetExceeded
 from app.chat.context import ChatContextUnavailable, ChatInputInvalid
 from app.understanding.enrichment import EnrichmentConflict, EnrichmentUnavailable
+
+class FullDialogueMessage(DialogueMessage):
+    content: Annotated[StrictStr, Field(min_length=1)]
+
+class FullChatInput(ChatInput):
+    messages: list[FullDialogueMessage] = Field(min_length=1)
+
+class FullTurn(SelectedTurn):
+    content: Annotated[StrictStr, Field(min_length=1)]
+
+class FullEnrichmentInput(EnrichmentInput):
+    turns: list[FullTurn] = Field(min_length=1)
+
 
 router = APIRouter(prefix='/context-spaces/{context_id}/ai', tags=['development AI'])
 PLAFOND = 'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.'
@@ -44,7 +61,7 @@ async def execute(operation):
 
 
 @router.post('/messages', response_model=ChatOutput)
-async def messages(context_id: UUID, payload: ChatInput, request: Request, response: Response,
+async def messages(context_id: UUID, payload: FullChatInput, request: Request, response: Response,
                    identity=Depends(authenticated_chat_identity)):
     result = await execute(service(request, response).respond(identity,
         chat_request(identity.subject_id, context_id, payload)))
@@ -55,7 +72,7 @@ async def messages(context_id: UUID, payload: ChatInput, request: Request, respo
 
 
 @router.post('/proposals', response_model=EnrichmentReceipt)
-async def proposals(context_id: UUID, payload: EnrichmentInput, request: Request, response: Response,
+async def proposals(context_id: UUID, payload: FullEnrichmentInput, request: Request, response: Response,
                     identity=Depends(authenticated_chat_identity)):
     return await execute(service(request, response).enrich(identity, str(context_id), payload.model_dump(mode='json')))
 

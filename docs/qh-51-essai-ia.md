@@ -1,3 +1,13 @@
+## Mise à jour POC autorisée —23 octobre2026
+
+Le plafond courant est EUR10 au total, historique inclus: USD5 avec le bound
+conservateur EUR2/USD conservé. Aucun quota de requêtes/session dans ce mode.
+Les requêtes ordinaires n'envoient pas max_tokens; la réservation avant HTTP
+couvre le pire coût de la fenêtre combinée du modèle. Mémoriser → Continuer
+analyse toute la conversation via le même Engine, publication atomique de source
+et propositions non confirmées, puis Voir la proposition. Aucun appel payé pour
+les vérifications de cet incrément; les contrats ci-dessous restent historiques.
+
 # QH51 — ordinary development AI, owner correction22 October2026
 
 The latest owner correction supersedes the initial Essai IA activation/preview

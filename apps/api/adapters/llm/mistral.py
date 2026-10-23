@@ -21,6 +21,9 @@ from app.core.models import GenerationResult, Message, MessageRole
 
 MODEL = "mistral-small-2603"
 BASE = "https://api.mistral.ai/v1"
+# Official API model card: 256k combined context; rounded up for cost reservation.
+# https://docs.mistral.ai/models/mistral-small-4-0-26-03
+MODEL_CONTEXT_TOKENS = 262_144
 INPUT_USD_PER_M = Decimal("0.15")
 OUTPUT_USD_PER_M = Decimal("0.60")
 
@@ -49,7 +52,7 @@ class ExperimentBudget:
 
     def __init__(self, path, *, create=False, max_calls=8, max_usd="0.20"):
         self.max_calls, self.max_usd = max_calls, Decimal(max_usd)
-        if type(max_calls) is not int or not 1 <= max_calls <= 100 or not self.max_usd.is_finite() or not 0 < self.max_usd <= Decimal("2.50"):
+        if (max_calls is not None and (type(max_calls) is not int or max_calls < 1)) or not self.max_usd.is_finite() or not 0 < self.max_usd <= Decimal("5.00"):
             raise ValueError("Authorized aggregate bounds required")
         self.path = Path(path)
         if create:
@@ -126,7 +129,7 @@ class ExperimentBudget:
 
             ):
                 raise MistralError("Experiment call/budget gate closed")
-            if (len(state['calls']) >= min(state['max_calls'], self.max_calls)
+            if (self.max_calls is not None and (state['max_calls'] is None or len(state['calls']) >= min(state['max_calls'], self.max_calls))
                 or spent + maximum > min(Decimal(state['max_usd']), self.max_usd)):
                 raise MistralBudgetExceeded('Aggregate AI ceiling reached before HTTP')
             if session_id is not None:
@@ -166,12 +169,13 @@ class ExperimentBudget:
 
 class MistralProvider:
     def __init__(
-        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None, observer=None, capture_private_errors=False
+        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None, observer=None, capture_private_errors=False, provider_defaults=False
     ):
         self._key = os.environ.get("MISTRAL_API_KEY", "").strip()
         if not self._key:
             raise MistralError("MISTRAL_API_KEY is unavailable")
-        if not 1 <= max_input_tokens <= 16000 or not 1 <= max_output_tokens <= 6000:
+        self.provider_defaults = provider_defaults
+        if not provider_defaults and (not 1 <= max_input_tokens <= 16000 or not 1 <= max_output_tokens <= 6000):
             raise ValueError("Experiment token caps exceeded")
         self.budget = budget
         self.max_input_tokens, self.max_output_tokens = (
@@ -199,7 +203,7 @@ class MistralProvider:
         try:
             async with httpx.AsyncClient(
                 transport=self.transport or httpx.AsyncHTTPTransport(retries=0),
-                timeout=httpx.Timeout(60, connect=10),
+                timeout=httpx.Timeout(None if self.provider_defaults else 60, connect=10),
                 follow_redirects=False,
                 trust_env=False,
             ) as client:
@@ -294,8 +298,9 @@ class MistralProvider:
                     raise MistralError("Mistral usage missing or invalid")
                 self._check('provider.usage', True)
                 if (
-                    usage["prompt_tokens"] > self.max_input_tokens
-                    or usage["completion_tokens"] > self.max_output_tokens
+                    (self.provider_defaults and sum(usage[k] for k in ("prompt_tokens", "completion_tokens")) > MODEL_CONTEXT_TOKENS)
+                    or (not self.provider_defaults and (usage["prompt_tokens"] > self.max_input_tokens
+                        or usage["completion_tokens"] > self.max_output_tokens))
                 ):
                     self._check('provider.observed_token_limits', False, 'Observed token limit exceeded')
                     raise MistralError("Mistral observed token limit exceeded")
@@ -333,7 +338,7 @@ class MistralProvider:
         # UTF-8 bytes + 256/message is a conservative local bound, not a tokenizer.
         # Actual prompt usage is checked; no hidden-provider-token exactness claim.
         bound = sum(len(m.content.encode()) + 256 for m in request.messages)
-        if not request.messages or bound > self.max_input_tokens:
+        if not request.messages or (not self.provider_defaults and bound > self.max_input_tokens):
             raise MistralError("Mistral input cap exceeded before HTTP")
         payload = dict(
             model=MODEL,
@@ -343,16 +348,17 @@ class MistralProvider:
             response_format={"type": "json_object"},
             temperature=0,
             random_seed=42,
-            max_tokens=self.max_output_tokens,
             stream=False,
             n=1,
             tool_choice="none",
         )
+        if not self.provider_defaults:
+            payload['max_tokens'] = self.max_output_tokens
         data = await self._request(
             "POST",
             "/chat/completions",
             payload=payload,
-            maximum=cost(self.max_input_tokens, self.max_output_tokens),
+            maximum=cost(0, MODEL_CONTEXT_TOKENS) if self.provider_defaults else cost(self.max_input_tokens, self.max_output_tokens),
         )
         try:
             choice = data["choices"][0]

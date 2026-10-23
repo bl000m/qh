@@ -89,7 +89,8 @@ class ConversationEnrichment:
         if payload['persist_consent'] is not True:
             raise ValueError('Explicit source and proposal persistence consent required')
         turns = payload['turns']
-        if not isinstance(turns, list) or not 1 <= len(turns) <= 8:
+        whole = provider_mode == 'uum-mistral/3'
+        if not isinstance(turns, list) or not turns or (not whole and len(turns) > 8):
             raise ValueError('Select one to eight turns')
         seen = set()
         for turn in turns:
@@ -97,10 +98,10 @@ class ConversationEnrichment:
             if turn['id'] in seen or turn['role'] not in ('user', 'assistant'):
                 raise ValueError('Distinct identified user/assistant turns required')
             seen.add(turn['id'])
-            if not isinstance(turn['content'], str) or not turn['content'].strip() or len(turn['content']) > 4096 or '\0' in turn['content']:
+            if not isinstance(turn['content'], str) or not turn['content'].strip() or (not whole and len(turn['content']) > 4096) or '\0' in turn['content']:
                 raise ValueError('Bounded original turn text required')
             timestamp(turn['captured_at'])
-        if len(canonical_json(payload).encode()) > 20000:
+        if len(canonical_json(payload).encode()) > (1_000_000 if whole else 20000):
             raise ValueError('Selected segment exceeds byte limit')
         fingerprint = digest(payload)
         conversation_id = 'qh39:' + payload['conversation_id'] + ':' + payload['operation_id']
@@ -128,7 +129,7 @@ class ConversationEnrichment:
                 provider = UumExtractionProvider(delegate if mode=='semantic' else self.provider, literal=mode=='literal')
             conversation = dict(id=conversation_id, revision_no=1, acquired_at=self.clock(),
                 turns=[dict(id=t['id'], speaker='user (owner-declared)' if t['role']=='user' else 'assistant (unverified dialogue)', text=t['content']) for t in turns],
-                metadata=dict(submission_kind='owner_selected_browser_segment', submitted_by=str(subject),
+                metadata=dict(submission_kind='owner_current_browser_conversation' if whole else 'owner_selected_browser_segment', submitted_by=str(subject),
                     conversation_id=payload['conversation_id'], operation_id=payload['operation_id'],
                     request_sha256=fingerprint, extraction_key=extraction_key,
                     provider_mode=provider_mode or ('uum-simulated/3' if self.uum else 'semantic-simulated/2') if mode=='semantic' else ('uum-offline-literal/3' if self.uum else 'offline-literal/1'),

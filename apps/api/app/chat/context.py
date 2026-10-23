@@ -58,6 +58,7 @@ class BuiltContext:
     partial: bool
     input_bound: int
     context_bytes: int
+    extended_dialogue: bool = False
 
 
 def input_bound(messages):
@@ -65,11 +66,11 @@ def input_bound(messages):
     return sum(len(m.content.encode('utf-8')) + 256 for m in messages)
 
 
-def build_context(*, context_id, revisions, messages, include_proposed=False, partial=False):
-    if not messages or len(messages) > 7 or messages[-1].role != MessageRole.USER:
+def build_context(*, context_id, revisions, messages, include_proposed=False, partial=False, extended_dialogue=False):
+    if not messages or (not extended_dialogue and len(messages) > 7) or messages[-1].role != MessageRole.USER:
         raise ChatInputInvalid('Bounded dialogue ending with a question required')
     if any(m.role not in (MessageRole.USER, MessageRole.ASSISTANT) or
-           not isinstance(m.content, str) or not m.content.strip() or len(m.content) > 4096
+           not isinstance(m.content, str) or not m.content.strip() or (not extended_dialogue and len(m.content) > 4096)
            for m in messages):
         raise ChatInputInvalid('Invalid dialogue')
     if any(m.role != (MessageRole.USER if i % 2 == 0 else MessageRole.ASSISTANT)
@@ -77,6 +78,8 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
         raise ChatInputInvalid('Alternating dialogue required')
     if type(include_proposed) is not bool or len(revisions) > MAX_REVISIONS:
         raise ChatInputInvalid('Explicit bounded selection required')
+    if len(json.dumps([m.content for m in messages]).encode()) > 1_000_000:
+        raise ChatInputInvalid('Dialogue exceeds safe JSON processing size')
     seen = set()
     for row in revisions:
         if row.context_space_id != context_id or row.revision_id in seen:
@@ -107,19 +110,19 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
         # Preserve every canonical field; no inferred source body, quote or state.
         candidate = formatted([*data, value])
         request_messages = (prefix, candidate, *messages)
-        if len(candidate.content.encode()) > MAX_CONTEXT_BYTES or input_bound(request_messages) > MAX_INPUT_BOUND:
+        if len(candidate.content.encode()) > MAX_CONTEXT_BYTES or (not extended_dialogue and input_bound(request_messages) > MAX_INPUT_BOUND):
             continue  # Never truncate a proposition, a citation or temporal metadata.
         selected.append(row)
         data.append(value)
     context = formatted(data)
     assembled = (prefix, context, *messages)
     bound = input_bound(assembled)
-    if bound > MAX_INPUT_BOUND:
+    if not extended_dialogue and bound > MAX_INPUT_BOUND:
         raise ChatInputInvalid('Dialogue exceeds the input budget')
     # Nested content/source dicts are mutable even in frozen dataclasses. Retain
     # exactly what was sent; the service independently rechecks live freshness.
     return BuiltContext(GenerationRequest(messages=assembled), tuple(deepcopy(selected)),
-                        partial or len(selected) < len(revisions), bound, len(context.content.encode()))
+                        partial or len(selected) < len(revisions), bound, len(context.content.encode()), extended_dialogue)
 
 
 def unique_keys(pairs):
@@ -139,7 +142,7 @@ def decode_answer(message, context, observer=None):
         if observer:
             observer(rule, True)
     try:
-        if message.role != MessageRole.ASSISTANT or len(message.content.encode()) > 12000:
+        if message.role != MessageRole.ASSISTANT or len(message.content.encode()) > (1_000_000 if context.extended_dialogue else 12000):
             raise ValueError()
         passed()
         rule = 'chat.json_unique_fields'
@@ -151,7 +154,7 @@ def decode_answer(message, context, observer=None):
         passed()
         rule = 'chat.answer_nonempty_length'
         answer, ids, insufficient = value['answer'], value['reference_aliases'], value['insufficient_context']
-        if not isinstance(answer, str) or not answer.strip() or len(answer) > MAX_OUTPUT_CHARS:
+        if not isinstance(answer, str) or not answer.strip() or len(answer) > (1_000_000 if context.extended_dialogue else MAX_OUTPUT_CHARS):
             raise ValueError()
         passed()
         rule = 'chat.reference_and_insufficient_types'

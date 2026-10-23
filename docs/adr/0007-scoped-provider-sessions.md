@@ -224,3 +224,19 @@ Canonical/mixed mantengono citazioni valide obbligatorie anche con flag true;
 JSON, scope, owner, provenance, snapshot e plafond restano bloccanti. La struttura
 DTO non cambia. Nessuna nuova inferenza o retry per questa correzione.
 [Contratto corrente](../qh-51-response-support.md).
+
+
+## POC owner amendment —23 October2026
+
+Development mode now has one EUR10 aggregate including history (USD5 using the
+retained conservative EUR2/USD bound), no call/session economy. The pinned model
+uses provider-default output length without max_tokens; atomic maximum-cost
+reservation covers its full256k combined context (rounded up to262144 tokens),
+at the more expensive output rate. Provider technical capacity is an economic
+reservation bound, never a new requested output ceiling. Official references:
+[optional max_tokens](https://docs.mistral.ai/api/endpoint/chat),
+[model context/pricing](https://docs.mistral.ai/models/mistral-small-4-0-26-03).
+Original calls, spend, expiry and economic audit remain; unresolved/pending costs
+still fail closed. Canonical bounded selection, JSON processing safeguards,
+OIDC/owner/CHAT, exact citations and no retry remain. Old sessions/experiments
+retain their historical contracts; the ordinary owner path does not use them.

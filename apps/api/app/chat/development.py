@@ -4,6 +4,7 @@ No consent/grant/activation registry. The same canonical chat and Understanding
 Engine retain policy, graph freshness, provenance and proposed-only publication.
 """
 from decimal import Decimal
+from dataclasses import replace
 
 from app.chat.context import ChatProviderUnavailable
 from app.core.models import ProviderBudgetExceeded
@@ -25,10 +26,10 @@ class DevelopmentAI:
             raise ContextSpaceNotFound('Context space not found')
         if reserve:
             remaining = self.factory.remaining()
-            if not remaining['remaining_calls'] or Decimal(remaining['remaining_usd']) < Decimal('0.0024'):
-                raise ProviderBudgetExceeded()
             if remaining['blocked']:
                 raise ChatProviderUnavailable('Provider accounting requires review')
+            if remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd:
+                raise ProviderBudgetExceeded()
         if not await self.factory.verified(identity.subject_id, request.context_id):
             raise ChatProviderUnavailable('Verified provider unavailable')
 
@@ -41,11 +42,12 @@ class DevelopmentAI:
             and self.clock() < min(identity.expires_at, identity.work_expires_at)
             and self.factory.allowed(identity.subject_id, request.context_id))
         if eligible:
-            remaining = {k:v for k,v in self.factory.remaining().items() if k!='blocked'}
-            exhausted = not remaining['remaining_calls'] or Decimal(remaining['remaining_usd']) < Decimal('0.0024')
+            accounting = self.factory.remaining()
+            remaining = {k:v for k,v in accounting.items() if k!='blocked'}
+            exhausted = not accounting['blocked'] and (remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd)
             enabled = await self.factory.available(identity.subject_id, request.context_id)
         return dict(automatic=bool(eligible), plafond_reached=bool(eligible and exhausted), enabled=enabled,
-            model=self.factory.model if enabled else None, max_seconds=1800,
+            model=self.factory.model if enabled else None, max_seconds=None if self.factory.poc else 1800,
             max_calls=self.factory.aggregate_calls, max_usd=self.factory.aggregate_usd, provider_expires_at=self.factory.expires_at if enabled else None,
             **remaining)
 
@@ -73,6 +75,7 @@ class DevelopmentAI:
             items=store.records(subject=identity.subject_id, scope=request.context_id))
 
     async def respond(self, identity, request):
+        request = replace(request, extended_dialogue=True)
         await self._authorize(identity, request, reserve=True)
         diagnostic = self.factory.diagnostic_call(identity.subject_id, request.context_id, 'chat')
         try:
