@@ -224,6 +224,7 @@ class Message:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GenerationRequest:
     messages: tuple[Message, ...]
+    output_schema: dict[str, object] | None = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

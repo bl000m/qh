@@ -1,5 +1,6 @@
 """Versioned atomic wire format for the same Engine and exact QH-32 resolver."""
 from dataclasses import replace
+from copy import deepcopy
 import json
 
 from app.core.models import GenerationRequest, Message, MessageRole
@@ -8,6 +9,21 @@ from app.understanding.citations import resolve_output_citations
 from app.understanding.extractor import canonical_json, object_fields, nonempty
 
 FORMAT = 'qh.atomic-understanding/1'
+MAX_ITEMS, MAX_TEXT, MAX_EVIDENCE = 100, 16000, 100
+_FIELDS = dict(text=dict(type='string', minLength=1, maxLength=MAX_TEXT),
+    evidence=dict(type='array', minItems=1, maxItems=MAX_EVIDENCE,
+        items=dict(type='object', properties=dict(quote=dict(type='string', minLength=1, maxLength=1_000_000)),
+            required=['quote'], additionalProperties=False)))
+UNCLASSIFIED = dict(type='object', properties=dict(**_FIELDS, primary_dimension=dict(type='null')),
+    required=['text', 'primary_dimension', 'evidence'], additionalProperties=False)
+CLASSIFIED = dict(type='object', properties=dict(**_FIELDS,
+    primary_dimension=dict(type='string', enum=list(PRIMARY_DIMENSIONS)),
+    assignment_certainty=dict(type='string', enum=['asserted', 'tentative'])),
+    required=['text', 'primary_dimension', 'assignment_certainty', 'evidence'], additionalProperties=False)
+# The provider constraint and the local decoder share this exact wire contract.
+OUTPUT_SCHEMA = dict(type='object', properties=dict(format=dict(type='string', enum=[FORMAT]),
+    items=dict(type='array', maxItems=MAX_ITEMS, items=dict(anyOf=[UNCLASSIFIED, CLASSIFIED]))),
+    required=['format', 'items'], additionalProperties=False)
 INSTRUCTIONS = '''Return only JSON {"format":"qh.atomic-understanding/1","items":[
 {"text":"one atomic meaning", "primary_dimension":"one allowed ID or null",
 "assignment_certainty":"asserted|tentative", "evidence":[{"quote":"exact original quotation"}]}]}.
@@ -25,6 +41,24 @@ Situation is reported information; objectives are desired outcomes; decisions/ac
 are adopted choices or reported actions; constraints/preferences guide possibilities;
 hypotheses/uncertainties preserve possibilities; open questions are genuine questions.
 Never force a classification to populate the map. Output no additional fields.'''
+INSTRUCTIONS += '''
+Extract a concise useful understanding, not one item for every sentence. Combine
+redundant statements of the same meaning; omit pleasantries and generic advice.
+Fictional, hypothetical and simulated scenarios ARE valid material for extraction:
+retain their explicit fictional/hypothetical status in each affected item's text
+and cite the original supporting words, including qualifications where needed.
+Do not return an empty list merely because the scenario is a test or fictional.
+Keep user declarations, hypotheses and assistant suggestions distinct. Assistant
+turns are unverified context: never turn their suggestions into user facts or
+adopted decisions. A user decision requires explicit user evidence of adoption;
+otherwise omit it or clearly attribute it as an assistant proposal. Preserve the
+difference between deciding/intending to act and having completed the action.
+Before returning, verify the required format field, every dimension and certainty,
+and that each quotation occurs exactly once in the original authorized turns.
+Copy quotation characters verbatim, INCLUDING Markdown markers, punctuation and
+whitespace. Never strip bold/list formatting or rephrase quotations. The item's
+own concise text may be readable prose; its evidence must remain original text.
+Empty items remains correct when no meaningful supported proposition exists.'''
 
 
 class UumExtractionProvider:
@@ -46,7 +80,8 @@ class UumExtractionProvider:
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(dict(format=FORMAT, items=items))))
         return await self.delegate.generate(GenerationRequest(messages=(
-            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS), request.messages[-1])))
+            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS), request.messages[-1]),
+            output_schema=deepcopy(OUTPUT_SCHEMA)))
 
 
 def normalize_output(output, source, observer=None):
@@ -64,18 +99,18 @@ def normalize_output(output, source, observer=None):
 
 
 def _normalize_output(output, source, observer):
-    object_fields(output, ('format', 'items'))
-    if output['format'] != FORMAT or not isinstance(output['items'], list) or len(output['items']) > 100:
+    object_fields(output, OUTPUT_SCHEMA['required'])
+    if output['format'] != FORMAT or not isinstance(output['items'], list) or len(output['items']) > MAX_ITEMS:
         raise ValueError('Explicit bounded UUM envelope required')
     if observer:
         observer('uum.envelope_format_and_item_count', True)
     items = []
     for index, item in enumerate(output['items']):
-        object_fields(item, ('text', 'primary_dimension', 'evidence'), ('assignment_certainty',))
+        object_fields(item, (UNCLASSIFIED if isinstance(item, dict) and item.get('primary_dimension') is None else CLASSIFIED)['required'])
         if observer:
             observer(f'uum.item.{index}.fields', True)
         text = nonempty(item['text'])
-        if len(text) > 16000 or '\0' in text:
+        if len(text) > MAX_TEXT or '\0' in text:
             raise ValueError('Bounded atomic text required')
         if observer:
             observer(f'uum.item.{index}.bounded_atomic_text', True)
@@ -88,7 +123,7 @@ def _normalize_output(output, source, observer):
         if observer:
             observer(f'uum.item.{index}.dimension_and_certainty', True)
         evidence = item['evidence']
-        if not isinstance(evidence, list) or not 1 <= len(evidence) <= 100:
+        if not isinstance(evidence, list) or not 1 <= len(evidence) <= MAX_EVIDENCE:
             raise ValueError('Exact evidence required')
         if observer:
             observer(f'uum.item.{index}.evidence_count', True)

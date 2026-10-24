@@ -15,7 +15,7 @@ class PostgresEnrichmentRepository(CanonicalRepository):
         if row is None:
             return None
         metadata = row['origin'].get('metadata', {})
-        if (metadata.get('submission_kind') != 'owner_selected_browser_segment'
+        if (metadata.get('submission_kind') not in ('owner_selected_browser_segment', 'owner_current_browser_conversation')
                 or metadata.get('submitted_by') != self.subject_id
                 or metadata.get('request_sha256') != fingerprint):
             raise EnrichmentConflict('Conflicting immutable submission replay')

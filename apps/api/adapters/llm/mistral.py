@@ -345,7 +345,9 @@ class MistralProvider:
             messages=[
                 dict(role=m.role.value, content=m.content) for m in request.messages
             ],
-            response_format={"type": "json_object"},
+            response_format=(dict(type="json_schema", json_schema=dict(
+                name="qh_atomic_understanding", schema=request.output_schema, strict=True))
+                if request.output_schema is not None else {"type": "json_object"}),
             temperature=0,
             random_seed=42,
             stream=False,
