@@ -43,7 +43,7 @@ test('real scoped chat preserves current state, sources and temporary follow-up'
  expect(await page.evaluate(()=>Object.keys(localStorage).length)).toBe(0);
  await page.screenshot({path:info.outputPath('qh13-context-chat.png'),fullPage:true});
  await includeProposals(page);
- await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();
  const proposed=await ask(page);expect(proposed.request().postDataJSON().include_proposed).toBe(true);
  expect((await proposed.json()).provided_revisions.some((r:any)=>r.validation_state==='proposed')).toBe(true);
 });
@@ -54,17 +54,21 @@ test('proposed-only Space needs explicit choice and empty context invents no evi
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Les éléments disponibles ne suffisent pas');
  await includeProposals(page);r=await ask(page);
  const data=await r.json();expect(data.provided_revisions).toHaveLength(1);expect(data.provided_revisions[0].validation_state).toBe('proposed');
- await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toContainText('Éléments à vérifier');
+ await expect(page.getByRole('article',{name:'Échange 1',exact:true})).not.toContainText('Éléments à vérifier');
+ await expect(page.getByRole('article',{name:'Échange 2',exact:true})).toContainText('Éléments à vérifier');
  await page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'));},'/context-spaces/'+expected.empty_scope);
  await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toHaveCount(0);
  await expect(page.getByRole('tab',{name:'Discussion',exact:true})).toHaveAttribute('aria-selected','true');await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.getByRole('heading',{name:'J’ajoute un élément',exact:true})).toBeVisible();
+ await expect(page.locator('.context-orbit-node')).toHaveCount(6);
+ await expect(page.locator('.orbit-node-state')).toHaveText(Array(6).fill('Aucun élément dans cette vue'));
+ await expect(page.getByRole('button',{name:'Ajouter un élément',exact:true})).toBeVisible();
  r=await ask(page);expect((await r.json()).references).toHaveLength(0);
 });
 
 test('history-only Space is not labelled empty; history verification errors fail closed',async({page})=>{
  await open(page,expected.historical_scope);
- await expect(page.getByRole('region',{name:'Carte thématique de ce contexte',exact:true})).toBeVisible();
+ await expect(page.getByRole('region',{name:'Dimensions de compréhension',exact:true})).toBeVisible();
+ await expect(page.locator('.context-orbit-node')).toHaveCount(6);
  await expect(page.getByRole('heading',{name:'J’ajoute un élément',exact:true})).toHaveCount(0);
  await expect(page.getByText('Ce Space attend sa première compréhension.',{exact:true})).toHaveCount(0);
  await page.route('**/understanding?*',route=>new URL(route.request().url()).searchParams.get('view')==='history'
@@ -157,7 +161,7 @@ test('all-proposed canonical context warns even when generated prose omits or co
  let noReferences=false;
  await page.route('**/chat',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
   ...original,model:'mistral-small-2603',answer:'Tout est confirmé. (Contrôle UI, aucune inférence.)',
-  references:noReferences?[]:original.references,insufficient_context:noReferences})}));
+  references:noReferences?[]:original.references,support_basis:noReferences?'insufficient':'canonical',insufficient_context:noReferences})}));
  await ask(page);
  const turn=page.getByRole('article',{name:'Échange 1',exact:true});
  await expect(turn.getByRole('note')).toBeVisible();

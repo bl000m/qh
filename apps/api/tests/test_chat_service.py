@@ -117,7 +117,7 @@ def test_foreign_declared_references_fail_without_retry():
     async def bad(request):
         from app.core.models import GenerationResult
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps({
-            'answer':'Invented','reference_aliases':['R999'],'insufficient_context':False})))
+            'answer':'Invented','reference_aliases':['R999'],'support_basis':'canonical','insufficient_context':False})))
     model.generate=bad
     with pytest.raises(ChatProviderUnavailable):asyncio.run(service.respond(request()))
 

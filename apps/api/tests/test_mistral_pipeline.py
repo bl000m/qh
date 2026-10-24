@@ -104,8 +104,9 @@ def test_mistral_wire_adapter_to_canonical_outbox_retrieval_and_offline_replay(
     )
 
 
+@pytest.mark.parametrize("capture_private_errors", [False, True])
 def test_live_harness_429_stops_without_retry_and_retains_artifacts(
-    real_engine, tmp_path, monkeypatch
+    real_engine, tmp_path, monkeypatch, capture_private_errors
 ):
     # Exercise the manual harness on disposable infrastructure with a mock transport.
     # CI flag is removed only here, with the adapter factory explicitly replaced.
@@ -128,7 +129,8 @@ def test_live_harness_429_stops_without_retry_and_retains_artifacts(
     monkeypatch.setattr(
         module,
         "MistralProvider",
-        lambda **kw: MistralProvider(**kw, transport=httpx.MockTransport(handler)),
+        lambda **kw: MistralProvider(**kw, transport=httpx.MockTransport(handler),
+            capture_private_errors=capture_private_errors),
     )
     folder = tmp_path / "run"
     with pytest.raises(MistralError, match="429"):

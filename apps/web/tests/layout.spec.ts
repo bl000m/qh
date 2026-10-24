@@ -19,7 +19,7 @@ test('QH-53 tab keys preserve the draft and empty conversation offers no fake me
  await tabs.first().focus();await page.keyboard.press('ArrowRight');await expect(tabs.nth(1)).toBeFocused();await expect(tabs.nth(1)).toHaveAttribute('aria-selected','true');
  await page.keyboard.press('End');await expect(tabs.last()).toBeFocused();await page.keyboard.press('Home');await expect(tabs.first()).toBeFocused();
  await expect(page.getByLabel('Votre question sur ce contexte')).toHaveValue('Une décision à clarifier.');
- await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toBeDisabled();
  await includeProposals(page);await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toBeVisible();
 });

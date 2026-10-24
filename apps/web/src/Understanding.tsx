@@ -14,7 +14,7 @@ function status(row:CanonicalRevision) {
 }
 function text(row:CanonicalRevision) {return typeof row.content.text==='string' ? row.content.text : 'Élément structuré — ouvrir le contenu';}
 function assignments(row:CanonicalRevision) {return (Array.isArray(row.content.descriptors) ? row.content.descriptors : []).flatMap(a=>{const v=descriptorAssignment(a);return v ? [v] : [];});}
-export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection=false) {
+export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=false,refreshKey=0,waitForProjection:boolean|number=false) {
   const [refresh,setRefresh]=useState(0);
   const key=scope+JSON.stringify(query)+refresh+pending+refreshKey+waitForProjection;
   const version=useRef(0);
@@ -26,12 +26,14 @@ export function usePage(api:QhApi,scope:string,query:BrowseQuery|null,pending=fa
     try {
       async function read(){
         // A known successful local publication can precede its derived projection.
-        // At most four GETs over 1.5 seconds; never retry a write/provider call or
+        // Four GETs normally; a known semantic batch may request at most sixteen
+        // GETs over7.5 seconds. Never retry a write/provider call or
         // turn graph failure into a SQL-only success. Stop on navigation/change.
-        for(let attempt=0;attempt<4;attempt++){
+        const attempts=typeof waitForProjection==='number'?Math.min(16,Math.max(1,Math.floor(waitForProjection))):4;
+        for(let attempt=0;attempt<attempts;attempt++){
           if(expected!==version.current)return null;
           try{return pending?await api.pendingReview(scope,query!.limit,after):await api.browse(scope,{...query!,...(after ? {after_revision_id:after} : {})});}
-          catch(error){if(!waitForProjection||!(error instanceof ApiError)||error.status!==503||attempt===3)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
+          catch(error){if(!waitForProjection||!(error instanceof ApiError)||error.status!==503||attempt===attempts-1)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
         }
         return null;
       }
@@ -63,21 +65,21 @@ function GuidedCards({rows,onOpen}:{rows:CanonicalRevision[];onOpen:(row:Canonic
  const group=(row:CanonicalRevision)=>{const label=meaning(row);return groups.includes(label)?label:'Autres éléments';};
  return <div className="guided-understanding"><p className="small muted">Groupes fondés sur les descripteurs explicitement attribués, uniquement dans les pages chargées. Aucun classement automatique des autres significations.</p>{groups.map(label=>{const selected=rows.filter(r=>group(r)===label);return selected.length>0&&<section key={label} aria-label={label}><h4>{label}</h4><Cards rows={selected} onOpen={onOpen}/></section>;})}</div>;
 }
-export default function Understanding({api,scope,onChanged,initialRevision}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string}) {
+export default function Understanding({api,scope,onChanged,initialRevision,refreshKey=0}:{api:QhApi;scope:string;onChanged?:()=>void;initialRevision?:string;refreshKey?:number}) {
   const [reviewOnly,setReviewOnly]=useState(false);
   const [revisionRefresh,setRevisionRefresh]=useState(0);
   const [mode,setMode]=useState<'overview'|'explore'|'detail'>(initialRevision?'detail':'overview');
   const [filter,setFilter]=useState<BrowseQuery>({view:'current',limit:20});
   const [selected,setSelected]=useState<string|null>(initialRevision??null);
-  const overview=mode==='overview';
-  const current=usePage(api,scope,overview ? {view:'current',limit:5} : null);
-  const proposed=usePage(api,scope,overview ? {view:'proposed',limit:5} : null);
-  const history=usePage(api,scope,overview ? {view:'history',limit:1} : null);
-  const explored=usePage(api,scope,mode==='explore' ? filter : null,reviewOnly,revisionRefresh);
-  const detail=usePage(api,scope,mode==='detail' && selected ? {view:'history',limit:1,revision_id:selected} : null,false,revisionRefresh,!!initialRevision||revisionRefresh>0);
+  const overview=mode==='overview',refresh=refreshKey+revisionRefresh;
+  const current=usePage(api,scope,overview ? {view:'current',limit:5} : null,false,refresh,refresh>0);
+  const proposed=usePage(api,scope,overview ? {view:'proposed',limit:5} : null,false,refresh,refresh>0);
+  const history=usePage(api,scope,overview ? {view:'history',limit:1} : null,false,refresh,refresh>0);
+  const explored=usePage(api,scope,mode==='explore' ? filter : null,reviewOnly,refresh,refresh>0);
+  const detail=usePage(api,scope,mode==='detail' && selected ? {view:'history',limit:1,revision_id:selected} : null,false,refresh,!!initialRevision||refresh>0);
   const row=detail.rows[0];
-  const revisions=usePage(api,scope,row ? {view:'history',limit:20,item_id:row.item_id} : null);
-  const related=usePage(api,scope,row ? {view:'history',limit:20,related_item_id:row.item_id} : null);
+  const revisions=usePage(api,scope,row ? {view:'history',limit:20,item_id:row.item_id} : null,false,refresh,refresh>0);
+  const related=usePage(api,scope,row ? {view:'history',limit:20,related_item_id:row.item_id} : null,false,refresh,refresh>0);
   const heading=useRef<HTMLHeadingElement>(null);
   useEffect(()=>{if(mode!=='overview')heading.current?.focus();},[mode,selected]);
   function explore(query:BrowseQuery) {setReviewOnly(false);setFilter(query);setMode('explore');setSelected(null);}

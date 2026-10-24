@@ -239,3 +239,21 @@ def test_review_cannot_unlock_unknown_failure(tmp_path):
     with pytest.raises(MistralError):
         ledger.reconcile_reviewed_429(reason="Unknown consumption")
     assert json.loads(ledger.path.read_text())["blocked"]
+
+@pytest.mark.parametrize('capture_private_errors', [False, True])
+def test_error_body_capture_is_explicit_and_never_retries(tmp_path, monkeypatch, capture_private_errors):
+    monkeypatch.setenv('MISTRAL_API_KEY', 'synthetic-test-value')
+    seen = []
+    def error(req):
+        seen.append(req)
+        return httpx.Response(429, json={'message': 'synthetic-private-response'})
+    ledger = budget(tmp_path)
+    provider = MistralProvider(budget=ledger, transport=httpx.MockTransport(error),
+        capture_private_errors=capture_private_errors)
+    with pytest.raises(MistralError):
+        asyncio.run(provider.generate(REQUEST))
+    assert len(seen) == 1
+    assert (provider.last_exchange is not None) is capture_private_errors
+    if capture_private_errors:
+        assert provider.last_exchange['http_status'] == 429
+    assert json.loads(ledger.path.read_text())['blocked']

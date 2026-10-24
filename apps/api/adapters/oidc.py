@@ -116,4 +116,5 @@ class OIDCAuthenticator:
                 and type(claims['iat']) in (int,float) and 0<auth_time<=time.time() and auth_time<=claims['iat']):
             binding=hashlib.sha256(json.dumps([claims['iss'],claims['sub'],subject,sid],separators=(',',':')).encode()).hexdigest()
             work_expiry=float(auth_time)+8*3600
-        return ChatIdentity(subject,float(claims['exp']),hashlib.sha256(token.encode()).hexdigest(),binding,work_expiry)
+        return ChatIdentity(subject,float(claims['exp']),hashlib.sha256(token.encode()).hexdigest(),binding,work_expiry,
+            hashlib.sha256(json.dumps([claims['iss'],claims['sub']],separators=(',',':')).encode()).hexdigest())

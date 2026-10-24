@@ -84,14 +84,78 @@ safe progress. Stop the affected operation; continue independent authorized work
 Missing structural decisions still require approval under the following section.
 Never bypass a tool/GitHub safety refusal; report its exact action/reason if blocked.
 
-QH-45's specific authorization allows 30 days from actual activation for **Alice /
-Projet pilote / mistral-small-2603 only**, with fresh official price verification,
-backend-only activation/rollback, maximum one Codex smoke POST and owner manual
-requests within cumulative 8 POST/0.20 USD and 3 POST/0.01 USD per session. Separate
-in-app proposed/disclosure consents, token-bounded five-minute grants, exact snapshot,
-CHAT/graph checks, no retry/fallback and no canonical chat writes remain mandatory.
-No daily/session budget reset, extension past 30 days, merge or Jira DONE is implied.
-This exception supersedes preparation-only QH-45 instructions within this scope.
+**Current development AI decision — 2026-10-22 (supersedes the historical
+Alice/Projet pilote scope and QH45/QH52 UI consent/session economy):** only the
+owner's exact verified development OIDC account, all present/future owned Spaces,
+Mistral AI `mistral-small-2603` only. An explicit Envoyer authorizes that one chat
+request; an explicit semantic Proposer authorizes that one UUM extraction. No
+activation, provider checkbox, snapshot confirmation or per-Space/conversation
+grant. No inference on page load. Proposed inclusion remains a separate choice;
+canonical persistence/review and human confirmation remain separate from chat.
+Backend OIDC/CHAT/owner, current-Space-only graph/source checks, pinned model,
+fresh official pricing and atomic maximum-cost reservation remain mandatory.
+Use the unchanged original QH45 aggregate ledger:8 calls/USD0.20 including all
+historical calls, absolute expiry2026-11-18T04:30:42.744367Z. No refill, transfer
+from QH51, session3-call/USD0.01 restriction, retry or fallback in this mode.
+One synthetic Codex paid smoke in total is authorized by the current task; all
+repeated tests are simulated. Insufficient reservation returns before HTTP:
+« Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
+Historical decisions remain in ADR0007/QH45/QH52. General STOP AND ASK and paid
+external-call protections below still apply outside this exact scope. See
+[the current development contract](docs/qh-51-essai-ia.md).
+
+## Later development diagnostic/budget decision — 2026-10-22
+
+The owner's latest mandate supersedes the 8-call/USD0.20 ceiling above for the
+same exact development principal: 100 aggregate attempts, EUR5 maximum shared by
+chat/UUM. Use USD2.50 and the documented conservative EUR2/USD bound, historical
+spend included; preserve original expiry and every old call. No new paid calls
+for this diagnostics task. Private response-only diagnostics: one-hour retention,
+0700/0600 outside Git, authenticated exact owner + current-Space CHAT, controlled
+delete; no raw JSON/prompts/health content/secrets in ordinary logs, CI or Git.
+Audit and propose validation changes first: do not loosen epistemic/admission
+checks before owner approval. See docs/qh-51-validation-audit.md and the later
+amendment in docs/qh-51-essai-ia.md. Earlier decisions remain historical.
+
+## Later response-support approval — 2026-10-22
+
+The owner approves `support_basis` dialogue/canonical/mixed/insufficient under
+`docs/qh-51-response-support.md`. Validate it against actual sent dialogue,
+canonical selection and exact aliases; declaration is not entailment/truth.
+Dialogue alone may support an answer in an empty Space. No automatic knowledge
+write/confirmation, no alias inference. Keep owner/CHAT/OIDC/provenance/snapshot/
+JSON/budget gates. This supersedes the earlier validation-approval gate above.
+The initial one-call live protocol was stopped after a malformed real response.
+The current owner mandate uses the existing100/USD2.50 ceiling for controlled
+verification: after offline-verified prompt correction and green candidate CI,
+one fresh explicit send of the same frozen input/owned Space may verify the fix,
+maximum reservationUSD0.0024. No transport retry, fallback or automatic resend
+from an error handler; retain the failed attempt and its original stop marker.
+Only explicit developer-account Envoyer; never infer in CI/startup. Private
+medical fixture/response stay outside Git and ordinary logs; diagnostic retention
+remains one hour. Preserve the original ledger; append this attempt normally.
+
+## Later response-support independence correction — 2026-10-22
+
+The owner explicitly separates `support_basis` from `insufficient_context`.
+Do not infer/equate sufficiency with provenance: dialogue/true/[] is valid with
+sent user dialogue; canonical/mixed still require exact authorized citations.
+Keep the boolean's incomplete-information meaning and display its warning
+independently. No automatic knowledge write, semantic repair, retry or new paid
+verification for this correction. Record the journal decision→completed-action
+error as a future semantic-fidelity benchmark case; no second agent.
+See [current contract](docs/qh-51-response-support.md).
+
+## Later POC chat/memory decision — 2026-10-23
+
+The owner authorizes EUR10 total including history (USD5 under the retained
+EUR2/USD conservative bound), no development call/session/token micro ceilings.
+Ordinary Mistral omits max_tokens and reserves the full provider context worst-case
+cost before HTTP; incomplete JSON/finish=length remain rejected, no paid retry.
+Mémoriser → Continuer authorizes the entire current conversation as source and
+semantic proposals via the same Engine; Voir la proposition opens QH46. No turn
+checkboxes/literal-vs-semantic choice, no automatic confirmation. Only offline
+checks/one ordinary CI; no paid call, migration, canonical reset or merge.
 
 ## Autonomy and STOP AND ASK
 
