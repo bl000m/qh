@@ -5,6 +5,15 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — final extraction and memory correction, 2026-10-24
+
+- Share the UUM wire schema with Mistral strict structured output; clarify fictional
+  scenarios, concise meanings, exact Markdown evidence and assistant attribution.
+- Preserve full-conversation SQL replay, safe basic Markdown, cited sources only,
+  accurate memory outcomes and accessible modal closing/scrolling.
+- Owner-requested offline/replay and focused browser checks only; no paid calls or
+  new complete CI campaign. Existing Source revisions and accounting are preserved.
+
 ## QH-51 — provider defaults and whole-conversation memory, 2026-10-23
 
 - Remove ordinary Mistral output/call/session micro ceilings; reserve full model

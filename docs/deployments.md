@@ -6,6 +6,13 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-24 — QH-51 source-bound correction
+
+Current task branch updates extraction schema/prompt and memory/chat presentation
+through the existing source binds. No lifecycle command, migration, Source rewrite,
+provider call, budget/configuration amendment or merge. Verification is limited to
+the owner's requested offline replay and focused disposable checks.
+
 ## 2026-10-23 — POC application candidate; budget activation pending
 
 Current branch source binds carry the local chat/memory correction. The prepared,

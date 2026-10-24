@@ -1147,3 +1147,11 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
 @media(max-width:650px){.memory-lead h3{font-size:21px;}.memory-lead>p{font-size:14px;}.memory-steps{margin:26px 0 20px;}.memory-step-icon{width:48px;height:48px;}.memory-step-icon .ui-icon{width:25px;height:25px;}.memory-steps h4{font-size:14px;white-space:nowrap;}.memory-steps p{font-size:12px;}.memory-actions>button{min-width:0;width:100%;font-size:17px;min-height:56px;}.assistant-card .memory-card strong{font-size:13px;}}
 .definitive-space .assistant-card .memory-card{margin:0;}
 .assistant-card .chat-footer{padding:0 38px 0 0;}
+.chat-markdown{white-space:normal;overflow-wrap:break-word;}
+.chat-markdown p,.chat-markdown ul,.chat-markdown ol{margin:0 0 .8em;line-height:1.6;}
+.chat-markdown>:last-child{margin-bottom:0;}.chat-markdown h4{margin:.8em 0 .4em;font-size:1em;}
+.chat-markdown ul,.chat-markdown ol{padding-left:1.5em;}.chat-markdown code{white-space:pre-wrap;}
+.memory-modal.space-action-dialog{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;}
+.memory-modal>header{position:sticky;top:0;z-index:3;min-height:44px;background:#fff;}
+.memory-modal>header>button{min-width:44px;min-height:44px;}
+.memory-actions{gap:12px;flex-wrap:wrap;}.memory-actions>.secondary{min-width:0;min-height:44px;background:#fff;color:#26374c;font-size:15px;padding:12px 18px;border:1px solid #dce6f4;box-shadow:none;}
