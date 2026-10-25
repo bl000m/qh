@@ -23,3 +23,17 @@ test('QH-53 tab keys preserve the draft and empty conversation offers no fake me
  await includeProposals(page);await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();await expect(page.getByRole('article',{name:'Échange 1',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'Mémoriser cette conversation',exact:false})).toBeVisible();
 });
+
+
+test('QH-51 all-proposed context keeps its warning without cited sources',async({page})=>{
+ await page.goto('/tests/fixtures/chat-layout.html?no-citations=1');
+ await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
+ await includeProposals(page);
+ await page.getByLabel('Votre question sur ce contexte').fill('Question de contrôle sans citation.');
+ await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
+ const answer=page.getByRole('article',{name:'Échange 1',exact:true});
+ await expect(answer.getByRole('note')).toHaveText('Éléments à vérifier');
+ await expect(answer.getByRole('button',{name:'Sources de la réponse 1',exact:true})).toHaveCount(0);
+ await answer.locator('.answer-details>summary').click();
+ await expect(answer.locator('.answer-details')).toContainText('Tout le contexte fourni est proposé');
+});
