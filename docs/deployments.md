@@ -120,6 +120,33 @@ Space test write occurred. The native login DOM already supplies username and
 current-password autocomplete; no Keycloak image replacement is needed.
 [Contracts, evidence and later activation gate](qh-52-stabilization.md).
 
+## 2026-10-20 — Projection Draft increment, schema NOT activated
+
+Owner-authorized PR #18 merge `03365668f40bb77142809fa4e0691a318514dbf5` preserves
+all QH-39 commits and the approved head's tree. In the sole checkout, guarded
+`dev-stop` stopped frontend/backend before an ordinary switch to fast-forwarded
+main and `feat/QH-14-16-projection-engine`. Realm bytes/path and ignored/private
+files were inventoried and preserved. No worktree, reset, rebase or retirement.
+
+After targeted tests and the verified application commit `f80d501`, guarded
+`dev-up` restored frontend/backend; all six QH services are healthy. Original
+container IDs, images and mounts are unchanged; infrastructure start times are
+unchanged. Private configuration, readonly realm and every pre-existing ignored
+file match the preflight (including the existing ledger). No task paid call,
+persistent demo write, migration or dependency replacement was performed.
+
+Read-only SQL confirms persistent schema **0006_owner_organization** and **zero**
+draft tables. Migration 0007 is prepared/tested only in a newly created disposable
+internal-network project with tmpfs SQL/Neo4j, no ports or persistent volumes. That
+project was removed after the tests; pre-existing test containers were retained.
+
+The real draft service/repository/native resolver are an internal composition
+contract; no public API, Editor, guest access or new runtime binding is activated.
+Ordinary existing app behavior continues on 0006. Future schema/runtime activation
+needs its own authorization. See [contract and executed evidence](projection-draft-contract.md).
+Later documentation-only commits do not change the tested app source. This is
+development source selection, not a release, image deployment or merged block 2.
+
 ## 2026-10-19 — QH-39 development-source boundary
 
 After the owner-authorized no-squash merge of PR #17 (`8c10bf6eb3da3a66b46d5ac6ed8062fcb16edb92`),

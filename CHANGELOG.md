@@ -124,6 +124,22 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 - Preserve PR19, existing demo Spaces, schema0006, Keycloak image/import and paid
   ledgers. No real inference, migration, provider expansion or automatic merge.
 
+## Demo B block 2 — in review, 2026-10-20
+
+- QH-14 adds canonical mutable Projection Drafts with exact item/revision scope,
+  exclusions, recipient/purpose, expiry and atomic versioned edits. The central
+  owner policy is reused; recipient metadata does not grant access.
+- QH-15 resolves only the effective exact revision scope through native graph
+  verification, omitting original source bodies and off-scope lifecycle pointers.
+  Empty/expired/outside-scope requests and concurrent changes fail closed.
+- QH-16 adds actual SQL/native/signed-OIDC isolation and private-probe/provider-spy
+  coverage, without adding public routes. Existing OIDC campaign stays pinned to
+  schema 0006; the new native fixtures separately test additive 0007.
+- Migration 0007 is prepared for isolated verification only; persistent VPS remains
+  at 0006. No approved snapshot, guest link, Editor or paid extraction.
+- QH-39 owner merge/closure and confirmed Mac-call attribution are recorded;
+  runtime semantic extraction remains the dedicated QH-51 follow-up.
+
 ## QH-50 UX V2 — in review, 2026-10-19
 
 - Conversational viewport, compact provider controls and accessible answer-specific

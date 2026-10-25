@@ -139,7 +139,9 @@ def login(username, password, *, token_bundle=False):
 
 def test_real_oidc_login_mapping_and_owner_isolation():
     with isolated_database() as config:
-        command.upgrade(config, "head")
+        # Existing deployed identity/runtime contract; draft 0007 is tested by
+        # the native projection fixtures, without enabling a new runtime schema.
+        command.upgrade(config, "0006_owner_organization")
         spaces = [uuid4(), uuid4()]
         with connect() as connection:
             provision_demo(connection, issuer=ISSUER)

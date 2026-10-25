@@ -9,6 +9,11 @@ or new compatibility adapters. Persistent reset/cutover is still gated by the
 [verified backup and exact reset scope](qh-51-uum-reset-plan.md). Historical
 checkpoints below retain their original meaning; no VPS activation follows.
 
+Demo B block 2 establishes the [Projection Draft application/persistence contract](projection-draft-contract.md)
+before implementing its engine. It preserves the existing formatting service,
+central PolicyService, canonical PostgreSQL and native graph verification. Drafts
+are neither approved snapshots nor recipient grants; migration 0007 is isolated-only.
+
 Read the [QH Product Contract](product/QH_PRODUCT_CONTRACT.md) before decisions
 about the domain or persistence. It is the functional reference; this document
 and ADRs describe technical boundaries. Conflicts require STOP AND ASK, not

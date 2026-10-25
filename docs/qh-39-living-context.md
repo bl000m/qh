@@ -1,5 +1,24 @@
 # QH-39 — selected conversation to persistent proposed understanding
 
+## Owner-reviewed closure — 2026-10-20
+
+[PR #18](https://github.com/bl000m/qh/pull/18) was merged by the owner without squash
+at `03365668f40bb77142809fa4e0691a318514dbf5`, retaining approved `a2af973` and all
+source commits; the merge tree is identical to that approved head. Its four green
+CI jobs and prior executed evidence below are reused, not rerun for description edits.
+QH-39 is closed in Jira with the owner's authorization. QH-46 status is unchanged.
+
+The Product Owner explicitly confirmed that the fourth QH-45 Mistral call
+(ledger 3 → 4) was their manual test from the Mac. This attribution is also recorded
+in the PR description and Jira. No audit ledger modification, new inference,
+private identifier disclosure or test-result rewrite follows from that confirmation.
+
+Delivered: persistent Source → proposed Understanding, available QH-46 human review
+and offline literal extraction. Real semantic extraction in the runtime remains
+**NOT IMPLEMENTED**, tracked separately in [QH-51](https://contextlab.atlassian.net/browse/QH-51),
+not QH-47 reconciliation. Minimal Demo B QH-40 can use already extracted/verified
+synthetic sources. The historical in-review text below retains its dated evidence.
+
 2026-10-19. Demo B block 1. Single checkout `/home/ubuntu/qh`, branch
 `feat/QH-39-conversation-understanding`, from main merge
 `8c10bf6eb3da3a66b46d5ac6ed8062fcb16edb92` (PR #17, owner-authorized no-squash
