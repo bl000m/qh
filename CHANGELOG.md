@@ -5,6 +5,18 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-18 / QH-21 / QH-22 — governed sharing UI and guest experience, 2026-10-25
+
+- Configure email, purpose, rights and expiry, preview automatic minimized scope,
+  and approve the named disclosure risk without an item checklist or confirmation
+  of facts. Keep proposals optional and visibly unconfirmed.
+- Verify the invited mailbox through delivered OTP before showing frozen content;
+  support cookie resume, readonly mobile access, revocation and session expiry.
+- Exercise ASK only through an explicitly labelled offline snapshot simulation;
+  reject wrong rights/providers/aliases and never retrieve original sources.
+- Add isolated HTTPS/SMTP browser acceptance and opt-in application bindings.
+  Persistent VPS sharing, migrations and real guest inference remain disabled.
+
 ## QH-20 — verified mailbox invitations and guest sessions, 2026-10-25
 
 - Bind invitations to the approved snapshot's recipient, rights and expiry; a

@@ -11,6 +11,8 @@ from app.chat.sessions import ProviderSessions
 from app.core.services import ContextService
 from app.policy.services import PolicyService
 from app.projections.services import ProjectionService
+from app.projections.disclosure_service import DisclosureService
+from app.chat.guest import GuestSnapshotChat
 
 
 class EnvironmentApplication(Protocol):
@@ -74,3 +76,5 @@ class ApplicationServices:
     enrichment: EnrichmentApplication | None = None
     development_ai: "DevelopmentAIApplication | None" = None
     guest: GuestApplication | None = None
+    sharing: DisclosureService | None = None
+    guest_chat: GuestSnapshotChat | None = None

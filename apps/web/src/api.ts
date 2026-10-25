@@ -50,7 +50,12 @@ export class QhApi {
     } catch { throw new ApiError(503); }
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
+    if(response.status===204)return null;
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async sharing<T>(scope:string,suffix:string,method='GET',body?:unknown):Promise<T>{
+    if(!isUuid(scope))throw new ApiError(404);
+    return await this.request('/context-spaces/'+scope+'/'+suffix,method,body) as T;
   }
   async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean;extraction_mode?:'semantic'}):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);

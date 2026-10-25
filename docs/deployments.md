@@ -6,6 +6,17 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-25 — Demo B Block 3 candidate and activation rehearsal; isolated-only
+
+PR #27 integrated QH-20 as `451218d`; guarded frontend/backend stop/up permitted
+single-checkout alignment and the Block 3 branch. New UI is feature-gated off and
+default bootstrap does not bind guest/sharing routes. The persistent schema stays
+0006. A private complete SQL backup was restored and upgraded through 0007/8/9 only
+on disposable PostgreSQL, preserving all original canonical fingerprints. The
+browser acceptance uses temporary HTTPS, a realm copy and internal SMTP capture;
+no persistent realm/ingress/configuration, volume or ledger change and no paid call.
+See [acceptance and pending activation gates](qh-40-demo-b.md).
+
 ## 2026-10-25 — QH-20 guest authentication candidate; isolated-only
 
 PR #26 integrated Block 1 as `cfd7c0e`. Guarded app-only stop/up permitted clean

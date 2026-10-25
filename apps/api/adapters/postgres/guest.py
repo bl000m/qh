@@ -32,7 +32,7 @@ class PostgresGuestRepository:
     @staticmethod
     def _invitation(c, token_hash, now):
         return c.execute('''
-            SELECT i.*,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights
+            SELECT i.*,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_invitations i JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
             WHERE i.token_hash=%s AND i.revoked_at IS NULL AND i.expires_at>%s
@@ -132,13 +132,13 @@ class PostgresGuestRepository:
             c.execute('INSERT INTO guest_sessions (id,invitation_id,challenge_id,token_hash,expires_at,created_at) '
                 'VALUES (%s,%s,%s,%s,%s,%s)', (session_id, invite['id'], challenge_id, session_hash, expiry, now))
             return GuestAccess(session_id=session_id, invitation_id=str(invite['id']), context_id=str(invite['context_space_id']),
-                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry)
+                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry,provider=invite['provider'])
         return await asyncio.to_thread(self._run, None, consume)
 
     @staticmethod
     def _active(c, now, *, session_hash=None, session_id=None):
         row = c.execute('''
-            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.policy->'rights' AS rights
+            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_sessions g JOIN guest_invitations i ON i.id=g.invitation_id
             JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
@@ -150,7 +150,7 @@ class PostgresGuestRepository:
             return None
         return GuestAccess(session_id=str(row['id']), invitation_id=str(row['invitation_id']),
             context_id=str(row['context_space_id']), snapshot_id=str(row['snapshot_id']), rights=tuple(row['rights']),
-            expires_at=row['expires_at'])
+            expires_at=row['expires_at'],provider=row['provider'])
 
     async def authenticate(self, session_hash):
         return await asyncio.to_thread(self._run, None,

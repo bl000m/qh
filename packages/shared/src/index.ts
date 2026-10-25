@@ -2,3 +2,4 @@
 export {};
 export type { GuestRight, GuestInvitationCreated, GuestCodeRequest, GuestCodeReceipt,
   GuestVerifyRequest, GuestSessionView } from './guest';
+export type {SharingPolicy,SharedItem,SharedPayload,SharingPreview,GuestAnswer} from './guest';
