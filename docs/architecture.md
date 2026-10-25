@@ -9,10 +9,63 @@ or new compatibility adapters. Persistent reset/cutover is still gated by the
 [verified backup and exact reset scope](qh-51-uum-reset-plan.md). Historical
 checkpoints below retain their original meaning; no VPS activation follows.
 
-Demo B block 2 establishes the [Projection Draft application/persistence contract](projection-draft-contract.md)
-before implementing its engine. It preserves the existing formatting service,
-central PolicyService, canonical PostgreSQL and native graph verification. Drafts
-are neither approved snapshots nor recipient grants; migration 0007 is isolated-only.
+Demo B block 2's [Projection Draft engine](projection-draft-contract.md) is merged
+through [PR #19](https://github.com/bl000m/qh/pull/19). It preserves the formatting
+service, central PolicyService, canonical PostgreSQL and native graph verification.
+Drafts are neither approved snapshots nor recipient grants; migration 0007 remains
+isolated-only and is not applied on the persistent VPS.
+
+## Demo B sharing boundary — owner decision, 2026-10-25
+
+The [current Product Contract](product/QH_PRODUCT_CONTRACT.md#demo-b-condivisione-governata--decisione-owner-2026-10-25)
+and the 25 October Jira decisions supersede the historical manual-editor/bearer-link
+roadmap below. **Share access to the context, not manually selected pieces of
+context.** The following responsibilities are approved next work, not implemented
+guest endpoints, new deployed services or permission to migrate the VPS.
+
+| Work | Responsibility and reused boundary |
+| --- | --- |
+| [QH-55](https://contextlab.atlassian.net/browse/QH-55) | After central PolicyService authorization, derive bounded exact eligible item/revision IDs and minimized disclosure from one owned Space. Reuse QH-14/15/16 deterministic filtering, exclusions, canonical hydration and graph verification; no graph traversal that expands scope or SQL fallback |
+| [QH-18](https://contextlab.atlassian.net/browse/QH-18) | Access Policy Editor: invited recipient email, purpose, READ/ASK_AI, expiry/revocation, protection conditions and provider only where QH controls its use. Summarize real inclusions, exclusions, masks and exceptions for owner disclosure approval; manual restrictions are optional advanced controls |
+| [QH-19](https://contextlab.atlassian.net/browse/QH-19) | Materialize the approved, already minimized/masked representation with canonical revision anchors, policy, purpose and disclosure limits. Immutable and auditable, not just IDs that later rehydrate unredacted originals; changes require a new approved snapshot |
+| [QH-20](https://contextlab.atlassian.net/browse/QH-20) | Bind invitation to approved snapshot and specific email. Link → entered invited email → delivered one-use code → verified temporary guest session; mailbox control, not civil identity. Keep owner OIDC/internal identity unchanged |
+| [QH-21](https://contextlab.atlassian.net/browse/QH-21) | Guest UI exposes no private preview before verification; READ and authorized ASK_AI use only the snapshot's safe payload/citations, never live Space, original sources or out-of-scope Neo4j retrieval |
+| [QH-22](https://contextlab.atlassian.net/browse/QH-22), [QH-40](https://contextlab.atlassian.net/browse/QH-40) | Reuse owner/policy/isolation tests; verify disclosure leaks, adversarial queries, denied providers/rights, stale graph, immutable snapshots and real sandbox/mailbox OTP delivery, wrong/reused/expired codes, forwarded links and expiry/revocation of open sessions |
+
+Access Policy decides **who and how**; the Outbound Disclosure Guard decides **what
+may leave**; Approved Snapshot fixes the authorized result. All enforcement remains
+in the backend/application boundary with explicit injection, using Core ports and
+the existing `app/policy` / `app/projections` responsibilities. No second policy
+service, graph, universal privacy classifier or mandatory microservice is approved.
+PostgreSQL remains canonical, Neo4j derived; immutable revisions and provenance
+remain intact. This extends the engine's input preparation and future consumers,
+not its exact-ID enforcement or the existing internal draft contract.
+
+Before every guest/provider disclosure, check authorization and protect the entire
+outbound representation: previews, metadata, evidence, citations, AI responses and
+errors. Exclude full original sources by default; retain only authorized provenance
+that cannot reconstruct excluded/masked data. Unconfirmed proposals default to
+excluded; explicit disclosure approval does not confirm them. Unassessable risk,
+including reidentification by combined attributes, requires denial or a targeted
+owner decision before release; masking is not a guarantee of anonymity.
+
+A link alone never grants access. QH-20/22 own short-lived cryptographically secure
+tokens/OTP, protected verifiers, one-use consumption, attempt/send limits,
+anti-enumeration, TLS, secure HttpOnly/SameSite session cookies and minimal email
+audit. Every request checks invitation/session/snapshot binding, rights, expiry
+and revocation, including previously issued sessions. Provider disclosure and cost
+authorization remain additional gates. QH cannot prevent external reuse of copied data.
+
+The six UUM dimensions are semantic structure, not access or sensitivity labels.
+Epistemic validation, disclosure approval and contribution rights stay independent.
+[QH-41](https://contextlab.atlassian.net/browse/QH-41) later adds governed contributor
+proposals/Inbound Contribution Guard through the single Understanding Engine:
+attribution, scope, provenance, untrusted input and bias/manipulation/conflict checks,
+then authorized human review, never direct graph writes or automatic confirmation.
+Membership/ownership choices remain open. Demo B grants no guest update rights;
+QH-17 natural-language selection, MCP and collaboration are not prerequisites.
+Historical ADRs remain unchanged; these decisions preserve their canonical,
+immutable-snapshot, central-policy and inward-dependency boundaries.
 
 Read the [QH Product Contract](product/QH_PRODUCT_CONTRACT.md) before decisions
 about the domain or persistence. It is the functional reference; this document
@@ -131,7 +184,7 @@ authoritative; PostgreSQL is canonical and Neo4j derived.
 | --- | --- |
 | Demo A — QH-9–12 | ContextService/owner policy, scoped REST retrieval and React views; synthetic pipeline data is sufficient. Show structural shape, open optional descriptors/assignment certainty, canonical revision, validation, time and provenance separately; no closed category vocabulary or frontend re-extraction |
 | QH chat — QH-13, then conversational update QH-39 | ChatService reuses retrieval and LLMProvider. QH-39 separately acquires an authorized SourceRevision and routes extraction through the existing QH-8/QH-32 Engine into atomic proposed revisions/outbox. No canonical write from an unvalidated chat answer or automatic confirmation |
-| Demo B — QH-40, QH-14–16 and QH-18–22 | Manual Projection Editor → authorized preview → immutable Approved Snapshot → expiring/revocable guest link. Natural-language scope suggestion QH-17 is optional, not a dependency of the manual editor; MCP is not required |
+| Demo B — QH-40, QH-14–16, QH-55 and QH-18–22 (updated 2026-10-25) | Access Policy → automatic governed scope and Disclosure Guard → owner preview/approval → materialized immutable snapshot → invited email/one-use code → temporary guest READ/ASK_AI. Link alone grants no access; manual item selection, QH-17 and MCP are not prerequisites |
 | Complete demo / Demo C — QH-26 with QH-23–25 | Reuse verified guest flow, add MCP discovery/preview/retrieve and cross-channel access checks through the authenticated backend. MCP has no backend imports or direct DB access; external proposal submission QH-34 remains a separate future ingress |
 
 Snapshot approval authorizes sharing; it does not promote an item's epistemic
