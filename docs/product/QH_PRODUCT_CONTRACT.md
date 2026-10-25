@@ -4,6 +4,110 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Demo B: condivisione governata — decisione owner, 2026-10-25
+
+**Share access to the context, not manually selected pieces of context.**
+
+Le decisioni del 25 ottobre in [QH-55](https://contextlab.atlassian.net/browse/QH-55),
+[QH-18](https://contextlab.atlassian.net/browse/QH-18),
+[QH-19](https://contextlab.atlassian.net/browse/QH-19),
+[QH-20](https://contextlab.atlassian.net/browse/QH-20),
+[QH-21](https://contextlab.atlassian.net/browse/QH-21),
+[QH-22](https://contextlab.atlassian.net/browse/QH-22) e
+[QH-40](https://contextlab.atlassian.net/browse/QH-40) prevalgono sulle descrizioni
+storiche incompatibili: selezione manuale obbligatoria e accesso tramite solo link
+non appartengono al percorso ordinario Demo B. È un contratto approvato per le
+prossime implementazioni, non una dichiarazione di funzionalità già disponibili.
+
+### Access Policy, Disclosure Guard e Approved Snapshot
+
+L'owner condivide lo stato di comprensione persistente dello Space configurando
+email specifica del destinatario, finalità, diritti `READ` e/o `ASK_AI`, scadenza,
+revoca e condizioni di protezione. Può limitare il provider IA nei percorsi in cui
+QH ne controlla effettivamente l'accesso. Non deve selezionare decine di item o
+revisioni; un'eventuale selezione manuale avanzata serve soltanto a restringere.
+
+| Responsabilità | Contratto Demo B |
+| --- | --- |
+| Access Policy — QH-18 | Definisce chi può usare il contesto, per quale finalità, con quali diritti e per quanto tempo; il frontend non concede autorizzazioni |
+| Outbound Disclosure Guard — QH-55 | Determina automaticamente scope canonico e rappresentazione minima divulgabile, con esclusioni, mascheramenti e controllo dei rischi |
+| Approved Snapshot — QH-19 | Materializza il risultato già autorizzato, minimizzato e mascherato, con revisioni, policy, finalità e limiti riproducibili e auditabili; non è una copia dinamica dello Space né un semplice elenco di ID da risolvere sui dati originali |
+
+PolicyService autorizza prima del recupero e della divulgazione. QH-55 costruisce
+una allowlist deterministica e delimitata di coppie `item_id/revision_id` dello
+stesso Space, riutilizzando il motore QH-14/15/16. Scope vuoto, ambiguo, cross-Space,
+grafo non verificabile o relazione con endpoint fuori scope sono negati. Le proposte
+non confermate sono escluse per default; l'owner può autorizzarne esplicitamente
+la disclosure mantenendone stato e avvertenze, senza confermarle epistemicamente.
+
+Prima dell'approvazione l'owner vede un'anteprima sintetica reale: contenuti
+divulgabili, esclusioni, mascheramenti, rischi ed eventuali eccezioni da approvare
+in modo mirato. Non è una checklist obbligatoria di tutti gli item. Il backend
+applica il Guard prima di ogni uscita verso guest o provider, anche a preview,
+metadati, citazioni, risposte IA ed errori. Le fonti integrali sono escluse per
+default; provenienza e citazioni restano solo quando autorizzate e senza consentire
+il recupero dei dati originali esclusi o mascherati.
+
+Non si promette anonimizzazione perfetta: anche combinazioni di attributi possono
+reidentificare. Se il rischio non è sufficientemente valutabile, negare oppure
+richiedere una decisione mirata, senza divulgare prima dell'autorizzazione. Demo B
+usa dati sintetici e non attesta sicurezza per dati sensibili reali in produzione.
+Una modifica allo Space o alla policy non amplia né riscrive uno snapshot condiviso:
+occorre un nuovo snapshot approvato. La revoca dell'accesso resta distinta dalla sua
+storia immutabile.
+
+### Destinatario e sessione guest
+
+**Il solo possesso del link non concede accesso.** Percorso senza account QH:
+
+1. Alice indica l'email precisa del destinatario e approva la disclosure.
+2. QH crea un invito associato allo snapshot approvato e ai diritti autorizzati.
+3. L'invitato apre il link e inserisce la propria email.
+4. Il backend verifica la corrispondenza con l'email invitata e invia un codice monouso a quella casella.
+5. L'invitato conferma il codice; solo allora riceve una sessione guest temporanea vincolata a invito, snapshot, email verificata, diritti e scadenza.
+
+La verifica prova il controllo della casella, non l'identità civile della persona.
+Prima della verifica non si mostrano contenuti, citazioni, anteprime o metadati
+privati. Ogni richiesta riesamina sessione, diritti, scadenza e revoca, efficaci
+anche sulle sessioni già aperte; altri destinatari richiedono inviti separati.
+QH-20/22 governano OTP e token sicuri a vita breve, verifier protetti non in chiaro,
+consumo monouso, limiti di tentativi/invii, rate limit e risposte anti-enumerazione,
+TLS, sessione con cookie HttpOnly/SameSite sicuro e audit minimo. Email e token non
+vanno esposti agli altri destinatari o nei log. Questo percorso guest non cambia
+l'identità interna degli owner né il loro login OIDC.
+
+QH-21 offre consultazione `READ` e domanda `ASK_AI` solo se concessi. La domanda usa
+esclusivamente il payload e le citazioni autorizzati dello snapshot, tramite il
+provider ammesso nel flusso QH-controllato; nessun recupero dallo Space live, dalle
+fonti originali o da Neo4j fuori snapshot. Verifica guest, autorizzazione alla
+disclosure e controlli economici precedono l'eventuale invio IA. Non si promette
+di impedire al destinatario di copiare dati già ricevuti fuori da QH.
+
+### Comprensione, collaborazione e accettazione
+
+Validazione epistemica, autorizzazione alla divulgazione e diritto a proporre
+modifiche sono tre decisioni distinte. Le sei dimensioni UUM strutturano la
+comprensione persistente: non sono permessi né classi di sensibilità. Demo B non
+attribuisce `PROPOSE_UPDATE` o `CONFIRM_UPDATE` ai guest.
+[QH-41](https://contextlab.atlassian.net/browse/QH-41) resta roadmap successiva:
+membership/ownership da decidere, contributi autenticati attraverso lo stesso
+Understanding Engine e un Inbound Contribution Guard per attribuzione, provenance,
+scope, input non affidabile, possibili bias/manipolazioni e conflitti. Ogni modifica
+rimane proposta fino alla review autorizzata; controlli automatici non certificano
+verità o assenza di bias. Questa evoluzione non blocca Demo B.
+
+Sequenza: motore QH-14/15/16 già integrato → QH-55 scope e disclosure automatici →
+QH-18 Access Policy Editor → QH-19 snapshot → QH-20 invito/verifica/sessione →
+QH-21 esperienza guest → QH-22 sicurezza → QH-40 accettazione browser. QH-17
+(selezione libera in linguaggio naturale), MCP e collaborazione non sono prerequisiti.
+QH-22/40 devono verificare con fixture sintetiche: esclusioni/mascheramenti senza
+leak su tutti i canali, isolation, grafo stale, provider o diritti negati, richieste
+avversarie, immutabilità, link inoltrato inutilizzabile da solo, email errata, OTP
+errato/scaduto/riusato, abuso dei tentativi e revoca/scadenza a sessione aperta.
+L'accettazione include consegna e ricezione del codice tramite mailbox di test o
+sandbox dichiarata, senza codice iniettato nel browser o email reali a terzi nei test.
+Questa decisione non autorizza migrazioni VPS, cambi runtime o chiamate IA pagate.
+
 ## Chat et mémorisation — owner amendment, 2026-10-23
 
 Le panneau chat place composer puis Mémoriser au-dessus de la conversation, avec
@@ -161,8 +265,9 @@ enforcement delle autorizzazioni QH.
    QH controlla l'accesso alle informazioni, ma non necessariamente l'intero
    ciclo conversazionale del client esterno.
 
-Un link condivisibile permette inoltre di accedere a una proiezione senza
-obbligare inizialmente il destinatario ad adottare QH come client. Modalità di
+Un link di invito permette inoltre l'accesso a uno snapshot senza account QH,
+soltanto dopo verifica dell'email invitata tramite codice monouso in Demo B.
+Il link da solo non concede accesso. Modalità di
 accesso diverse non autorizzano a cambiare il perimetro delle informazioni condivise.
 
 ## Principi confermati: differenziazione e architettura

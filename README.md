@@ -8,7 +8,46 @@ A space can contain multiple domains without a separate schema for each.
 
 ## Implementation status
 
-Status aligned with GitHub and Jira on **2026-10-17**. Code merged into `main`
+**Current checkpoint — 2026-10-25:** [PR #23](https://github.com/bl000m/qh/pull/23)
+(QH-51 / UUM v3), [PR #24](https://github.com/bl000m/qh/pull/24) (MVP Fast Track)
+and [PR #19](https://github.com/bl000m/qh/pull/19) (QH-14/15/16 Projection Draft
+engine) are merged; consolidated `main` is `56f6423`, with
+[green Full Verification](https://github.com/bl000m/qh/actions/runs/40176017877).
+The owner verified real Mistral → UUM proposals; individual review UX improvements
+are deferred. UUM uses six universal dimensions, separate from permissions and
+sensitivity. The Projection Draft engine is internal; it supplies deterministic
+exact-revision filtering, not guest access or an Approved Snapshot. Migration
+`0007_projection_drafts` is tested only in isolation, not applied on the VPS.
+
+**Next: Demo B — Share access to the context, not manually selected pieces of
+context.** [QH-55](https://contextlab.atlassian.net/browse/QH-55) will derive a
+minimized authorized projection; [QH-18](https://contextlab.atlassian.net/browse/QH-18)
+will configure invited email, purpose, READ/ASK_AI, expiry/revocation and provider
+where QH controls its use. The owner approves a summary of disclosure, exclusions,
+masks and exceptions, without mandatory item-by-item selection.
+[QH-19](https://contextlab.atlassian.net/browse/QH-19) will freeze the safe result;
+[QH-20](https://contextlab.atlassian.net/browse/QH-20) /
+[QH-21](https://contextlab.atlassian.net/browse/QH-21) require invited email plus a
+delivered one-use code before a temporary guest session. **The link alone grants
+no access.** No QH account is required; the code proves mailbox control, not civil
+identity. [QH-22](https://contextlab.atlassian.net/browse/QH-22) verifies security;
+[QH-40](https://contextlab.atlassian.net/browse/QH-40) verifies the synthetic browser
+demo, including expiry/revocation of open sessions and no out-of-snapshot disclosure.
+
+These sharing capabilities are approved future work, not already available.
+Backend policy and Disclosure Guard precede every guest/provider disclosure;
+snapshot approval does not confirm knowledge or grant contribution rights.
+No perfect anonymity or control over external copies is promised.
+[QH-41](https://contextlab.atlassian.net/browse/QH-41) collaboration/Inbound
+Contribution Guard is later roadmap; QH-17 and MCP do not block Demo B.
+See the [current Product Contract](docs/product/QH_PRODUCT_CONTRACT.md#demo-b-condivisione-governata--decisione-owner-2026-10-25)
+and [architecture](docs/architecture.md#demo-b-sharing-boundary--owner-decision-2026-10-25).
+
+### Historical checkpoints — 2026-10-17 onward
+
+The dated records below retain their original scope; the current checkpoint and
+25 October sharing decisions above take precedence over incompatible statements.
+The following table records status aligned with GitHub and Jira on **2026-10-17**. Code merged into `main`
 and code running on the VPS are separate checkpoints. The later owner-authorized
 hot-reload POC below activates the application UI/API, without running extraction.
 
@@ -142,7 +181,7 @@ They reuse the [Product Contract](docs/product/QH_PRODUCT_CONTRACT.md), native e
 | --- | --- | --- |
 | Demo A: inspect a Context Space | [QH-9](https://contextlab.atlassian.net/browse/QH-9), [QH-10](https://contextlab.atlassian.net/browse/QH-10), [QH-11](https://contextlab.atlassian.net/browse/QH-11), [QH-12](https://contextlab.atlassian.net/browse/QH-12) | Authenticated CRUD, scoped retrieval and browser views with sources/revisions. May use synthetic data acquired by the existing pipeline; no claim of live AI updates |
 | Conversational understanding update | [QH-13](https://contextlab.atlassian.net/browse/QH-13), [QH-39](https://contextlab.atlassian.net/browse/QH-39) | Chat uses scoped retrieval/LLMProvider; QH-39 separately connects authorized conversation → source revision → validated `proposed` understanding → existing repository/outbox. Reuse the same Engine; a chat answer is not a canonical write or confirmation |
-| Demo B: Alice shares with a guest | [QH-40](https://contextlab.atlassian.net/browse/QH-40), QH-14–16 and QH-18–22 | Manual selection, exact preview, immutable Approved Snapshot, expiring/revocable link and guest access restricted to that snapshot. QH-17's natural-language suggestion is optional; no MCP prerequisite |
+| Demo B: Alice shares with a guest (updated 2026-10-25) | [QH-40](https://contextlab.atlassian.net/browse/QH-40), QH-14–16, [QH-55](https://contextlab.atlassian.net/browse/QH-55) and QH-18–22 | Access policy, automatically minimized scope, owner disclosure preview/approval, immutable safe snapshot and temporary guest READ/ASK_AI after invited email/one-use code verification. Link alone grants no access; manual item selection, QH-17 and MCP are not prerequisites |
 | Complete demo with MCP (Demo C) | [QH-26](https://contextlab.atlassian.net/browse/QH-26), QH-23–25 | Reuse verified Demo B; add real MCP discovery/preview/retrieve and cross-channel isolation. Future MCP proposal-write QH-34 is a different ingress, not this demo's read transport |
 
 Demo B may reuse a verified synthetic dataset. Any demonstration of understanding
