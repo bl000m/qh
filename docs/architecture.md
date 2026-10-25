@@ -22,6 +22,13 @@ and the 25 October Jira decisions supersede the historical manual-editor/bearer-
 roadmap below. **Share access to the context, not manually selected pieces of
 context.** The following responsibilities are approved next work, not implemented
 guest endpoints, new deployed services or permission to migrate the VPS.
+The subsequent internal [QH-55/QH-19 increment](qh-55-disclosure.md) implements
+automatic scope preparation, the conservative Guard, owner preview/approval and
+materialized immutable snapshots in `app/projections`, through its repository port
+and `adapters/postgres/disclosure.py`. It reuses the existing engine/resolver and
+central policy, with no production route or provider binding. Additive migration
+0008 follows unchanged 0007; both remain isolated-only. Invitation/session and UI
+responsibilities in the table are still the subsequent blocks.
 
 | Work | Responsibility and reused boundary |
 | --- | --- |
