@@ -17,11 +17,20 @@ isolated-only and is not applied on the persistent VPS.
 
 ## Demo B sharing boundary — owner decision, 2026-10-25
 
+The subsequent [Block 3 browser increment](qh-40-demo-b.md) implements owner policy
+preview/approval UI and the OTP-gated guest page. Explicit sharing factory bindings
+reuse the same PolicyService, Projection Engine and snapshot repository; default
+VPS bootstrap has no sharing binding. Guest ASK is an explicitly labelled offline
+excerpt simulation using only materialized safe payloads, without live retrieval
+or paid provider. Migration 0009 remains isolated-only; transport/OIDC activation
+and persistent migrations require a separate approved operation.
+
 The [current Product Contract](product/QH_PRODUCT_CONTRACT.md#demo-b-condivisione-governata--decisione-owner-2026-10-25)
 and the 25 October Jira decisions supersede the historical manual-editor/bearer-link
 roadmap below. **Share access to the context, not manually selected pieces of
-context.** The following responsibilities are approved next work, not implemented
-guest endpoints, new deployed services or permission to migrate the VPS.
+context.** The table records the approved responsibilities; implementation
+checkpoints are distinguished below from persistent activation. No permission
+to migrate the VPS follows.
 The subsequent internal [QH-55/QH-19 increment](qh-55-disclosure.md) implements
 automatic scope preparation, the conservative Guard, owner preview/approval and
 materialized immutable snapshots in `app/projections`, through its repository port
@@ -37,7 +46,8 @@ central PolicyService evaluates separate snapshot READ/ASK actions from fresh
 session facts; no guest QH account, owner OIDC replacement or Space grant is added.
 The HTTPS API router requires explicit factory bindings and is absent from the
 VPS bootstrap. Migration 0009 follows 0008 and remains isolated-only. SMTP tests
-use an ephemeral internal-network mailbox; UI/browser acceptance remains Block 3.
+use an ephemeral internal-network mailbox; UI/browser acceptance is supplied by
+the Block 3 increment linked above.
 
 | Work | Responsibility and reused boundary |
 | --- | --- |

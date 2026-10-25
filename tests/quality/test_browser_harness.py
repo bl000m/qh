@@ -10,3 +10,12 @@ def test_child_output_redacts_credentials_and_oidc_values():
     for value in ['ephemeral-password', 'eyJhbGci.testpayload.testsignature', 'code-value', 'state-value']:
         assert value not in cleaned
     assert '/api/context-spaces' in cleaned
+
+
+def test_sharing_output_redacts_invitation_otp_email_and_verifier_key():
+    sanitize = runpy.run_path(str(Path('/workspace/scripts/test_qh11_browser.py')))['sanitized_output']
+    cleaned = sanitize('/guest#invite=private-invitation code 12345678 clement@example.test private-key',
+                       {'QH_SHARING_VERIFIER_KEY': 'private-key'})
+    for value in ['private-invitation', '12345678', 'clement@example.test', 'private-key']:
+        assert value not in cleaned
+    assert '/guest#invite=' in cleaned

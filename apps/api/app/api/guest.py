@@ -13,6 +13,8 @@ from pydantic import BaseModel, ConfigDict, Field, StrictStr
 
 from app.api.security import authenticated_subject
 from app.projections.drafts import ProjectionNotFound, ProjectionUnavailable
+from app.projections.drafts import ProjectionConflict
+from app.projections.disclosure import DisclosureDecisionRequired
 from app.projections.guest import GuestDenied, GuestRateLimited, GuestUnavailable
 
 COOKIE = '__Host-qh_guest'
@@ -60,6 +62,10 @@ class GuestRoute(APIRoute):
                 result = JSONResponse(status_code=429, content={'detail': 'Trop de tentatives.'}, headers={'Retry-After': '60'})
             except ProjectionNotFound:
                 result = JSONResponse(status_code=404, content={'detail': 'Projection not found'})
+            except ProjectionConflict:
+                result = JSONResponse(status_code=409, content={'detail': 'La prévisualisation a changé ou expiré. Recommencez.'})
+            except (DisclosureDecisionRequired,ValueError):
+                result = JSONResponse(status_code=400, content={'detail': 'Décision de divulgation requise ou requête invalide.'})
             except (GuestUnavailable, ProjectionUnavailable):
                 result = JSONResponse(status_code=503, content={'detail': 'Guest access unavailable'})
             except HTTPException as error:
@@ -93,7 +99,9 @@ class VerifyRequest(BaseModel):
 
 
 def bound(request):
-    return request.app.state.services.guest
+    service=request.app.state.services.guest
+    if service is None:raise GuestUnavailable('Guest access unavailable')
+    return service
 
 
 def peer(request):

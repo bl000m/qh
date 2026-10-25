@@ -27,6 +27,7 @@ class GuestAccess:
     snapshot_id: str
     rights: tuple[str, ...]
     expires_at: datetime
+    provider: str | None = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

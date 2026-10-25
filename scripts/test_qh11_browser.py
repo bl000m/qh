@@ -21,10 +21,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def sanitized_output(content, values):
     for key, value in values.items():
-        if value and ('PASSWORD' in key or key == 'NEO4J_AUTH'):
+        if value and ('PASSWORD' in key or key == 'NEO4J_AUTH' or 'VERIFIER_KEY' in key):
             content = content.replace(value, '<redacted>')
     content = re.sub(r'\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b', '<redacted-token>', content)
-    return re.sub(r'([?&#](?:code|state|session_state)=)[^&#\s]+', r'\1<redacted>', content)
+    content=re.sub(r'([?&#](?:code|state|session_state|invite)=)[^&#\s]+',r'\1<redacted>',content)
+    content=re.sub(r'(?<![A-Za-z0-9])\d{8}(?![A-Za-z0-9])','<redacted-code>',content)
+    return re.sub(r'\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b','<redacted-email>',content)
 
 
 def main():
@@ -40,6 +42,7 @@ def main():
     parser.add_argument('--product-mode',action='store_true',help='QH-52 isolated session renewal/rotation and real-provider UI; simulated HTTP only')
     parser.add_argument('--development-ai-mode',action='store_true',help='Owner development send contract, simulated Mistral only; clean UUM product harness')
     parser.add_argument('--uum-mode',action='store_true',help='Clean UUM-only fixture, no legacy application records')
+    parser.add_argument('--sharing-mode',action='store_true',help='Isolated HTTPS/SMTP Demo B, no public ports or paid provider')
     parser.add_argument('--semantic-mode',action='store_true',help='QH-51 isolated explicit profile2 and exact synthetic provider only')
     parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
     parser.add_argument('--focused-browser-only', action='store_true', help='Local focused UI checks only; never a full acceptance verdict')
@@ -53,6 +56,8 @@ def main():
         raise SystemExit('Semantic fixtures require the disposable product stack')
     if args.uum_mode and not args.product_mode:
         raise SystemExit('UUM fixture requires disposable product stack')
+    if args.sharing_mode and not (args.uum_mode and args.product_mode):
+        raise SystemExit('Sharing requires the disposable clean UUM product stack')
     if args.focused_browser_only and (not args.browser_grep or os.environ.get('CI')):
         raise SystemExit('Focused mode requires a local explicit filter; CI acceptance cannot use it')
     docker = ['sudo', '-n', 'docker'] if args.sudo_docker else ['docker']
@@ -114,7 +119,15 @@ def main():
             'QH_DEVELOPMENT_AI_BROWSER_TEST': '1' if args.development_ai_mode else '0',
             'QH_UUM_BROWSER_TEST':'1' if args.uum_mode else '0',
             'QH_CHAT_SESSION_BINDING':'oidc' if args.product_mode else 'credential',
+            'QH_SHARING_BROWSER_TEST':'1' if args.sharing_mode else '0',
+            'QH_BROWSER_BASE_URL':'https://localhost:5173' if args.sharing_mode else 'http://localhost:5173',
         }
+        if args.sharing_mode:
+            values['QH_SHARING_VERIFIER_KEY']=secrets.token_hex(32)
+            subprocess.run(['openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-subj','/CN=localhost',
+                '-addext','subjectAltName=DNS:localhost,IP:127.0.0.1','-keyout',private+'/key.pem','-out',private+'/cert.pem'],
+                check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            Path(private+'/key.pem').chmod(0o600)
         if args.understanding:
             values.update(NEO4J_AUTH='neo4j/' + secrets.token_hex(24), NEO4J_URI='bolt://neo4j:7687',
                           NEO4J_USER='neo4j', QH_NATIVE_GRAPH_NAMESPACE=run_id)
@@ -149,6 +162,10 @@ def main():
                 realm.update(proposal['realm_settings'])
                 web=next(c for c in realm['clients'] if c['clientId']==proposal['client_id'])
                 web.setdefault('protocolMappers',[]).append(proposal['add_protocol_mapper'])
+            if args.sharing_mode:
+                web=next(c for c in realm['clients'] if c['clientId']=='qh-web')
+                web.setdefault('redirectUris',[]).append('https://localhost:5173/*')
+                web.setdefault('webOrigins',[]).append('https://localhost:5173')
             realm['loginTheme'] = 'qh'
             realm['internationalizationEnabled'] = True
             realm['supportedLocales'] = ['fr', 'en']
@@ -163,6 +180,11 @@ def main():
         try:
             run('network', 'create', '--label', 'qh.test.run=' + run_id, run_id)
             network = True
+            if args.sharing_mode:
+                mailbox=start('mailbox','--network',run_id,'--network-alias','qh-guest-mailbox','--tmpfs','/data:rw',
+                    'axllent/mailpit:v1.21.8@sha256:81370195cd4a0eab9604d17c2617a7525b0486f9365555253b6c5376c6350f1a',
+                    '--quiet','--database','/data/mailpit.db','--max','200')
+                wait(['exec',mailbox,'/mailpit','readyz'],'Private SMTP mailbox')
             pg = start('postgres', '--network', run_id, '--network-alias', 'postgres', '--env-file', str(pg_env),
                        '--tmpfs', '/var/lib/postgresql/data:rw', 'postgres:16.8-alpine3.21')
             kc = start('keycloak', '--network', run_id, '--network-alias', 'keycloak', '--env-file', str(idp_env),
@@ -185,36 +207,50 @@ def main():
                 prepared = run('run', '--rm', '-i', '--network', run_id, '--env-file', str(env), '--entrypoint', 'python',
                                args.backend_image, '-', input=(ROOT / 'tests/browser/prepare_qh12.py').read_text())
                 expected = json.loads(prepared.splitlines()[-1])
+                if args.sharing_mode:
+                    shared=run('run','--rm','-i','--network',run_id,'--env-file',str(env),'--entrypoint','python',args.backend_image,'-',
+                        input=(ROOT/'tests/browser/prepare_sharing.py').read_text())
+                    expected.update(json.loads(shared.splitlines()[-1]))
                 values['QH12_EXPECTED_JSON'] = json.dumps(expected)
                 with env.open('a') as stream:
                     stream.write('QH12_EXPECTED_JSON=' + json.dumps(expected) + '\n')
+            proxy_arguments=[]
+            if args.sharing_mode:
+                proxy_ip=run('inspect',kc,'--format','{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}').strip()
+                proxy_arguments=['--proxy-headers','--forwarded-allow-ips',proxy_ip]
             backend = start('backend', '--network', run_id, '--network-alias', 'backend', '--env-file', str(env),
                             '-e', 'QH_NATIVE_CONTEXT_ENABLED=' + ('true' if args.understanding else 'false'),
                             args.backend_image, 'uvicorn',
-                            'tests.browser_session_app:create_app' if args.chat_sessions else 'app.bootstrap:create_runtime_app', '--factory',
-                            '--host', '0.0.0.0', '--port', '8000', '--no-access-log')
+                            'tests.browser_sharing_app:create_app' if args.sharing_mode else 'tests.browser_session_app:create_app' if args.chat_sessions else 'app.bootstrap:create_runtime_app', '--factory',
+                            '--host', '0.0.0.0', '--port', '8000', '--no-access-log',*proxy_arguments)
             for url in ['http://keycloak:8080/realms/qh/.well-known/openid-configuration', 'http://localhost:8000/health']:
                 wait(['exec', backend, 'python', '-c',
                       'import urllib.request; urllib.request.urlopen(' + repr(url) + ', timeout=3)'], 'Disposable OIDC/API')
-            if args.product_mode:
+            if args.product_mode and not args.sharing_mode:
                 run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
                     '-k', 'test_qh52_real_rotation_revocation_and_logout', capture=False)
             values['QH_BROWSER_EXTERNAL_SERVER'] = '1' if args.frontend_image else '0'
             browser_env = restricted_env('browser.env', ['QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD',
                                                        'QH12_BROWSER_TEST', 'QH12_EXPECTED_JSON',
                                                        'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST', 'QH52_PRODUCT_BROWSER_TEST', 'QH51_SEMANTIC_BROWSER_TEST', 'QH_UUM_BROWSER_TEST', 'QH_DEVELOPMENT_AI_BROWSER_TEST',
-                                                       'QH_BROWSER_EXTERNAL_SERVER'])
+                                                       'QH_BROWSER_EXTERNAL_SERVER','QH_SHARING_BROWSER_TEST','QH_BROWSER_BASE_URL'])
             with env.open('a') as stream:
                 stream.write('QH_BROWSER_EXTERNAL_SERVER=' + ('1' if args.frontend_image else '0') + '\n')
             if args.frontend_image:
+                tls=[]
+                if args.sharing_mode:
+                    tls=['--mount','type=bind,src='+private+'/key.pem,dst=/run/qh-key.pem,readonly',
+                         '--mount','type=bind,src='+private+'/cert.pem,dst=/run/qh-cert.pem,readonly',
+                         '-e','QH_WEB_TLS_KEY=/run/qh-key.pem','-e','QH_WEB_TLS_CERT=/run/qh-cert.pem']
                 frontend = start('frontend', '--network', 'container:' + kc,
                                  '-e', 'QH_WEB_API_TARGET=http://backend:8000',
                                  '-e','VITE_QH_DEVELOPMENT_SESSION='+('1' if args.product_mode else '0'),
                                  '-e','VITE_QH_OFFLINE_TESTS='+('0' if args.product_mode else '1'),
+                                 '-e','VITE_QH_SHARING='+('1' if args.sharing_mode else '0'),*tls,
                                  args.frontend_image,'npm','run','dev','--workspace','apps/web','--','--mode', 'development' if args.product_mode else 'test')
                 try:
                     wait(['exec', frontend, 'node', '-e',
-                          "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"],
+                          ("require('https').get('https://localhost:5173/',{rejectUnauthorized:false},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))" if args.sharing_mode else "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))")],
                          'Packaged frontend')
                 except RuntimeError:
                     run('logs', frontend, capture=False)
@@ -283,7 +319,7 @@ def main():
                     '--mount', 'type=bind,src=' + str(output) + ',dst=/results', args.browser_image,
                     'npm', 'run', 'test', '--workspace', 'apps/web', '--', '--grep', 'QH-8 rows', capture=False)
             (output / 'verified.json').write_text(json.dumps({
-                'ticket': 'QH-12' if args.understanding else 'QH-11', 'browser': 'Chromium', 'oidc': 'Keycloak 26.4.7',
+                'ticket': 'QH-40' if args.sharing_mode else 'QH-12' if args.understanding else 'QH-11', 'browser': 'Chromium', 'oidc': 'Keycloak 26.4.7',
                 'api': 'production bootstrap', 'postgres': '16.8 tmpfs test-only',
                 'backend_image': run('image', 'inspect', args.backend_image, '--format', '{{.Id}}').strip(),
                 'frontend_image': run('image', 'inspect', args.frontend_image, '--format', '{{.Id}}').strip() if args.frontend_image else None,
@@ -295,7 +331,8 @@ def main():
                 'qh52_product_profile':args.product_mode,
                 'qh51_semantic_profile':args.semantic_mode,
                 'semantic_provider':'exact synthetic fixture, no network' if args.semantic_mode else None,
-                'qh52_real_rotation_revocation_logout':'PASS' if args.product_mode else None,
+                'qh52_real_rotation_revocation_logout':'NOT TESTED (sharing profile)' if args.sharing_mode else 'PASS' if args.product_mode else None,
+                'qh40_sharing_profile':args.sharing_mode,
                 'qh_login_theme_locale': 'fr' if args.qh_login_theme else None,
                 'browser_filter': args.browser_grep,
                 'real_graph_outage': 'PASS' if args.understanding and not args.focused_browser_only and not args.product_mode else None,

@@ -1,0 +1,47 @@
+import {useEffect,useRef,useState} from 'react';
+import type {FormEvent} from 'react';
+import type {GuestSessionView,SharedPayload,GuestCodeReceipt,GuestAnswer} from '@qh/shared';
+import {guestRequest,guestAnswer,sessionView,sharedPayload,sharingError} from './sharing';
+import SharedItems from './SharedItems';
+import qhLogo from './brand/qh-logo.png';
+
+export default function GuestPage(){
+ const [invitation]=useState(()=>new URLSearchParams(location.hash.slice(1)).get('invite')??'');
+ const [email,setEmail]=useState(''),[code,setCode]=useState(''),[receipt,setReceipt]=useState<GuestCodeReceipt|null>(null);
+ const [session,setSession]=useState<GuestSessionView|null>(null),[payload,setPayload]=useState<SharedPayload|null>(null);
+ const [answer,setAnswer]=useState<GuestAnswer|null>(null),[question,setQuestion]=useState(''),[error,setError]=useState('');
+ const [busy,setBusy]=useState(false),[ready,setReady]=useState(false);const epoch=useRef(0);
+ function clear(){epoch.current++;setSession(null);setPayload(null);setAnswer(null);setCode('');}
+ async function accept(value:unknown){const v=sessionView(value);const ticket=epoch.current;
+   const p=v.rights.includes('READ')?sharedPayload(await guestRequest('/snapshots/'+v.snapshot_id)):null;
+   if(ticket===epoch.current){setSession(v);setPayload(p);setCode('');}}
+ useEffect(()=>{let active=true;if(invitation)history.replaceState(null,'','/guest');
+   if(invitation){setReady(true);return()=>{active=false;};}
+   void guestRequest('/session').then(v=>{if(active)return accept(v);}).catch(()=>{if(active)setError('Rouvrez votre invitation pour vérifier votre boîte email.');}).finally(()=>{if(active)setReady(true);});
+   return()=>{active=false;epoch.current++;};},[]);
+ useEffect(()=>{if(!session)return;let active=true;
+   const timer=setInterval(()=>{void guestRequest('/session').then(v=>{if(active&&sessionView(v).snapshot_id!==session.snapshot_id){clear();setError('Cet accès a changé. Rouvrez votre invitation.');}}).catch(()=>{if(active){clear();setError('Cet accès a expiré ou a été révoqué.');}});},3000);
+   return()=>{active=false;clearInterval(timer);};},[session?.snapshot_id]);
+ async function requestCode(event:FormEvent){event.preventDefault();setBusy(true);setError('');try{setReceipt(await guestRequest('/code',{invitation_token:invitation,email}) as GuestCodeReceipt);setCode('');}
+   catch(e){setError(sharingError(e));}finally{setBusy(false);}}
+ async function verify(event:FormEvent){event.preventDefault();if(!receipt)return;setBusy(true);setError('');try{
+   await accept(await guestRequest('/verify',{invitation_token:invitation,challenge_id:receipt.challenge_id,code}));setReceipt(null);
+ }catch{clear();setError('Vérification impossible. Vérifiez le code et la boîte invitée, ou demandez une nouvelle invitation.');}finally{setBusy(false);}}
+ async function ask(event:FormEvent){event.preventDefault();if(!session)return;setBusy(true);setAnswer(null);setError('');const ticket=epoch.current;
+   try{const v=guestAnswer(await guestRequest('/snapshots/'+session.snapshot_id+'/ask',{question}));if(ticket===epoch.current)setAnswer(v);}
+   catch(e){clear();setError(sharingError(e));}finally{setBusy(false);}}
+ async function logout(){clear();setError('Accès fermé.');await guestRequest('/logout',{}).catch(()=>{});}
+ return <div className="app-shell guest-shell"><header className="topbar"><a href="/" className="brand"><img src={qhLogo} width={100} alt="QH"/></a><span>Contexte partagé</span></header>
+ <main id="main-content" className="guest-content"><h1>Consulter un contexte partagé</h1><p>Un code vérifie le contrôle de la boîte email invitée, pas l’identité civile. Aucun compte QH requis.</p>
+ {!ready&&<p role="status">Vérification de l’accès…</p>}{error&&<p role="alert" className="notice error">{error}</p>}
+ {ready&&!session&&invitation&&!receipt&&<form onSubmit={e=>{void requestCode(e);}}><label>Votre email<input type="email" required autoComplete="email" maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label><button disabled={busy}>Recevoir mon code</button></form>}
+ {!session&&receipt&&<form onSubmit={e=>{void verify(e);}}><p>{receipt.message}</p><label>Code reçu par email<input required inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={e=>setCode(e.target.value)} disabled={busy}/></label><button disabled={busy||code.length!==8}>Vérifier le code</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setReceipt(null);setCode('');}}>Modifier l’email</button><small>Après un envoi, attendez une minute avant d’en demander un autre. Trois envois maximum par invitation.</small></form>}
+ {session&&<><div className="actions"><p>Boîte email vérifiée · Accès temporaire jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p><button className="secondary" onClick={()=>{void logout();}}>Fermer mon accès</button></div>
+ <h2>Snapshot autorisé</h2><p>Ce snapshot est figé. Les mises à jour du Space ne l’élargissent pas. Il ne donne aucun droit de modification.</p>
+ {payload?<SharedItems payload={payload}/>:<p>La consultation directe n’est pas autorisée par cette invitation.</p>}
+ {session.rights.includes('ASK_AI')&&<section aria-label="Question sur le snapshot"><h2>Poser une question</h2><p className="notice">Simulation locale uniquement — aucun appel IA réel ni facturation. Seul ce snapshot autorisé est utilisé.</p>
+ <form onSubmit={e=>{void ask(e);}}><label>Votre question sur le snapshot<textarea required maxLength={2000} value={question} disabled={busy} onChange={e=>setQuestion(e.target.value)}/></label><button disabled={busy||!question.trim()}>Interroger le snapshot</button></form>
+ {answer&&<div role="status" className="guest-answer"><p>{answer.answer}</p><small>Références du snapshot : {answer.reference_aliases.join(', ')}. Cette simulation ne juge pas le sens de votre question ni la vérité des informations.</small></div>}</section>}
+ </>}
+ </main></div>;
+}

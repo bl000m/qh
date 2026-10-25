@@ -31,3 +31,20 @@ export interface GuestSessionView {
   expires_at: string;
   verification: 'mailbox_control';
 }
+
+export interface SharingPolicy {
+  recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
+  include_proposed:boolean; include_quotes:boolean; provider:'offline'|null;
+}
+export interface SharedItem {
+  reference:string; text:string; validation_state:'proposed'|'confirmed'; origin_kind:string;
+  sources:string[]; citations?:{source:string;quote:string;redacted:boolean}[];
+  primary_dimension?:{value:string;certainty:string;review_state:string};
+}
+export interface SharedPayload {format:'qh.disclosure/1';items:SharedItem[]}
+export interface SharingPreview {
+  id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
+  report:{status:string;message:string;warning:string;risks:string[];
+    exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
+}
+export interface GuestAnswer {simulated:true;answer:string;reference_aliases:string[];insufficient_context:true}

@@ -209,3 +209,7 @@ jobs:
       - name: Ordinary development AI and stable radial lifecycle, simulated provider only
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --development-ai-mode --browser-grep 'QH-51 radial lifecycle|QH-51 ordinary AI' --output /tmp/qh51-ordinary-ai-evidence
+
+      - name: Demo B — HTTPS owner sharing and real isolated SMTP verification, offline ASK only
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --sharing-mode --browser-grep 'Demo B:' --output /tmp/qh40-sharing-evidence

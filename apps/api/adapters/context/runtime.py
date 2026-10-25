@@ -22,6 +22,7 @@ class NativeRuntime:
         self.stop_event = threading.Event()
         self.thread = None
         self.last_error_type = None
+        self.schema_version = None
 
     def repository(self, subject):
         return CanonicalRepository(
@@ -40,9 +41,10 @@ class NativeRuntime:
             raise RuntimeError("Native runtime already started")
         try:
             with self.repository("").connect() as c:
-                if c.execute("SELECT version_num FROM alembic_version").fetchone()[
+                self.schema_version = c.execute("SELECT version_num FROM alembic_version").fetchone()[
                     "version_num"
-                ] not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization"):
+                ]
+                if self.schema_version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization", "0009_guest_invitations"):
                     raise RuntimeError("Native runtime requires migration 0004")
             self.driver.verify_connectivity()
             self.projector.initialize()

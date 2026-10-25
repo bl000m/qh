@@ -28,7 +28,7 @@ from app.composition import ApplicationServices
 from app.core.models import ContextRetrievalUnavailable
 
 
-def create_runtime_app():
+def create_runtime_app(*, guest_settings=None):
     # The public mock route must never become an implicit provider-disclosure path.
     if os.environ.get('QH_CHAT_PROVIDER', 'mock') != 'mock':
         raise ChatConfigurationError('Runtime default must be mock; use scoped provider sessions')
@@ -41,7 +41,17 @@ def create_runtime_app():
         ),
         resolve_identity=reader.resolve_identity,
     )
-    policy = OwnerPolicyService(owner_for=reader.owner_for)
+    guest_repository = None
+    guest_http = None
+    if guest_settings is not None:
+        from adapters.postgres.guest import PostgresGuestRepository
+        from adapters.guest_security import SecureGuestProofs
+        from app.api.guest import GuestHTTPConfig
+        SecureGuestProofs(guest_settings.verifier_key)
+        guest_http=GuestHTTPConfig(origin=guest_settings.origin)
+        guest_repository=PostgresGuestRepository(url=database_url())
+    policy = OwnerPolicyService(owner_for=reader.owner_for,
+        guest_for=guest_repository.guest_for if guest_repository else None)
     running = {}
 
     def retrieval_for(subject):
@@ -76,6 +86,17 @@ def create_runtime_app():
             await asyncio.to_thread(runtime.start)
             application.state.native_context = runtime
             running["runtime"] = runtime
+        if guest_settings is not None:
+            try:
+                if runtime is None or runtime.schema_version!='0009_guest_invitations':
+                    raise RuntimeError('Explicit sharing bindings require reviewed schema 0009')
+                from adapters.sharing import bind_sharing
+                application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings)
+            except Exception:
+                running.clear()
+                if runtime is not None:await asyncio.to_thread(runtime.stop)
+                application.state.native_context=None
+                raise
         async def purge_diagnostics():
             while True:
                 if factory and factory.diagnostics:
@@ -123,5 +144,5 @@ def create_runtime_app():
         security=SecurityBindings(authenticate=authenticator.authenticate, policy=policy,
                                   authenticate_with_expiry=authenticator.authenticate_with_expiry,
                                   authenticate_session=authenticator.authenticate_session),
-        lifespan=lifespan,
+        lifespan=lifespan,guest_http=guest_http,
     )
