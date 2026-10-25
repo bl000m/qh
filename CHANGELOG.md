@@ -5,6 +5,18 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-20 — verified mailbox invitations and guest sessions, 2026-10-25
+
+- Bind invitations to the approved snapshot's recipient, rights and expiry; a
+  forwarded link or typed email alone never grants access.
+- Deliver one-use codes through a private local SMTP mailbox, with keyed verifiers,
+  durable send/attempt limits and atomic consumption. No external email or retry.
+- Issue secure transient guest cookies; recheck central snapshot policy, scope,
+  expiry/revocation and owner activity on every read. Preserve immutable payloads
+  and keep guest access separate from QH accounts and all Space write permissions.
+- Add isolated-only migration 0009 and opt-in HTTPS API bindings. Guest routes
+  remain absent from the persistent VPS runtime until separately authorized.
+
 ## QH-55 / QH-19 — governed disclosure and snapshots, 2026-10-25
 
 - Build bounded automatic current/proposed revision scope through the existing

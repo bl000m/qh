@@ -30,6 +30,15 @@ central policy, with no production route or provider binding. Additive migration
 0008 follows unchanged 0007; both remain isolated-only. Invitation/session and UI
 responsibilities in the table are still the subsequent blocks.
 
+The following [QH-20 increment](qh-20-guest-access.md) adds snapshot-bound mailbox
+invitations, keyed OTP verifiers and temporary guest sessions in `app/projections`,
+with the PostgreSQL guest repository and local-only SMTP adapter. The existing
+central PolicyService evaluates separate snapshot READ/ASK actions from fresh
+session facts; no guest QH account, owner OIDC replacement or Space grant is added.
+The HTTPS API router requires explicit factory bindings and is absent from the
+VPS bootstrap. Migration 0009 follows 0008 and remains isolated-only. SMTP tests
+use an ephemeral internal-network mailbox; UI/browser acceptance remains Block 3.
+
 | Work | Responsibility and reused boundary |
 | --- | --- |
 | [QH-55](https://contextlab.atlassian.net/browse/QH-55) | After central PolicyService authorization, derive bounded exact eligible item/revision IDs and minimized disclosure from one owned Space. Reuse QH-14/15/16 deterministic filtering, exclusions, canonical hydration and graph verification; no graph traversal that expands scope or SQL fallback |

@@ -13,10 +13,12 @@ from app.api.security import SecurityBindings
 from app.api.context_spaces import router as spaces_router
 from app.api.context_query import router as query_router
 from app.api.context_browse import router as browse_router
+from app.api.guest import GuestHTTPConfig, router as guest_router
 
 
 def create_app(*, services: ApplicationServices | None = None,
-               security: SecurityBindings | None = None, lifespan=None, offline_chat=False) -> FastAPI:
+               security: SecurityBindings | None = None, lifespan=None, offline_chat=False,
+               guest_http: GuestHTTPConfig | None = None) -> FastAPI:
     """Compose the HTTP adapter with explicitly supplied application services.
 
     Health runs without business services; unbound authentication fails closed. Future business
@@ -29,6 +31,11 @@ def create_app(*, services: ApplicationServices | None = None,
     application.state.offline_chat = offline_chat
     application.state.services = services
     application.state.security = security
+    if services is not None and services.guest is not None:
+        if security is None or not isinstance(guest_http, GuestHTTPConfig):
+            raise ValueError('Explicit guest security and HTTPS origin required')
+        application.state.guest_http = guest_http
+        application.include_router(guest_router)
     application.include_router(development_ai_router)
     application.include_router(enrichment_router)
     application.include_router(review_router)

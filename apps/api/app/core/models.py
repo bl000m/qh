@@ -19,6 +19,17 @@ RetrievalHitId = NewType("RetrievalHitId", str)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class GuestAccess:
+    """Transient verified-invitation actor; never a QH user or Space membership."""
+    session_id: str
+    invitation_id: str
+    context_id: ContextId
+    snapshot_id: str
+    rights: tuple[str, ...]
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ContextSpace:
     id: ContextId
     owner_id: SubjectId

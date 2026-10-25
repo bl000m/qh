@@ -6,6 +6,16 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-25 — QH-20 guest authentication candidate; isolated-only
+
+PR #26 integrated Block 1 as `cfd7c0e`. Guarded app-only stop/up permitted clean
+checkout alignment and the QH-20 branch from that main. Owner data, original
+container IDs/images/mounts and private configuration are preserved. The QH-20
+service/router has no production binding; no guest endpoint is exposed by the VPS
+bootstrap. Migration 0009 and the SMTP capture mailbox belong only to disposable
+SQL/Neo4j integration tests, with no public ports or persistent mailbox volume.
+No VPS migration (still 0006), Keycloak change, paid call or external email.
+
 ## 2026-10-25 — Demo B Block 1 internal candidate; activation not authorized
 
 QH-55/QH-19 adds internal governed disclosure and materialized approved snapshots.

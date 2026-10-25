@@ -14,13 +14,17 @@ class PolicyAction(str, Enum):
     ORGANIZE_ENVIRONMENT = "organize_environment"
     PROPOSE_UPDATE = "propose_update"
     CONFIRM_UPDATE = "confirm_update"
+    READ_SNAPSHOT = "read_snapshot"
+    ASK_SNAPSHOT = "ask_snapshot"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class PolicyRequest:
-    subject_id: SubjectId
+    subject_id: SubjectId | None
     action: PolicyAction
     context_ids: tuple[ContextId, ...] = ()
+    snapshot_id: str | None = None
+    guest_session_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

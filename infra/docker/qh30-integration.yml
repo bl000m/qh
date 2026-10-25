@@ -41,10 +41,24 @@ services:
       QH30_SQL_TEST: "1"
       QH30_TEST_NEO4J_URI: bolt://qh30-native-neo4j-test:7687
       QH30_TEST_NEO4J_PASSWORD: ${QH30_GRAPH_PASSWORD:?Dedicated test password required}
+      QH20_TEST: "1"
+      QH20_MAILBOX_URL: http://qh-guest-mailbox:8025
     depends_on:
       qh30-sql-test: {condition: service_healthy}
       qh30-native-neo4j-test: {condition: service_healthy}
+      qh-guest-mailbox: {condition: service_healthy}
     networks: [test]
+  qh-guest-mailbox:
+    # Disposable SMTP capture only: no host ports, persistent volume or relay.
+    image: axllent/mailpit:v1.21.8@sha256:81370195cd4a0eab9604d17c2617a7525b0486f9365555253b6c5376c6350f1a
+    command: [--quiet, --database, /data/mailpit.db, --max, "200"]
+    tmpfs: [/data]
+    networks: [test]
+    healthcheck:
+      test: [CMD, /mailpit, readyz]
+      interval: 2s
+      timeout: 3s
+      retries: 40
 networks:
   test:
     internal: true
