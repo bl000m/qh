@@ -37,10 +37,22 @@ def main():
     parser.add_argument('--chat-sessions', action='store_true', help='QH-45 sessions with test-only HTTP-simulated Mistral, never live HTTP')
     parser.add_argument('--qh-login-theme', action='store_true',
                         help='Preview source-only QH theme on this disposable IdP; never alters the VPS realm')
+    parser.add_argument('--product-mode',action='store_true',help='QH-52 isolated session renewal/rotation and real-provider UI; simulated HTTP only')
+    parser.add_argument('--development-ai-mode',action='store_true',help='Owner development send contract, simulated Mistral only; clean UUM product harness')
+    parser.add_argument('--uum-mode',action='store_true',help='Clean UUM-only fixture, no legacy application records')
+    parser.add_argument('--semantic-mode',action='store_true',help='QH-51 isolated explicit profile2 and exact synthetic provider only')
     parser.add_argument('--browser-grep', help='Targeted Playwright recheck; OIDC/outage/restore gates still run')
     parser.add_argument('--focused-browser-only', action='store_true', help='Local focused UI checks only; never a full acceptance verdict')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if args.product_mode and (not args.frontend_image or not args.chat_sessions or not args.understanding):
+        raise SystemExit('Product tests require packaged frontend, native understanding and simulated session factory')
+    if args.development_ai_mode and not (args.uum_mode and args.product_mode):
+        raise SystemExit('Development AI test requires isolated UUM product harness')
+    if args.semantic_mode and not args.product_mode:
+        raise SystemExit('Semantic fixtures require the disposable product stack')
+    if args.uum_mode and not args.product_mode:
+        raise SystemExit('UUM fixture requires disposable product stack')
     if args.focused_browser_only and (not args.browser_grep or os.environ.get('CI')):
         raise SystemExit('Focused mode requires a local explicit filter; CI acceptance cannot use it')
     docker = ['sudo', '-n', 'docker'] if args.sudo_docker else ['docker']
@@ -97,6 +109,11 @@ def main():
             'QH11_BROWSER_TEST': '1', 'QH12_BROWSER_TEST': '1' if args.understanding else '0', 'QH_RUN_OIDC': '1', 'PYTHONPATH': '/workspace/apps/api',
             'QH43_LOGIN_THEME_TEST': '1' if args.qh_login_theme else '0',
             'QH45_SESSION_BROWSER_TEST': '1' if args.chat_sessions else '0',
+            'QH52_PRODUCT_BROWSER_TEST':'1' if args.product_mode else '0',
+            'QH51_SEMANTIC_BROWSER_TEST':'1' if args.semantic_mode else '0',
+            'QH_DEVELOPMENT_AI_BROWSER_TEST': '1' if args.development_ai_mode else '0',
+            'QH_UUM_BROWSER_TEST':'1' if args.uum_mode else '0',
+            'QH_CHAT_SESSION_BINDING':'oidc' if args.product_mode else 'credential',
         }
         if args.understanding:
             values.update(NEO4J_AUTH='neo4j/' + secrets.token_hex(24), NEO4J_URI='bolt://neo4j:7687',
@@ -123,10 +140,15 @@ def main():
                                            'QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD'])
         realm_path = ROOT / 'infra/keycloak/qh-realm.json'
         theme_mounts = []
-        if args.qh_login_theme:
+        if args.qh_login_theme or args.product_mode:
             # Copy, never rewrite the readonly persistent realm import. Only the test
             # realm's theme/locale differ; credentials/client/PKCE are intact.
             realm = json.loads(realm_path.read_text())
+            if args.product_mode:
+                proposal=json.loads((ROOT/'infra/keycloak/qh52-development-session.json').read_text())
+                realm.update(proposal['realm_settings'])
+                web=next(c for c in realm['clients'] if c['clientId']==proposal['client_id'])
+                web.setdefault('protocolMappers',[]).append(proposal['add_protocol_mapper'])
             realm['loginTheme'] = 'qh'
             realm['internationalizationEnabled'] = True
             realm['supportedLocales'] = ['fr', 'en']
@@ -174,19 +196,29 @@ def main():
             for url in ['http://keycloak:8080/realms/qh/.well-known/openid-configuration', 'http://localhost:8000/health']:
                 wait(['exec', backend, 'python', '-c',
                       'import urllib.request; urllib.request.urlopen(' + repr(url) + ', timeout=3)'], 'Disposable OIDC/API')
+            if args.product_mode:
+                run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
+                    '-k', 'test_qh52_real_rotation_revocation_and_logout', capture=False)
             values['QH_BROWSER_EXTERNAL_SERVER'] = '1' if args.frontend_image else '0'
             browser_env = restricted_env('browser.env', ['QH_ALICE_PASSWORD', 'QH_BOB_PASSWORD',
                                                        'QH12_BROWSER_TEST', 'QH12_EXPECTED_JSON',
-                                                       'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST',
+                                                       'QH43_LOGIN_THEME_TEST', 'QH45_SESSION_BROWSER_TEST', 'QH52_PRODUCT_BROWSER_TEST', 'QH51_SEMANTIC_BROWSER_TEST', 'QH_UUM_BROWSER_TEST', 'QH_DEVELOPMENT_AI_BROWSER_TEST',
                                                        'QH_BROWSER_EXTERNAL_SERVER'])
             with env.open('a') as stream:
                 stream.write('QH_BROWSER_EXTERNAL_SERVER=' + ('1' if args.frontend_image else '0') + '\n')
             if args.frontend_image:
                 frontend = start('frontend', '--network', 'container:' + kc,
-                                 '-e', 'QH_WEB_API_TARGET=http://backend:8000', args.frontend_image)
-                wait(['exec', frontend, 'node', '-e',
-                      "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"],
-                     'Packaged frontend')
+                                 '-e', 'QH_WEB_API_TARGET=http://backend:8000',
+                                 '-e','VITE_QH_DEVELOPMENT_SESSION='+('1' if args.product_mode else '0'),
+                                 '-e','VITE_QH_OFFLINE_TESTS='+('0' if args.product_mode else '1'),
+                                 args.frontend_image,'npm','run','dev','--workspace','apps/web','--','--mode', 'development' if args.product_mode else 'test')
+                try:
+                    wait(['exec', frontend, 'node', '-e',
+                          "fetch('http://localhost:5173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"],
+                         'Packaged frontend')
+                except RuntimeError:
+                    run('logs', frontend, capture=False)
+                    raise
             print('Running real Chromium → Keycloak → production API → disposable PostgreSQL', flush=True)
             browser_command = 'npm run build:web && npm run typecheck && npm run test --workspace apps/web'
             if args.browser_grep:
@@ -197,10 +229,10 @@ def main():
                 args.browser_image, 'sh', '-c',
                 browser_command, capture=False)
             # Reuse the existing real OIDC/Core/persistence regression, not a duplicate.
-            if not args.focused_browser_only:
+            if not args.focused_browser_only and not args.product_mode:
                 run('exec', backend, 'python', '-m', 'pytest', '-q', '/workspace/tests/oidc/test_keycloak.py',
                     '-k', 'test_real_oidc_login_mapping_and_owner_isolation', capture=False)
-            if args.understanding and not args.focused_browser_only:
+            if args.understanding and not args.focused_browser_only and not args.product_mode:
                 # Real outage of only this invocation's graph, not a mocked HTTP response.
                 run('stop', '--time', '10', graph)
                 run('run', '--rm', '--network', 'container:' + kc, '--env-file', str(browser_env),
@@ -256,14 +288,18 @@ def main():
                 'backend_image': run('image', 'inspect', args.backend_image, '--format', '{{.Id}}').strip(),
                 'frontend_image': run('image', 'inspect', args.frontend_image, '--format', '{{.Id}}').strip() if args.frontend_image else None,
                 'browser_image': run('image', 'inspect', args.browser_image, '--format', '{{.Id}}').strip(),
-                'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'NOT TESTED (focused)' if args.focused_browser_only else 'PASS',
+                'browser_and_contract_checks': 'PASS', 'existing_real_oidc_regression': 'NOT TESTED (separate focused/product profile)' if args.focused_browser_only or args.product_mode else 'PASS',
                 'native_graph_enabled': args.understanding,
                 'qh_login_theme_preview': args.qh_login_theme,
                 'qh45_http_simulated_sessions': args.chat_sessions,
+                'qh52_product_profile':args.product_mode,
+                'qh51_semantic_profile':args.semantic_mode,
+                'semantic_provider':'exact synthetic fixture, no network' if args.semantic_mode else None,
+                'qh52_real_rotation_revocation_logout':'PASS' if args.product_mode else None,
                 'qh_login_theme_locale': 'fr' if args.qh_login_theme else None,
                 'browser_filter': args.browser_grep,
-                'real_graph_outage': 'PASS' if args.understanding and not args.focused_browser_only else None,
-                'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding and not args.focused_browser_only else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,
+                'real_graph_outage': 'PASS' if args.understanding and not args.focused_browser_only and not args.product_mode else None,
+                'synthetic_backup_restore_rebuild_browser': 'PASS' if args.understanding and not args.focused_browser_only and not args.product_mode else None, 'published_ports': [], 'live_qh_access': False, 'paid_calls': 0,
             }, indent=2) + '\n')
         finally:
             for name in reversed(resources):

@@ -5,6 +5,125 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — final extraction and memory correction, 2026-10-24
+
+- Share the UUM wire schema with Mistral strict structured output; clarify fictional
+  scenarios, concise meanings, exact Markdown evidence and assistant attribution.
+- Preserve full-conversation SQL replay, safe basic Markdown, cited sources only,
+  accurate memory outcomes and accessible modal closing/scrolling.
+- Owner-requested offline/replay and focused browser checks only; no paid calls or
+  new complete CI campaign. Existing Source revisions and accounting are preserved.
+
+## QH-51 — provider defaults and whole-conversation memory, 2026-10-23
+
+- Remove ordinary Mistral output/call/session micro ceilings; reserve full model
+  capacity against the sole EUR10 aggregate, preserving historical spend.
+- Place multiline composer and memory action above the scrolling chat, with
+  effective model/budget footer; retain outer layout and universal map.
+- Replace selections/checkboxes with Continuer → semantic atomic proposals →
+  Voir la proposition. Preserve roles, exact evidence and human review.
+
+## QH-51 — independent provenance and sufficiency, 2026-10-22
+
+- Show useful conversation-grounded answers with insufficient_context=true;
+  validate provenance/citations independently of the completeness warning.
+- Preserve the boolean unchanged across backend/DTO/UI and display both incomplete
+  information and unconfirmed-dialogue warnings in the answer and Sources.
+- Retain canonical citation, owner/scope/snapshot/budget gates and zero automatic
+  retry or knowledge write. Add the journal decision/action fidelity benchmark case.
+
+## QH-51 — approved dialogue support and CI integrity, 2026-10-22
+
+- Accept conversation-grounded answers without canonical references; require and
+  validate support_basis against actual sent inputs. Display the declared basis
+  and unconfirmed-dialogue warning; chat never writes knowledge.
+- Keep exact canonical citations, authorization, JSON, snapshot and budget gates.
+- Make non-200 response capture explicit to private diagnostics; preserve the
+  historical harness's no-raw-artifact/no-retry/no-publication invariant on429.
+- Verify compact empty-Space insertion and six real empty dimensions in readiness.
+
+## QH-51 — private AI diagnostics and development envelope, 2026-10-22
+
+- Keep original Mistral response and accounting separate from QH admission results,
+  in private one-hour owner/Space-scoped diagnostics with authenticated deletion.
+- Authorize 100 global chat/UUM attempts and USD2.50 (conservative EUR5 envelope),
+  preserving prior spend, expiry, atomic reservation and zero automatic retry.
+- Audit canonical-citation restrictions for empty-Space dialogue; admission and
+  epistemic checks remain unchanged pending the owner's functional decision.
+- Correct the standard-library architecture allowlist and legacy browser
+  expectations for retained dialogue when proposal inclusion changes.
+
+## QH-51 — stable radial map and ordinary development AI,2026-10-22
+
+- Match the owner’s radial desktop/mobile targets with a central original orb,
+  measured links, six stable nodes and compact manual insertion, independent of
+  empty/proposed/confirmed content. Preserve conversation, draft and review flow.
+- Enable ordinary Envoyer and explicit UUM Proposer for the exact development
+  OIDC owner across owned Spaces, with automatic authorization and one original
+  aggregate ledger. Historical session/snapshot UI consents no longer apply here.
+- Preserve8-call/USD0.20 ceiling, expiry and historical accounting; block before
+  HTTP on insufficient reservation. No session refill, retry or fallback.
+- [Executed real smoke, preservation and limits](docs/qh-51-development-ai-runtime.md).
+  PR23 remains open; no merge, migration, reset, Keycloak or PR19 change.
+
+## QH-51 UUM map — responsive readability correction, 2026-10-22
+
+- Replace fixed absolute card coordinates with intrinsic Grid rows and named
+  container queries; reserve space for the original orb, labels and status text.
+- Keep six colors/icons, complete French labels, empty/current/proposed states,
+  node navigation, keyboard operation and fullscreen readable at narrow widths
+  and enlarged text. Bound the image and collapse the tablet empty-Space columns.
+- Preserve wrapping view controls; remove fixed decorative paths that cannot
+  match the adaptive layout. Add screenshot, geometry and keyboard regressions.
+  [Executed evidence and live metadata activity exception](docs/qh-51-uum-map-layout.md).
+
+## QH-51 UUM — approved pivot, isolated implementation, 2026-10-22
+
+- Replace primary thematic map grouping with six universal dimensions and optional
+  single primary assignments. Empty, proposed, current and unavailable stay distinct.
+- Add generic profile3, a quote-only atomic extraction format, selective QH-46
+  primary review and graph-verified presence/member navigation in the same Engine.
+- Keep manual literal input unclassified, preserve provenance and immutable new
+  revisions, and retain original code, benchmarks and captured provider output.
+- Prepare an inventoried application-data reset with verified SQL/graph backups,
+  selective deletion rehearsal and rollback; preserve identities and economic data.
+  No v1/v2 semantic migration, Mistral call, PR merge or persistent reset performed.
+  VPS cutover remains subject to the owner's final destructive-scope confirmation.
+
+## QH-51 semantic understanding — historical isolated increment, 2026-10-21
+
+- Version explicit thematic and semantic-role assignments with exact evidence,
+  independent certainty and QH-46 selective owner review; preserve legacy profiles.
+- Reuse the existing Engine and atomic source/proposal/outbox publication with
+  explicit semantic selection and a provider-neutral adapter. Runtime stays literal.
+- Add bounded graph-verified thematic navigation and actual membership nodes;
+  no taxonomy, title classifier, autonomous identity merge or historical rewrite.
+- Verify dynamic themes, exact evidence, selective rejection/name review and owner
+  isolation on two disposable synthetic Spaces; retain literal and advanced-review
+  regressions. Real-provider quality remains unverified.
+- New profile provisioning, paid inference and VPS activation remain separately gated.
+
+## QH-54 owner review corrections — 2026-10-21
+
+- Preserve the Space orb with a truthful thematic-unavailable state; remove nodes
+  derived from single revisions. Éléments remains accessible without a question.
+- Restore the original logo asset in Space navigation and place the mobile chat
+  before the map so the composer is immediately reachable.
+- Document the approved thematic/semantic-role distinction and a separately gated
+  QH-51 extraction, evidence, naming and review proposal. No schema/provider change.
+
+## QH-52 development readiness — in progress, 2026-10-20
+
+- Prepare bounded memory-only OIDC renewal and exact-snapshot disclosure stable
+  across renewed access tokens, with durable work-session budgets; both profiles
+  remain default-off pending the separate persistent activation gate.
+- Add owner-only Space/domain descriptions in existing organization metadata,
+  reuse Space name editing and QH-39 for a manual first information without IA.
+- Keep composer and notices in normal document flow; normal product chat shows
+  an authorized provider or unavailability. Mock requires explicit test composition.
+- Preserve PR19, existing demo Spaces, schema0006, Keycloak image/import and paid
+  ledgers. No real inference, migration, provider expansion or automatic merge.
+
 ## Demo B block 2 — in review, 2026-10-20
 
 - QH-14 adds canonical mutable Projection Drafts with exact item/revision scope,
@@ -435,3 +554,38 @@ unavailable pending an approved lifecycle. No destructive endpoint or provider c
   retry. Runtime extraction is clearly labelled offline literal control only.
 - Add isolated API/SQL/Neo4j/browser/security regressions and ADR 0009. No migration,
   demo source/revision mutation, external inference, QH-39 merge or Jira DONE.
+
+### QH-53 — Approved Space product maquettes (Unreleased)
+
+- One Space header and accessible Discussion/Éléments/Modèle/Conseils/Paramètres
+  navigation; conversation and memory-only drafts survive tab changes.
+- Original QH orb, empty-Space entry, compact real model/budget cards, explicit
+  selected-message memory, owner metadata settings and honest question starters.
+- Necessary exact-content authorization moves into a dialog; preview never sends
+  an inference, consent never automatically submits, proposed inclusion remains
+  affirmative, revocation/accounting remain available in secondary controls.
+- No schema/provider/identity contract change, paid inference or fake settings.
+
+- QH-53 provider failures retain their sanitized error after automatic grant
+  revocation; no retry or fallback. The regression checks the settled revoked state.
+
+### QH-54 — Context understanding refinement (Unreleased)
+
+- Direct manual text is retained with one explicit Ajouter au contexte action,
+  without a second self-confirmation checkbox or an administrative review jump.
+- Canonical provenance distinguishes personal declarations from QH interpretations;
+  proposed state, source evidence, immutable history and human review remain intact.
+- New list/detail and complementary data-derived understanding overview; source and
+  audit remain accessible. No semantic extraction, invented graph, schema change or
+  provider/allowlist/budget activation.
+
+### QH-54 — Latest Space maquettes (owner review, 2026-10-21)
+
+- Align empty two-card and populated map/chat layouts with the four new references;
+  actual domain pills, QH home navigation and plural Modèles tab.
+- Read-only map nodes use owned canonical titles and states. Sharing/import controls
+  are visibly disabled; the model catalogue/budget reflects backend availability.
+- Owner-approved temporary recovery of unsent message/manual-element drafts only:
+  explicit reconnection, sessionStorage, thirty minutes, exact verified owner and
+  Space; clear on restoration/logout/account change/explicit erasure. Tokens and
+  conversation history remain memory-only; no automatic submission or data write.

@@ -1,0 +1,12 @@
+{
+  "protected_files_unchanged": true,
+  "original_container_config_image_mounts_unchanged": true,
+  "schema": "0006_owner_organization",
+  "same_checkpoint_comparison_before_after": true,
+  "historical_checkpoint_differences": [
+    "context_projection_state",
+    "context_spaces",
+    "owner_organization"
+  ],
+  "note": "These organization/Space differences already existed at the start of this correction; canonical source, understanding and governance tables match the historical checkpoint. No persistent demo test writes."
+}

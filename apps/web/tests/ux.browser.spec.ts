@@ -1,3 +1,6 @@
+import {expandUnderstanding} from './navigation.browser';
+import {closeUnderstanding} from './navigation.browser';
+import {includeProposals} from './navigation.browser';
 import {test,expect} from '@playwright/test';
 import {afterLogin,showSupport} from './navigation.browser';
 import type {Page} from '@playwright/test';
@@ -30,18 +33,18 @@ test('primary chat and lazy keyboard explorer preserve opt-in, draft, focus and 
  const panel=page.locator('details.understanding-explorer');const summary=panel.locator(':scope > summary');
  await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toHaveCount(0);
  expect(await page.locator('.context-chat').evaluate(n=>!!(n.compareDocumentPosition(document.querySelector('.understanding-explorer')!)&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
- await page.getByLabel('Inclure explicitement les propositions non confirmées').check();await question.fill('Brouillon conservé');
- await summary.focus();await page.keyboard.press('Enter');await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
+ await includeProposals(page);await question.fill('Brouillon conservé');
+ await showSupport(page);await summary.focus();await page.keyboard.press('Enter');await expandUnderstanding(page);await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  await page.getByRole('button',{name:'Parcourir les éléments',exact:true}).click();
  await expect(page.getByRole('region',{name:'Explorer les éléments'})).toBeVisible();
  await page.keyboard.press('Escape');await expect(summary).toBeFocused();await expect(panel).not.toHaveAttribute('open','');
- await expect(question).toHaveValue('Brouillon conservé');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).toBeChecked();
- await page.keyboard.press('Space');await expect(page.getByRole('region',{name:'Explorer les éléments'})).toBeVisible();
- await summary.click();expect(posts).toBe(0);
+ await closeUnderstanding(page);await page.getByRole('tab',{name:'Discussion',exact:true}).click();await expect(question).toHaveValue('Brouillon conservé');await expect(page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.')).toBeChecked();
+ await showSupport(page);await summary.focus();await page.keyboard.press('Space');await expect(page.getByRole('region',{name:'Explorer les éléments'})).toBeVisible();
+ await closeUnderstanding(page);expect(posts).toBe(0);
  await page.screenshot({path:info.outputPath('qh43-space-desktop.png'),fullPage:true});
- await page.getByRole('link',{name:'Mon environnement',exact:true}).click();await expect(page).toHaveURL('http://localhost:5173/');
+ await closeUnderstanding(page);await page.getByRole('link',{name:'Mon environnement',exact:true}).click();await expect(page).toHaveURL('http://localhost:5173/');
  await page.getByRole('link',{name:'Démo QH-8',exact:true}).click();await expect(question).toHaveValue('');
- await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
+ await expect(page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.')).not.toBeChecked();
 });
 test('narrow mobile and 200 percent text resizing keep navigation and controls reachable',async({page},info)=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/');await login(page);
@@ -51,31 +54,26 @@ test('narrow mobile and 200 percent text resizing keep navigation and controls r
  await page.setViewportSize({width:320,height:812});
  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await showSupport(page);const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');
+ await showSupport(page);const summary=page.locator('.understanding-explorer > summary');await summary.focus();await page.keyboard.press('Enter');await expandUnderstanding(page);
  await expect(page.getByRole('heading',{name:'Aperçu structuré'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
-test('chat composer leads on mobile while technical details remain available and consent stays explicit',async({page},info)=>{
+test('radial map leads on mobile while the composer remains reachable and historical consent stays explicit',async({page},info)=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/');await login(page);
  await afterLogin(page,expected.proposed_scope);
  const field=page.getByLabel('Votre question sur ce contexte');await expect(field).toBeEnabled();
- const help=page.locator('.chat-help');await expect(help).not.toHaveAttribute('open','');
- await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:true})).toBeVisible();
- const opt=page.getByLabel('Inclure explicitement les propositions non confirmées');await expect(opt).toBeVisible();await expect(opt).not.toBeChecked();
- await expect(page.getByText(/La discussion utilise une sélection bornée/)).toBeHidden();
- expect((await field.boundingBox())!.y).toBeLessThan(650);
- await help.locator('summary').click();await expect(page.getByText(/La discussion utilise une sélection bornée/)).toBeVisible();
- await help.locator('summary').click();await opt.check();await field.fill('Question en attente');
+ await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:true})).toHaveCount(0);
+ expect((await field.boundingBox())!.y).toBeGreaterThan((await page.locator('.space-context-map').boundingBox())!.y);await field.scrollIntoViewIfNeeded();expect((await field.boundingBox())!.y).toBeLessThan(844);await includeProposals(page);await field.fill('Question en attente');
  let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>release=resolve);
  await page.route('**/chat',async route=>{await gate;await route.continue();});
  await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
  await expect(page.locator('.chat-pending .chat-question-message')).toContainText('Question en attente');
  await expect(field).toBeDisabled();await expect(page.locator('.chat-turn')).toHaveCount(0);
  release();await expect(page.locator('.chat-turn')).toHaveCount(1);await expect(page.locator('.chat-pending')).toHaveCount(0);
- await expect(page.getByRole('note').filter({hasText:/Tout le contexte fourni est proposé/})).toBeVisible();
+ await expect(page.getByRole('note').filter({hasText:'Éléments à vérifier'})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Extraits de démonstration — sans compréhension de la question',exact:true})).toBeVisible();
- await expect(help).not.toHaveAttribute('open','');
+ await expect(page.locator('.chat-help')).toHaveCount(0);
  await expect(page.locator('.chat-turn details[open]')).toHaveCount(0);
  await page.screenshot({path:info.outputPath('qh43-conversation-mobile.png'),fullPage:true});
 });
@@ -145,8 +143,8 @@ test('one approved identity spans environment and Space without decorative clutt
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
- await expect(page.locator('.chat-help')).not.toHaveAttribute('open','');await expect(page.getByLabel('Inclure explicitement les propositions non confirmées')).not.toBeChecked();
+ await expect(page.locator('.space-brand .qh-bubble')).toHaveJSProperty('naturalWidth',400);await expect(page.locator('.space-brand strong')).toHaveText('QH');await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
+ await expect(page.locator('.chat-help')).toHaveCount(0);await expect(page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.')).not.toBeChecked();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});
  }

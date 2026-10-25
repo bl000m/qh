@@ -1,0 +1,38 @@
+[
+  {
+    "view": "discussion-empty",
+    "reference": "Image ChatGPT 20 oct. 2026, 16_47_12-1.png",
+    "reference_sha256": "eccd18ccfa8bc1877f7a407113311009d2dea0b22d1f888e7cdba886e7e9b350",
+    "actual_sha256": "36ae61bdaa917235016bf1ed6bfdaaec32a1c4f716d5145f05371b486425e6b9"
+  },
+  {
+    "view": "elements",
+    "reference": "Image ChatGPT 20 oct. 2026, 16_47_14-2.png",
+    "reference_sha256": "7b40b0d1e46a8be14adc7afc14c0abc4e5147c2aa64d6c5ee812a55ef45b37ed",
+    "actual_sha256": "cd678aa6d4b6c39146982caf6ee3b3ba3d44e8b2abc9486e363590a88204abb9"
+  },
+  {
+    "view": "model-available",
+    "reference": "Image ChatGPT 20 oct. 2026, 16_47_16-3.png",
+    "reference_sha256": "4af0b16ed31e2b594a3a1eed2ff1120b45f98ad6056146432c133946a6478da1",
+    "actual_sha256": "7b9a3a6523a07f0e6ea1e5549768ef3402a609d29803b6a9093068456847a8c9"
+  },
+  {
+    "view": "advice",
+    "reference": "Image ChatGPT 20 oct. 2026, 16_47_19-4.png",
+    "reference_sha256": "2a0944262d78c3667bcdbc0e05b4ae9d839497c1825c0fd2d31285e9b53af965",
+    "actual_sha256": "7489d0fa0ca2671f3ccf421a4880b0b7a06d862021c957384f69c0cc7962ac19"
+  },
+  {
+    "view": "context-settings",
+    "reference": "Image ChatGPT 20 oct. 2026, 16_47_22-5.png",
+    "reference_sha256": "f1fc179a248ba58f9b05840ac5159b53a7999c506062673acc05a3c4683453fd",
+    "actual_sha256": "8970d851d939bdf16b997614fcc80d24a220e2d1099da3db099a80ff85a3c2d2"
+  },
+  {
+    "view": "global-settings",
+    "reference": "Interface française de paramètres minimaliste (1).png",
+    "reference_sha256": "eb41af7ec85b32f9c9948e29753c1f86f21f1b883ef9c135f1c26078cdf79473",
+    "actual_sha256": "9bb6c40e32cc6892ff02b7ee6301ec609cf421632bc719e9e29670243d253539"
+  }
+]

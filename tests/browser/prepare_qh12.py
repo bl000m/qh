@@ -21,6 +21,10 @@ from tests.test_understanding import CASES
 from tests.test_understanding_pipeline import import_extract
 
 assert os.environ.get('QH12_BROWSER_TEST') == '1'
+if os.environ.get('QH_UUM_BROWSER_TEST')=='1':
+    import runpy
+    runpy.run_path('/workspace/tests/browser/prepare_uum.py',run_name='__main__')
+    raise SystemExit(0)
 assert os.environ['POSTGRES_HOST'] == 'postgres' and os.environ['POSTGRES_DB'] == 'qh'
 owner = str(DEMO_IDENTITIES[0][1])
 repo = CanonicalRepository(url=database_url(), subject_id=owner)
@@ -29,6 +33,11 @@ with repo.connect() as connection:
     assert connection.execute('SELECT version_num FROM alembic_version').fetchone()['version_num'] == '0006_owner_organization'
     connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Démo QH-8')", (scope, owner))
 register_generic_profiles(repo)
+from adapters.postgres.semantic_profiles import register_uum_profiles
+register_uum_profiles(repo)
+if os.environ.get('QH51_SEMANTIC_BROWSER_TEST')=='1':
+    from adapters.postgres.semantic_profiles import register_semantic_profiles
+    register_semantic_profiles(repo)
 policy = OwnerPolicyService(owner_for=PostgresSecurityReader(url=repo.url).owner_for)
 p = {'repo': repo, 'scope': scope, 'service': SimpleNamespace(policy=policy)}
 usecase, provider, source_ref, checkpoint = import_extract(p, CASES[0], key='qh12-offline-demo')
@@ -95,7 +104,15 @@ review_p = {'repo':repo,'scope':review_scope,'service':SimpleNamespace(policy=po
 review_usecase, _, _, review_cp = import_extract(review_p, CASES[0], key='qh50-isolated-review')
 asyncio.run(review_usecase.publish(subject_id=owner,checkpoint=review_cp))
 
-print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces, 'review_scope':review_scope,
+# Dedicated QH-54 interpretation review: no mutation of shared chat/review fixtures.
+understanding_scope = str(uuid4())
+with repo.connect() as connection:
+    connection.execute("INSERT INTO context_spaces(id,owner_id,name) VALUES (%s,%s,'Compréhension QH-54 isolée')", (understanding_scope,owner))
+understanding_p = {'repo':repo,'scope':understanding_scope,'service':SimpleNamespace(policy=policy)}
+understanding_usecase, _, _, understanding_cp = import_extract(understanding_p, CASES[0], key='qh54-isolated-interpretation')
+asyncio.run(understanding_usecase.publish(subject_id=owner,checkpoint=understanding_cp))
+
+print(json.dumps({'owner': owner, 'scope': scope, 'source_revision_id': source_ref, 'demo_spaces':demo_spaces, 'review_scope':review_scope, 'understanding_scope':understanding_scope,
                   'original_ids': [r['id'] for r in original],
                   'empty_scope':empty_scope,'proposed_scope':proposed_scope,'historical_scope':historical_scope,
                   'confirmed_id': clones[0]['id'],

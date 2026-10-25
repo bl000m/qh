@@ -26,5 +26,5 @@ class MockChatProvider:
         aliases = {ref: alias for alias, ref in context['allowed_reference_aliases'].items()}
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT, content=json.dumps({
             'answer': answer, 'reference_aliases': [aliases[r['revision_id']] for r in rows],
-            'insufficient_context': not bool(rows),
+            'insufficient_context': not bool(rows), 'support_basis': 'canonical' if rows else 'insufficient',
         }, ensure_ascii=False)))

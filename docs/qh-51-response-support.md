@@ -1,0 +1,63 @@
+# QH-51 — supporto dialogico e canonico
+
+
+## Contratto di risposta approvato e rettificato — 22 ottobre 2026
+
+L'owner approva il contratto dell'audit con `support_basis` obbligatorio:
+
+| Valore | Condizioni controllate sugli input effettivamente inviati |
+| --- | --- |
+| dialogue | Messaggio utente esplicito non vuoto; nessun alias citato. Può esistere contesto canonico disponibile ma non dichiarato come supporto |
+| canonical | Almeno un alias esatto, distinto e risolvibile fra quelli trasmessi |
+| mixed | Condizioni canonical più presenza del dialogo utente effettivamente inviato |
+| insufficient | Valore esistente per appui non stabilito; eventuali riferimenti devono comunque essere validi. Non determina il booleano |
+
+**Rettifica successiva del Product Owner:** provenienza e sufficienza sono assi
+indipendenti. `insufficient_context` resta un booleano che indica informazioni
+insufficienti per rispondere completamente alla domanda, anche quando una risposta
+parziale è utile. Non significa errore strutturale, assenza di canonico o assenza
+di supporto dialogico. Nessuna equivalenza o implicazione col valore di
+`support_basis`: tutti i valori già esistenti ammettono entrambi i booleani, sempre
+nel rispetto delle condizioni su dialogo e riferimenti della tabella. Il valore
+storico `insufficient` è conservato senza nuovi enum o migrazione; l'interfaccia
+lo presenta come appui non stabilito, senza dedurne la sufficienza.
+
+Caso vincolante: `dialogue / true / []` è valido con dialogo utente inviato. La UI
+mostra la risposta, il supporto dialogico, l'avviso di risposta incompleta e quello
+di assenza di conferma/memorizzazione. Gli stessi avvisi compaiono in Sources.
+Nessun nuovo retry, salvataggio canonico o indebolimento degli alias.
+
+Il backend verifica packet/snapshot/record/alias e presenza del dialogo, **non**
+entailment o verità del testo. Il frontend verifica il DTO rispetto allo Space,
+alla selezione ricevuta e al dialogo della richiesta. La dichiarazione del modello
+non è una prova autonoma; nessuna riconciliazione o correzione euristica. Canonical
+indica revisioni persistite autorizzate, anche proposte se esplicitamente incluse:
+non significa automaticamente conoscenza confermata o verità. Stati epistemici e
+avvisi su proposte/copertura parziale rimangono indipendenti.
+
+UI: appui déclaré leggibile e avviso per dialogue/mixed: informazioni conversazionali
+non confermate/registrate, nessuna memorizzazione automatica. UUM rimane un'azione
+distinta; Source/proposte/outbox e review QH46 restano invariati. Autorizzazione,
+provenance, struttura JSON, snapshot e plafond restano bloccanti. Nessun fallback
+al vecchio protocollo: campo assente o incoerente viene respinto. Le evidenze storiche
+non vengono riscritte. Il precedente divieto di implementazione era un gate ora
+soddisfatto, non una regola funzionale permanente.
+
+Il protocollo iniziale di verifica reale usa il modello pinned
+mistral-small-2603 e l'endpoint già approvato, una richiesta sintetica entro il
+plafond residuo, prenotazione massima USD0.0024, zero retry/fallback. Nessuna
+inferenza di startup o test automatico/CI; payload e JSON sanitari fittizi rimangono
+privati. Le altre prove usano provider simulato. Non estende disponibilità o budget.
+
+
+Il primo protocollo live a invio singolo è stato fermato su un formato reale errato
+(reference_aliases object invece di array), conservando costo/JSON/stop marker.
+Il mandato owner sul plafond attuale copre una verifica controllata del candidato
+corretto: stesso payload/Space, un nuovo Envoyer dopo test offline/CI verde,
+prenotazioneUSD0.0024 e nessun retry/fallback automatico. Nessun errore del modello
+viene convertito euristicamente o cancellato dal ledger. Il prompt esplicita array
+ed esempio vuoto, mentre il decoder continua a rifiutare anche l'object vuoto{}.
+
+Per questa rettifica le verifiche sono esclusivamente offline/CI: nessuna nuova
+chiamata reale. I protocolli live sopra sono evidenze storiche concluse, non un
+mandato a ripeterli. [Regressione e DoD](qh-51-independent-support.md).

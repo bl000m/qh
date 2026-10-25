@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api.development_ai import router as development_ai_router
 from app.api.enrichment import router as enrichment_router
 from app.api.review import router as review_router
 from app.api.environment import router as environment_router
@@ -15,7 +16,7 @@ from app.api.context_browse import router as browse_router
 
 
 def create_app(*, services: ApplicationServices | None = None,
-               security: SecurityBindings | None = None, lifespan=None) -> FastAPI:
+               security: SecurityBindings | None = None, lifespan=None, offline_chat=False) -> FastAPI:
     """Compose the HTTP adapter with explicitly supplied application services.
 
     Health runs without business services; unbound authentication fails closed. Future business
@@ -25,8 +26,10 @@ def create_app(*, services: ApplicationServices | None = None,
     application = FastAPI(title="QH API", version="0.1.0", lifespan=lifespan)
     if services is not None and security is not None and services.policy is not security.policy:
         raise ValueError("Application and security must share the same PolicyService")
+    application.state.offline_chat = offline_chat
     application.state.services = services
     application.state.security = security
+    application.include_router(development_ai_router)
     application.include_router(enrichment_router)
     application.include_router(review_router)
     application.include_router(environment_router)

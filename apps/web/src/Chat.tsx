@@ -1,14 +1,22 @@
+import AnswerSupport from './AnswerSupport';
+import AnswerMarkdown from './AnswerMarkdown';
 import EnrichConversation from './EnrichConversation';
+import ManualInformation from './ManualInformation';
+import useDraft from './useDraft';
 import type {SelectedConversationTurn} from './EnrichConversation';
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
-import {apiMessage,ApiError} from './api';
+import {ApiError,apiMessage} from './api';
 import type {QhApi} from './api';
 import SourcesPanel from './SourcesPanel';
-import ProviderChoice from './ProviderChoice';
+import {Orb,Icon} from './Ui';
+import ContextMap,{UsefulActions} from './ContextMap';
+import type {SpaceTab} from './SpaceTabs';
+import type {SessionCapabilities} from './provider-session';
+import ProviderChoice,{offlineFixture} from './ProviderChoice';
 import type {ChatAnswer,DialogueMessage} from './chat';
 
-export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void}) {
+export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Discussion',addRequest=0,draftRequest,onContextSaved,refreshKey=0,onExploreContext,onDimension}:{api:QhApi;scope:string;onAnswersChange?:(answers:ChatAnswer[])=>void;onOpenProposal?:(id:string)=>void;tab?:SpaceTab;addRequest?:number;draftRequest?:{id:number;text:string};onContextSaved?:()=>void;refreshKey?:number;onExploreContext?:()=>void;onDimension?:(value:string)=>void}) {
   const [available,setAvailable]=useState<{current:boolean;proposed:boolean;historical:boolean}|null>(null);
   const [includeProposed,setIncludeProposed]=useState(false);
   const [messages,setMessages]=useState<DialogueMessage[]>([]);
@@ -16,9 +24,14 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
   const [sourceTurns,setSourceTurns]=useState<SelectedConversationTurn[]>([]);
   const [answers,setAnswers]=useState<ChatAnswer[]>([]);
   useEffect(()=>{onAnswersChange?.(answers);},[answers,onAnswersChange]);
-  const [question,setQuestion]=useState('');
+  const [question,setQuestion]=useDraft('message');
+  const [manualOpen,setManualOpen]=useState(0);
+  const [authorizationRequest,setAuthorizationRequest]=useState(0);
+  const [capabilities,setCapabilities]=useState<SessionCapabilities|null>(null);
+  const capabilitiesChanged=useCallback((value:SessionCapabilities|null)=>setCapabilities(value),[]);
+  useEffect(()=>{if(addRequest)setManualOpen(n=>n+1);},[addRequest]);
   const [loading,setLoading]=useState(false);
-  const [providerMode,setProviderMode]=useState<'mock'|'mistral'>('mock');
+  const [providerMode,setProviderMode]=useState<'mock'|'mistral'>(offlineFixture?'mock':'mistral');
   const [providerSession,setProviderSession]=useState<string|null>(null);
   const [providerFailure,setProviderFailure]=useState(0);
   const [contextChanged,setContextChanged]=useState(0);
@@ -35,87 +48,74 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal}:{api:QhA
   const [error,setError]=useState('');
   const generation=useRef(0);
   const questionField=useRef<HTMLTextAreaElement>(null);
-  const composer=useRef<HTMLFormElement>(null);
-  const [compactComposer,setCompactComposer]=useState(false);
-  useEffect(()=>{const node=composer.current;if(!node)return;const measure=()=>setCompactComposer(innerWidth>=700&&node.getBoundingClientRect().height<innerHeight*.55);const observer=new ResizeObserver(measure);observer.observe(node);window.addEventListener('resize',measure);measure();return()=>{observer.disconnect();window.removeEventListener('resize',measure);};},[]);
+  useEffect(()=>{if(draftRequest){setQuestion(draftRequest.text);requestAnimationFrame(()=>questionField.current?.focus());}},[draftRequest]);
   useEffect(()=>{
     const n=++generation.current;
-    setAvailable(null);setError('');
-      Promise.all([api.browse(scope,{view:'current',limit:1}),api.browse(scope,{view:'proposed',limit:1})])
+    setError('');
+      async function read(view:'current'|'proposed'|'history'){
+        const attempts=refreshKey>0?16:1;
+        for(let attempt=0;attempt<attempts;attempt++){
+          if(n!==generation.current)return null;
+          try{return await api.browse(scope,{view,limit:1});}
+          catch(error){if(!(error instanceof ApiError)||error.status!==503||attempt===attempts-1)throw error;await new Promise(resolve=>setTimeout(resolve,500));}
+        }
+        return null;
+      }
+      Promise.all([read('current'),read('proposed')])
         .then(async([current,proposed])=>{
+          if(!current||!proposed||n!==generation.current)return;
           const hasCurrent=current.items.length>0,hasProposed=proposed.items.length>0;
           // A lack of active support does not establish an empty Space. Reuse the
           // authorized, graph-verified history view; never infer absence on error.
-          const historical=!hasCurrent&&!hasProposed ? (await api.browse(scope,{view:'history',limit:1})).items.length>0 : false;
+          const historical=!hasCurrent&&!hasProposed ? ((await read('history'))?.items.length??0)>0 : false;
           if(n===generation.current)setAvailable({current:hasCurrent,proposed:hasProposed,historical});
         })
         .catch(e=>{if(n===generation.current){setError(apiMessage(e));setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());}});
     return()=>{generation.current++;};
-  },[api,scope]);
+  },[api,scope,refreshKey]);
   function reset(){setSourceIndex(null);follow.current=true;generation.current++;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());setQuestion('');setError('');setLoading(false);}
   async function submit(event:FormEvent){
-    event.preventDefault();if(loading || !question.trim() || messages.length>=8 || !available || providerMode==='mistral'&&!providerSession)return;
+    event.preventDefault();if(loading || !question.trim() || (!capabilities?.automatic&&messages.length>=8) || !available)return;
+    if(providerMode==='mistral'&&!providerSession&&!capabilities?.automatic){if(capabilities?.enabled)setAuthorizationRequest(n=>n+1);else setError('Le modèle n’est pas disponible pour ce contexte. Vous pouvez toujours ajouter un élément.');return;}
     const n=generation.current;
     const next:DialogueMessage[]=[...messages,{role:'user',content:question}];
     const userTurn:SelectedConversationTurn={id:crypto.randomUUID(),role:'user',content:question,captured_at:new Date().toISOString()};
     setLoading(true);setError('');
     try{
-      const answer=providerMode==='mistral' ? await api.sessionChat(scope,providerSession!,next,includeProposed) : await api.chat(scope,next,includeProposed);
+      const answer=providerMode==='mistral' ? capabilities?.automatic?await api.automaticChat(scope,next,includeProposed):await api.sessionChat(scope,providerSession!,next,includeProposed) : await api.chat(scope,next,includeProposed);
       if(n!==generation.current)return;
-      // Answering never persists; separate explicit enrichment consent is required.
+      // Answering never persists. Propose is a separate explicit user action.
       setMessages([...next,{role:'assistant',content:answer.answer}]);
       setSourceTurns(previous=>[...previous,userTurn,{id:crypto.randomUUID(),role:'assistant',content:answer.answer,captured_at:new Date().toISOString()}]);
       setAnswers(previous=>[...previous,answer]);setQuestion('');
-    }catch(e){if(n!==generation.current)return;setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());
+    }catch(e){if(n!==generation.current)return;if(!capabilities?.automatic||e instanceof ApiError&&[401,403,404].includes(e.status)){setMessages([]);setAnswers([]);setSourceTurns([]);setConversationId(crypto.randomUUID());}
       if(providerMode==='mistral'){setProviderFailure(v=>v+1);setProviderSession(null);}
-      setError(e instanceof ApiError && e.status===422 ? 'La discussion dépasse les limites autorisées. Commencez une nouvelle discussion avec une question plus courte.' : e instanceof ApiError && e.status===503 ? 'Discussion indisponible : contexte non fiable ou fournisseur indisponible. Aucun nouvel essai automatique.' : apiMessage(e));
+      setError(e instanceof ApiError && e.status===402 ? 'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.' : e instanceof ApiError && e.status===422 ? 'La discussion dépasse les limites autorisées. Commencez une nouvelle discussion avec une question plus courte.' : e instanceof ApiError && e.status===503 ? 'Discussion indisponible : contexte non fiable ou fournisseur indisponible. Aucun nouvel essai automatique.' : apiMessage(e));
     }finally{if(n===generation.current)setLoading(false);}
   }
-  const proposalsExcluded=!!available&&!available.current&&available.proposed&&!includeProposed;
-  const noActive=!!available&&!available.current&&!available.proposed;
-  const proposalHelp='Des éléments sont disponibles, mais ils ne sont pas confirmés. Pour en discuter, cochez « Inclure explicitement les propositions non confirmées ».';
-  return <section className="context-chat" aria-labelledby="chat-title">
-    <h2 id="chat-title">Discuter avec ce contexte</h2>
-      {!available && !error && <p role="status">Vérification du contexte disponible…</p>}
-      {available && <>
-        {!available.current && available.proposed && <div className="notice chat-availability"><p>Compréhension disponible : propositions non confirmées uniquement.</p>{proposalsExcluded && <p id="chat-availability-help">{proposalHelp}</p>}</div>}
-        {noActive && <div className="chat-empty" role="note"><h3>{available.historical ? 'Une histoire à explorer, aucun élément actif pour discuter.' : 'Ce Space attend sa première compréhension.'}</h3>
-          <p>{available.historical ? 'Des révisions sont conservées dans l’historique. Elles restent consultables dans Explorer la compréhension, mais ne sont pas transmises à la chat.' : 'Aucune révision de compréhension n’est disponible dans ce Space. Il n’y a pas encore d’éléments sur lesquels appuyer une réponse.'}</p>
-          <p className="small muted">Vous pouvez revenir à Mon environnement pour choisir un autre Space.</p></div>}
-        <label className="chat-opt-in"><input type="checkbox" checked={includeProposed} disabled={loading} onChange={e=>{reset();setIncludeProposed(e.target.checked);}}/> Inclure explicitement les propositions non confirmées</label>
-      </>}
-      <div className="conversation-scroll" ref={viewport} role="log" aria-label="Conversation temporaire" aria-live="polite" aria-relevant="additions" aria-busy={loading} tabIndex={0} onScroll={()=>{const n=viewport.current;if(n&&!moving.current){follow.current=n.scrollHeight-n.clientHeight-n.scrollTop<48;if(follow.current)setUnread(false);}}}>
-      {answers.map((answer,i)=><article ref={i===answers.length-1&&!loading?latest:undefined} className="chat-turn" key={i} aria-label={'Échange '+(i+1)}>
-        <div className="chat-question-message"><h3>Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p></div>
-        <div className="chat-answer-message">
-        <h3>{answer.model==='qh-mock-extractive/1' ? 'Extraits de démonstration — sans compréhension de la question' : 'Réponse de l’IA'}</h3><p className="small muted">Modèle : {answer.model}</p>
-        {(answer.references.some(row=>row.validation_state==='proposed')||answer.provided_revisions.length>0&&answer.provided_revisions.every(row=>row.validation_state==='proposed'))&&<p role="note" className="epistemic-line">Cette réponse s’appuie sur des éléments non encore confirmés dans QH.{answer.provided_revisions.every(row=>row.validation_state==='proposed')?' Tout le contexte fourni est proposé ; aucune révision confirmée courante n’a été transmise.':''}</p>}
-        <p className="chat-text">{answer.answer}</p>
-        {answer.insufficient_context && <p className="notice">{proposalsExcluded ? proposalHelp : noActive ? (available?.historical ? 'L’historique est conservé, mais aucun élément actif n’est disponible pour cette discussion.' : 'Ce Space ne contient pas encore de révisions de compréhension pour étayer cette réponse.') : 'Les informations autorisées fournies ne suffisent pas à étayer une réponse à cette question. Cela ne signifie pas que l’information n’existe pas ailleurs dans le Space.'}</p>}
-        {answer.partial_coverage && <p className="notice">Couverture partielle : limites de pages ou de taille atteintes. Les éléments absents de cette réponse peuvent exister dans le Space.</p>}
-        <div className="answer-source-link"><span>{answer.references.length} éléments cités{answer.references.some(r=>r.validation_state==='proposed')?' · Compréhension non confirmée':''}</span><button type="button" className="secondary" onClick={()=>setSourceIndex(i)}>Voir les sources<span className="sr-only"> de la réponse {i+1}</span></button></div>
-        </div>
-      </article>)}
-      {error && <p role="alert" className="notice error">{error}</p>}
-      {loading && <div ref={latest as React.RefObject<HTMLDivElement>} className="chat-pending"><div className="chat-question-message"><h3>Votre question</h3><p className="chat-text">{question}</p></div><p role="status">Préparation de la réponse…</p></div>}
-      </div>
-      {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
-      <p className="generation-status" role="status">{loading?'Réponse en cours…':answers.length?'Réponse disponible. La discussion reste temporaire.':''}</p>
-      <form ref={composer} className={'chat-composer'+(compactComposer?' composer-persistent':'')} onSubmit={e=>{void submit(e);}}>
-        <label htmlFor="chat-question">Votre question sur ce contexte</label>
-        <textarea id="chat-question" ref={questionField} value={question} maxLength={4096} onChange={e=>setQuestion(e.target.value)} aria-describedby={proposalsExcluded ? 'chat-availability-help' : undefined} disabled={loading || !available || messages.length>=8} rows={4} placeholder="Que souhaitez-vous savoir ?"/>
-      {available&&<ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} onChange={providerChanged}/>}
-        <div className="actions"><button disabled={loading || !available || !question.trim() || messages.length>=8 || providerMode==='mistral'&&!providerSession}>Envoyer la question</button>
-          <button type="button" className="secondary" disabled={loading} onClick={()=>{reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button></div>
-        {messages.length>=8 && <p>Limite de quatre questions atteinte. Commencez une nouvelle discussion dans ce même Space.</p>}
-      </form>
-      <EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>
-      {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
-      <details className="chat-help"><summary>Fonctionnement et limites</summary>
-      <p>Échanges temporaires, distincts de la compréhension conservée. La réponse seule n’ajoute ni ne confirme rien. « Enrichir ce contexte » permet une conservation séparée, explicite et non confirmée.</p>
-      <p>La discussion utilise une sélection bornée, sans classement sémantique. Le mode mock restitue des extraits ; Mistral n’est pas activé par la présence d’une clé.</p>
-      <p>Les révisions historiques et refusées sont exclues. Changer le choix des propositions efface la discussion temporaire.</p>
-      <p className="small muted">La discussion reste uniquement en mémoire dans cet onglet. Fermer, changer de Space ou se déconnecter l’efface. Seuls les messages explicitement sélectionnés via « Enrichir ce contexte » peuvent être conservés comme source et propositions.</p>
-      </details>
-  </section>;
+  const assistant=useRef<HTMLElement>(null);
+    return <>
+  <section hidden={tab!=='Discussion'} id="space-panel-0" role="tabpanel" aria-labelledby="space-tab-0" className="context-chat product-discussion space-discussion-grid">
+    <h2 id="chat-title" className="sr-only">Discussion</h2>
+    {!available&&!error&&<p className="sr-only" role="status">Chargement…</p>}
+    <aside className="space-context-column"><ContextMap api={api} scope={scope} refreshKey={refreshKey} onDimension={onDimension} onExplore={onExploreContext} onAdd={()=>setManualOpen(n=>n+1)}/></aside>
+    <section className="assistant-card" ref={assistant}><header className="chat-panel-tools"><h2 className="sr-only">Je discute avec l’assistant</h2><button type="button" className="secondary assistant-expand" aria-label="Agrandir la discussion" onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen();else void assistant.current?.requestFullscreen?.().catch(()=>{});}}><Icon name="expand"/></button></header>
+    <form className="chat-composer product-composer" onSubmit={e=>{void submit(e);}}><label className="sr-only" htmlFor="chat-question">Votre question sur ce contexte</label><textarea onInput={e=>{const n=e.currentTarget;n.style.height="auto";n.style.height=Math.min(n.scrollHeight,180)+"px";}} id="chat-question" ref={questionField} value={question} maxLength={capabilities?.automatic?undefined:4096} onChange={e=>setQuestion(e.target.value)} disabled={loading||!available||(!capabilities?.automatic&&messages.length>=8)} rows={1} placeholder="Écris ton message…"/><button aria-label="Envoyer la question" title="Envoyer" disabled={loading||!available||!question.trim()||(!capabilities?.automatic&&messages.length>=8)}><Icon name="arrow"/></button><div className="composer-media">{(['clip','image'] as const).map((icon,i)=><button key={icon} type="button" disabled aria-label={['Joindre un fichier — indisponible','Joindre une image — indisponible','Ajouter une source — indisponible'][i]}><Icon name={icon}/></button>)}</div><details className="composer-options"><summary aria-label="Options de la discussion"><Icon name="book"/></summary><div>{answers.length>0&&<button type="button" className="secondary" onClick={()=>setManualOpen(n=>n+1)}>Ajouter un élément</button>}<button type="button" className="secondary" disabled={loading} onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');reset();if(providerMode==='mistral')setProviderFailure(v=>v+1);}}>Nouvelle discussion</button><p className="small muted">Les brouillons et la discussion restent dans cet onglet. Seule une mémorisation explicite conserve la conversation comme source.</p></div></details></form>
+    {<EnrichConversation key={conversationId} api={api} scope={scope} conversationId={conversationId} turns={sourceTurns} disabled={loading} onOpen={onOpenProposal} onSaved={receipt=>{onContextSaved?.();if(receipt.revision_ids.length){setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}}/>}
+    <div className="conversation-scroll" ref={viewport} role="log" aria-label="Conversation temporaire" aria-live="polite" aria-relevant="additions" aria-busy={loading} tabIndex={0} onScroll={()=>{const n=viewport.current;if(n&&!moving.current){follow.current=n.scrollHeight-n.clientHeight-n.scrollTop<48;if(follow.current)setUnread(false);}}}>
+      {answers.map((answer,i)=><article ref={i===answers.length-1&&!loading?latest:undefined} className="chat-turn" key={i} aria-label={'Échange '+(i+1)}><div className="chat-question-message"><h3 className="sr-only">Votre question</h3><p className="chat-text">{messages[i*2]?.content}</p></div><div className="chat-answer-message"><span className="answer-brand"><Orb/></span><h3 className="sr-only">{answer.model==='qh-mock-extractive/1'?'Extraits de démonstration — sans compréhension de la question':'Réponse de l’IA'}</h3><AnswerMarkdown text={answer.answer}/><AnswerSupport answer={answer}/>{(answer.references.length>0||answer.provided_revisions.length>0&&answer.provided_revisions.every(r=>r.validation_state==='proposed'))&&<div className="answer-source-link">{answer.references.length>0&&<button type="button" className="text-button" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1}</button>}{(answer.references.some(r=>r.validation_state==='proposed')||answer.provided_revisions.length>0&&answer.provided_revisions.every(r=>r.validation_state==='proposed'))&&<span role="note" className="small muted">Éléments à vérifier</span>}</div>}{(answer.partial_coverage||answer.provided_revisions.some(r=>r.validation_state==='proposed'))&&<details className="answer-details"><summary>Détails de cette réponse</summary><p>Modèle : {answer.model}</p>{answer.provided_revisions.length>0&&answer.provided_revisions.every(r=>r.validation_state==='proposed')&&<p>Tout le contexte fourni est proposé ; aucune révision confirmée courante n’a été transmise.</p>}<p>Les sources permettent de retrouver les informations utilisées ; elles ne confirment pas automatiquement la réponse.</p>{answer.partial_coverage&&<p>Seule une partie des éléments a été utilisée.</p>}</details>}</div></article>)}
+      {loading&&<div ref={latest as React.RefObject<HTMLDivElement>} className="chat-pending"><div className="chat-question-message"><p className="chat-text">{question}</p></div><p role="status">Préparation de la réponse…</p></div>}
+
+    </div>
+    {error&&<p role="alert" className="chat-error">{error}</p>}
+    {unread&&<button type="button" className="new-response" onClick={()=>{follow.current=true;showLatest();}}>Voir la nouvelle réponse ↓</button>}
+    <footer className="chat-footer"><p className={'assistant-model '+(capabilities?.enabled?'available':'unavailable')} role="status"><span aria-hidden="true">●</span> Mistral Small · {!capabilities?'Vérification…':capabilities.plafond_reached?'Plafond atteint':providerSession?'Session autorisée':capabilities?.enabled?'Disponible':'Indisponible'}{capabilities?.automatic&&<> · {capabilities.remaining_calls!==null&&<>{capabilities.remaining_calls} requêtes · </>}{capabilities.remaining_usd} USD restants</>}</p>{capabilities?.automatic&&<details className="chat-data-scope"><summary>Mistral Small · données de ce Space uniquement</summary><p>Envoyer transmet cette conversation et les éléments confirmés. Aucun envoi automatique ni mémorisation. Plafond commun : {capabilities.remaining_calls!==null&&<>{capabilities.remaining_calls} requêtes / </>}{capabilities.remaining_usd} USD restants.</p>{available?.proposed&&<label className="check"><input type="checkbox" checked={includeProposed} onChange={e=>setIncludeProposed(e.target.checked)}/>Inclure aussi les propositions non confirmées de ce Space</label>}</details>}</footer>
+    {(!capabilities?.automatic&&messages.length>=8)&&<p role="status">Commencez une nouvelle discussion pour continuer.</p>}
+    </section>
+  </section>
+  <details className="discussion-extra" hidden={tab!=='Discussion'}><summary>Actions utiles</summary><UsefulActions/></details>
+  <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction onSaved={receipt=>{onContextSaved?.();if(receipt.revision_ids.length)setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
+  <ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} request={authorizationRequest} visible={tab==='Modèles'} hasProposed={available?.proposed} onInclude={setIncludeProposed} onCapabilities={capabilitiesChanged} onChange={providerChanged}/>
+  {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
+  </>;
 }

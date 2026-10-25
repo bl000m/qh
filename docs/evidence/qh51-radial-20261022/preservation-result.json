@@ -1,0 +1,7 @@
+{
+  "sql_equal": true,
+  "changed_tables": [],
+  "protected_files_equal": true,
+  "all_container_ids_images_mounts_equal": true,
+  "infra_start_times_equal": true
+}

@@ -47,7 +47,7 @@ def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
             return handler(r)
         return httpx.Response(200, json=dict(model='mistral-small-2603',
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
-            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], insufficient_context=False))))]))
+            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], support_basis='canonical', insufficient_context=False))))]))
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
                                    transport=httpx.MockTransport(simulated), pricing=offline_pricing())
     chat, context, _, owner = case(rows)
@@ -177,7 +177,7 @@ def test_provider_failure_stops_session_without_retry(tmp_path,monkeypatch,failu
     def handler(r):
         if failure in ['429','401']:return httpx.Response(int(failure),json={'message':'private-provider-error'})
         if failure=='timeout':raise httpx.ReadTimeout('private',request=r)
-        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],insufficient_context=False))
+        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],support_basis='canonical', insufficient_context=False))
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=20),choices=[dict(finish_reason='stop',message=dict(content=content))]))
     s,who,_,_,calls,ledger,_=setup(tmp_path,monkeypatch,handler)
     async def run():
@@ -297,3 +297,75 @@ def test_legacy_global_mistral_mode_cannot_bypass_interactive_consent(monkeypatc
     monkeypatch.delenv('POSTGRES_PASSWORD',raising=False)
     with pytest.raises(ChatConfigurationError,match='Runtime default must be mock'):
         create_runtime_app()
+
+
+def test_qh52_verified_session_renewal_reconsent_and_durable_budget(tmp_path,monkeypatch):
+    s,who,_,_,calls,ledger,clock=setup(tmp_path,monkeypatch)
+    s.session_binding=True
+    who=replace(who,verified_session_id='hashed-verified-issuer-sub-sid',work_expires_at=clock[0]+8*3600)
+    async def run():
+        p=await active(s,who)
+        assert p['expires_at']==clock[0]+1800
+        await s.respond(who,request(),p['session_id'])
+        clock[0]+=121
+        renewed=replace(who,credential_id='different-access-token',expires_at=clock[0]+300)
+        assert (await s.status(renewed,request(),p['session_id']))['accounting']['calls']==1
+        await s.respond(renewed,request(),p['session_id'])
+        await s.revoke(renewed,request(),p['session_id'])
+        # New consent AND a restarted application retain the same durable work cap.
+        s.grants.clear()
+        new=await active(s,renewed)
+        assert new['accounting']['calls']==2
+        await s.respond(renewed,request(),new['session_id'])
+        again=await active(s,renewed)
+        assert again['accounting']['calls']==3
+        with pytest.raises(ChatProviderUnavailable):await s.respond(renewed,request(),again['session_id'])
+        assert len(calls)==3
+    asyncio.run(run())
+    assert {row['session_id'] for row in json.loads(ledger.read_text())['calls']}=={who.verified_session_id}
+
+
+@pytest.mark.parametrize('invalid',['missing','different','expired-work','expired-token','expired-grant','changed-snapshot'])
+def test_qh52_session_binding_fail_closed(tmp_path,monkeypatch,invalid):
+    s,who,context,_,calls,_,clock=setup(tmp_path,monkeypatch)
+    s.session_binding=True
+    verified=replace(who,verified_session_id='verified-session',work_expires_at=clock[0]+8*3600)
+    async def run():
+        if invalid=='missing':
+            with pytest.raises(SessionClosed):await s.preview(who,request())
+            return
+        p=await active(s,verified);candidate=verified
+        if invalid=='different':candidate=replace(verified,verified_session_id='other-session')
+        if invalid=='expired-work':candidate=replace(verified,work_expires_at=clock[0])
+        if invalid=='expired-token':candidate=replace(verified,expires_at=clock[0])
+        if invalid=='expired-grant':
+            clock[0]+=1800;candidate=replace(verified,expires_at=clock[0]+300)
+        if invalid=='changed-snapshot':context.values[0].content['text']='new information'
+        with pytest.raises((SessionClosed,ChatContextUnavailable)):
+            await s.status(candidate,request(),p['session_id'])
+    asyncio.run(run());assert not calls
+
+@pytest.mark.parametrize('followup_chars', [30, 2000])
+def test_six_record_snapshot_retains_followup_headroom_and_blocks_excess(tmp_path, monkeypatch, followup_chars):
+    # Six authorized records close to the 8KB canonical-context bound. Adding the
+    # response-support contract must not consume the ordinary follow-up headroom.
+    rows = [revision(revision_id=f'rev-{i}', item_id=f'item-{i}', current_revision_id=f'rev-{i}',
+        content={'text':'x'*905}) for i in range(6)]
+    sessions, who, _, _, calls, _, _ = setup(tmp_path, monkeypatch, rows=rows)
+    async def run():
+        initial = request(messages=(Message(role=MessageRole.USER, content='Di che cosa parla questo Context Space?'),))
+        preview = await sessions.preview(who, initial)
+        assert len(preview['provided_revisions']) == 6
+        await sessions.consent(who, initial, preview['session_id'], snapshot_sha256=preview['snapshot_sha256'], consent=True)
+        first = await sessions.respond(who, initial, preview['session_id'])
+        followup = replace(initial, messages=(*initial.messages, first.message,
+            Message(role=MessageRole.USER, content='q'*followup_chars)))
+        if followup_chars == 30:
+            second = await sessions.respond(who, followup, preview['session_id'])
+            assert len(second.provided_revisions) == 6
+            assert len(calls) == 2 and calls[0]['messages'][:2] == calls[1]['messages'][:2]
+        else:
+            with pytest.raises(ChatProviderUnavailable):
+                await sessions.respond(who, followup, preview['session_id'])
+            assert len(calls) == 1  # Changed bounded snapshot rejected before provider HTTP.
+    asyncio.run(run())

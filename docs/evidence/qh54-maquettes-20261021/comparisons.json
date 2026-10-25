@@ -1,0 +1,33 @@
+{
+  "private_artifacts": ".local-archive/qh54-maquettes-20261021/comparison-screens-delivery",
+  "pairs": [
+    {
+      "view": "empty",
+      "reference": "Tableau de bord budgétaire minimaliste.png",
+      "reference_sha256": "3f6719ad273f7003c903823d71a1f6759ca882dbfa2f6b8fc72826a0e1d7bcd7",
+      "actual": "screens-delivery/maquette-alignment.browser-0b6ea-ability-and-home-navigation/qh54-maquette-empty-desktop.png",
+      "actual_sha256": "30e94492b2010427e53a68fd6fb25eac4ab9b725be002036beead22aeb459347"
+    },
+    {
+      "view": "populated",
+      "reference": "Tableau de gestion budgétaire pastel.png",
+      "reference_sha256": "3f3689a11e891ac10913a89b0ed6fe0478580e2b53ae0ba7325c7e196f14aab4",
+      "actual": "screens-delivery/maquette-alignment.browser-0b6ea-ability-and-home-navigation/qh54-maquette-populated-desktop.png",
+      "actual_sha256": "a52b1483b25cf04a9c17382f155c652bc205ca52b398a688e63e1db1f99ffab1"
+    },
+    {
+      "view": "timeout",
+      "reference": "Image ChatGPT 21 oct. 2026, 07_02_43.png",
+      "reference_sha256": "eb0b551a63a733ebb2bce09196b60fdf99664133b985840c03d4747f6cacd982",
+      "actual": "screens-delivery/maquette-alignment.browser-10a80-lement-after-same-owner-SSO/qh54-maquette-timeout-desktop.png",
+      "actual_sha256": "4f0ab47b3307b787a3f69fdb8bc5ea66c9710a62d210bb57d1d4d0753a48c5be"
+    },
+    {
+      "view": "models",
+      "reference": "Image ChatGPT 21 oct. 2026, 07_57_59.png",
+      "reference_sha256": "cdebaad46cbe89bfdb4f4e3c7a65425485ba45a46b2f9411fcb480249a2b17f0",
+      "actual": "screens-delivery/maquette-alignment.browser-0b6ea-ability-and-home-navigation/qh54-maquette-models-desktop.png",
+      "actual_sha256": "02b4ef7e79161f538ec80375e19a29e7fa4a022fa770b8281a9fce68b323c883"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "historical_four_rows_identical": true,
+  "aggregate_ceiling_unchanged": true,
+  "total_calls": 5,
+  "remaining_calls": 3,
+  "spent_usd": "0.00249735",
+  "remaining_usd": "0.19750265",
+  "smoke_usage": {
+    "prompt_tokens": 515,
+    "completion_tokens": 38
+  },
+  "smoke_cost_usd": "0.00010005",
+  "blocked": false
+}

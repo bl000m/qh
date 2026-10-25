@@ -1,0 +1,92 @@
+{
+  "ticket": "QH-53",
+  "source_web_tree": "87aa0487281bea085c976882e7302dbbc5406317",
+  "product_mode": true,
+  "paid_calls": 0,
+  "live_qh_access": false,
+  "images": {
+    "backend_image": "sha256:f8c9776a9bffd8ebffce98f4bc4d11a6243b96ca6db9e8645041fdd521fab675",
+    "frontend_image": "sha256:6256a3c9ae35eaf96eee73e1e225a19f98eaf4c050bf54d200c407f4b05bfbde",
+    "browser_image": "sha256:c077bb823a82e2a7cc7ac6a782f62259529b3d179005d9ee5e412e1f49ca1cc4"
+  },
+  "captures": [
+    {
+      "view": "discussion-empty",
+      "file": "discussion-empty.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "36ae61bdaa917235016bf1ed6bfdaaec32a1c4f716d5145f05371b486425e6b9"
+    },
+    {
+      "view": "discussion-started",
+      "file": "discussion-started.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "538a32bb18a4726ab9ae59e376ef09ce18d0fe87eb70ea7096203b34d4047456"
+    },
+    {
+      "view": "elements",
+      "file": "elements.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "cd678aa6d4b6c39146982caf6ee3b3ba3d44e8b2abc9486e363590a88204abb9"
+    },
+    {
+      "view": "model-available",
+      "file": "model-available.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "7b9a3a6523a07f0e6ea1e5549768ef3402a609d29803b6a9093068456847a8c9"
+    },
+    {
+      "view": "model-unavailable",
+      "file": "model-unavailable.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "dca4685e10a1e6711788d82be89fa848a05cb5ecc7435738e768c6369ba06c75"
+    },
+    {
+      "view": "advice",
+      "file": "advice.png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "7489d0fa0ca2671f3ccf421a4880b0b7a06d862021c957384f69c0cc7962ac19"
+    },
+    {
+      "view": "context-settings",
+      "file": "context-settings.png",
+      "width": 1672,
+      "height": 997,
+      "sha256": "8970d851d939bdf16b997614fcc80d24a220e2d1099da3db099a80ff85a3c2d2"
+    },
+    {
+      "view": "global-settings",
+      "file": "global-settings.png",
+      "width": 1672,
+      "height": 958,
+      "sha256": "9bb6c40e32cc6892ff02b7ee6301ec609cf421632bc719e9e29670243d253539"
+    },
+    {
+      "view": "discussion-mobile",
+      "file": "discussion-mobile.png",
+      "width": 390,
+      "height": 898,
+      "sha256": "95a1d358e634a627ab7f265e793e53099740e81549525f904397f555ebcb2bc5"
+    },
+    {
+      "view": "discussion-zoom200",
+      "file": "discussion-zoom200.png",
+      "width": 1672,
+      "height": 2191,
+      "sha256": "aae39499cbfd3aef5478b81048de4905384ec5a7d8fae02af223ed2ea6c74d0f"
+    },
+    {
+      "view": "discussion-keyboard",
+      "file": "discussion-keyboard.png",
+      "width": 390,
+      "height": 898,
+      "sha256": "95a1d358e634a627ab7f265e793e53099740e81549525f904397f555ebcb2bc5"
+    }
+  ],
+  "visual_review": "Six final native-width reference pairs inspected; supported-feature differences and full-page heights documented in README."
+}

@@ -286,7 +286,8 @@ def execute(
                 )
                 cp = None
             finally:
-                if live and provider.last_exchange is not None:
+                if (live and provider.last_exchange is not None
+                    and provider.last_exchange.get('http_status') == 200):
                     capture = {
                         **provider.last_exchange,
                         "request_sha256": request_hash(provider.last_request),

@@ -1,0 +1,14 @@
+<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"/><title>QH isolated UUM layout regression</title></head><body><div id="root"></div><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';
+import Chat from '../../src/Chat';import {ApiError} from '../../src/api';import {DIMENSIONS} from '../../src/uum';import '../../src/styles.css';
+const query=new URLSearchParams(location.search),scope='00000000-0000-0000-0000-000000000001';
+// Only the API boundary is simulated; production Chat, ContextMap, Orb and CSS render unchanged.
+// No server credentials, canonical writes or external provider are involved.
+const api={browse:async(s,q)=>({view:q.view,items:[],next_after_revision_id:null}),chatCapabilities:async()=>({enabled:false}),dimensionPresence:async(s,view)=>{
+ if(query.get('state')==='unavailable')throw new ApiError(503);
+ if(query.get('state')==='loading')return new Promise(()=>{});
+ return {context_id:s,view,dimensions:Object.fromEntries(DIMENSIONS.map(([id])=>[id,query.get('state')==='populated'])),unclassified:false};
+}};
+function Fixture(){const [selection,setSelection]=React.useState({value:'',count:0});const choose=value=>setSelection(previous=>({value,count:previous.count+1}));return React.createElement('div',{className:'app-shell signed-in'},React.createElement('main',null,React.createElement('article',{className:'definitive-space',style:query.has('width')?{width:query.get('width')+'px',maxWidth:'100%'}:undefined},React.createElement(Chat,{api,scope,onDimension:choose,onExploreContext:()=>choose('explore')}))),React.createElement('output',{id:'map-selection','aria-live':'polite','data-activations':selection.count},selection.value));}
+createRoot(document.getElementById('root')).render(React.createElement(Fixture));
+</script></body></html>

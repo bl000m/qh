@@ -1,6 +1,8 @@
 """OIDC resource-server adapter. Only configured JWKS endpoints are contacted."""
 
 import asyncio
+import hashlib
+import json
 from dataclasses import dataclass
 import time
 from typing import Awaitable, Callable
@@ -76,6 +78,11 @@ class OIDCAuthenticator:
         return subject
 
     async def authenticate_with_expiry(self, token: str) -> tuple[SubjectId, float]:
+        verified = await self.authenticate_session(token)
+        return verified.subject_id, verified.expires_at
+
+    async def authenticate_session(self, token: str):
+        from app.chat.sessions import ChatIdentity
         try:
             if not token or len(token) > 16384:
                 raise InvalidCredentials("Invalid credentials")
@@ -103,4 +110,11 @@ class OIDCAuthenticator:
         subject = await self._resolve(claims["iss"], claims["sub"])
         if subject is None:
             raise InvalidCredentials("Invalid credentials")
-        return subject, float(claims["exp"])
+        sid,auth_time=claims.get('sid'),claims.get('auth_time')
+        binding,work_expiry=None,None
+        if (isinstance(sid,str) and 0<len(sid)<=512 and type(auth_time) in (int,float)
+                and type(claims['iat']) in (int,float) and 0<auth_time<=time.time() and auth_time<=claims['iat']):
+            binding=hashlib.sha256(json.dumps([claims['iss'],claims['sub'],subject,sid],separators=(',',':')).encode()).hexdigest()
+            work_expiry=float(auth_time)+8*3600
+        return ChatIdentity(subject,float(claims['exp']),hashlib.sha256(token.encode()).hexdigest(),binding,work_expiry,
+            hashlib.sha256(json.dumps([claims['iss'],claims['sub']],separators=(',',':')).encode()).hexdigest())

@@ -1,0 +1,59 @@
+focused-web-final.log
+  ✓  1 tests/drafts.spec.ts:5:1 › QH-54 drafts: explicit reconnection saves only bounded unsent text, verified exact owner and Space restore once (29ms)
+  ✓  2 tests/drafts.spec.ts:11:1 › QH-54 drafts: wrong account or Space, exact thirty-minute expiry, future clocks and malformed fields fail closed (81ms)
+  ✓  3 tests/drafts.spec.ts:19:1 › QH-54 drafts: logout, account change and explicit clear erase memory/storage and notify controlled editors (15ms)
+  ✓  4 tests/drafts.spec.ts:22:1 › QH-54 drafts: unavailable storage never discards the current text or promises recovery (6ms)
+  ✓  5 tests/layout.spec.ts:3:1 › chat reflow at 320 pixels and 200 percent preserves composer and sources (3.2s)
+  ✓  6 tests/layout.spec.ts:15:1 › QH-53 tab keys preserve the draft and empty conversation offers no fake memory action (2.4s)
+  ✓  7 tests/understanding-presentation.spec.ts:6:1 › QH-54 origin requires exact literal provider, owner, quotation and turn evidence; proposed is never confirmed (19ms)
+  ✓  8 tests/understanding-presentation.spec.ts:14:1 › QH-54 origin keeps audited human corrections and never promotes generic human/import content or AI quotations (13ms)
+  ✓  9 tests/understanding-presentation.spec.ts:20:1 › QH-54 groups contain only actual explicit descriptors, never categories inferred from financial text (9ms)
+  9 passed (18.6s)
+
+runtime-2.log
+  ✓  1 tests/context-understanding.browser.spec.ts:10:12 › QH-54 direct declaration single-click persists, distinguishes personal content, restores after refresh and denies Bob (58.3s)
+  ✓  2 tests/context-understanding.browser.spec.ts:31:12 › QH-54 synthetic AI interpretation stays pending until explicit review and late failures clear selected data (20.0s)
+  ✓  3 tests/context-understanding.browser.spec.ts:37:12 › QH-54 manual failure preserves draft and operation identity; zero items never claim an added element (6.3s)
+  ✓  4 tests/definitive.browser.spec.ts:11:12 › QH-53 complete approved screens, persistence, real owner isolation and reference screenshots (22.4s)
+  ✓  5 tests/definitive.browser.spec.ts:32:57 › QH-53 consent is separate from send, model budget is real, memory saves selected turns only (16.2s)
+  ✓  7 tests/maquette-alignment.browser.spec.ts:25:12 › QH-54 maquettes: real OIDC timeout restores only unsent message and element after same-owner SSO (9.7s)
+  ✓  8 tests/readiness.browser.spec.ts:19:12 › QH-52 product: native password form, descriptions, offline first information, no mock, reopen and owner isolation (21.5s)
+    Error: expect(locator).toHaveValue(expected) failed
+  2 failed
+  7 passed (5.2m)
+npm error Lifecycle script `test` failed with error:
+npm error command failed
+    raise RuntimeError('Test Docker operation failed: ' + command[0] + '; protected diagnostic retained')
+RuntimeError: Test Docker operation failed: run; protected diagnostic retained
+
+runtime-3.log
+  ✓  1 tests/maquette-alignment.browser.spec.ts:9:12 › QH-54 maquettes: four exact compositions, dynamic owned map, truthful model availability and home navigation (41.6s)
+  ✓  2 tests/maquette-alignment.browser.spec.ts:25:12 › QH-54 maquettes: real OIDC timeout restores only unsent message and element after same-owner SSO (10.0s)
+  ✓  3 tests/readiness.browser.spec.ts:63:12 › QH-52 product: real OIDC renewal preserves draft and disclosure, fake HTTP accounting, revocation (18.9s)
+  3 passed (1.3m)
+
+screens-delivery.log
+  ✓  1 tests/maquette-alignment.browser.spec.ts:9:12 › QH-54 maquettes: four exact compositions, dynamic owned map, truthful model availability and home navigation (41.0s)
+  ✓  2 tests/maquette-alignment.browser.spec.ts:25:12 › QH-54 maquettes: real OIDC timeout restores only unsent message and element after same-owner SSO (9.9s)
+  2 passed (1.0m)
+
+navigation-final.log
+  ✓   1 tests/chat.browser.spec.ts:27:1 › real scoped chat preserves current state, sources and temporary follow-up (18.3s)
+  ✓   2 tests/chat.browser.spec.ts:50:1 › proposed-only Space needs explicit choice and empty context invents no evidence (11.3s)
+  ✓   3 tests/chat.browser.spec.ts:65:1 › history-only Space is not labelled empty; history verification errors fail closed (5.4s)
+  ✓   4 tests/chat.browser.spec.ts:77:1 › provider failure is sanitized, never retried, and clears prior answers (7.3s)
+  ✓   5 tests/chat.browser.spec.ts:84:1 › late answer after navigation cannot populate a different Space (6.9s)
+  ✓   6 tests/chat.browser.spec.ts:92:1 › real Bob OIDC cannot chat with Alice Space, arbitrary IDs reveal no private data (2.7s)
+  ✓   7 tests/chat.browser.spec.ts:107:1 › Alice navigates all three fixture Spaces without duplicate keys or retained dialogue (44.2s)
+  ✓   8 tests/chat.browser.spec.ts:143:1 › non-mock answer heading remains distinct without any real provider call (7.6s)
+  ✓   9 tests/chat.browser.spec.ts:152:1 › all-proposed canonical context warns even when generated prose omits or contradicts status (7.0s)
+  ✓  10 tests/chat.browser.spec.ts:173:1 › mixed canonical support warns only for actually cited proposals (8.8s)
+  ✓  11 tests/maquette.browser.spec.ts:12:1 › approved maquettes render real owner data, primary assignment and unsupported deletion stays absent (23.4s)
+  ✓  12 tests/provider-session.browser.spec.ts:12:12 › QH-45 real API simulated provider: separate consent, exact preview, canonical references and follow-up (19.9s)
+  ✓  13 tests/provider-session.browser.spec.ts:21:12 › QH-45 dismissal revokes preview; changing Space revokes active session and resets mock (12.9s)
+  ✓  14 tests/provider-session.browser.spec.ts:27:12 › QH-45 expiry and provider error terminate without retry or automatic mock fallback (13.5s)
+  ✓  15 tests/provider-session.browser.spec.ts:31:12 › QH-45 logout revokes before clearing tokens, without changing real OIDC logout (9.9s)
+  ✓  16 tests/v2.browser.spec.ts:16:1 › UX V2 hierarchical domains, real activity, origin navigation and owner editing (22.4s)
+  ✓  17 tests/v2.browser.spec.ts:62:1 › UX V2 chat follows latest, respects deliberate scroll, source drawer traps and returns focus (9.8s)
+  ✓  18 tests/v2.browser.spec.ts:85:1 › UX V2 isolated owner review confirms, rejects and corrects without rewriting history (37.8s)
+  18 passed (4.7m)

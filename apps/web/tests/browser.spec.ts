@@ -33,14 +33,14 @@ test('Alice creates Projet QH, opens it and returns; Bob is denied even by direc
   });
   await login(page);
   expect(pkce).toBe(true);
-  await page.getByText('Informations du compte QH',{exact:true}).click();
+  await page.getByRole('link',{name:'Paramètres de mon environnement',exact:true}).click();await page.getByText('Informations du compte',{exact:true}).click();
   await expect(page.getByText('Identité QH : ' + aliceId)).toBeVisible();
-  await page.getByText('Informations du compte QH',{exact:true}).click();
+  await page.getByRole('link',{name:'Mon environnement',exact:true}).click();
   await create(page,'Projet QH');
   await page.getByRole('link', {name:'Projet QH',exact:true}).click();
   await expect(page.getByRole('heading', {name:'Projet QH',exact:true})).toBeVisible();
   const path = new URL(page.url()).pathname;
-  await page.getByText('Métadonnées du Space',{exact:true}).click();
+  await page.getByRole('tab',{name:'Éléments',exact:true}).click();await page.getByText('Métadonnées du Space',{exact:true}).click();
   await expect(page.getByText('Actif', {exact:true})).toBeVisible();
   await page.getByRole('link', {name:'Mon environnement',exact:true}).click();
   await expect(page.getByRole('link', {name:'Projet QH',exact:true})).toBeVisible();

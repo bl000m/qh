@@ -39,3 +39,18 @@ test('browse uses a scoped GET without a fabricated selector or owner field',asy
  globalThis.fetch=async(path,init)=>{observed=String(path);expect(init?.method).toBe('GET');expect(init?.body).toBeUndefined();return new Response(JSON.stringify({view:'history',items:[row],next_after_revision_id:null}));};
  try {await new QhApi(()=> 'synthetic-test-only',()=>{}).browse(id,{view:'history',limit:5,descriptor:' padded Ω ',include_tentative:true});const u=new URL(observed,'http://localhost');expect(u.pathname).toBe('/api/context-spaces/'+id+'/understanding');expect(u.searchParams.get('descriptor')).toBe(' padded Ω ');expect(u.searchParams.has('text')).toBe(false);expect(u.searchParams.has('owner_id')).toBe(false);}finally{globalThis.fetch=original;}
 });
+
+
+test('QH-52 logout revokes with current memory credential without waiting for renewal',async()=>{
+ const original=globalThis.fetch;let renewals=0;const requests:{method:string;authorization:unknown}[]=[];
+ const grant={session_id:id,context_id:id,model:'mistral-small-2603',state:'preview',expires_at:Date.now()/1000+300,include_proposed:true,snapshot_sha256:'a'.repeat(64),max_calls:3,max_usd:'0.01',accounting:{calls:0,committed_usd:'0',blocked:false},provided_revisions:[row],provider_messages:[{role:'user',content:'synthetic'}],partial_coverage:false,input_bound:1,context_bytes:1};
+ let token:()=>string|Promise<string>=()=> 'initial-test-credential';
+ globalThis.fetch=async(_path,init)=>{requests.push({method:init?.method??'GET',authorization:(init?.headers as Record<string,string>).Authorization});return new Response(JSON.stringify(init?.method==='DELETE'?{session_id:id,state:'revoked'}:grant));};
+ try{
+  const api=new QhApi(()=>token(),()=>{});await api.previewSession(id,[{role:'user',content:'synthetic'}],true);
+  token=()=>{renewals++;return new Promise<string>(()=>{});};
+  api.revokeSessionsBeforeLogout('current-memory-test-credential');
+  expect(renewals).toBe(0);expect(requests.at(-1)).toEqual({method:'DELETE',authorization:'Bearer current-memory-test-credential'});
+  expect(requests).toHaveLength(2);
+ }finally{globalThis.fetch=original;}
+});

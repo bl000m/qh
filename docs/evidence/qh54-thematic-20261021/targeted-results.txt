@@ -1,0 +1,29 @@
+focused-web.log
+  ✓  1 tests/drafts.spec.ts:5:1 › QH-54 drafts: explicit reconnection saves only bounded unsent text, verified exact owner and Space restore once (53ms)
+  ✓  2 tests/drafts.spec.ts:11:1 › QH-54 drafts: wrong account or Space, exact thirty-minute expiry, future clocks and malformed fields fail closed (70ms)
+  ✓  3 tests/drafts.spec.ts:19:1 › QH-54 drafts: logout, account change and explicit clear erase memory/storage and notify controlled editors (23ms)
+  ✓  4 tests/drafts.spec.ts:22:1 › QH-54 drafts: unavailable storage never discards the current text or promises recovery (10ms)
+  ✓  5 tests/layout.spec.ts:3:1 › chat reflow at 320 pixels and 200 percent preserves composer and sources (2.8s)
+  ✓  6 tests/layout.spec.ts:15:1 › QH-53 tab keys preserve the draft and empty conversation offers no fake memory action (2.0s)
+  ✓  7 tests/understanding-presentation.spec.ts:6:1 › QH-54 origin requires exact literal provider, owner, quotation and turn evidence; proposed is never confirmed (23ms)
+  ✓  8 tests/understanding-presentation.spec.ts:14:1 › QH-54 origin keeps audited human corrections and never promotes generic human/import content or AI quotations (23ms)
+  ✓  9 tests/understanding-presentation.spec.ts:20:1 › QH-54 groups contain only actual explicit descriptors, never categories inferred from financial text (8ms)
+  9 passed (16.6s)
+
+ux-targeted.log
+  ✓  1 tests/ux.browser.spec.ts:62:1 › chat composer leads on mobile while technical details remain available and consent stays explicit (11.1s)
+  ✓  2 tests/ux.browser.spec.ts:80:1 › skip link is first keyboard stop, focuses main, then disappears without covering chat (4.6s)
+  ✓  3 tests/ux.browser.spec.ts:122:1 › one approved identity spans environment and Space without decorative clutter before chat (5.3s)
+  3 passed (30.5s)
+
+product-targeted.log
+  ✓  1 tests/context-understanding.browser.spec.ts:10:12 › QH-54 direct declaration single-click persists, distinguishes personal content, restores after refresh and denies Bob (51.3s)
+  ✓  2 tests/context-understanding.browser.spec.ts:31:12 › QH-54 synthetic AI interpretation stays pending until explicit review and late failures clear selected data (16.5s)
+  ✓  3 tests/context-understanding.browser.spec.ts:37:12 › QH-54 manual failure preserves draft and operation identity; zero items never claim an added element (5.7s)
+  ✓  4 tests/maquette-alignment.browser.spec.ts:9:12 › QH-54 maquettes: four exact compositions, explicit thematic fallback, truthful model availability and home navigation (27.7s)
+  ✓  5 tests/maquette-alignment.browser.spec.ts:25:12 › QH-54 maquettes: real OIDC timeout restores only unsent message and element after same-owner SSO (7.8s)
+  5 passed (2.0m)
+
+history-targeted.log
+  ✓  1 tests/chat.browser.spec.ts:65:1 › history-only Space is not labelled empty; history verification errors fail closed (10.6s)
+  1 passed (19.7s)
