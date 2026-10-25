@@ -21,6 +21,33 @@ permissions. Explicit owner instructions and already granted scoped approvals pr
 - Public wire contracts belong in `packages/shared`; MCP uses public contracts,
   never backend internals or direct database access.
 
+## Current QH-51 contracts
+
+- [ADR 0010](docs/adr/0010-universal-understanding-model.md): generic profiles v3,
+  six universal map dimensions, optional single primary assignment or unclassified.
+  Themes are optional metadata, never mandatory primary groups or organization domains.
+  No v1/v2 backfill or compatibility adapters for the abandoned experimental dataset.
+- Keep `qh.atomic-understanding/1`, its shared strict output schema and exact original
+  evidence (including Markdown); preserve fiction, uncertainty and speaker attribution.
+  No heuristic repair, automatic confirmation or assistant suggestion promoted to a
+  user decision. All semantic output remains proposed through the one Engine/QH-32.
+- Chat provenance (`support_basis`) and `insufficient_context` are independent;
+  dialogue alone can support an answer in an empty Space. Canonical/mixed support
+  still requires exact authorized citations; incomplete-information warnings remain.
+- Mémoriser → Continuer sends the whole current conversation and atomically conserves
+  Source/proposals/outbox; Voir les propositions opens individual QH-46 review.
+  Zero proposals is source-only success, not successful semantic understanding;
+  ambiguous errors never claim that no data was saved. Preserve replay identity.
+- Ordinary AI is for the exact verified development OIDC account and its owned Spaces,
+  `mistral-small-2603` only. No inference on load, extra consent/session grants or
+  paid retry/fallback. Ordinary calls omit `max_tokens` and reserve technical worst-case
+  cost before HTTP; proposed inclusion stays explicit. Keep the active budget below.
+- Private diagnostics remain response-only, scoped and outside Git (0700/0600), with
+  one-hour retention and controlled deletion; no prompt/secret/raw JSON in ordinary logs.
+- The owner confirms the real Chat → UUM → Propositions test passed on 2026-10-25.
+  Manual individual review and further UX polish are deferred, not new acceptance gates
+  or permission to remove provenance, review or authorization safeguards.
+
 ## Safety and authorization
 
 - Keep secrets in ignored private configuration. Never put secrets, prompts, raw

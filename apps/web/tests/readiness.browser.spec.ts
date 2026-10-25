@@ -21,7 +21,9 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await page.getByRole('button',{name:'Créer un Context Space',exact:true}).click();
  await page.getByLabel('Nom du Context Space',{exact:true}).fill('QH-52 budget synthetic');await page.getByLabel('Domaine principal',{exact:true}).selectOption({index:1});await page.getByRole('button',{name:'Créer',exact:true}).click();
  await page.getByRole('link',{name:'Ouvrir ce Space',exact:true}).click();
- await expect(page.getByRole('heading',{name:'J’ajoute un élément'})).toBeVisible();
+ await expect(page.locator('.context-orbit-node')).toHaveCount(6);
+ await expect(page.locator('.orbit-node-state')).toHaveText(Array(6).fill('Aucun élément dans cette vue'));
+ await expect(page.getByRole('button',{name:'Ajouter un élément',exact:true})).toBeVisible();
  const scope=new URL(page.url()).pathname.split('/').at(-1)!;
  await expect(page.getByLabel('Mode de discussion',{exact:true})).toHaveCount(0);await expect(page.locator('body')).not.toContainText('Démonstration mock');
  await expect(page.getByRole('button',{name:'Envoyer la question',exact:true})).toBeDisabled();
@@ -31,13 +33,19 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await expect(page.locator('.space-title>p')).toBeVisible();
  await closeUnderstanding(page);await page.getByRole('link',{name:'Paramètres de mon environnement',exact:true}).click();
  await page.getByRole('button',{name:'Organiser mes domaines',exact:true}).click();await page.getByLabel('Nom du domaine 1',{exact:true}).fill('Organisation QH-52');await page.getByLabel('Description du domaine 1',{exact:true}).fill('Description organisationnelle du domaine.');await page.getByRole('button',{name:'Enregistrer l’organisation',exact:true}).click();
- await page.getByRole('link',{name:'Mon environnement',exact:true}).first().click();await page.getByRole('link',{name:'Organisation QH-52',exact:true}).click();await expect(page.getByText('Description organisationnelle du domaine.',{exact:true})).toBeVisible();await page.getByRole('link',{name:'Budget personnel synthétique',exact:true}).click();
+ await page.getByRole('link',{name:'QH — accueil',exact:true}).first().click();await page.getByRole('link',{name:'Organisation QH-52',exact:true}).click();await expect(page.getByText('Description organisationnelle du domaine.',{exact:true})).toBeVisible();await page.getByRole('link',{name:'Budget personnel synthétique',exact:true}).click();
  for(const [label,width,height,zoom] of [['desktop',1448,1086,1],['mobile',390,844,1],['desktop-200',1448,1086,2],['keyboard',390,450,1]] as const){
   await page.setViewportSize({width,height});await page.evaluate(z=>{document.documentElement.style.zoom=String(z);},zoom);
   await page.getByLabel('Votre question sur ce contexte').fill('Brouillon conservé en mémoire');
-  const bounds=await page.evaluate(()=>({notice:document.querySelector('.assistant-intro')!.getBoundingClientRect().bottom,composer:document.querySelector('.chat-composer')!.getBoundingClientRect().top,width:innerWidth,scroll:document.documentElement.scrollWidth}));
-  if(width===390)expect(await page.locator('.space-title').evaluate(n=>n.getBoundingClientRect().width)).toBeGreaterThanOrEqual(width/2);
-  expect(bounds.notice).toBeLessThanOrEqual(bounds.composer);expect(bounds.scroll).toBeLessThanOrEqual(bounds.width+1);
+  const bounds=await page.evaluate(()=>({composerBottom:document.querySelector('.chat-composer')!.getBoundingClientRect().bottom,memoryTop:document.querySelector('.memory-card')!.getBoundingClientRect().top,width:innerWidth,scroll:document.documentElement.scrollWidth}));
+  if(width===390){
+   // The approved compact header carries the visible Space name; the H1 stays
+   // accessible via display:contents, whose wrapper intentionally has no box.
+   const title=page.locator('.mobile-breadcrumbs>summary');await expect(title).toBeVisible();await expect(title).toHaveText('Budget personnel synthétique');
+   await expect(page.getByRole('heading',{name:'Budget personnel synthétique',exact:true})).toBeAttached();
+   const box=await title.boundingBox();expect(box).not.toBeNull();expect(box!.width).toBeGreaterThan(0);expect(box!.height).toBeGreaterThan(0);expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width+1);
+  }
+  expect(bounds.composerBottom).toBeLessThanOrEqual(bounds.memoryTop);expect(bounds.scroll).toBeLessThanOrEqual(bounds.width+1);
   await page.screenshot({path:info.outputPath('qh52-empty-'+label+'.png'),fullPage:true});
  }
  await page.evaluate(()=>{document.documentElement.style.zoom='1';});await page.setViewportSize({width:1448,height:1086});
@@ -46,7 +54,7 @@ if(enabled)test('QH-52 product: native password form, descriptions, offline firs
  await page.getByLabel('Votre information',{exact:true}).fill(text);await expect(page.getByRole('button',{name:'Ajouter au contexte',exact:true})).toBeEnabled();
  await expect(page.getByRole('dialog').getByRole('checkbox')).toHaveCount(0);
  const saving=page.waitForResponse(r=>r.url().endsWith('/enrichments')&&r.request().method()==='POST');await page.getByRole('button',{name:'Ajouter au contexte',exact:true}).click();
- const response=await saving;expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.provider_mode).toBe('offline-literal/1');expect(receipt.revision_ids).toHaveLength(1);
+ const response=await saving;expect(response.status()).toBe(200);const receipt=await response.json();expect(receipt.provider_mode).toBe('uum-offline-literal/3');expect(receipt.revision_ids).toHaveLength(1);
  await expect(page.getByText('Élément ajouté au contexte',{exact:true})).toBeVisible();await page.getByRole('tab',{name:'Éléments',exact:true}).click();await page.locator('.understanding-explorer>summary').click();await expect(page.locator('.context-literal')).toHaveText(text);await page.getByRole('button',{name:'Voir la source',exact:true}).click();await expect(page.locator('blockquote').filter({hasText:text}).first()).toBeVisible();
  await page.screenshot({path:info.outputPath('qh52-first-information.png'),fullPage:true});
  await page.reload();await page.getByRole('button',{name:'Se connecter',exact:true}).click();

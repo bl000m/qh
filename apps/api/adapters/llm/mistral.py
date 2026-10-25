@@ -21,12 +21,19 @@ from app.core.models import GenerationResult, Message, MessageRole
 
 MODEL = "mistral-small-2603"
 BASE = "https://api.mistral.ai/v1"
+# Official API model card: 256k combined context; rounded up for cost reservation.
+# https://docs.mistral.ai/models/mistral-small-4-0-26-03
+MODEL_CONTEXT_TOKENS = 262_144
 INPUT_USD_PER_M = Decimal("0.15")
 OUTPUT_USD_PER_M = Decimal("0.60")
 
 
 class MistralError(RuntimeError):
     """Redacted failure; never includes SDK messages, response bodies or secrets."""
+
+
+class MistralBudgetExceeded(MistralError):
+    """No HTTP performed: insufficient aggregate calls or USD reservation."""
 
 
 def cost(prompt, completion):
@@ -43,7 +50,10 @@ class ExperimentBudget:
     includes a conservative input-token bound and the requested output maximum.
     """
 
-    def __init__(self, path, *, create=False):
+    def __init__(self, path, *, create=False, max_calls=8, max_usd="0.20"):
+        self.max_calls, self.max_usd = max_calls, Decimal(max_usd)
+        if (max_calls is not None and (type(max_calls) is not int or max_calls < 1)) or not self.max_usd.is_finite() or not 0 < self.max_usd <= Decimal("5.00"):
+            raise ValueError("Authorized aggregate bounds required")
         self.path = Path(path)
         if create:
             fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -65,6 +75,11 @@ class ExperimentBudget:
             f.flush()
             os.fsync(f.fileno())
             return result
+
+    def read(self, operation):
+        with self.path.open('r') as f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            return operation(json.load(f))
 
     def reconcile_reviewed_429(self, *, reason):
         """Explicit owner-reviewed resumption; retain failed attempts/reservations."""
@@ -111,10 +126,12 @@ class ExperimentBudget:
             if (
                 state["blocked"]
                 or any(c["status"] == "pending" for c in state["calls"])
-                or len(state["calls"]) >= min(state["max_calls"], 8)
-                or spent + maximum > min(Decimal(state["max_usd"]), Decimal("0.20"))
+
             ):
                 raise MistralError("Experiment call/budget gate closed")
+            if (self.max_calls is not None and (state['max_calls'] is None or len(state['calls']) >= min(state['max_calls'], self.max_calls))
+                or spent + maximum > min(Decimal(state['max_usd']), self.max_usd)):
+                raise MistralBudgetExceeded('Aggregate AI ceiling reached before HTTP')
             if session_id is not None:
                 records = [c for c in state['calls'] if c.get('session_id') == session_id]
                 committed = sum(Decimal(c.get('observed_usd', c['reserved_usd'])) for c in records)
@@ -152,12 +169,13 @@ class ExperimentBudget:
 
 class MistralProvider:
     def __init__(
-        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None
+        self, *, budget, max_input_tokens=16000, max_output_tokens=6000, transport=None, observer=None, capture_private_errors=False, provider_defaults=False
     ):
         self._key = os.environ.get("MISTRAL_API_KEY", "").strip()
         if not self._key:
             raise MistralError("MISTRAL_API_KEY is unavailable")
-        if not 1 <= max_input_tokens <= 16000 or not 1 <= max_output_tokens <= 6000:
+        self.provider_defaults = provider_defaults
+        if not provider_defaults and (not 1 <= max_input_tokens <= 16000 or not 1 <= max_output_tokens <= 6000):
             raise ValueError("Experiment token caps exceeded")
         self.budget = budget
         self.max_input_tokens, self.max_output_tokens = (
@@ -165,18 +183,27 @@ class MistralProvider:
             max_output_tokens,
         )
         self.transport = transport
+        self.observer = observer
+        self.capture_private_errors = capture_private_errors
         self.last_exchange = None
         self.last_failure = None
+        self.last_attempt = None
+
+    def _check(self, rule, passed, reason=None):
+        if self.observer:
+            self.observer(rule, passed, reason)
 
     async def _request(self, method, path, *, payload=None, maximum=Decimal(0)):
         self.last_exchange = None
         self.last_failure = None
         attempt = self.budget.reserve(path, maximum)
+        self.last_attempt = attempt
+        self._check('provider.atomic_reservation', True)
         started = time.perf_counter()
         try:
             async with httpx.AsyncClient(
                 transport=self.transport or httpx.AsyncHTTPTransport(retries=0),
-                timeout=httpx.Timeout(60, connect=10),
+                timeout=httpx.Timeout(None if self.provider_defaults else 60, connect=10),
                 follow_redirects=False,
                 trust_env=False,
             ) as client:
@@ -189,6 +216,17 @@ class MistralProvider:
                         "Content-Type": "application/json",
                     },
                 )
+            # Historical experiment harnesses interpret last_exchange as a successful
+            # JSON capture. Error bodies are opt-in for the private development store.
+            if self.capture_private_errors:
+                try:
+                    captured = response.json()
+                except ValueError:
+                    captured = dict(non_json_response=response.text)
+                self.last_exchange = dict(response=captured, attempt=attempt,
+                    latency_seconds=time.perf_counter()-started, http_status=response.status_code)
+            self._check('provider.http_200', response.status_code == 200,
+                None if response.status_code == 200 else 'HTTP '+str(response.status_code))
             if response.status_code != 200:
                 # Preserve diagnostic codes, never arbitrary provider messages/headers.
                 self.last_failure = {
@@ -237,7 +275,12 @@ class MistralProvider:
                 if re.fullmatch(r"[0-9]{1,8}", after):
                     self.last_failure["retry_after_seconds"] = int(after)
                 raise MistralError("Mistral HTTP " + str(response.status_code))
-            data = response.json()
+            try:
+                data = response.json()
+            except ValueError:
+                self._check('provider.response_json', False, 'Invalid JSON response')
+                raise
+            self._check('provider.response_json', True)
             self.last_exchange = dict(
                 request=payload,
                 response=data,
@@ -251,20 +294,28 @@ class MistralProvider:
                     type(usage.get(k)) is not int or usage[k] < 0
                     for k in ("prompt_tokens", "completion_tokens")
                 ):
+                    self._check('provider.usage', False, 'Mistral usage missing or invalid')
                     raise MistralError("Mistral usage missing or invalid")
+                self._check('provider.usage', True)
                 if (
-                    usage["prompt_tokens"] > self.max_input_tokens
-                    or usage["completion_tokens"] > self.max_output_tokens
+                    (self.provider_defaults and sum(usage[k] for k in ("prompt_tokens", "completion_tokens")) > MODEL_CONTEXT_TOKENS)
+                    or (not self.provider_defaults and (usage["prompt_tokens"] > self.max_input_tokens
+                        or usage["completion_tokens"] > self.max_output_tokens))
                 ):
+                    self._check('provider.observed_token_limits', False, 'Observed token limit exceeded')
                     raise MistralError("Mistral observed token limit exceeded")
+                self._check('provider.observed_token_limits', True)
                 if data.get("model") != MODEL:
+                    self._check('provider.pinned_model', False, 'Response model differs from pinned ID')
                     raise MistralError("Mistral response model differs from pinned ID")
+                self._check('provider.pinned_model', True)
                 self.budget.settle(
                     attempt,
                     usage={k: usage[k] for k in ("prompt_tokens", "completion_tokens")},
                 )
             else:
                 self.budget.settle(attempt)
+            self._check('provider.accounting_settled', True)
             return data
         except MistralError as exc:
             # No provider response/error body is included in the failure path.
@@ -287,26 +338,29 @@ class MistralProvider:
         # UTF-8 bytes + 256/message is a conservative local bound, not a tokenizer.
         # Actual prompt usage is checked; no hidden-provider-token exactness claim.
         bound = sum(len(m.content.encode()) + 256 for m in request.messages)
-        if not request.messages or bound > self.max_input_tokens:
+        if not request.messages or (not self.provider_defaults and bound > self.max_input_tokens):
             raise MistralError("Mistral input cap exceeded before HTTP")
         payload = dict(
             model=MODEL,
             messages=[
                 dict(role=m.role.value, content=m.content) for m in request.messages
             ],
-            response_format={"type": "json_object"},
+            response_format=(dict(type="json_schema", json_schema=dict(
+                name="qh_atomic_understanding", schema=request.output_schema, strict=True))
+                if request.output_schema is not None else {"type": "json_object"}),
             temperature=0,
             random_seed=42,
-            max_tokens=self.max_output_tokens,
             stream=False,
             n=1,
             tool_choice="none",
         )
+        if not self.provider_defaults:
+            payload['max_tokens'] = self.max_output_tokens
         data = await self._request(
             "POST",
             "/chat/completions",
             payload=payload,
-            maximum=cost(self.max_input_tokens, self.max_output_tokens),
+            maximum=cost(0, MODEL_CONTEXT_TOKENS) if self.provider_defaults else cost(self.max_input_tokens, self.max_output_tokens),
         )
         try:
             choice = data["choices"][0]
@@ -314,12 +368,14 @@ class MistralProvider:
                 choice["message"]["content"], str
             ):
                 raise ValueError("Incomplete completion")
+            self._check('provider.finish_reason_and_content', True)
             return GenerationResult(
                 message=Message(
                     role=MessageRole.ASSISTANT, content=choice["message"]["content"]
                 )
             )
         except (KeyError, IndexError, TypeError, ValueError):
+            self._check('provider.finish_reason_and_content', False, 'Completion missing or truncated')
             raise MistralError(
                 "Mistral completion missing or truncated; no retry"
             ) from None

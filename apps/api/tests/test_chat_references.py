@@ -16,7 +16,7 @@ TRIAL = Path(__file__).resolve().parents[3] / 'docs/evidence/qh13-mistral-chat-t
 
 
 def response(aliases, **changes):
-    data = dict(answer='Réponse non confirmée.', reference_aliases=aliases, insufficient_context=False)
+    data = dict(answer='Réponse non confirmée.', reference_aliases=aliases, support_basis='insufficient' if changes.get('insufficient_context') else 'canonical', insufficient_context=False)
     return Message(role=MessageRole.ASSISTANT, content=json.dumps(data | changes))
 
 
@@ -47,7 +47,7 @@ def test_only_exact_distinct_transmitted_aliases_are_accepted(aliases):
 
 
 def test_empty_insufficiency_allowed_but_does_not_create_references():
-    answer, refs, insufficient = decode_answer(response([], insufficient_context=True), built())
+    answer, refs, insufficient, _basis = decode_answer(response([], support_basis='insufficient', insufficient_context=True), built())
     assert answer and refs == () and insufficient
 
 
@@ -139,7 +139,7 @@ def test_alias_resolution_preserves_full_provenance_relation_time_and_validation
     context = build_context(context_id=rows[0].context_space_id, revisions=rows, include_proposed=True,
         messages=(Message(role=MessageRole.USER, content='Question?'),))
     aliases = packet(context)['allowed_reference_aliases']
-    _, references, _ = decode_answer(response(list(aliases)), context)
+    _, references, _, _basis = decode_answer(response(list(aliases)), context)
     assert references == tuple(sorted(rows, key=lambda row: row.revision_id))
     assert any(r.relation for r in references)
     assert all(r.provenance and r.validation_state == 'proposed' and not r.is_current_confirmed for r in references)

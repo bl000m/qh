@@ -47,7 +47,7 @@ def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
             return handler(r)
         return httpx.Response(200, json=dict(model='mistral-small-2603',
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
-            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], insufficient_context=False))))]))
+            message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], support_basis='canonical', insufficient_context=False))))]))
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
                                    transport=httpx.MockTransport(simulated), pricing=offline_pricing())
     chat, context, _, owner = case(rows)
@@ -177,7 +177,7 @@ def test_provider_failure_stops_session_without_retry(tmp_path,monkeypatch,failu
     def handler(r):
         if failure in ['429','401']:return httpx.Response(int(failure),json={'message':'private-provider-error'})
         if failure=='timeout':raise httpx.ReadTimeout('private',request=r)
-        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],insufficient_context=False))
+        content='bad-json' if failure=='json' else json.dumps(dict(answer='x',reference_aliases=['foreign'],support_basis='canonical', insufficient_context=False))
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=20),choices=[dict(finish_reason='stop',message=dict(content=content))]))
     s,who,_,_,calls,ledger,_=setup(tmp_path,monkeypatch,handler)
     async def run():
@@ -344,3 +344,28 @@ def test_qh52_session_binding_fail_closed(tmp_path,monkeypatch,invalid):
         with pytest.raises((SessionClosed,ChatContextUnavailable)):
             await s.status(candidate,request(),p['session_id'])
     asyncio.run(run());assert not calls
+
+@pytest.mark.parametrize('followup_chars', [30, 2000])
+def test_six_record_snapshot_retains_followup_headroom_and_blocks_excess(tmp_path, monkeypatch, followup_chars):
+    # Six authorized records close to the 8KB canonical-context bound. Adding the
+    # response-support contract must not consume the ordinary follow-up headroom.
+    rows = [revision(revision_id=f'rev-{i}', item_id=f'item-{i}', current_revision_id=f'rev-{i}',
+        content={'text':'x'*905}) for i in range(6)]
+    sessions, who, _, _, calls, _, _ = setup(tmp_path, monkeypatch, rows=rows)
+    async def run():
+        initial = request(messages=(Message(role=MessageRole.USER, content='Di che cosa parla questo Context Space?'),))
+        preview = await sessions.preview(who, initial)
+        assert len(preview['provided_revisions']) == 6
+        await sessions.consent(who, initial, preview['session_id'], snapshot_sha256=preview['snapshot_sha256'], consent=True)
+        first = await sessions.respond(who, initial, preview['session_id'])
+        followup = replace(initial, messages=(*initial.messages, first.message,
+            Message(role=MessageRole.USER, content='q'*followup_chars)))
+        if followup_chars == 30:
+            second = await sessions.respond(who, followup, preview['session_id'])
+            assert len(second.provided_revisions) == 6
+            assert len(calls) == 2 and calls[0]['messages'][:2] == calls[1]['messages'][:2]
+        else:
+            with pytest.raises(ChatProviderUnavailable):
+                await sessions.respond(who, followup, preview['session_id'])
+            assert len(calls) == 1  # Changed bounded snapshot rejected before provider HTTP.
+    asyncio.run(run())

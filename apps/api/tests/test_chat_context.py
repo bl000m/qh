@@ -29,7 +29,7 @@ def test_mock_is_replaceable_and_only_quotes_selected_context():
     row=revision()
     context=built((row,))
     result=asyncio.run(MockChatProvider().generate(context.request))
-    answer,refs,insufficient=decode_answer(result.message,context)
+    answer,refs,insufficient,_basis=decode_answer(result.message,context)
     assert row.content['text'] in answer and refs==(row,) and not insufficient
     assert 'Mode mock' in answer and context.input_bound <= MAX_INPUT_BOUND
 
@@ -66,15 +66,15 @@ def test_invalid_dialogue(messages):
 
 def test_empty_context_is_insufficient():
     context=built()
-    answer,refs,insufficient=decode_answer(asyncio.run(MockChatProvider().generate(context.request)).message,context)
+    answer,refs,insufficient,_basis=decode_answer(asyncio.run(MockChatProvider().generate(context.request)).message,context)
     assert insufficient and not refs and 'insuffisant' in answer
 
 
-@pytest.mark.parametrize('data',[{'answer':'invented','reference_aliases':['foreign'],'insufficient_context':False},
-    {'answer':'unsupported','reference_aliases':[],'insufficient_context':False},
-    {'answer':'x','reference_aliases':['R1','R1'],'insufficient_context':False},
-    {'answer':'x','reference_aliases':['R1'],'insufficient_context':'false'},
-    {'answer':'x','reference_aliases':['R1'],'insufficient_context':False,'owner':'forged'}])
+@pytest.mark.parametrize('data',[{'answer':'invented','reference_aliases':['foreign'],'support_basis':'canonical','insufficient_context':False},
+    {'answer':'unsupported','reference_aliases':[],'support_basis':'canonical','insufficient_context':False},
+    {'answer':'x','reference_aliases':['R1','R1'],'support_basis':'canonical','insufficient_context':False},
+    {'answer':'x','reference_aliases':['R1'],'support_basis':'canonical','insufficient_context':'false'},
+    {'answer':'x','reference_aliases':['R1'],'support_basis':'canonical','insufficient_context':False,'owner':'forged'}])
 def test_invalid_provider_answer_is_not_repaired(data):
     with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(data)),built((revision(),)))
 
@@ -95,12 +95,12 @@ def test_huge_dialogue_rejected_instead_of_silent_history_drop():
 
 
 def test_duplicate_json_fields_fail_closed():
-    text='{"answer":"a","answer":"b","reference_aliases":["R1"],"insufficient_context":false}'
+    text='{"answer":"a","answer":"b","reference_aliases":["R1"],"insufficient_context":false,"support_basis":"canonical"}'
     with pytest.raises(ChatProviderUnavailable):decode_answer(Message(role=MessageRole.ASSISTANT,content=text),built((revision(),)))
 
 
 def test_mock_preserves_late_negation_without_truncating_a_record():
     row=revision(content={'text':'x'*650+'; aucune commande approuvée.'})
     context=built((row,))
-    answer,refs,_=decode_answer(asyncio.run(MockChatProvider().generate(context.request)).message,context)
+    answer,refs,_,_basis=decode_answer(asyncio.run(MockChatProvider().generate(context.request)).message,context)
     assert row.content['text'] in answer and refs==(row,)

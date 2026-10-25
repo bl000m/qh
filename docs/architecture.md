@@ -1,5 +1,14 @@
 # QH architecture
 
+The owner-approved [ADR 0010](adr/0010-universal-understanding-model.md) introduces
+the optional UUM primary classification and six universal map nodes, superseding
+primary thematic grouping. Implementation uses additive generic profile3, the same
+Understanding Engine/QH-32, QH-46 review and graph-verified canonical retrieval.
+The owner opts for a clean application dataset, without semantic v1/v2 backfill
+or new compatibility adapters. Persistent reset/cutover is still gated by the
+[verified backup and exact reset scope](qh-51-uum-reset-plan.md). Historical
+checkpoints below retain their original meaning; no VPS activation follows.
+
 Read the [QH Product Contract](product/QH_PRODUCT_CONTRACT.md) before decisions
 about the domain or persistence. It is the functional reference; this document
 and ADRs describe technical boundaries. Conflicts require STOP AND ASK, not
@@ -577,3 +586,52 @@ remains an outbound responsibility. Organization descriptions reuse schema0006
 JSON with policy and SQL ownership fencing. Manual first information uses QH-39's
 existing enrichment application and literal provider; semantic extraction remains
 QH-51 and review remains QH-46. Mock chat requires explicit test composition.
+
+### QH-51 — approved isolated semantic increment, 2026-10-21
+
+The owner approves the [versioned semantic extraction contract](qh-51-thematic-extraction-plan.md)
+for isolated implementation. `app/understanding/semantic.py` adapts semantic prompts
+through the same LLMProvider; the existing extractor/resolver and atomic selected
+source publication remain the single Engine. `app/core/assignments.py` owns the pure
+assignment contract shared by Understanding and QH-46: explicit dimensions,
+evidence and conservative label normalization. Review does not depend on the
+extraction application; both depend inward on Core.
+No text/title classifier, new persistence service or runtime provider activation.
+Selective review has a [separate narrow decision](qh-51-assignment-review-decision.md),
+approved by the owner for isolated implementation; no VPS provisioning follows. PostgreSQL and
+profile provisioning remain canonical/explicit; the VPS stays on legacy profiles
+and literal extraction until separately authorized.
+
+
+### Ordinary owner development AI —22 October2026
+
+The [current owner contract](qh-51-essai-ia.md) supersedes obsolete development-only
+consent/session limits above. app/chat/development.py coordinates the existing
+chat and Understanding applications with a verified OIDC identity and one private
+outbound provider factory. ApplicationServices binds this explicitly. It adds no
+production service/schema or alternate Engine. The original durable global ledger
+is shared by chat and extraction; request-local guards and canonical validation
+remain. Envoyer/Proposer are the user action, no activation or approval popup.
+
+
+### Private development diagnostics —22 October2026
+
+`adapters/llm/diagnostics.py` owns bounded response-only temporary files under the
+existing private provider mount, not canonical understanding or transcript storage.
+A request-local observer reports validation checkpoints through existing chat and
+Understanding applications; it cannot admit rejected output or confirm facts.
+The composition root schedules expiry cleanup; FastAPI adds authenticated scoped
+GET/DELETE diagnostics and React exposes them only for automatic development mode.
+No new service/schema. Global reservation uses the same original locked/fsynced
+ledger with an explicit private budget amendment; historical adapters retain their
+original default caps. See [audit and unapproved validation proposal](qh-51-validation-audit.md).
+
+
+### Approved response support —22 October2026
+
+The existing pure chat decoder and ChatResponse/HTTP/TypeScript DTOs carry mandatory
+`support_basis`; no new Engine/schema/adapter. The declaration must match sent
+dialogue and exact canonical aliases; no semantic-entailment claim follows. UI
+keeps dialogue support and human confirmation distinct. Non-200 body capture is
+explicitly private-development-only; historical experiment last_exchange retains
+its successful-JSON meaning and the historical writer independently requires200.

@@ -68,7 +68,7 @@ def test_real_api_alias_failure_is_atomic_sanitized_and_never_retried(retrieved,
         async def generate(self,request):
             self.calls+=1
             return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps({
-                'answer':'untrusted-answer-must-not-leak','reference_aliases':aliases,'insufficient_context':False})))
+                'answer':'untrusted-answer-must-not-leak','reference_aliases':aliases,'support_basis':'canonical','insufficient_context':False})))
     provider=BadProvider();c.app.state.services.chat.provider=provider
     before=p['repo'].read_snapshot((p['scope'],))
     response=post(c,p['scope'],include_proposed=True)

@@ -1,10 +1,12 @@
 # QH-51 — Estrazione tematica nello stesso Understanding Engine
 
-**Proposta tecnica da approvare, non implementata.** Preparata il 2026-10-21 dopo
+**Contratto approvato dall’owner il2026-10-21 per implementazione e test isolati.** Preparato dopo
 lettura via Atlassian MCP di QH-51, QH-47 e QH-54. La distinzione tematica/ruolo e
 la [presentazione minima](qh-54-thematic-map-contract.md) sono già approvate;
-la rappresentazione seguente e i nuovi contratti di lettura/review non lo sono.
-Nessuna inferenza, nuova migrazione, registrazione o scrittura demo è eseguita.
+la rappresentazione e i contratti di lettura sono ora autorizzati in isolamento.
+La review selettiva è precisata nella [decisione approvata](qh-51-assignment-review-decision.md).
+Nessuna inferenza reale, migrazione, registrazione VPS o scrittura demo è eseguita.
+Le registrazioni del nuovo profilo sono limitate ai database isolati dei test.
 
 ## Contratto circoscritto proposto
 
@@ -87,7 +89,7 @@ certezza tematica, origine e stato dell’item restano indipendenti.
 
 Proporre un read model tematico bounded nello stesso servizio Understanding,
 con Space, valore esatto, certezza delle assegnazioni, revisioni membri e copertura.
-Prima dell’implementazione approvare l’estensione del contratto pubblico: filtro
+L’approvazione owner del2026-10-21 comprende l’estensione del contratto pubblico: filtro
 **dimensione + valore** applicato prima del LIMIT, paginazione dei membri e lista
 dei temi con indicatore di copertura. L’attuale filtro `descriptor` da solo non
 separa temi e ruoli omonimi. La scoperta globale delle facet è differita da ADR0005:
@@ -116,7 +118,7 @@ QH-14/15/16 e PR19 non sono prerequisiti di una classificazione tematica interna
 nessuna loro integrazione o migrazione è autorizzata. QH-51 può essere verificato
 interamente offline prima di chiedere una prova pagata.
 
-## Confine con QH-47 e decisione richiesta
+## Confine con QH-47 e autorizzazioni residue
 
 QH-51 estrae proposte supportate da evidenze e riusa nomi espliciti secondo regole
 conservative. QH-47 decide se **gli item** sono nuovi/aggiornati/contraddittori/
@@ -126,8 +128,7 @@ current state. La semplice uguaglianza dei nomi tematici non risolve QH-47.
 Identità/storia autonome dei temi richiederebbero un’estensione esplicita del mandato,
 non sono già coperte dal titolo di QH-47.
 
-Richiesta per il successivo passo: approvare o correggere la rappresentazione
-versionata delle assegnazioni con evidenze, la riconciliazione conservativa dei
-nomi e il percorso di review/lettura bounded. Questo memo **non** chiede né concede
-budget, inferenze, migrazioni o attivazioni VPS. Fino all’approvazione, la PR22
-mantiene il fallback senza nodi inventati.
+L’owner ha approvato la rappresentazione versionata delle assegnazioni con evidenze,
+la riconciliazione conservativa dei nomi e il percorso di review/lettura bounded. Questo memo **non** chiede né concede
+budget, inferenze, migrazioni o attivazioni VPS. La PR22 è integrata e il suo fallback resta valido quando mancano assegnazioni
+qualificate. La nuova implementazione QH-51 è su branch separata.

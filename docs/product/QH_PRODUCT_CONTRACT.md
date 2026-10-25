@@ -4,6 +4,58 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Chat et mémorisation — owner amendment, 2026-10-23
+
+Le panneau chat place composer puis Mémoriser au-dessus de la conversation, avec
+modèle/disponibilité/budget réel au pied. Le reste de la page et la carte restent
+inchangés. Mémoriser ouvre trois explications: Comprendre, Proposer, Enregistrer.
+Continuer autorise une fois l'analyse Mistral et la conservation de toute la
+conversation courante (rôles/provenance préservés) comme source et propositions
+non confirmées. Même Understanding Engine, citations exactes, publication atomique,
+idempotence, aucune confirmation globale. Voir la proposition ouvre la review.
+En cas de transport ambigu, ne pas prétendre qu'aucune écriture n'a eu lieu;
+une nouvelle tentative explicite conserve la même identité d'opération.
+
+## Risposte fondate sul dialogo — owner amendment, 2026-10-22
+
+Un messaggio esplicitamente inviato può sostenere una risposta anche senza revisioni
+canoniche. `support_basis` distingue dialogue/canonical/mixed/insufficient; QH ne
+verifica compatibilità con gli input e le citazioni realmente trasmessi, non la
+verità tramite la dichiarazione del modello. Alias canonici validi obbligatori
+per canonical/mixed; nessuna invenzione o riconciliazione euristica. Dialogo e
+risposta restano temporanei; estrazione UUM e conferma QH46 sono azioni distinte.
+Rettifica owner successiva: `insufficient_context` è indipendente da
+`support_basis`, indica insufficienza per una risposta completa e non vieta una
+risposta utile parziale. La combinazione dialogue/true/[] è ammessa con dialogo
+inviato; canonical/mixed richiedono sempre citazioni canoniche valide. La UI mostra
+avviso di incompletezza separato da provenienza e conferma. Non dedurre il booleano
+dalla categoria o dall'assenza di revisioni.
+Gli errori owner/provenance/JSON/snapshot/budget bloccano, gli avvisi epistemici
+restano separati. [Contratto tecnico approvato](../qh-51-response-support.md).
+
+## UUM e nuovo ambiente dati — owner amendment, 2026-10-21
+
+La successiva decisione owner adotta sei dimensioni universali di navigazione:
+`situation_information`, `objectives_intentions`, `decisions_actions`,
+`constraints_preferences`, `hypotheses_uncertainties`, `open_questions`.
+Ogni elemento atomico ha una primaria oppure rimane non classificato. La mappa
+mostra sempre sei nodi con presenza/vuoti verificati e click sui membri reali;
+Non classés ed Éléments mantengono accessibile il contenuto senza primaria.
+Non sono domini organizzativi né tipi strutturali; entità e relazioni restano
+trasversali. Temi specifici dello Space diventano metadati aperti facoltativi.
+Provenance, epistemica, temporalità, certezza e review restano indipendenti.
+Frasi con significati autonomi richiedono proposte distinte con evidenze proprie.
+
+Questa decisione sostituisce i nodi tematici primari QH-54/QH-51 e la precedente
+strategia di migrazione funzionale: i dati sperimentali v1/v2 saranno abbandonati
+nel nuovo ambiente attivo, senza backfill o adapter di conversione. Non riscrive
+profili, benchmark, output originali o storia; l'immutabilità vale per i nuovi dati.
+Il reset persistente resta soggetto a inventario, backup verificato e conferma
+finale owner. Identità/Keycloak, segreti, ledger, budget e audit economici restano
+conservati. [ADR 0010](../adr/0010-universal-understanding-model.md) e
+[piano operativo](../qh-51-uum-reset-plan.md) distinguono autorizzazione e attivazione.
+Nessuna inferenza, merge #23 o modifica PR #19/0007 è implicata.
+
 ## Browse-first understanding — owner amendment, 2026-10-17
 
 > QH does not require users to know what to search for before showing them what their Context Space understands. Browsing is the primary experience; search is a complementary capability.
@@ -643,3 +695,50 @@ The approved [presentation contract](../qh-54-thematic-map-contract.md) is disti
 from the [QH-51 technical proposal](../qh-51-thematic-extraction-plan.md), pending
 approval before schema/contract changes or inference. No migration or provider call
 is authorized by this amendment.
+
+## QH-51 semantic assignments — approved isolated increment, 2026-10-21
+
+The owner approves version2 of generic profiles with explicit thematic/semantic_role
+dimensions, open values, assignment certainty and exact citation references, without
+rewriting old profiles or revisions. The same Engine/provider port, resolver and
+atomic Source/proposed/outbox pipeline apply. Literal manual retention remains
+available; semantic processing is an explicit choice when separately enabled.
+
+The [selective-review decision](../qh-51-assignment-review-decision.md) is approved:
+backend-only assignment review_state proposed/accepted/rejected, optional exact
+Space name_candidate, and QH-46 review_assignments creating an immutable proposed
+successor. Text, certainty, sources and current pointer are preserved. Item validity,
+assignment validity, extractor certainty and human confirmation remain independent.
+No model-assigned human state, lexical/vector merge, global theme taxonomy or
+separate review store. Proposed name equivalences require explicit owner choice.
+
+Authorized thematic map nodes open bounded exact member lists, keep provenance and
+states, and declare partial coverage. No node from a revision/title or legacy role.
+All new profiles and semantic adapters are verified only with simulated/replay
+providers and disposable synthetic data. Real provider experiment and VPS profile
+provisioning/activation remain separately gated; no new paid call is authorized.
+
+
+## Superseding development AI decision — 2026-10-22
+
+The owner explicitly replaces prior development UI snapshot/session consents and
+Alice/Projet pilote eligibility with ordinary AI use by the exact verified owner
+OIDC account in all its owned Spaces, present/future. **Envoyer** authorizes one
+chat processing request; **Proposer avec Mistral** authorizes one selected-source
+UUM extraction. There is no preliminary activation, provider checkbox, mandatory
+snapshot preview/confirmation or per-Space/conversation grant. No inference on
+opening a page. The active model and transmitted data scope are visible. Only
+confirmed-current Space elements and the explicitly submitted dialogue are sent
+by default; proposed inclusion is a separate user choice. Chat never confirms or
+persists facts; UUM creates proposed revisions reviewed through QH46.
+
+This exception retains verified OIDC/CHAT/owner policy, graph freshness, exact
+source validation, immutable revisions and isolated ownership. Only development,
+one configured OIDC principal, Mistral AI/mistral-small-2603. Preserve the original
+QH45 ledger and aggregate8 requests/USD0.20, old entries and absolute expiry; no
+QH51 allocation transfer or reset. Historical3 requests/USD0.01 session limits do
+not apply in this mode. Reserve the bounded maximum cost atomically before HTTP;
+concurrent requests cannot overspend. No retry/fallback. Insufficient global
+reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
+before sending. Previous decisions above remain historical and continue outside
+this precisely scoped development mode. See [implementation contract](../qh-51-essai-ia.md).

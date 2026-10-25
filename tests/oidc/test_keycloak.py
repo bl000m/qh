@@ -40,7 +40,19 @@ SESSION_METHODS = {
     '/context-spaces/{context_id}/chat-sessions/{session_id}/messages': {'post'},
 }
 
-ENRICHMENT_METHODS = {'/context-spaces/{context_id}/enrichments': {'post'}}
+DEVELOPMENT_AI_METHODS = {
+    '/context-spaces/{context_id}/ai/diagnostics': {'get'},
+    '/context-spaces/{context_id}/ai/diagnostics/{diagnostic_id}': {'delete'},
+    '/context-spaces/{context_id}/ai/messages': {'post'},
+    '/context-spaces/{context_id}/ai/proposals': {'post'},
+}
+
+UUM_METHODS = {'/context-spaces/{context_id}/understanding-presence': {'get'}}
+
+ENRICHMENT_METHODS = {
+    '/context-spaces/{context_id}/enrichments': {'post'},
+    '/context-spaces/{context_id}/enrichments/capabilities': {'get'},
+}
 
 UX_V2_METHODS = {
     '/environment': {'get','put'},
@@ -58,14 +70,17 @@ def check_business_paths(document, *, spaces_required):
     chat = browse | CHAT_PATHS
     sessions = chat | set(SESSION_METHODS)
     ux_v2 = sessions | set(UX_V2_METHODS)
-    expected = ux_v2 | set(ENRICHMENT_METHODS)
+    legacy_enrichment = ux_v2 | {'/context-spaces/{context_id}/enrichments'}
+    previous_expected = ux_v2 | set(ENRICHMENT_METHODS)
+    uum_expected = previous_expected | set(UUM_METHODS)
+    expected = uum_expected | set(DEVELOPMENT_AI_METHODS)
     if spaces_required:
         assert set(paths) == expected
     else:
         # The read-only live verifier also supports the pinned c723d32 VPS.
         # Both versions are exact allowlists, never arbitrary added endpoints.
-        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, chat, sessions, ux_v2, expected)
-    for path, methods in (SESSION_METHODS | UX_V2_METHODS | ENRICHMENT_METHODS).items():
+        assert set(paths) in (IDENTITY_PATHS, spaces, spaces | QUERY_PATHS, browse, chat, sessions, ux_v2, legacy_enrichment, previous_expected, uum_expected, expected)
+    for path, methods in (SESSION_METHODS | UX_V2_METHODS | ENRICHMENT_METHODS | UUM_METHODS | DEVELOPMENT_AI_METHODS).items():
         if path in paths:
             assert set(paths[path]) == methods
     if '/context-spaces' in paths:

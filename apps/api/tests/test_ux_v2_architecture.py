@@ -27,10 +27,11 @@ def test_oidc_route_allowlist_rejects_unknown_endpoints_and_methods():
     document = create_app().openapi()
     module.check_business_paths(document,spaces_required=True)
     module.check_business_paths(document,spaces_required=False)
-    for mutate in ('path','method'):
+    for mutate in ('path','method','development_method'):
         changed = deepcopy(document)
         if mutate=='path': changed['paths']['/unauthorized-feature']={'post':{}}
-        else: changed['paths']['/environment/spaces/{context_id}/open']['get']={}
+        elif mutate=='method': changed['paths']['/environment/spaces/{context_id}/open']['get']={}
+        else: changed['paths']['/context-spaces/{context_id}/ai/messages']['get']={}
         with pytest.raises(AssertionError):
             module.check_business_paths(changed,spaces_required=True)
         with pytest.raises(AssertionError):

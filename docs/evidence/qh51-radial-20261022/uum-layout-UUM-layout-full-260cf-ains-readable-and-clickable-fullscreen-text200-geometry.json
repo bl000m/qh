@@ -1,0 +1,90 @@
+{
+  "errors": [],
+  "boundary": {
+    "x": 0,
+    "y": 0,
+    "right": 1672,
+    "bottom": 1200,
+    "width": 1672,
+    "height": 1200
+  },
+  "orb": {
+    "x": 705.984375,
+    "y": 360.453125,
+    "right": 965.984375,
+    "bottom": 620.453125,
+    "width": 260,
+    "height": 260
+  },
+  "cards": [
+    {
+      "label": "Situation & informations",
+      "box": {
+        "x": 49,
+        "y": 257.484375,
+        "right": 566.921875,
+        "bottom": 423.46875,
+        "width": 517.921875,
+        "height": 165.984375
+      }
+    },
+    {
+      "label": "Objectifs & intentions",
+      "box": {
+        "x": 1105.0625,
+        "y": 257.484375,
+        "right": 1623,
+        "bottom": 423.46875,
+        "width": 517.9375,
+        "height": 165.984375
+      }
+    },
+    {
+      "label": "Décisions & actions",
+      "box": {
+        "x": 49,
+        "y": 471.46875,
+        "right": 566.921875,
+        "bottom": 637.453125,
+        "width": 517.921875,
+        "height": 165.984375
+      }
+    },
+    {
+      "label": "Contraintes & préférences",
+      "box": {
+        "x": 1105.0625,
+        "y": 471.46875,
+        "right": 1623,
+        "bottom": 637.453125,
+        "width": 517.9375,
+        "height": 165.984375
+      }
+    },
+    {
+      "label": "Hypothèses & incertitudes",
+      "box": {
+        "x": 49,
+        "y": 685.453125,
+        "right": 566.921875,
+        "bottom": 851.4375,
+        "width": 517.921875,
+        "height": 165.984375
+      }
+    },
+    {
+      "label": "Questions ouvertes",
+      "box": {
+        "x": 1105.0625,
+        "y": 685.453125,
+        "right": 1623,
+        "bottom": 851.4375,
+        "width": 517.9375,
+        "height": 165.984375
+      }
+    }
+  ],
+  "viewport": 1672,
+  "fontSize": "36px",
+  "columns": "517.922px 466.141px 517.938px"
+}

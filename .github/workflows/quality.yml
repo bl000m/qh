@@ -92,7 +92,7 @@ jobs:
       - name: QH-33 v1/v2 lineage and review gates
         run: |
           python3 -m unittest discover -s tests -p 'test_qh33*.py' -v
-          python3 docs/evidence/qh33-v2-20261016/audit.py
+          python3 scripts/audit_qh33_history.py
       - name: Generate runner-only credentials
         run: |
           python3 scripts/init_env.py
@@ -109,7 +109,10 @@ jobs:
         run: make verify
       - name: Stop runner services without deleting volumes
         if: always()
-        run: docker compose --env-file .env -f infra/docker/docker-compose.yml stop
+        run: |
+          if test -f .env; then
+            docker compose --env-file .env -f infra/docker/docker-compose.yml stop
+          fi
 
   oidc:
     needs: quality
@@ -180,7 +183,7 @@ jobs:
   browser:
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -196,3 +199,11 @@ jobs:
       - name: QH-52/QH-53 normal product UI, rotating OIDC and isolated literal bootstrap
         run: |
           python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --qh-login-theme --chat-sessions --product-mode --browser-grep 'QH-52 product|QH-53 complete|QH-53 consent|QH-54 direct|QH-54 synthetic|QH-54 manual|QH-54 maquettes' --output /tmp/qh52-product-evidence
+
+      - name: QH-51 UUM primary review and universal dimensions on a clean disposable dataset
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --browser-grep 'QH-51 UUM' --output /tmp/qh51-semantic-evidence
+
+      - name: Ordinary development AI and stable radial lifecycle, simulated provider only
+        run: |
+          python3 scripts/test_qh11_browser.py --backend-image qh11-api:ci --browser-image qh11-browser:ci --frontend-image qh12-web:ci --understanding --chat-sessions --product-mode --uum-mode --development-ai-mode --browser-grep 'QH-51 radial lifecycle|QH-51 ordinary AI' --output /tmp/qh51-ordinary-ai-evidence

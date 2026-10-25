@@ -58,7 +58,17 @@ def selected_source(context_id, conversation):
     return source
 
 
-async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider):
+async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None):
+    def observed(rule, operation):
+        try:
+            result = operation()
+        except ValueError as exc:
+            if observer:
+                observer(rule, False, str(exc))
+            raise
+        if observer:
+            observer(rule, True)
+        return result
     source = selected_source(context_id, conversation)
     buffer = _PreparedSource(subject_id, source)
 
@@ -68,14 +78,16 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
             result = await provider.generate(request)
             if result.message.role != MessageRole.ASSISTANT:
                 return result  # The unchanged Engine rejects the role.
-            output = decode_output(result.message.content)
+            output = observed('uum.json_unique_fields', lambda: decode_output(result.message.content))
+            if descriptor_version == 3:
+                return result  # UUM normalization occurs inside the same Engine, raw checkpoint retained.
             if output == {'items': []}:
                 raise _EmptyResult('Explicit successful empty extraction')
             derived, _audit = resolve_output_citations(output, source=source)
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(derived)))
 
-    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider())
+    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider(), descriptor_version=descriptor_version, observer=observer)
     try:
         checkpoint = await engine.extract(subject_id=subject_id,context_id=context_id,
             source_revision_id=source['id'],extraction_key=extraction_key)
