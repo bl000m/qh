@@ -2,6 +2,7 @@ name: QH quality
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   push:
     branches: [main]
   workflow_dispatch:
@@ -14,7 +15,72 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  fast:
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Validate workflow
+        run: make lint-workflows
+      - name: PR Fast — checks for changed components only
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          def run(*args):
+              subprocess.run(args, check=True)
+
+          files = subprocess.check_output(['git', 'diff', '--name-only', '-z',
+              os.environ['BASE_SHA'], os.environ['HEAD_SHA']]).decode().split('\0')
+          paths = [Path(p) for p in files if p]
+          changed = [p for p in paths if p.is_file()]
+          web = any(str(p).startswith(('apps/web/', 'packages/shared/')) or
+              str(p) in ('package.json', 'package-lock.json', 'tsconfig.base.json') for p in paths)
+          api = any(str(p).startswith('apps/api/') or str(p) == 'ruff.toml' for p in paths)
+
+          if web:
+              run('docker', 'build', '-f', 'apps/web/Dockerfile.browser', '-t', 'qh-fast-web', '.')
+              run('docker', 'run', '--rm', '--network', 'none', 'qh-fast-web',
+                  'npm', 'run', 'lint', '--workspace', 'apps/web')
+              run('docker', 'run', '--rm', '--network', 'none', 'qh-fast-web',
+                  'npm', 'run', 'build', '--workspace', 'apps/web')
+              stems = {re.sub(r'(?<!^)(?=[A-Z])', '-', p.stem).lower() for p in paths
+                  if str(p).startswith('apps/web/src/')}
+              specs = sorted({str(p.relative_to('apps/web')) for p in Path('apps/web/tests').glob('*.spec.ts')
+                  if not p.name.endswith('.browser.spec.ts') and (p in changed or any(
+                      p.name == s+'.spec.ts' for s in stems))})
+              if specs:
+                  run('docker', 'run', '--rm', '--network', 'none', '--ipc=host', 'qh-fast-web',
+                      'npm', 'run', 'test', '--workspace', 'apps/web', '--', *specs)
+
+          if api:
+              run('docker', 'build', '-f', 'apps/api/Dockerfile.dev', '-t', 'qh-fast-api', '.')
+              run('docker', 'run', '--rm', '--network', 'none', 'qh-fast-api', 'ruff', 'check',
+                  *([str(p.relative_to('apps/api')) for p in changed
+                      if str(p).startswith('apps/api/') and p.suffix == '.py'] or ['app', 'adapters']))
+              stems = {p.stem for p in paths if str(p).startswith('apps/api/') and p.suffix == '.py'}
+              tests = sorted({str(p.relative_to('apps/api')) for p in Path('apps/api/tests').glob('test_*.py')
+                  if p in changed or any(p.name == 'test_'+s+'.py' for s in stems)})
+              if tests:
+                  run('docker', 'run', '--rm', '--network', 'none', 'qh-fast-api',
+                      'python', '-m', 'pytest', '-q', *tests)
+
+          if not web and not api:
+              print('No application components changed; workflow validation only.')
+          PY
+
   quality:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -78,6 +144,7 @@ jobs:
         run: docker compose --env-file .env -f infra/docker/docker-compose.yml --profile oidc stop
 
   native-integration:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -111,6 +178,7 @@ jobs:
           fi
 
   browser:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

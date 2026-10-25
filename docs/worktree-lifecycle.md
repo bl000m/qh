@@ -1,60 +1,17 @@
-# Single-checkout development and preserved worktree history
+# Single-checkout development history
 
-The mandatory rules live in [AGENTS.md](../AGENTS.md#single-checkout-development-policy)
+Current operating rules live in [AGENTS.md](../AGENTS.md#single-checkout-development-policy)
 and its [task/Done policy](../AGENTS.md#task-execution--definition-of-done-policy).
-The owner's later 2026-10-16 single-checkout decision supersedes sibling-worktree
-creation. All new development uses `/home/ubuntu/qh`, one task branch, Jira ticket
-and PR at a time. Existing #5/#7 directories are paused transition exceptions.
-Historical records below preserve earlier actions; they are not current commands
-or instructions to create worktrees. This change does not merge any PR or deploy.
+Use those rules for new work; this document preserves executed transitions and
+historical proposals. Read a historical section only when the current task needs it.
+It does not authorize branch switching, worktree creation/retirement, deployment or
+repeat verification of an unchanged historical result.
 
-## Safe manual bootstrap in the single checkout
-
-1. Read `/home/ubuntu/qh/AGENTS.md`, relevant skill, Jira objective/acceptance,
-   dependencies/comments and the existing PR. Propose a verifiable DoD if missing.
-   Confirm the previous task is closed, or record the owner's explicit exception.
-2. Inspect `git status --short --branch`, staged/unstaged diffs, untracked and
-   ignored files, and editor buffers. Save/commit approved work; preserve private
-   configuration and evidence. Never hide changes with an automatic stash/reset.
-3. Inspect active sessions, build/test/reload processes, open files and container
-   bind mounts. Confirm no process depends on the current source tree. Check the
-   target branch retains the exact readonly realm import bytes/path and does not
-   overwrite private files. Stop if any safety fact is unknown or incompatible.
-4. Fetch `origin/main`, select `main` only when safe, then fast-forward only and
-   verify equality with fetched `origin/main`. Stop on divergence; no reset/rebase.
-   Create the one authorized task branch from there, or select its existing branch
-   after reviewing base/local commits/PR. An attached legacy branch blocks ordinary
-   switching until its separately verified migration; never use force flags.
-5. Work, test and commit only in `/home/ubuntu/qh`. Publish to the existing task PR
-   as authorized. Corrections stay in that branch; no replacement PR or new task.
-
-The steps are review gates, not an unconditional shell script. Do not switch during
-an active editor save/build/test or while another coding session owns the tree.
-The old `scripts/start_task_worktree.py` is disabled: no arguments, old plan mode,
-`--create`, old hashes and directory options all fail without mutation; `--help`
-only explains the change. No automatic replacement performs hidden switches,
-fetches, runtime actions or task creation.
-
-The later owner-approved [VPS POC hot-reload workflow](qh-development-stack.md)
-binds frontend/backend to this checkout. Stop only those apps with `sudo -n make
-dev-stop` before branch switches, verify stopped state and other processes, then
-use `dev-up` after reviewing the new branch. The frozen bundle is retained for
-image-only rollback. Development `make up`/generic Compose must not manage the
-persistent stack. Switching Git grants no migration, seeding or test-data writes.
-
-## Readiness, closure and reporting
-
-- **IN PROGRESS:** implementation is underway or technical criteria remain unmet.
-- **READY FOR REVIEW:** technical acceptance verified, PR published and unmerged.
-- **DONE:** every Jira acceptance verified, PR reviewed and merged, Jira updated.
-
-Green tests alone are insufficient. Report every criterion with evidence and
-implemented/tested, implemented/unverified, not implemented or out-of-scope status.
-Correct safe in-scope failures with regression tests; propose prioritized solutions
-for unrelated issues. Jira writes and merge require explicit approval. If merge
-succeeds but Jira closure is pending, say so and do not report DONE. Never start
-the next task automatically. For this non-ticket policy maintenance, Jira is not
-assigned: do not fabricate a key or claim an issue update.
+The sole development checkout is `/home/ubuntu/qh`. Existing runtime source binds
+make branch switching an app-only guarded operation; consult the relevant part of
+[the runtime guide](qh-development-stack.md) when performing that operation.
+`scripts/start_task_worktree.py` remains disabled. Preserve retained refs, checkouts,
+private files and evidence; no cleanup or additional development directory follows.
 
 ## Executed non-destructive transition of PR #6 — 2026-10-16
 
