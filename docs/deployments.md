@@ -6,6 +6,86 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-24 — QH-51 source-bound correction
+
+Current task branch updates extraction schema/prompt and memory/chat presentation
+through the existing source binds. No lifecycle command, migration, Source rewrite,
+provider call, budget/configuration amendment or merge. Verification is limited to
+the owner's requested offline replay and focused disposable checks.
+
+## 2026-10-23 — POC application candidate; budget activation pending
+
+Current branch source binds carry the local chat/memory correction. The prepared,
+owner-authorized amendment targets only private availability receipt and aggregate
+ledger metadata: EUR10/USD5 with no call quota, retaining every historical call.
+It has not been applied: the recovery mandate completes publication and CI only.
+The runtime therefore retains its previous 100-attempt/USD2.50 envelope.
+Source/SQL preservation evidence remains in
+`.local-archive/qh51-chat-memory-20261023/`. The prepared procedure stops/starts only
+backend with guarded commands; frontend can preserve the temporary dialogue.
+No provider inference, migration, schema/profile/IdP change or merge.
+
+## 2026-10-22 — response support independence correction
+
+Owner-approved application-only correction on the existing QH-51 branch/source
+binds: independent provenance and sufficiency flags in Python and TypeScript,
+shared warnings in Chat/Sources. No service recreation/configuration/migration,
+profile registration or paid inference. Full isolated CI verifies the candidate;
+PR23 remains open. [Contract and verification](qh-51-independent-support.md).
+
+## 2026-10-22 — Authorized UUM cutover, followed by frontend map correction
+
+After the owner's explicit final approval, the prepared reset/cutover was executed
+on6d8f2f2:197 application rows in11 tables and92 QH graph nodes/40 edges removed;
+three v3 profiles added, original14 definitions and schema0006 retained. Guarded
+`dev-up` restarted only frontend/backend; all six original containers healthy.
+Backup/economic/configuration hashes matched. The private durable execution record
+is `.local-archive/qh51-uum-cutover-20261022/ACTIVATION-RESULT.md`; the preceding
+preparation entry below is a historical checkpoint, superseded by this execution.
+
+The owner then created one new empty Space and reported the UUM map unreadable.
+The authorized correction changes frontend layout only, through the existing binds;
+no service restart, new container/image, migration, registration or provider call.
+Actual VPS read-only browser smoke confirms four widths/fullscreen and six keyboard
+member dialogs. Canonical content, identities and profiles remain exact. The
+organization fingerprint changed during development: two ordinary opening-activity
+POSTs from a connected client during hot reload; this exception is documented,
+not hidden by a metadata restore. Other14 tables,39 protected file hashes and16
+backup-manifest files remain exact. PR23 stays open, PR19 intact.
+[Correction and acceptance evidence](qh-51-uum-map-layout.md).
+
+## 2026-10-21/22 — UUM preparation; application data reset NOT executed
+
+Owner approved the UUM architecture and a clean application dataset, with a final
+destructive confirmation still required. `sudo -n make dev-stop` stopped only
+frontend/backend before source changes, because their hot-reload binds use this
+checkout. They remain stopped pending the reviewed cutover. Keycloak, PostgreSQL,
+Neo4j and MCP retain their original images, volumes and configuration.
+
+Read-only inventory: QH schema0006, 15 tables; 11 application tables selected for
+the proposed reset, identities/profile registry/schema history preserved. Full
+SQL and typed logical graph backups were restored on disposable tmpfs containers;
+selective reset/rollback rehearsed there only. Runtime SQL, graph and economic
+files remain intact; no profile3 registered on the VPS. Candidate app/profile/UI
+tests use separate disposable data and images, with no provider HTTP call.
+[Exact scope, backups, rollback and final gate](qh-51-uum-reset-plan.md).
+PR #23 remains open; PR #19/0007 unchanged. This entry authorizes no reset or startup.
+
+## 2026-10-21 — PR22 ordinary merge and QH-51 isolated development
+
+Owner-authorized PR22 merge5b9c0f3 preserves40cd6e7 and all source commits;
+existing CI39579596448 verified all four jobs SUCCESS, without manual rerun.
+Checkout main fast-forwarded to origin/main, then dedicated QH-51 branch created.
+Guarded app stop/up for that switch preserved existing container IDs/images/mounts
+and all infrastructure; no replacement or persistent configuration change.
+QH-51 adds source code under the existing binds, with runtime composition still
+literal and no profile2 provisioned on the VPS. All semantic publication and review
+checks run on dedicated disposable test data; no demo/ledger/budget/OIDC change.
+Read-only final checks confirm schema0006 and zero generic v2 profiles on the VPS;
+protected files match the task checkpoint and original service IDs/images/mounts
+remain intact. [Implementation/evidence](qh-51-implementation.md); paid experiment
+is proposed separately and remains unauthorized.
+
 ## 2026-10-21 — QH-54 thematic fallback and targeted regression corrections
 
 Existing PR22 branch/source binds only: remove revision map nodes, restore original
@@ -614,3 +694,81 @@ requested the subsequent separate QH-54 branch, even while PR19 remains open.
 Frontend/backend restarted on their existing images/config/mounts; Keycloak/MCP/
 SQL/Neo4j unchanged, schema0006. Ordinary source hot reload remains active; no new
 persistent deployment/config/allowlist/budget change, paid inference or0007 follows.
+
+
+## 2026-10-22 — QH51 ordinary owner AI, app-only radial refinement
+
+Owner explicitly authorized ordinary Mistral use by the exact verified development
+account in all owned Spaces, replacing historical UI activation/consent and
+session economic gates. Core implementation4fc2a81, existing PR23 branch in the
+single checkout. The final frontend/test/report commits are listed in PR23 history;
+this is a development source-bind cutover, no merge/product release/image change.
+
+Guarded dev-stop during preparation and dev-up after private receipt verification;
+only frontend/backend app starts. Receipt gains development_account only; model,
+expiry, all old fields and original ledger retained. No .env, Keycloak, TTL, schema,
+profile, backup, canonical data or PR19 modification. SQL15 table fingerprints,
+protected files, container identities/images/mounts and infrastructure starts
+compare equal before/after the one real synthetic browser smoke.
+
+Actual smoke:1POST mistral-small-2603, USD0.00010005, zero canonical writes or
+supplied revisions; total5/8 calls, USD0.00249735 spent,3 calls/USD0.19750265 remain.
+No subsequent paid inference. [Evidence, limits and receipt-only rollback](qh-51-development-ai-runtime.md).
+The ledger is never restored by rollback. Owner Mac/visual review and PR23 merge
+remain separate and pending; no Jira transition.
+
+### 22 October2026 — QH-51 private diagnostics and approved budget amendment
+
+Owner's new debug mandate authorizes the same development principal, 100 cumulative
+chat/UUM API attempts and EUR5 ceiling. Existing private QH45 receipt gains the exact
+`development_budget` amendment (USD2.50, conservative EUR2/USD); the same ledger gains
+new ceiling metadata and an append-only amendment with prior hashes. All six calls
+and charges are unchanged: USD0.00298080 spent,94 calls/USD2.49701920 remain.
+Original model, availability expiry and historical/session fields remain recorded.
+No paid call, reset, schema/profile change or application data write was performed.
+
+Guarded app-only stop/up avoids activating partially edited economic controls.
+All fifteen canonical SQL table hashes, protected .env/realm bytes, container
+IDs/images/mounts and infrastructure start times compare equal; only the two app
+start times change. Schema remains0006. Private one-hour diagnostics use the existing
+backend-only writable provider mount; startup and thirty-second housekeeping prune
+expired files. Authenticated read-only Mac-equivalent Chromium probe verifies
+100-call capability,94 remaining and scoped diagnostics HTTP200/private,no-store.
+All application writes/provider POSTs were blocked by that probe.
+
+Private backups and repeatable activation/preservation/probe evidence remain under
+`.local-archive/qh51-diagnostics-20261022/` and the preservation record under
+`.local-archive/qh51-map-target-20261022/`. Never restore an old ledger during rollback.
+Disable new spending before any code rollback; preserve calls and append a reviewed
+ceiling amendment if limits are reduced. Restore only private authorization/config
+as appropriate for compatible code. The pre-change JSON copies are evidence, not
+permission to overwrite current accounting. Existing application/image rollback
+procedures remain guarded. No Keycloak/volume/PR19 changes; PR23 remains unmerged.
+The [validation audit and functional proposal](qh-51-validation-audit.md) are separate:
+canonical-citation admission checks have not been relaxed.
+
+### 22 October2026 — approved conversation support on the same development branch
+
+The owner approves mandatory support_basis and empty-canonical-Space dialogue,
+with exact input/alias coherence checks and unchanged ownership, provenance,
+snapshot and economic gates. Guarded frontend/backend stop/up prevents a partial
+DTO transition. No dependency, image, Keycloak, private configuration, schema,
+profile, ledger ceiling or existing canonical record is changed by this code cutover.
+The same source-bound images/containers remain selected; only app start times change.
+[Approved contract](qh-51-response-support.md) distinguishes declarations from proof.
+
+Verification uses disposable SQL/Neo4j/OIDC and simulated provider responses first.
+The authorized one-call live reproduction is executed after the candidate's CI,
+through the normal owner UI in a new explicitly created empty synthetic Space,
+with a maximum USD0.0024 reservation on the existing aggregate ledger. No automatic
+source/revision write, retry, fallback or UUM extraction. A successful chat appends
+only its accounting attempt and the existing one-hour private diagnostic record;
+normal explicit Space creation is metadata, not confirmed understanding.
+
+The durable operational result, actual CI run/HEAD, remaining calls/cost, permitted
+metadata delta and preservation checks are recorded without payloads in
+`.local-archive/qh51-support-basis-20261022/SAFE-RESULTS.json` after execution.
+Original provider JSON and checks stay in the private diagnostic store for its
+unchanged one-hour retention, owner-authenticated reading/deletion only. Synthetic
+medical input/output are never published in Git/CI/ordinary logs. No merge or Jira
+transition follows this runtime operation; PR19 remains untouched.

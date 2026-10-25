@@ -17,13 +17,15 @@ router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
 
 
 class CapabilityOutput(BaseModel):
+    automatic: bool = False
+    plafond_reached: bool = False
     enabled: bool
     model: Literal['mistral-small-2603'] | None
     max_seconds: Literal[300, 1800]
-    max_calls: int = Field(ge=1, le=8)
+    max_calls: int = Field(ge=1, le=100)
     max_usd: str
     provider_expires_at: float | None
-    remaining_calls: int = Field(ge=0, le=8)
+    remaining_calls: int = Field(ge=0, le=100)
     remaining_usd: str
 
 
@@ -96,7 +98,13 @@ async def execute(operation):
 @router.get('/{context_id}/chat-sessions', response_model=CapabilityOutput)
 async def capabilities(context_id: UUID, request: Request, response: Response,
                        subject=Depends(authenticated_subject)):
-    return await execute(service(request, response).capabilities(chat_request(subject, context_id)))
+    legacy = service(request, response)
+    automatic = request.app.state.services.development_ai
+    if automatic is not None:
+        from app.api.security import bearer
+        identity = await authenticated_chat_identity(request, await bearer(request))
+        return await execute(automatic.capabilities(identity, chat_request(subject, context_id)))
+    return await execute(legacy.capabilities(chat_request(subject, context_id)))
 
 
 @router.post('/{context_id}/chat-sessions/preview', response_model=SessionOutput)
@@ -131,6 +139,6 @@ async def generate(context_id: UUID, session_id: UUID, payload: ChatInput,
         chat_request(identity.subject_id, context_id, payload), str(session_id)))
     return ChatOutput(context_id=context_id, answer=result.message.content, model=result.model,
         references=result.references, provided_revisions=result.provided_revisions,
-        insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
+        support_basis=result.support_basis, insufficient_context=result.insufficient_context, partial_coverage=result.partial_coverage,
         input_bound=result.input_bound, context_bytes=result.context_bytes,
         generation_seconds=result.generation_seconds)

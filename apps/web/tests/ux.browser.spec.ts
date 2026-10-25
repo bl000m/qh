@@ -59,12 +59,12 @@ test('narrow mobile and 200 percent text resizing keep navigation and controls r
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
-test('chat composer leads on mobile while technical details remain available and consent stays explicit',async({page},info)=>{
+test('radial map leads on mobile while the composer remains reachable and historical consent stays explicit',async({page},info)=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/');await login(page);
  await afterLogin(page,expected.proposed_scope);
  const field=page.getByLabel('Votre question sur ce contexte');await expect(field).toBeEnabled();
  await expect(page.getByText('Compréhension disponible : propositions non confirmées uniquement.',{exact:true})).toHaveCount(0);
- expect((await field.boundingBox())!.y).toBeLessThan(844);await includeProposals(page);await field.fill('Question en attente');
+ expect((await field.boundingBox())!.y).toBeGreaterThan((await page.locator('.space-context-map').boundingBox())!.y);await field.scrollIntoViewIfNeeded();expect((await field.boundingBox())!.y).toBeLessThan(844);await includeProposals(page);await field.fill('Question en attente');
  let release:()=>void=()=>{};const gate=new Promise<void>(resolve=>release=resolve);
  await page.route('**/chat',async route=>{await gate;await route.continue();});
  await page.getByRole('button',{name:'Envoyer la question',exact:true}).click();
@@ -143,7 +143,7 @@ test('one approved identity spans environment and Space without decorative clutt
   await page.locator('.space-grid').screenshot({path:info.outputPath('qh43-spaces-'+name+'.png')});
  }
  await page.getByRole('link',{name:'Projet pilote',exact:true}).click();await expect(page.getByLabel('Votre question sur ce contexte')).toBeEnabled();
- await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth',876);await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
+ await expect(page.locator('.space-brand .qh-bubble')).toHaveJSProperty('naturalWidth',400);await expect(page.locator('.space-brand strong')).toHaveText('QH');await expect(page.locator('.space-heading .qh-bubble')).toHaveCount(1);
  await expect(page.locator('.chat-help')).toHaveCount(0);await expect(page.getByLabel('Utiliser aussi les éléments à vérifier. Ils ne sont pas encore confirmés.')).not.toBeChecked();
  for(const [name,width,height] of [['desktop',1280,900],['mobile',390,844]] as const){
   await page.setViewportSize({width,height});await page.screenshot({path:info.outputPath('qh43-branded-space-'+name+'.png'),fullPage:true});

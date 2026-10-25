@@ -21,3 +21,13 @@ test('QH-54 groups contain only actual explicit descriptors, never categories in
  expect(groupsIn([literal])).toEqual([]);expect(groupsIn([{...literal,content:{text:'500 EUR savings',descriptors:[{value:'unusual exact meaning',certainty:'tentative'},{value:'decision',certainty:'asserted'}]}}])).toEqual(['unusual exact meaning','decision']);
  expect(groupsIn([{...literal,content:{descriptors:['fake',{value:'empty'}]}}])).toEqual([]);
 });
+test('UUM literal control retains direct owner origin independently from primary review',()=>{
+ const current=structuredClone(literal);current.type_version=3;delete current.content.properties;
+ current.content.extraction={key:'qh51-uum-literal/3',input_sha256:'a'.repeat(64)};
+ current.provenance[0].origin.metadata={provider_mode:'uum-offline-literal/3',submission_kind:'owner_selected_browser_segment',submitted_by:owner};
+ expect(contentOrigin(current,owner)).toBe('personal');expect(itemState(current,owner)).toBe('Ajouté par vous');
+ current.origin_kind='human';current.content.text='Correction personnelle';current.content.qh_review={action:'review_primary',actor_id:owner};
+ expect(contentOrigin(current,owner)).toBe('personal');
+ current.provenance[0].origin.metadata={provider_mode:'uum-simulated/3',submission_kind:'owner_selected_browser_segment',submitted_by:owner};
+ expect(contentOrigin(current,owner)).toBe('other');
+});

@@ -76,9 +76,20 @@ def create_runtime_app():
             await asyncio.to_thread(runtime.start)
             application.state.native_context = runtime
             running["runtime"] = runtime
+        async def purge_diagnostics():
+            while True:
+                if factory and factory.diagnostics:
+                    await asyncio.to_thread(factory.diagnostics.purge_expired)
+                await asyncio.sleep(30)
+        housekeeping = asyncio.create_task(purge_diagnostics())
         try:
             yield
         finally:
+            housekeeping.cancel()
+            try:
+                await housekeeping
+            except asyncio.CancelledError:
+                pass
             running.clear()
             if runtime is not None:
                 await asyncio.to_thread(runtime.stop)
@@ -92,14 +103,18 @@ def create_runtime_app():
     binding=os.environ.get('QH_CHAT_SESSION_BINDING','credential')
     if binding not in ('credential','oidc'):
         raise ChatConfigurationError('Invalid chat session binding')
-    sessions = ProviderSessions(chat=chat, factory=configured_session_factory(), clock=time.time, session_binding=binding=='oidc')
+    factory = configured_session_factory()
+    sessions = ProviderSessions(chat=chat, factory=factory, clock=time.time, session_binding=binding=='oidc')
+    enrichment = ConversationEnrichment(context=context, policy=policy,
+        repository_for=lambda subject: PostgresEnrichmentRepository(url=database_url(), subject_id=subject,
+            connection_options='-c statement_timeout=5000 -c lock_timeout=5000'),
+        provider=LiteralSegmentProvider(), uum=True)
+    from app.chat.development import DevelopmentAI
+    automatic = DevelopmentAI(chat=chat, enrichment=enrichment, factory=factory, clock=time.time) if factory and factory.development_account else None
     return create_app(
         services=ApplicationServices(
             context=context,
-            enrichment=ConversationEnrichment(context=context, policy=policy,
-                repository_for=lambda subject: PostgresEnrichmentRepository(url=database_url(), subject_id=subject,
-                    connection_options='-c statement_timeout=5000 -c lock_timeout=5000'),
-                provider=LiteralSegmentProvider()),
+            enrichment=enrichment, development_ai=automatic,
             review=ReviewService(context=context, policy=policy, repository=PostgresReviewRepository(url=database_url())),
             environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,

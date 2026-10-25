@@ -1,0 +1,15 @@
+{
+  "atomic_reference_count": 8,
+  "atomic_reference_matches": 8,
+  "distinct_space_themes": true,
+  "evidence_count": 8,
+  "exact_evidence_matches": 8,
+  "foreign_vocabulary_disclosed": false,
+  "mode": "hand_authored_fixture_conformance_not_model_quality",
+  "name_reuse_quality": "NOT TESTED on a real provider; explicit same-Space reuse/foreign-name rejection tested separately",
+  "real_provider_semantic_quality": "NOT TESTED",
+  "role_matches": 8,
+  "theme_correct_assignments": 15,
+  "theme_generated_assignments": 16,
+  "theme_reference_assignments": 15
+}

@@ -5,6 +5,104 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-51 — final extraction and memory correction, 2026-10-24
+
+- Share the UUM wire schema with Mistral strict structured output; clarify fictional
+  scenarios, concise meanings, exact Markdown evidence and assistant attribution.
+- Preserve full-conversation SQL replay, safe basic Markdown, cited sources only,
+  accurate memory outcomes and accessible modal closing/scrolling.
+- Owner-requested offline/replay and focused browser checks only; no paid calls or
+  new complete CI campaign. Existing Source revisions and accounting are preserved.
+
+## QH-51 — provider defaults and whole-conversation memory, 2026-10-23
+
+- Remove ordinary Mistral output/call/session micro ceilings; reserve full model
+  capacity against the sole EUR10 aggregate, preserving historical spend.
+- Place multiline composer and memory action above the scrolling chat, with
+  effective model/budget footer; retain outer layout and universal map.
+- Replace selections/checkboxes with Continuer → semantic atomic proposals →
+  Voir la proposition. Preserve roles, exact evidence and human review.
+
+## QH-51 — independent provenance and sufficiency, 2026-10-22
+
+- Show useful conversation-grounded answers with insufficient_context=true;
+  validate provenance/citations independently of the completeness warning.
+- Preserve the boolean unchanged across backend/DTO/UI and display both incomplete
+  information and unconfirmed-dialogue warnings in the answer and Sources.
+- Retain canonical citation, owner/scope/snapshot/budget gates and zero automatic
+  retry or knowledge write. Add the journal decision/action fidelity benchmark case.
+
+## QH-51 — approved dialogue support and CI integrity, 2026-10-22
+
+- Accept conversation-grounded answers without canonical references; require and
+  validate support_basis against actual sent inputs. Display the declared basis
+  and unconfirmed-dialogue warning; chat never writes knowledge.
+- Keep exact canonical citations, authorization, JSON, snapshot and budget gates.
+- Make non-200 response capture explicit to private diagnostics; preserve the
+  historical harness's no-raw-artifact/no-retry/no-publication invariant on429.
+- Verify compact empty-Space insertion and six real empty dimensions in readiness.
+
+## QH-51 — private AI diagnostics and development envelope, 2026-10-22
+
+- Keep original Mistral response and accounting separate from QH admission results,
+  in private one-hour owner/Space-scoped diagnostics with authenticated deletion.
+- Authorize 100 global chat/UUM attempts and USD2.50 (conservative EUR5 envelope),
+  preserving prior spend, expiry, atomic reservation and zero automatic retry.
+- Audit canonical-citation restrictions for empty-Space dialogue; admission and
+  epistemic checks remain unchanged pending the owner's functional decision.
+- Correct the standard-library architecture allowlist and legacy browser
+  expectations for retained dialogue when proposal inclusion changes.
+
+## QH-51 — stable radial map and ordinary development AI,2026-10-22
+
+- Match the owner’s radial desktop/mobile targets with a central original orb,
+  measured links, six stable nodes and compact manual insertion, independent of
+  empty/proposed/confirmed content. Preserve conversation, draft and review flow.
+- Enable ordinary Envoyer and explicit UUM Proposer for the exact development
+  OIDC owner across owned Spaces, with automatic authorization and one original
+  aggregate ledger. Historical session/snapshot UI consents no longer apply here.
+- Preserve8-call/USD0.20 ceiling, expiry and historical accounting; block before
+  HTTP on insufficient reservation. No session refill, retry or fallback.
+- [Executed real smoke, preservation and limits](docs/qh-51-development-ai-runtime.md).
+  PR23 remains open; no merge, migration, reset, Keycloak or PR19 change.
+
+## QH-51 UUM map — responsive readability correction, 2026-10-22
+
+- Replace fixed absolute card coordinates with intrinsic Grid rows and named
+  container queries; reserve space for the original orb, labels and status text.
+- Keep six colors/icons, complete French labels, empty/current/proposed states,
+  node navigation, keyboard operation and fullscreen readable at narrow widths
+  and enlarged text. Bound the image and collapse the tablet empty-Space columns.
+- Preserve wrapping view controls; remove fixed decorative paths that cannot
+  match the adaptive layout. Add screenshot, geometry and keyboard regressions.
+  [Executed evidence and live metadata activity exception](docs/qh-51-uum-map-layout.md).
+
+## QH-51 UUM — approved pivot, isolated implementation, 2026-10-22
+
+- Replace primary thematic map grouping with six universal dimensions and optional
+  single primary assignments. Empty, proposed, current and unavailable stay distinct.
+- Add generic profile3, a quote-only atomic extraction format, selective QH-46
+  primary review and graph-verified presence/member navigation in the same Engine.
+- Keep manual literal input unclassified, preserve provenance and immutable new
+  revisions, and retain original code, benchmarks and captured provider output.
+- Prepare an inventoried application-data reset with verified SQL/graph backups,
+  selective deletion rehearsal and rollback; preserve identities and economic data.
+  No v1/v2 semantic migration, Mistral call, PR merge or persistent reset performed.
+  VPS cutover remains subject to the owner's final destructive-scope confirmation.
+
+## QH-51 semantic understanding — historical isolated increment, 2026-10-21
+
+- Version explicit thematic and semantic-role assignments with exact evidence,
+  independent certainty and QH-46 selective owner review; preserve legacy profiles.
+- Reuse the existing Engine and atomic source/proposal/outbox publication with
+  explicit semantic selection and a provider-neutral adapter. Runtime stays literal.
+- Add bounded graph-verified thematic navigation and actual membership nodes;
+  no taxonomy, title classifier, autonomous identity merge or historical rewrite.
+- Verify dynamic themes, exact evidence, selective rejection/name review and owner
+  isolation on two disposable synthetic Spaces; retain literal and advanced-review
+  regressions. Real-provider quality remains unverified.
+- New profile provisioning, paid inference and VPS activation remain separately gated.
+
 ## QH-54 owner review corrections — 2026-10-21
 
 - Preserve the Space orb with a truthful thematic-unavailable state; remove nodes

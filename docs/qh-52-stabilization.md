@@ -239,3 +239,92 @@ no tokens/history, automatic submission or canonical writes. This supersedes the
 earlier memory-only draft restriction for that narrow path. OIDC refresh/rotation,
 TTL, disclosure, work-session and administrative budget contracts remain unchanged.
 [Implementation and isolated verification](qh-54-maquette-alignment.md).
+
+
+## Superseding development AI decision — 2026-10-22
+
+The owner explicitly replaces prior development UI snapshot/session consents and
+Alice/Projet pilote eligibility with ordinary AI use by the exact verified owner
+OIDC account in all its owned Spaces, present/future. **Envoyer** authorizes one
+chat processing request; **Proposer avec Mistral** authorizes one selected-source
+UUM extraction. There is no preliminary activation, provider checkbox, mandatory
+snapshot preview/confirmation or per-Space/conversation grant. No inference on
+opening a page. The active model and transmitted data scope are visible. Only
+confirmed-current Space elements and the explicitly submitted dialogue are sent
+by default; proposed inclusion is a separate user choice. Chat never confirms or
+persists facts; UUM creates proposed revisions reviewed through QH46.
+
+This exception retains verified OIDC/CHAT/owner policy, graph freshness, exact
+source validation, immutable revisions and isolated ownership. Only development,
+one configured OIDC principal, Mistral AI/mistral-small-2603. Preserve the original
+QH45 ledger and aggregate8 requests/USD0.20, old entries and absolute expiry; no
+QH51 allocation transfer or reset. Historical3 requests/USD0.01 session limits do
+not apply in this mode. Reserve the bounded maximum cost atomically before HTTP;
+concurrent requests cannot overspend. No retry/fallback. Insufficient global
+reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
+before sending. Previous decisions above remain historical and continue outside
+this precisely scoped development mode. See [implementation contract](qh-51-essai-ia.md).
+
+
+## Owner amendment — diagnostic POC envelope, 22 October 2026
+
+The owner now authorizes **100 aggregate API attempts / EUR5 maximum**, shared by
+ordinary chat and UUM extraction for the same exact verified development account.
+Use USD2.50 with the existing conservative EUR2/USD accounting bound: 2.50 × 2 =
+EUR5, including all historical spend. ECB reference on 22 October: EUR1 = USD1.1205
+([official reference](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.eu.html));
+this is a reference, not a guaranteed transaction rate. The EUR2/USD bound supplies
+substantial margin; do not expand USD based on a more favorable spot rate.
+Original expiry, exact model, all old calls/charges and failure/pending guards remain.
+No refill, session ceiling, automatic retry/fallback or new real Codex inference.
+The private receipt explicitly records this additive budget amendment; the original
+ledger gets new ceiling metadata and an append-only amendment record, never a reset
+or alteration of historical calls. Old limits above are historical for this mode.
+
+Private development diagnostics capture provider response JSON before last_exchange
+cleanup and application validation results independently of economic completion.
+Store only response + safe attempt/check/accounting metadata, never request prompts,
+authorization headers or credentials. Exact known-key echoes are redacted and flagged.
+Storage is private (0700/0600), outside Git/canonical SQL, expires after one hour,
+and is pruned on operations plus every thirty seconds while the app runs. Stopped
+apps cannot execute housekeeping; startup purges expired content before serving.
+Owner/verified principal/current token/work session/Space CHAT gates every read/delete;
+price verification and remaining budget are unnecessary for reading old diagnostics.
+The Modèles panel exposes scoped authenticated reads and individual controlled delete.
+No raw content in ordinary logs, CI artifacts or repository. Repetitive tests use
+synthetic transport only. Validation admission rules are unchanged; the proposed
+[functional contract and audit](qh-51-validation-audit.md) await owner approval.
+
+
+## Contratto di risposta approvato — 22 ottobre 2026
+
+L'owner approva il contratto dell'audit con `support_basis` obbligatorio:
+
+| Valore | Condizioni controllate sugli input effettivamente inviati |
+| --- | --- |
+| dialogue | Messaggio utente esplicito non vuoto; nessun alias citato; insufficient_context=false. Può esistere contesto canonico disponibile ma non dichiarato come supporto |
+| canonical | Almeno un alias esatto, distinto e risolvibile fra quelli trasmessi; insufficient_context=false |
+| mixed | Condizioni canonical più presenza del dialogo utente effettivamente inviato; insufficient_context=false |
+| insufficient | insufficient_context=true; eventuali riferimenti devono comunque essere validi e possono indicare supporto pertinente ma inadeguato |
+
+Il backend verifica packet/snapshot/record/alias e presenza del dialogo, **non**
+entailment o verità del testo. Il frontend verifica il DTO rispetto allo Space,
+alla selezione ricevuta e al dialogo della richiesta. La dichiarazione del modello
+non è una prova autonoma; nessuna riconciliazione o correzione euristica. Canonical
+indica revisioni persistite autorizzate, anche proposte se esplicitamente incluse:
+non significa automaticamente conoscenza confermata o verità. Stati epistemici e
+avvisi su proposte/copertura parziale rimangono indipendenti.
+
+UI: appui déclaré leggibile e avviso per dialogue/mixed: informazioni conversazionali
+non confermate/registrate, nessuna memorizzazione automatica. UUM rimane un'azione
+distinta; Source/proposte/outbox e review QH46 restano invariati. Autorizzazione,
+provenance, struttura JSON, snapshot e plafond restano bloccanti. Nessun fallback
+al vecchio protocollo: campo assente o incoerente viene respinto. Le evidenze storiche
+non vengono riscritte. Il precedente divieto di implementazione era un gate ora
+soddisfatto, non una regola funzionale permanente.
+
+La sola verifica reale autorizzata da questo mandato usa il modello pinned
+mistral-small-2603 e l'endpoint già approvato, una richiesta sintetica entro il
+plafond residuo, prenotazione massima USD0.0024, zero retry/fallback. Nessuna
+inferenza di startup o test automatico/CI; payload e JSON sanitari fittizi rimangono
+privati. Le altre prove usano provider simulato. Non estende disponibilità o budget.

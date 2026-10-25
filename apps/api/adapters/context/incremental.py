@@ -507,7 +507,8 @@ class IncrementalContextEngine:
             if before != after:
                 raise NativeContextError('Projection advanced during browse')
             return ContextResult(hits=tuple(h for h in hits if h.item_revision.revision_id in visible),
-                revisions=revisions, next_after_revision_id=visible[-1] if len(ids) > query.limit else None)
+                revisions=revisions, next_after_revision_id=visible[-1] if len(ids) > query.limit else None,
+                projection_token=tuple(sorted(before)))
         except PermissionError:
             raise
         except Exception:

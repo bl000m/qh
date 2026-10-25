@@ -1,3 +1,7 @@
+import type {AIDiagnostic} from './AIDiagnostics';
+import {DIMENSIONS} from './uum';
+import type {PrimaryDimension} from './uum';
+export interface DimensionPresence {context_id:string;view:'current'|'proposed';dimensions:Record<PrimaryDimension,boolean>;unclassified:boolean}
 import type {SelectedConversationTurn,EnrichmentReceipt} from './EnrichConversation';
 import type {ReviewStatus} from './ReviewControls';
 import {organization} from './environment';
@@ -48,10 +52,38 @@ export class QhApi {
     if (!response.ok) throw new ApiError(response.status);
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
-  async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean}):Promise<EnrichmentReceipt>{
+  async enrich(scope:string,payload:{conversation_id:string;operation_id:string;turns:SelectedConversationTurn[];persist_consent:boolean;extraction_mode?:'semantic'}):Promise<EnrichmentReceipt>{
     if(!isUuid(scope))throw new ApiError(404);
-    const r=await this.request('/context-spaces/'+scope+'/enrichments','POST',payload) as EnrichmentReceipt;
-    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||r.provider_mode!=='offline-literal/1')throw new ApiError(502);
+    return this.enrichmentReceipt(await this.request('/context-spaces/'+scope+'/enrichments','POST',payload),scope);
+  }
+  async enrichmentCapabilities(scope:string):Promise<{semantic:boolean;external_disclosure:boolean}> {
+    if(!isUuid(scope))throw new ApiError(404);
+    const value=await this.request('/context-spaces/'+scope+'/enrichments/capabilities') as {semantic:boolean;external_disclosure:boolean};
+    if(!value||typeof value.semantic!=='boolean'||typeof value.external_disclosure!=='boolean')throw new ApiError(502);
+    return value;
+  }
+  async aiDiagnostics(scope:string):Promise<AIDiagnostic[]> {
+    if(!isUuid(scope))throw new ApiError(404);
+    const value=await this.request('/context-spaces/'+scope+'/ai/diagnostics') as {retention_seconds:number;items:AIDiagnostic[]};
+    if(!value||value.retention_seconds!==3600||!Array.isArray(value.items)||value.items.length>100||value.items.some(r=>!r||!isUuid(r.id)||r.context_id!==scope||!Number.isFinite(r.expires_at)||!Array.isArray(r.checks)))throw new ApiError(502);
+    return value.items;
+  }
+  async deleteAIDiagnostic(scope:string,id:string):Promise<void> {
+    if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
+    await this.request('/context-spaces/'+scope+'/ai/diagnostics/'+id,'DELETE');
+  }
+  async automaticChat(scope:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer>{
+    if(!isUuid(scope))throw new ApiError(404);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/ai/messages','POST',{messages,include_proposed:include}),scope,include,messages,true);
+  }
+  async proposeWithAI(scope:string,payload:Parameters<QhApi['enrich']>[1]):Promise<EnrichmentReceipt>{
+    if(!isUuid(scope))throw new ApiError(404);
+    const receipt=this.enrichmentReceipt(await this.request('/context-spaces/'+scope+'/ai/proposals','POST',payload),scope);
+    if(receipt.provider_mode!=='uum-mistral/3')throw new ApiError(502);return receipt;
+  }
+  private enrichmentReceipt(raw:unknown,scope:string):EnrichmentReceipt{
+    const r=raw as EnrichmentReceipt;
+    if(!r||r.context_id!==scope||!isUuid(r.source_revision_id)||!Array.isArray(r.revision_ids)||r.revision_ids.length>100||r.revision_ids.some(id=>!isUuid(id))||new Set(r.revision_ids).size!==r.revision_ids.length||typeof r.replayed!=='boolean'||!['offline-literal/1','semantic-simulated/2','uum-offline-literal/3','uum-simulated/3','uum-mistral/3'].includes(r.provider_mode))throw new ApiError(502);
     return r;
   }
   async reviewStatus(scope:string,revision:string):Promise<ReviewStatus>{
@@ -60,10 +92,16 @@ export class QhApi {
     if(!s||s.revision_id!==revision||!isUuid(s.latest_revision_id)||typeof s.pending!=='boolean'||!(s.current_revision_id===null||isUuid(s.current_revision_id))||!(s.successor_revision_id===null||isUuid(s.successor_revision_id)))throw new ApiError(502);
     return s;
   }
-  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct';expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
+  async review(scope:string,revision:string,operation:{operation_id:string;action:'confirm'|'reject'|'correct'|'review_assignments'|'review_primary';primary_decision?:{state:'proposed'|'accepted'|'rejected';value?:string;evidence_refs?:number[]};assignment_decisions?:{index:number;state:'accepted'|'rejected';reuse_value?:string}[];expected_latest_revision_id:string;expected_current_revision_id:string|null;text:string|null}){
     if(!isUuid(scope)||!isUuid(revision))throw new ApiError(404);
     const r=await this.request('/context-spaces/'+scope+'/understanding/'+revision+'/review','POST',operation) as {revision_id:string;action:string;replayed:boolean};
     if(!r||!isUuid(r.revision_id)||r.action!==operation.action||typeof r.replayed!=='boolean')throw new ApiError(502);return r;
+  }
+  async dimensionPresence(scope:string,view:'current'|'proposed'):Promise<DimensionPresence>{
+    if(!isUuid(scope))throw new ApiError(404);
+    const r=await this.request('/context-spaces/'+scope+'/understanding-presence?view='+view) as DimensionPresence;
+    if(!r||r.context_id!==scope||r.view!==view||typeof r.unclassified!=='boolean'||!r.dimensions||Object.keys(r.dimensions).length!==6||DIMENSIONS.some(([id])=>typeof r.dimensions[id]!=='boolean'))throw new ApiError(502);
+    return r;
   }
   async pendingReview(scope:string,limit=20,after?:string){
     if(!isUuid(scope))throw new ApiError(404);
@@ -94,7 +132,7 @@ export class QhApi {
   async chat(scope:string,messages:DialogueMessage[],includeProposed:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope))throw new ApiError(404);
     return chatAnswer(await this.request('/context-spaces/'+scope+'/chat','POST',{
-      messages,include_proposed:includeProposed}),scope,includeProposed);
+      messages,include_proposed:includeProposed}),scope,includeProposed,messages);
   }
   async chatCapabilities(scope:string) {
     if(!isUuid(scope))throw new ApiError(404);
@@ -124,7 +162,7 @@ export class QhApi {
   }
   async sessionChat(scope:string,id:string,messages:DialogueMessage[],include:boolean):Promise<ChatAnswer> {
     if(!isUuid(scope)||!isUuid(id))throw new ApiError(404);
-    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/messages','POST',{messages,include_proposed:include}),scope,include);
+    return chatAnswer(await this.request('/context-spaces/'+scope+'/chat-sessions/'+id+'/messages','POST',{messages,include_proposed:include}),scope,include,messages);
   }
   async query(query: RevisionQuery): Promise<RevisionPage> {
     return revisionPage(await this.request('/context-spaces/query', 'POST', query), query);
