@@ -5,6 +5,17 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-55 / QH-19 — governed disclosure and snapshots, 2026-10-25
+
+- Build bounded automatic current/proposed revision scope through the existing
+  Projection Engine, with an explicit bulk proposal disclosure choice.
+- Minimize text/evidence, mask recognised identifiers, exclude recognised hazards
+  and require a targeted owner decision on unassessed free-text/reidentification risk.
+- Materialize the exact approved safe representation, private revision anchors and
+  policy audit as immutable snapshots; preserve canonical epistemic state.
+- Add isolated-only migration 0008 after unchanged 0007. No guest endpoints,
+  paid provider, VPS migration or data changes are activated by this increment.
+
 ## QH-51 — final extraction and memory correction, 2026-10-24
 
 - Share the UUM wire schema with Mistral strict structured output; clarify fictional

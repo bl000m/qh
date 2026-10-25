@@ -6,6 +6,16 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-25 — Demo B Block 1 internal candidate; activation not authorized
+
+QH-55/QH-19 adds internal governed disclosure and materialized approved snapshots.
+The source-bound apps were stopped with guarded `dev-stop` for clean checkout
+alignment to main 11e3ba4, then restored with guarded `dev-up` on the identical
+application baseline. New services are not bound in production composition or routes.
+Migration 0008 (after unchanged 0007) is for disposable integration databases only;
+the persistent schema remains 0006. No guest endpoint, provider call, seed/reset,
+Keycloak/configuration/ledger change or persistent migration is part of this record.
+
 ## 2026-10-24 — QH-51 source-bound correction
 
 Current task branch updates extraction schema/prompt and memory/chat presentation
