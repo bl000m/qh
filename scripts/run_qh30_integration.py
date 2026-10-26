@@ -39,6 +39,7 @@ def main():
     return pytest.main([
         "-q", "-x", "--tb=short", "-p", "no:cacheprovider",
         "-o", "faulthandler_timeout=60",
+        "tests/test_consolidation.py", "tests/test_consolidation_pipeline.py",
         "tests/test_uum.py", "tests/test_uum_presence.py", "tests/test_uum_pipeline.py", "tests/test_uum_provisioning.py",
         "tests/test_semantic_assignments.py", "tests/test_semantic_pipeline.py",
         "tests/test_enrichment.py", "tests/test_enrichment_pipeline.py",

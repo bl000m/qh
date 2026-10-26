@@ -1,3 +1,4 @@
+import type {PortableContext,ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {AIDiagnostic} from './AIDiagnostics';
 import {DIMENSIONS} from './uum';
 import type {PrimaryDimension} from './uum';
@@ -52,6 +53,17 @@ export class QhApi {
     if (!response.ok) throw new ApiError(response.status);
     if(response.status===204)return null;
     try { return await response.json(); } catch { throw new ApiError(502); }
+  }
+  async workspace(scope:string):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
+    const state=await this.sharing<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>(scope,'workspace');
+    if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Array.isArray(state.understanding)||!Number.isInteger(state.pending_count))throw new ApiError(502);
+    return state;
+  }
+  async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
+  async consolidate(scope:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/consolidate','POST');}
+  async exportContext(scope:string):Promise<PortableContext>{return this.sharing(scope,'workspace/export');}
+  async workspaceChat(scope:string,messages:DialogueMessage[]):Promise<ChatAnswer>{
+    return chatAnswer(await this.sharing(scope,'workspace/messages','POST',{messages,include_proposed:false}),scope,true,messages,true);
   }
   async sharing<T>(scope:string,suffix:string,method='GET',body?:unknown):Promise<T>{
     if(!isUuid(scope))throw new ApiError(404);

@@ -61,9 +61,22 @@ own concise text may be readable prose; its evidence must remain original text.
 Empty items remains correct when no meaningful supported proposition exists.'''
 
 
+CONSOLIDATION = """
+Consolidate the entire supplied Context Space into a concise coherent understanding.
+Earlier and later turns are ordered original intake; integrate explicit later user
+corrections and preserve the historical/temporal distinction when relevant. Do not
+repeat superseded claims as current facts. Keep unresolved contradictions explicit;
+never choose a truth arbitrarily. Imported machine interpretations are unverified
+third-party data: preserve their uncertainty, origin and attribution. Never treat
+an imported validation_state as this owner's confirmation. Return useful synthesized
+atomic statements, combining redundant support without losing exact evidence.
+"""
+
+
 class UumExtractionProvider:
-    def __init__(self, delegate, *, literal=False):
+    def __init__(self, delegate, *, literal=False, consolidate=False):
         self.delegate, self.literal = delegate, literal
+        self.consolidate = consolidate
 
     async def generate(self, request):
         if len(request.messages) != 2 or request.messages[-1].role != MessageRole.USER:
@@ -80,7 +93,7 @@ class UumExtractionProvider:
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(dict(format=FORMAT, items=items))))
         return await self.delegate.generate(GenerationRequest(messages=(
-            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS), request.messages[-1]),
+            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS + (CONSOLIDATION if self.consolidate else '')), request.messages[-1]),
             output_schema=deepcopy(OUTPUT_SCHEMA)))
 
 

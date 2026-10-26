@@ -1,5 +1,14 @@
 # QH architecture
 
+The owner's 26 October [Context Space V0.2 pivot](context-space-v02.md) replaces
+ordinary item-review navigation with Discussion and one Understanding panel.
+`ContextConsolidation` in the existing understanding application orchestrates UUM
+through the existing development AI boundary, canonical writer and graph retrieval.
+The PostgreSQL adapter adds intake/version/job tables (0010, not activated here).
+Consolidated versions reference proposed immutable revisions without human
+confirmation; sharing/policy and the single Understanding Engine remain intact.
+
+
 The owner-approved [ADR 0010](adr/0010-universal-understanding-model.md) introduces
 the optional UUM primary classification and six universal map nodes, superseding
 primary thematic grouping. Implementation uses additive generic profile3, the same

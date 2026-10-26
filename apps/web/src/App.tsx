@@ -1,27 +1,20 @@
+import ContextSpaceWorkspace from './ContextSpaceWorkspace';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {createPortal} from 'react-dom';
 import { apiMessage, QhApi, validName } from './api';
 import type { ContextSpace } from './api';
 import type { BrowserSession } from './auth';
-import Chat from './Chat';
 import EnvironmentDomains,{useOrganization,SpaceMemberships,OrganizationEditor,CarouselArrows} from './EnvironmentDomains';
-import UnderstandingExplorer from './UnderstandingExplorer';
 import { navigate, usePath, domainPath, spacePath, parseRoute } from './navigation';
 import Link from './NavLink';
 import qhLogo from './brand/qh-logo.png';
 import qhBubble from './brand/qh-bubble.png';
 import {Orb,Icon} from './Ui';
-import SpaceActions from './SpaceActions';
-import SpaceTabs from './SpaceTabs';
-import type {SpaceTab} from './SpaceTabs';
 import ContextSettings from './ContextSettings';
-import SourcesPanel from './SourcesPanel';
-import type {ChatAnswer} from './chat';
 import {drafts} from './drafts';
 import SessionExpired from './SessionExpired';
 import SharingControl from './SharingControl';
-import {UsefulActions} from './ContextMap';
 
 function DecorativeBubble() {
   return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
@@ -127,32 +120,18 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
 }
 function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;origin?:string;breadcrumbHost:HTMLElement|null;ownerId:string}){
  const [space,setSpace]=useState<ContextSpace|null>(null),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
- const [tab,setTab]=useState<SpaceTab>('Discussion'),[addRequest,setAddRequest]=useState(0),[renameRequest,setRenameRequest]=useState(0),[draftRequest,setDraftRequest]=useState<{id:number;text:string}>();
- const [contentVersion,setContentVersion]=useState(0);
- const [dimensionSelection,setDimensionSelection]=useState<{value:string;open:number}|null>(null);
- const [answers,setAnswers]=useState<ChatAnswer[]>([]),[sourceIndex,setSourceIndex]=useState<number|null>(null),[enrichedRevision,setEnrichedRevision]=useState<{id:string;open:number}|null>(null);
+ const [settings,setSettings]=useState(false),[renameRequest,setRenameRequest]=useState(0);
+ const heading=useRef<HTMLHeadingElement>(null);
+ useEffect(()=>{if(space)heading.current?.focus();},[space]);
  const organization=useOrganization(api,space!==null),openEvent=useRef(crypto.randomUUID());
  const from=organization.value?.domains.find(d=>d.id===(origin??organization.value?.primary_domains[id])&&organization.value?.memberships[id]?.includes(d.id));
- const title=useRef<HTMLHeadingElement>(null),domainMenu=useRef<HTMLDetailsElement>(null);
- useEffect(()=>{if(space)title.current?.focus();},[space]);
  useEffect(()=>{let active=true;setSpace(null);setError('');api.get(id).then(value=>{if(active){drafts.enter(ownerId,id);setSpace(value);void api.opened(id,openEvent.current).catch(()=>{});}}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[id,api,refresh,ownerId]);
- const answersChanged=useCallback((next:ChatAnswer[])=>setAnswers(next),[]);
- const openProposal=useCallback((revision:string)=>{setDimensionSelection(null);setEnrichedRevision(previous=>({id:revision,open:(previous?.open??0)+1}));setTab('Éléments');},[]);
- function starter(text:string){setTab('Discussion');setDraftRequest(previous=>({id:(previous?.id??0)+1,text}));}
- const breadcrumb=<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span><details className="mobile-breadcrumbs" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();event.currentTarget.removeAttribute('open');event.currentTarget.querySelector('summary')?.focus();}}}><summary>{space?.name??'Context Space'}</summary><div onClick={event=>{if((event.target as Element).closest('a'))event.currentTarget.parentElement?.removeAttribute('open');}}><Link to="/">Mon environnement</Link>{space&&from&&<Link to={domainPath(from.id)}>{from.name}</Link>}</div></details></nav>;
+ const breadcrumb=<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span></nav>;
  return <section className="context-page">{breadcrumbHost?createPortal(breadcrumb,breadcrumbHost):breadcrumb}
  {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<Notice>Chargement du Context Space…</Notice>:<article className="detail definitive-space">
- <header className="space-heading"><Orb/><div className="space-title"><div className="space-name-line"><h1 ref={title} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Modifier le Space" title="Modifier le Space" disabled={!organization.value||organization.busy} onClick={()=>{setTab('Paramètres');setRenameRequest(n=>n+1);}}><Icon name="edit"/></button></div>{organization.value?.space_descriptions?.[space.id]&&<p className="space-description">{organization.value.space_descriptions[space.id]}</p>}<details ref={domainMenu} className="space-domains-control" onKeyDown={event=>{if(event.key==='Escape'&&!(event.target as Element).closest('dialog')){event.preventDefault();domainMenu.current?.removeAttribute('open');domainMenu.current?.querySelector('summary')?.focus();}}}><summary>Domaines</summary><div className="space-domain-anchor"><span className="domain-anchor-label"><Icon name="folder"/>Domaines</span><div className="space-domain-pills">{organization.value?.domains.filter(d=>organization.value?.memberships[space.id]?.includes(d.id)).map((d,i)=><Link key={d.id} to={domainPath(d.id)} label={'Domaine : '+d.name} className={'domain-pill domain-tone-'+i%4}>{d.name}</Link>)}{organization.value&&!organization.value.memberships[space.id]?.length&&<span className="domain-unclassified">Non classé</span>}</div><SpaceActions space={space} state={organization} label="Gérer" onAssignmentClosed={()=>{domainMenu.current?.removeAttribute('open');domainMenu.current?.querySelector('summary')?.focus({preventScroll:true});}}/></div></details></div></header>
- <UsefulActions><SharingControl key={space.id} api={api} scope={space.id} name={space.name}/></UsefulActions>
- <SpaceTabs value={tab} onChange={setTab}/>
- <Chat onDimension={value=>{setEnrichedRevision(null);setDimensionSelection({value,open:Date.now()});setTab('Éléments');}} onExploreContext={()=>setTab('Éléments')} key={'chat:'+space.id} api={api} scope={space.id} tab={tab} addRequest={addRequest} draftRequest={draftRequest} onAnswersChange={answersChanged} onOpenProposal={openProposal} refreshKey={contentVersion} onContextSaved={()=>setContentVersion(v=>v+1)}/>
- <section hidden={tab!=='Éléments'} role="tabpanel" id="space-panel-1" aria-labelledby="space-tab-1" className="space-tab-content elements-panel"><div className="section-heading"><h2>Éléments</h2><button type="button" className="secondary" onClick={()=>setAddRequest(n=>n+1)}><Icon name="sources"/>Ajouter un élément</button></div>
- <details className="element-section"><summary><span className="card-icon"><Icon name="sources"/></span><span><strong>Sources</strong><small>Éléments cités dans les réponses</small></span></summary><div className="element-content">{answers.length?answers.map((answer,i)=><button key={i} className="secondary" type="button" onClick={()=>setSourceIndex(i)}>Sources de la réponse {i+1} · {answer.references.length} éléments cités</button>):<p>Les sources citées apparaîtront ici après une réponse. Les sources conservées sont aussi accessibles depuis chaque élément de compréhension.</p>}</div></details>
- <UnderstandingExplorer refreshKey={contentVersion} spaceName={space.name} onAdd={()=>setAddRequest(n=>n+1)} standalone key={'understanding:'+space.id+':'+(enrichedRevision?.open??dimensionSelection?.open??'')} initialDimension={dimensionSelection?.value} initialRevision={enrichedRevision?.id} api={api} scope={space.id} onChanged={()=>{setContentVersion(n=>n+1);}}/>
- <details className="element-section"><summary><span className="card-icon"><Icon name="info"/></span><span><strong>Détails du contexte</strong><small>Métadonnées du Space</small></span></summary><div className="element-content"><Metadata space={space}/></div></details></section>
- <section hidden={tab!=='Conseils'} role="tabpanel" id="space-panel-3" aria-labelledby="space-tab-3" className="space-tab-content advice-panel"><h2>Conseils</h2><div className="advice-grid">{[['Faire le point','Préparer un point sur la situation actuelle.','sources','Peux-tu m’aider à faire le point sur ce contexte à partir des éléments disponibles ?'],['Clarifier les priorités','Mettre mes objectifs en perspective.','advice','Peux-tu m’aider à clarifier mes priorités et les questions qui restent ouvertes dans ce contexte ?'],['Préparer la prochaine discussion','Choisir les questions utiles à poser.','discussion','Quelles questions pourrions-nous aborder lors de notre prochaine discussion sur ce contexte ?']].map(([name,description,icon,text])=><button type="button" className="advice-card" key={name} onClick={()=>starter(text)}><span className="card-icon"><Icon name={icon as 'sources'|'advice'|'discussion'}/></span><span><strong>{name}</strong><small>{description}</small></span><span className="advice-chevron" aria-hidden="true">›</span></button>)}</div><p className="advice-note muted">Choisissez un point de départ, puis adaptez votre question avant de l’envoyer.</p></section>
- <section hidden={tab!=='Paramètres'} role="tabpanel" id="space-panel-4" aria-labelledby="space-tab-4" className="space-tab-content context-settings"><ContextSettings visible={tab==='Paramètres'} renameRequest={renameRequest} space={space} api={api} state={organization} onChanged={setSpace}/></section>
- {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}
+ <header className="space-heading"><div className="space-title"><div className="space-name-line"><h1 ref={heading} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Renommer le Space" disabled={!organization.value||organization.busy} onClick={()=>{setSettings(true);setRenameRequest(n=>n+1);}}><Icon name="edit"/></button></div></div><button type="button" className="secondary" aria-expanded={settings} onClick={()=>setSettings(v=>!v)}>Paramètres</button></header>
+ <div hidden={!settings} className="workspace-settings"><ContextSettings visible={settings} renameRequest={renameRequest} space={space} api={api} state={organization} onChanged={setSpace}/><SharingControl key={space.id} api={api} scope={space.id} name={space.name}/></div>
+ <ContextSpaceWorkspace key={space.id} api={api} scope={space.id}/>
  </article>}</section>;
 }
 function Environment({api,logout,breadcrumbHost}:{api:QhApi;logout:()=>void;breadcrumbHost:HTMLElement|null}) {

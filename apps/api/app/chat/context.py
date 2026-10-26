@@ -66,7 +66,7 @@ def input_bound(messages):
     return sum(len(m.content.encode('utf-8')) + 256 for m in messages)
 
 
-def build_context(*, context_id, revisions, messages, include_proposed=False, partial=False, extended_dialogue=False):
+def build_context(*, context_id, revisions, messages, include_proposed=False, partial=False, extended_dialogue=False, consolidated=False):
     if not messages or (not extended_dialogue and len(messages) > 7) or messages[-1].role != MessageRole.USER:
         raise ChatInputInvalid('Bounded dialogue ending with a question required')
     if any(m.role not in (MessageRole.USER, MessageRole.ASSISTANT) or
@@ -90,7 +90,15 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
         if not (current or proposed):
             raise ChatContextUnavailable('Invalid visibility')
     selected, data = [], []
-    prefix = Message(role=MessageRole.SYSTEM, content=SYSTEM)
+    authority = """
+The supplied revisions form the current consolidated Context Space understanding.
+They are authoritative for questions about the Space while retaining their actual
+unconfirmed epistemic state. New dialogue is pending intake: if it corrects or
+contradicts the consolidated state, distinguish the pending correction explicitly
+instead of pretending it has already been consolidated. With no consolidated
+revisions, dialogue can still support a clearly attributed answer.
+""" if consolidated else ''
+    prefix = Message(role=MessageRole.SYSTEM, content=SYSTEM + authority)
 
     try:
         values = [asdict(row) for row in revisions]

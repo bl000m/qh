@@ -847,3 +847,26 @@ concurrent requests cannot overspend. No retry/fallback. Insufficient global
 reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
 before sending. Previous decisions above remain historical and continue outside
 this precisely scoped development mode. See [implementation contract](../qh-51-essai-ia.md).
+
+## Context Space V0.2 — owner UX pivot, 2026-10-26
+
+The explicit Context Space V0.2 request supersedes mandatory item/dimension review
+as the ordinary user journey. Discussion is the default; one closed-by-default,
+expandable, read-only Understanding panel replaces Elements/Overview/Sources/
+History/Review/Advice navigation. Provenance stays available on demand.
+
+Explicit Mémoriser consolidates the complete retained intake through the existing
+UUM Engine, preserving attribution, uncertainty and original evidence. A machine
+consolidation is usable without individual review but **does not set human
+confirmation**. Existing canonical proposals/review and sharing exclusion rules
+remain intact. The consolidated version selects exact immutable revisions for
+chat; pending corrections remain distinguishable until the next consolidation.
+Source/proposals/outbox/version publish atomically, with durable idempotency and
+retained previous versions. A failed/empty analysis never claims consolidation.
+
+Portable versioned owner export and validated import preserve origin identities
+and uncertainty; imports become pending intake rather than overwrite current
+understanding. This is separate from controlled third-party disclosure. No new
+provider/model/budget, paid automatic test, persistent migration or runtime
+activation is authorized by this implementation. See [implementation and manual
+acceptance](../context-space-v02.md), including the remaining PDF limitation.

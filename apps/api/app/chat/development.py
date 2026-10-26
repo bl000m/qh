@@ -94,6 +94,11 @@ class DevelopmentAI:
             diagnostic.finish('rejected', 'chat')
             raise
 
+    async def authorize_consolidation(self, identity, scope):
+        request = ChatRequest(subject_id=identity.subject_id, context_id=scope, messages=())
+        await self._authorize(identity, request)
+        return request
+
     async def enrich(self, identity, scope, payload):
         request = ChatRequest(subject_id=identity.subject_id, context_id=scope, messages=())
         await self._authorize(identity, request)

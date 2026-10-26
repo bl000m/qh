@@ -44,7 +44,7 @@ class NativeRuntime:
                 self.schema_version = c.execute("SELECT version_num FROM alembic_version").fetchone()[
                     "version_num"
                 ]
-                if self.schema_version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization", "0009_guest_invitations"):
+                if self.schema_version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization", "0009_guest_invitations", "0010_context_consolidation"):
                     raise RuntimeError("Native runtime requires migration 0004")
             self.driver.verify_connectivity()
             self.projector.initialize()

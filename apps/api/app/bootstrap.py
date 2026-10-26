@@ -94,7 +94,7 @@ def create_runtime_app(*, guest_settings=None):
             running["runtime"] = runtime
         if guest_settings is not None:
             try:
-                if runtime is None or runtime.schema_version!='0009_guest_invitations':
+                if runtime is None or runtime.schema_version not in ('0009_guest_invitations','0010_context_consolidation'):
                     raise RuntimeError('Explicit sharing bindings require reviewed schema 0009')
                 from adapters.sharing import bind_sharing
                 application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings,factory=factory)
@@ -138,10 +138,15 @@ def create_runtime_app(*, guest_settings=None):
         provider=LiteralSegmentProvider(), uum=True)
     from app.chat.development import DevelopmentAI
     automatic = DevelopmentAI(chat=chat, enrichment=enrichment, factory=factory, clock=time.time) if factory and factory.development_account else None
+    from app.understanding.consolidation import ContextConsolidation
+    from adapters.postgres.consolidation import PostgresConsolidationRepository
+    consolidation = ContextConsolidation(context=context, policy=policy, ai=automatic,
+        repository_for=lambda subject: PostgresConsolidationRepository(url=database_url(), subject_id=subject,
+            connection_options='-c statement_timeout=5000 -c lock_timeout=5000'))
     return create_app(
         services=ApplicationServices(
             context=context,
-            enrichment=enrichment, development_ai=automatic,
+            enrichment=enrichment, development_ai=automatic, consolidation=consolidation,
             review=ReviewService(context=context, policy=policy, repository=PostgresReviewRepository(url=database_url())),
             environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,
