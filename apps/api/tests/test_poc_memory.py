@@ -75,3 +75,40 @@ def test_pending_reservation_is_not_reported_as_spent_ceiling(tmp_path,monkeypat
     ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer);poc(ai,ledger)
     state=json.loads(ledger.read_text());state['max_usd']='.16';state['calls']=[dict(status='pending',reserved_usd=str(cost(0,MODEL_CONTEXT_TOKENS)),kind='/chat/completions')];ledger.write_text(json.dumps(state))
     caps=asyncio.run(ai.capabilities(who,request()));assert not caps['enabled'] and not caps['plafond_reached'] and not calls
+
+
+def test_poc_capabilities_http_serializes_global_limits_without_provider_call(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from unittest.mock import AsyncMock
+    from app.api.security import SecurityBindings
+    from app.composition import ApplicationServices
+    from app.main import create_app
+    from app.api.chat_sessions import CapabilityOutput
+    from pydantic import ValidationError
+
+    ai, who, _, _, calls, ledger, _, _ = setup(tmp_path, monkeypatch, answer)
+    poc(ai, ledger)
+    ai.chat._authorize = AsyncMock()
+    async def authenticate(token):
+        return who.subject_id
+    async def identity(token):
+        return who
+    app = create_app(services=ApplicationServices(
+        context=ai.chat.context, policy=ai.chat.policy, chat=ai.chat,
+        chat_sessions=object(), development_ai=ai), security=SecurityBindings(
+        authenticate=authenticate, authenticate_session=identity,
+        authenticate_with_expiry=AsyncMock(), policy=ai.chat.policy))
+    before = ledger.read_bytes()
+    with TestClient(app) as client:
+        response = client.get('/context-spaces/'+str(uuid4())+'/chat-sessions',
+            headers={'Authorization': 'Bearer synthetic'})
+        assert response.status_code == 200
+        value = response.json()
+        assert value['automatic'] and value['enabled']
+        assert value['max_seconds'] is value['max_calls'] is value['remaining_calls'] is None
+        assert response.headers['cache-control'] == 'private, no-store'
+        assert client.get('/context-spaces/'+str(uuid4())+'/chat-sessions').status_code == 401
+    assert not calls and ledger.read_bytes() == before
+    for change in ({'automatic': False}, {'max_calls': 3}, {'max_seconds': 1800}):
+        with pytest.raises(ValidationError):
+            CapabilityOutput.model_validate({**value, **change})
