@@ -1,5 +1,8 @@
 """Explicit application-boundary assembly, never enabled by startup/default env."""
 from dataclasses import dataclass,field,replace
+import os
+from pathlib import Path
+import stat
 
 from adapters.context.projection_drafts import NativeDraftResolver
 from adapters.guest_security import SecureGuestProofs
@@ -18,6 +21,14 @@ from app.projections.guest_service import GuestInvitationService
 class SharingSettings:
     origin:str
     verifier_key:bytes=field(repr=False)
+
+
+def private_sharing_settings():
+    path=Path('/run/qh-sharing/verifier.key')
+    metadata=path.lstat()
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_mode & 0o077 or metadata.st_size!=32:
+        raise ValueError('Private 32-byte sharing verifier key required')
+    return SharingSettings(origin=os.environ['QH_SHARING_ORIGIN'],verifier_key=path.read_bytes())
 
 
 def bind_sharing(services,runtime,repository,settings):

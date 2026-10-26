@@ -28,6 +28,12 @@ from app.composition import ApplicationServices
 from app.core.models import ContextRetrievalUnavailable
 
 
+def create_sharing_runtime_app():
+    """Explicit owner-enabled private deployment, never the default factory."""
+    from adapters.sharing import private_sharing_settings
+    return create_runtime_app(guest_settings=private_sharing_settings())
+
+
 def create_runtime_app(*, guest_settings=None):
     # The public mock route must never become an implicit provider-disclosure path.
     if os.environ.get('QH_CHAT_PROVIDER', 'mock') != 'mock':

@@ -42,6 +42,23 @@ def test_guard_accepts_unchanged_runtime():
     DEV['validate'](*fixture())
 
 
+@pytest.mark.parametrize('change',['none','proxy','origin','factory'])
+def test_private_sharing_keeps_tls_and_exact_proxy_binding(change):
+    config,containers,manifest=fixture()
+    frontend=config['services']['frontend'];backend=config['services']['backend']
+    frontend['environment'].update(VITE_QH_SHARING='1',QH_WEB_TLS_KEY='/run/qh-tls/server.key')
+    frontend['networks']['app']['ipv4_address']='172.19.0.4'
+    containers[5]['NetworkSettings']['Networks']['qh_app']['IPAddress']='172.19.0.4'
+    backend['environment']['QH_SHARING_ORIGIN']='https://localhost:5173'
+    backend['command']=['uvicorn','app.bootstrap:create_sharing_runtime_app','--forwarded-allow-ips','172.19.0.4']
+    if change=='proxy':backend['command'][-1]='*'
+    if change=='origin':backend['environment']['QH_SHARING_ORIGIN']='http://localhost:5173'
+    if change=='factory':backend['command'][1]='tests.browser_sharing_app:create_app'
+    if change=='none':DEV['validate'](config,containers,manifest)
+    else:
+        with pytest.raises(ValueError):DEV['validate'](config,containers,manifest)
+
+
 @pytest.mark.parametrize('change', ['password', 'image', 'network', 'mount', 'public_port', 'database_port',
                                     'foreign_source', 'app_image', 'namespace', 'native_disabled', 'missing_infra',
                                     'app_port', 'app_network'])

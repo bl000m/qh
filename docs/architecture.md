@@ -17,6 +17,12 @@ isolated-only and is not applied on the persistent VPS.
 
 ## Demo B sharing boundary — owner decision, 2026-10-25
 
+The owner's later [private activation](qh-40-private-activation.md) applies the
+additive 0009 schema without reset and explicitly binds the same sharing/guest
+services on the VPS, with private HTTPS and capture mailbox. It supersedes the
+isolated-only deployment statements of the earlier checkpoints below; public
+deployment, external mail and real guest inference remain unenabled.
+
 The subsequent [Block 3 browser increment](qh-40-demo-b.md) implements owner policy
 preview/approval UI and the OTP-gated guest page. Explicit sharing factory bindings
 reuse the same PolicyService, Projection Engine and snapshot repository; default

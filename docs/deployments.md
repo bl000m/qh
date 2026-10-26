@@ -6,6 +6,19 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-25 — Authorized private Demo B activation, schema0009, no reset
+
+Owner authorized persistent additive migration and private activation, then approved
+only the HTTPS callback/origin additions to qh-web. Fresh complete SQL/globals
+backup restored and upgraded in isolation before the persistent 0006→0009 upgrade.
+All previous application data retained. Guarded frontend/backend recreation retained
+their exact pinned images; other four containers/volumes/import and accounting were
+preserved. HTTPS localhost5173, exact frontend proxy IP and opt-in guest factory are
+active; a pinned private SMTP capture mailbox publishes UI8025 on loopback only.
+Real VPS Chromium owner→mailbox OTP→guest snapshot→offline ASK→revocation PASS.
+Physical Mac acceptance remains pending. [Access, evidence and non-destructive
+rollback](qh-40-private-activation.md). No paid AI, public guest service or external email.
+
 ## 2026-10-25 — Demo B Block 3 candidate and activation rehearsal; isolated-only
 
 PR #27 integrated QH-20 as `451218d`; guarded frontend/backend stop/up permitted

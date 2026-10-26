@@ -4,6 +4,7 @@ Run with Docker permission (e.g. sudo -n make dev-status). No build, migration,
 seed, down, volume operation, branch switch or dependency recreation is exposed.
 """
 import argparse
+from ipaddress import ip_address
 import json
 import os
 from pathlib import Path
@@ -77,6 +78,16 @@ def validate(config, containers, manifest):
             raise ValueError('Backend database/native/OIDC configuration drift')
     if str(be['QH_NATIVE_CONTEXT_ENABLED']) != 'true' or be['QH_NATIVE_GRAPH_NAMESPACE'] != 'qh-native':
         raise ValueError('Native runtime must retain qh-native')
+    if config['services']['frontend'].get('environment',{}).get('VITE_QH_SHARING')=='1':
+        frontend=config['services']['frontend']
+        address=frontend['networks']['app'].get('ipv4_address')
+        actual=live['frontend']['NetworkSettings']['Networks'][config['networks']['app']['name']].get('IPAddress')
+        backend=config['services']['backend']
+        if (not address or not ip_address(address).is_private or actual and address!=actual or backend['environment'].get('QH_SHARING_ORIGIN')!='https://localhost:5173'
+                or backend['command'][-2:]!=['--forwarded-allow-ips',address]
+                or 'app.bootstrap:create_sharing_runtime_app' not in backend['command']
+                or frontend['environment'].get('QH_WEB_TLS_KEY')!='/run/qh-tls/server.key'):
+            raise ValueError('Private HTTPS sharing/proxy binding drift')
 
 
 def command(compose, action, services=SERVICES):
@@ -103,7 +114,13 @@ def main():
     services = (args.service,) if args.service else SERVICES
     compose = ['docker', 'compose', '--env-file', str(ROOT / '.env'), '-p', 'qh',
                '-f', str(ROOT / 'infra/docker/docker-compose.yml'),
-               '-f', str(ROOT / 'infra/docker/qh-hot-reload.yml'), '--profile', 'oidc']
+               '-f', str(ROOT / 'infra/docker/qh-hot-reload.yml')]
+    settings=dict(line.split('=',1) for line in (ROOT/'.env').read_text().splitlines() if '=' in line and not line.startswith('#'))
+    if settings.get('QH_PRIVATE_SHARING','0') not in ('0','1'):
+        raise ValueError('Explicit private sharing flag required')
+    if settings.get('QH_PRIVATE_SHARING')=='1':
+        compose+=['-f',str(ROOT/'infra/docker/qh-private-sharing.yml')]
+    compose+=['--profile','oidc']
     containers = json.loads(output(['docker', 'inspect', *['qh-' + s + '-1' for s in (*SERVICES, *INFRA, 'mcp')]]))
     if args.action in ('up', 'restart'):
         config = json.loads(output(compose + ['config', '--format', 'json']))
@@ -117,7 +134,8 @@ def main():
                 raise ValueError('Pinned image ID/revision mismatch')
     if args.action in ('restart', 'stop'):
         for c in containers[:2]:
-            if c['Config']['Labels'].get('com.docker.compose.project.config_files') != ','.join([str(ROOT / 'infra/docker/docker-compose.yml'), str(ROOT / 'infra/docker/qh-hot-reload.yml')]):
+            known=[str(ROOT/'infra/docker/docker-compose.yml'),str(ROOT/'infra/docker/qh-hot-reload.yml')]
+            if c['Config']['Labels'].get('com.docker.compose.project.config_files') not in (','.join(known),','.join([*known,str(ROOT/'infra/docker/qh-private-sharing.yml')])):
                 raise ValueError('Refusing operation before verified hot-reload activation')
     result = output(command(compose, args.action, services))
     if args.action == 'restart':

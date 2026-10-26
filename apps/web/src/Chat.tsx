@@ -10,7 +10,7 @@ import {ApiError,apiMessage} from './api';
 import type {QhApi} from './api';
 import SourcesPanel from './SourcesPanel';
 import {Orb,Icon} from './Ui';
-import ContextMap,{UsefulActions} from './ContextMap';
+import ContextMap from './ContextMap';
 import type {SpaceTab} from './SpaceTabs';
 import type {SessionCapabilities} from './provider-session';
 import ProviderChoice,{offlineFixture} from './ProviderChoice';
@@ -113,7 +113,6 @@ export default function Chat({api,scope,onAnswersChange,onOpenProposal,tab='Disc
     {(!capabilities?.automatic&&messages.length>=8)&&<p role="status">Commencez une nouvelle discussion pour continuer.</p>}
     </section>
   </section>
-  <details className="discussion-extra" hidden={tab!=='Discussion'}><summary>Actions utiles</summary><UsefulActions/></details>
   <ManualInformation api={api} scope={scope} disabled={loading} openRequest={manualOpen} hideAction onSaved={receipt=>{onContextSaved?.();if(receipt.revision_ids.length)setAvailable(previous=>previous?{...previous,proposed:true,historical:false}:previous);setContextChanged(n=>n+1);}}/>
   <ProviderChoice api={api} scope={scope} include={includeProposed} messages={[...messages,{role:'user',content:question}]} failure={providerFailure} contextChanged={contextChanged} completed={answers.length} request={authorizationRequest} visible={tab==='Modèles'} hasProposed={available?.proposed} onInclude={setIncludeProposed} onCapabilities={capabilitiesChanged} onChange={providerChanged}/>
   {sourceIndex!==null&&answers[sourceIndex]&&<SourcesPanel answer={answers[sourceIndex]} index={sourceIndex} onClose={()=>setSourceIndex(null)}/>}

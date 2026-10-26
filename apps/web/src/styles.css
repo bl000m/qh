@@ -1172,3 +1172,8 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
 .guest-content form{max-width:650px;margin:1rem 0}
 .guest-content .guest-answer{background:#eef2ff;border-radius:16px;padding:1rem;margin-top:1rem}
 .guest-shell .topbar .brand img{width:70px;height:auto}
+
+/* One working sharing entry, visible before the map/chat; one editor state. */
+.definitive-space .sharing-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 16px;padding:10px 16px}
+.sharing-actions>header{margin:0;gap:10px}.definitive-space .sharing-actions h2{font-size:18px}
+.sharing-actions .card-icon{width:32px;height:32px;flex-basis:32px}.sharing-actions>div{display:block}.sharing-actions .sharing-entry{margin:0}

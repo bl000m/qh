@@ -1,4 +1,6 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
+import type {ReactNode} from 'react';
+import {sharingEnabled} from './sharing';
 import {ApiError} from './api';
 import type {QhApi,DimensionPresence} from './api';
 import {DIMENSIONS} from './uum';
@@ -57,4 +59,7 @@ export default function ContextMap({api,scope,refreshKey,onExplore,onAdd,onDimen
   <footer className="map-footer"><div className="map-links"><button type="button" className="text-button" onClick={()=>leave(()=>onExplore?.())}>Voir les éléments</button><button type="button" className="text-button" onClick={()=>leave(()=>onDimension?.('unclassified:'+view))}>Non classés{visible?.unclassified?' · éléments disponibles':''}</button></div><p className="map-coverage">{view==='proposed'?'Propositions à vérifier, sans confirmation implicite.':'Compréhension courante confirmée.'} Les six dimensions restent visibles même si le Space est vide.</p><div className="map-error">{error&&<><p role="alert">La compréhension est indisponible. Cela ne signifie pas que le Space est vide.</p><button type="button" className="text-button" onClick={()=>setRetry(n=>n+1)}>Réessayer</button></>}</div></footer>
  </section>;
 }
-export function UsefulActions(){return <section className="useful-actions"><header><span className="card-icon"><Icon name="advice"/></span><h2>Actions utiles</h2></header><div>{([['share','Partager une projection'],['import','Importer une conversation'],['users','Partager ce Context Space']] as const).map(([icon,title])=><button type="button" disabled title="Fonction non encore disponible" className="secondary" key={title}><Icon name={icon}/><span>{title}</span><span aria-hidden="true">›</span></button>)}</div></section>;}
+export function UsefulActions({children}:{children:ReactNode}){
+ if(!sharingEnabled)return null;
+ return <section className="useful-actions sharing-actions" aria-label="Actions utiles"><header><span className="card-icon"><Icon name="advice"/></span><h2>Actions utiles</h2></header><div>{children}</div></section>;
+}

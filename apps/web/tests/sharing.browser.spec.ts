@@ -49,7 +49,10 @@ async function createInvite(page:Page,seconds?:number){
 if(enabled)test('Demo B: Alice → SMTP mailbox → Clément → safe snapshot → simulated ASK → revoke and expire',async({page,browser},info)=>{
  test.setTimeout(240000);await page.setViewportSize({width:1440,height:1000});await login(page);
  await page.getByRole('link',{name:'Atelier partagé',exact:true}).click();
- const first=await createInvite(page);const visitor=await openGuest(browser,first.link);
+ await expect(page.getByRole('button',{name:'Partager ce Context Space',exact:true})).toHaveCount(1);
+ await expect(page.getByRole('region',{name:'Actions utiles',exact:true}).getByRole('button',{name:'Partager ce Context Space',exact:true})).toBeInViewport();
+ await expect(page.getByRole('button',{name:'Partager une projection',exact:true})).toHaveCount(0);
+ const first=await createInvite(page);await expect(page.getByRole('dialog')).toHaveCount(1);const visitor=await openGuest(browser,first.link);
  await expect(visitor.page.locator('.shared-items')).toHaveCount(0);await expect(visitor.page.locator('body')).not.toContainText(data.sharing_excluded);
  const wrong=await openGuest(browser,first.link);
  await wrong.page.getByLabel('Votre email',{exact:true}).fill('wrong@example.test');await wrong.page.getByRole('button',{name:'Recevoir mon code',exact:true}).click();

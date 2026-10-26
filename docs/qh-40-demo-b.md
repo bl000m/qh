@@ -1,5 +1,11 @@
 # Demo B — owner sharing and verified guest experience
 
+**Later owner mandate, 25 October:** the isolated-only checkpoint below is
+superseded for VPS activation by the separately authorized and executed
+[private HTTPS activation](qh-40-private-activation.md): additive schema0009,
+no reset, private mailbox and a narrowly approved OIDC delta. Historical evidence
+and the original candidate CI retain their exact scope.
+
 QH-18/QH-21/QH-22 complete the browser consumer of the merged QH-55/QH-19
 disclosure engine and QH-20 mailbox authentication. The owner's 25 October sprint
 mandate authorizes this grouped increment. PostgreSQL is canonical, Neo4j derived;

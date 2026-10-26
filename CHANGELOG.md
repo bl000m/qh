@@ -7,6 +7,12 @@ been created; existing 0.1.0 package metadata belongs to development scaffolding
 
 ## QH-18 / QH-21 / QH-22 — governed sharing UI and guest experience, 2026-10-25
 
+- Later owner-approved correction: one functional sharing entry in Actions utiles,
+  visible before map/chat, replacing disabled projection/import/share placeholders.
+  One shared editor, with no duplicate button or dialog.
+- Explicit private HTTPS activation and strict deployment verifier/proxy guards;
+  see deployment register for the authorized additive schema0009 execution without reset.
+
 - Configure email, purpose, rights and expiry, preview automatic minimized scope,
   and approve the named disclosure risk without an item checklist or confirmation
   of facts. Keep proposals optional and visibly unconfirmed.
