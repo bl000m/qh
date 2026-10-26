@@ -28,6 +28,7 @@ class GuestAccess:
     rights: tuple[str, ...]
     expires_at: datetime
     provider: str | None = None
+    owner_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

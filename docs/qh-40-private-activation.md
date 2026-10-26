@@ -1,5 +1,10 @@
 # Demo B privata — attivazione eseguita il 25 ottobre 2026
 
+**Aggiornamento owner 26 ottobre:** [ASK_AI reale Mistral Small](qh-40-mistral-guest.md)
+è ora attivo nel solo ambiente privato, con budget condiviso e prova reale contabilizzata.
+Le indicazioni offline-only di questa registrazione precedente restano storiche;
+gli inviti offline esistenti mantengono il loro provider immutabile.
+
 L'owner ha autorizzato migrazioni additive e attivazione privata; ha poi approvato
 separatamente le due aggiunte HTTPS al client Keycloak `qh-web`. Questa esecuzione
 supera il precedente gate di sola preparazione in [QH-40](qh-40-demo-b.md).

@@ -1,5 +1,5 @@
 import {ApiError,isUuid} from './transport';
-import type {GuestSessionView,SharedPayload,GuestAnswer} from '@qh/shared';
+import type {GuestSessionView,SharedPayload,GuestAnswer,GuestProviderStatus} from '@qh/shared';
 export const sharingEnabled=import.meta.env.VITE_QH_SHARING==='1';
 
 export async function guestRequest(path:string,body?:unknown):Promise<unknown>{
@@ -25,11 +25,15 @@ export function sharedPayload(value:unknown):SharedPayload{
 }
 export function guestAnswer(value:unknown):GuestAnswer{
  const v=value as GuestAnswer;
- if(!v||v.simulated!==true||typeof v.answer!=='string'||v.answer.length>20000||v.insufficient_context!==true||
+ if(!v||typeof v.simulated!=='boolean'||!v.simulated&&v.model!=='mistral-small-2603'||typeof v.answer!=='string'||v.answer.length>1_000_000||typeof v.insufficient_context!=='boolean'||
    !Array.isArray(v.reference_aliases)||v.reference_aliases.some(r=>typeof r!=='string'))throw new ApiError(502);
  return v;
 }
+export function providerStatus(value:unknown):GuestProviderStatus{
+ const v=value as GuestProviderStatus;if(!v||!['offline','mistral-small-2603'].includes(v.model)||typeof v.enabled!=='boolean'||typeof v.simulated!=='boolean'||v.remaining_usd!=null&&!/^\d+(\.\d+)?$/.test(v.remaining_usd))throw new ApiError(502);return v;
+}
 export function sharingError(e:unknown){
+ if(e instanceof ApiError&&e.status===402)return 'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.';
  return e instanceof ApiError&&e.status===409?'La prévisualisation a changé ou expiré. Préparez-la à nouveau.':
    e instanceof ApiError&&e.status===429?'Trop de tentatives. Patientez une minute.':'Accès indisponible ou non autorisé. Aucun contenu supplémentaire n’a été divulgué.';
 }

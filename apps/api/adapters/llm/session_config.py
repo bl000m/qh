@@ -10,7 +10,8 @@ from adapters.llm.pricing import OfficialPricing
 from adapters.llm.diagnostics import PrivateDiagnostics, DiagnosticCall
 from adapters.llm.chat_config import private_json, ChatConfigurationError
 from adapters.llm.mistral import (ExperimentBudget, MistralProvider, MODEL,
-                                  INPUT_USD_PER_M, OUTPUT_USD_PER_M, MODEL_CONTEXT_TOKENS, cost)
+                                  INPUT_USD_PER_M, OUTPUT_USD_PER_M, MODEL_CONTEXT_TOKENS, cost,
+                                  committed_cost,effective_ceiling)
 
 
 class SessionBudget:
@@ -119,15 +120,10 @@ class PrivateSessionFactory:
 
     def remaining(self):
         def read(state):
-            spent = Decimal(0)
-            for row in state['calls']:
-                value = Decimal(row.get('observed_usd', row['reserved_usd']))
-                if not value.is_finite() or value < 0:
-                    raise ValueError('Invalid ledger amounts')
-                spent += value
+            spent = committed_cost(state)
             blocked = state['blocked'] or any(r['status'] == 'pending' for r in state['calls'])
             return dict(remaining_calls=None if self.poc else max(0, min(state['max_calls'], self.aggregate_calls)-len(state['calls'])),
-                remaining_usd=str(max(Decimal(0), min(Decimal(state['max_usd']), Decimal(self.aggregate_usd))-spent)),
+                remaining_usd=str(max(Decimal(0), effective_ceiling(state,Decimal(self.aggregate_usd))-spent)),
                 blocked=blocked)
         return self.ledger.read(read)
 

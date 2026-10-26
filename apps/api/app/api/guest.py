@@ -16,6 +16,7 @@ from app.projections.drafts import ProjectionNotFound, ProjectionUnavailable
 from app.projections.drafts import ProjectionConflict
 from app.projections.disclosure import DisclosureDecisionRequired
 from app.projections.guest import GuestDenied, GuestRateLimited, GuestUnavailable
+from app.core.models import ProviderBudgetExceeded
 
 COOKIE = '__Host-qh_guest'
 
@@ -60,6 +61,8 @@ class GuestRoute(APIRoute):
                 result = JSONResponse(status_code=401, content={'detail': 'Vérification impossible.'})
             except GuestRateLimited:
                 result = JSONResponse(status_code=429, content={'detail': 'Trop de tentatives.'}, headers={'Retry-After': '60'})
+            except ProviderBudgetExceeded:
+                result = JSONResponse(status_code=402,content={'detail':'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.'})
             except ProjectionNotFound:
                 result = JSONResponse(status_code=404, content={'detail': 'Projection not found'})
             except ProjectionConflict:

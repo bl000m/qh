@@ -97,7 +97,7 @@ def create_runtime_app(*, guest_settings=None):
                 if runtime is None or runtime.schema_version!='0009_guest_invitations':
                     raise RuntimeError('Explicit sharing bindings require reviewed schema 0009')
                 from adapters.sharing import bind_sharing
-                application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings)
+                application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings,factory=factory)
             except Exception:
                 running.clear()
                 if runtime is not None:await asyncio.to_thread(runtime.stop)

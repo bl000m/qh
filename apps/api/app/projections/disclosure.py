@@ -11,6 +11,7 @@ from app.projections.drafts import RevisionKey, identifier
 
 GUARD_VERSION = 'qh.disclosure/1'
 TEXT_REVIEW = 'unassessed_free_text'
+LIVE_PROVIDER = 'mistral-small-2603'
 
 
 def digest(value):
@@ -43,8 +44,8 @@ class AccessPolicy:
             raise ValueError('Explicit timezone-aware expiry required')
         if type(self.include_proposed) is not bool or type(self.include_quotes) is not bool:
             raise ValueError('Explicit inclusion choices required')
-        if (self.provider not in (None, 'offline') or ('ASK_AI' in self.rights) != (self.provider is not None)):
-            raise ValueError('ASK_AI requires an available QH-controlled provider (offline only)')
+        if (self.provider not in (None, 'offline',LIVE_PROVIDER) or ('ASK_AI' in self.rights) != (self.provider is not None)):
+            raise ValueError('ASK_AI requires an explicitly authorized QH-controlled provider')
         if (not isinstance(self.excluded, tuple) or len(self.excluded) > 100
                 or any(not isinstance(k, RevisionKey) for k in self.excluded)
                 or len(set(self.excluded)) != len(self.excluded)):

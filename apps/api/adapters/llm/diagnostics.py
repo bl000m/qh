@@ -110,6 +110,7 @@ class DiagnosticCall:
     def __init__(self, store, subject, scope, kind):
         self.store, self.subject, self.scope, self.kind = store, subject, scope, kind
         self.identity = None
+        self.accounting_summary = None
         self.pending_checks = []
 
     def begin(self):
@@ -136,6 +137,9 @@ class DiagnosticCall:
             response = json.loads(text.replace(raw._key, '[REDACTED]'))
         index = getattr(raw, 'last_attempt', None)
         row = raw.budget.read(lambda s: s['calls'][index]) if index is not None else None
+        if row is not None:
+            self.accounting_summary=dict(attempt=index+1,status=row['status'],
+                cost_usd=row.get('observed_usd'),usage=row.get('usage'))
         self.store.update(self.identity, raw_response=response, secret_redacted=redacted,
             attempt_index=index, accounting=row, http_status=exchange.get('http_status',
                 (raw.last_failure or {}).get('http_status')), latency_seconds=exchange.get('latency_seconds'))

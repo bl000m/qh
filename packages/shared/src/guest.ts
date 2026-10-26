@@ -34,7 +34,7 @@ export interface GuestSessionView {
 
 export interface SharingPolicy {
   recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
-  include_proposed:boolean; include_quotes:boolean; provider:'offline'|null;
+  include_proposed:boolean; include_quotes:boolean; provider:'offline'|'mistral-small-2603'|null;
 }
 export interface SharedItem {
   reference:string; text:string; validation_state:'proposed'|'confirmed'; origin_kind:string;
@@ -47,4 +47,5 @@ export interface SharingPreview {
   report:{status:string;message:string;warning:string;risks:string[];
     exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
 }
-export interface GuestAnswer {simulated:true;answer:string;reference_aliases:string[];insufficient_context:true}
+export interface GuestProviderStatus {model:'offline'|'mistral-small-2603';enabled:boolean;simulated:boolean;remaining_usd?:string|null;plafond_reached?:boolean;authorized_total_eur?:string;budget_scope?:'development_global'}
+export interface GuestAnswer {simulated:boolean;model?:'mistral-small-2603';answer:string;reference_aliases:string[];insufficient_context:boolean;support_basis?:'dialogue'|'canonical'|'mixed'|'insufficient';budget?:GuestProviderStatus;accounting?:{attempt:number;cost_usd:string;usage:{prompt_tokens:number;completion_tokens:number}}}

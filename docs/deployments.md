@@ -6,6 +6,18 @@ performed by adding a row. Product versions follow [versioning](versioning.md);
 [CHANGELOG](../CHANGELOG.md) records changes rather than activation.
 
 
+## 2026-10-26 — Authorized private guest Mistral and cumulative budget
+
+Guarded backend-only stop/up enabled the explicit real guest adapter, retaining the
+same image, frontend and four infrastructure services. Owner-approved global EUR10
+amended existing accounting metadata to USD5/no call quota, with original19 rows
+unchanged, conservative external-history debit and observed-credit guard. No schema,
+realm, source data, provider key or old experiment-ledger modification. One free
+model preflight plus one real guest POST: attempt20 completed,336/74 tokens,
+USD0.0000948. Actual HTTPS/OIDC/SMTP/OTP/snapshot/revocation PASS; test invitations
+revoked. [Evidence and access](qh-40-mistral-guest.md). CI remains offline; no public
+service, third-party email or automatic paid retry/fallback.
+
 ## 2026-10-25 — Authorized private Demo B activation, schema0009, no reset
 
 Owner authorized persistent additive migration and private activation, then approved

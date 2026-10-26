@@ -42,6 +42,20 @@ def cost(prompt, completion):
     ) / 1_000_000
 
 
+def committed_cost(state):
+    values=[Decimal(state.get('historical_external_usd','0')),*[
+        Decimal(c.get('observed_usd',c['reserved_usd'])) for c in state['calls']]]
+    if any(not v.is_finite() or v<0 for v in values):raise MistralError('Invalid ledger amounts')
+    return sum(values,Decimal(0))
+
+
+def effective_ceiling(state,maximum):
+    values=[Decimal(state['max_usd']),maximum]
+    if 'credit_guard' in state:values.append(Decimal(state['credit_guard']['max_committed_usd']))
+    if any(not v.is_finite() or v<=0 for v in values):raise MistralError('Invalid credit ceiling')
+    return min(values)
+
+
 class ExperimentBudget:
     """Durable fail-closed ledger. Attempts (including metadata/errors) count.
 
@@ -119,10 +133,7 @@ class ExperimentBudget:
                 for k in ('reserved_usd', 'observed_usd') if k in c)]
             if any(not value.is_finite() or value < 0 for value in amounts):
                 raise MistralError('Invalid ledger amounts')
-            spent = sum(
-                Decimal(c.get("observed_usd", c["reserved_usd"]))
-                for c in state["calls"]
-            )
+            spent = committed_cost(state)
             if (
                 state["blocked"]
                 or any(c["status"] == "pending" for c in state["calls"])
@@ -130,7 +141,7 @@ class ExperimentBudget:
             ):
                 raise MistralError("Experiment call/budget gate closed")
             if (self.max_calls is not None and (state['max_calls'] is None or len(state['calls']) >= min(state['max_calls'], self.max_calls))
-                or spent + maximum > min(Decimal(state['max_usd']), self.max_usd)):
+                or spent + maximum > effective_ceiling(state,self.max_usd)):
                 raise MistralBudgetExceeded('Aggregate AI ceiling reached before HTTP')
             if session_id is not None:
                 records = [c for c in state['calls'] if c.get('session_id') == session_id]

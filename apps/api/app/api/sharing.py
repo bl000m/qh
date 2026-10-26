@@ -8,7 +8,7 @@ from pydantic import BaseModel,ConfigDict,Field,StrictBool,StrictStr
 
 from app.api.guest import GuestRoute,bound,proof
 from app.api.security import authenticated_subject
-from app.projections.disclosure import AccessPolicy
+from app.projections.disclosure import AccessPolicy,LIVE_PROVIDER
 from app.projections.guest import GuestUnavailable
 
 router=APIRouter(route_class=GuestRoute,tags=['governed sharing'])
@@ -22,7 +22,7 @@ class PolicyInput(BaseModel):
     expires_at:datetime
     include_proposed:StrictBool=False
     include_quotes:StrictBool=False
-    provider:Literal['offline']|None=None
+    provider:Literal['offline','mistral-small-2603']|None=None
 
 
 class ApprovalInput(BaseModel):
@@ -49,6 +49,10 @@ def preview_view(preview):
 
 @router.post('/context-spaces/{scope}/sharing/previews',status_code=201)
 async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depends(authenticated_subject)):
+    await owner_service(request).drafts._allow(subject,str(scope))
+    if document.provider==LIVE_PROVIDER:
+        choices=await request.app.state.services.guest_chat.providers(subject,str(scope))
+        if not any(p['model']==LIVE_PROVIDER and p['enabled'] for p in choices['providers']):raise GuestUnavailable('Provider unavailable')
     policy=AccessPolicy(**{**document.model_dump(),'rights':tuple(document.rights)})
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))
 
@@ -65,3 +69,18 @@ async def ask(snapshot_id:UUID,document:QuestionInput,request:Request):
     service=request.app.state.services.guest_chat
     if service is None:raise GuestUnavailable('Snapshot answer unavailable')
     return await service.ask(proof(request),str(snapshot_id),document.question)
+
+
+@router.get('/context-spaces/{scope}/sharing/providers')
+async def providers(scope:UUID,request:Request,subject=Depends(authenticated_subject)):
+    await owner_service(request).drafts._allow(subject,str(scope))
+    service=request.app.state.services.guest_chat
+    if service is None:raise GuestUnavailable('Provider unavailable')
+    return await service.providers(subject,str(scope))
+
+
+@router.get('/guest/provider')
+async def guest_provider(request:Request):
+    service=request.app.state.services.guest_chat
+    if service is None:raise GuestUnavailable('Provider unavailable')
+    return await service.status(proof(request))

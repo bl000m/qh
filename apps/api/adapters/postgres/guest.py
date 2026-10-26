@@ -32,11 +32,11 @@ class PostgresGuestRepository:
     @staticmethod
     def _invitation(c, token_hash, now):
         return c.execute('''
-            SELECT i.*,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
+            SELECT i.*,s.approved_by AS owner_id,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_invitations i JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
             WHERE i.token_hash=%s AND i.revoked_at IS NULL AND i.expires_at>%s
-                AND cs.status='active' AND u.status='active' FOR UPDATE OF i FOR SHARE OF cs,u
+                AND cs.status='active' AND u.status='active' AND cs.owner_id=s.approved_by FOR UPDATE OF i FOR SHARE OF cs,u
         ''', (token_hash, now)).fetchone()
 
     async def create(self, subject, scope, snapshot_id, token_hash):
@@ -132,25 +132,25 @@ class PostgresGuestRepository:
             c.execute('INSERT INTO guest_sessions (id,invitation_id,challenge_id,token_hash,expires_at,created_at) '
                 'VALUES (%s,%s,%s,%s,%s,%s)', (session_id, invite['id'], challenge_id, session_hash, expiry, now))
             return GuestAccess(session_id=session_id, invitation_id=str(invite['id']), context_id=str(invite['context_space_id']),
-                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry,provider=invite['provider'])
+                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry,provider=invite['provider'],owner_id=str(invite['owner_id']))
         return await asyncio.to_thread(self._run, None, consume)
 
     @staticmethod
     def _active(c, now, *, session_hash=None, session_id=None):
         row = c.execute('''
-            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
+            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.approved_by AS owner_id,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_sessions g JOIN guest_invitations i ON i.id=g.invitation_id
             JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
             WHERE '''+('g.token_hash=%s' if session_hash is not None else 'g.id=%s')+'''
                 AND g.revoked_at IS NULL AND i.revoked_at IS NULL AND g.expires_at>%s AND i.expires_at>%s
-                AND cs.status='active' AND u.status='active' FOR SHARE OF g,i,cs,u
+                AND cs.status='active' AND u.status='active' AND cs.owner_id=s.approved_by FOR SHARE OF g,i,cs,u
         ''', (session_hash if session_hash is not None else session_id, now, now)).fetchone()
         if row is None:
             return None
         return GuestAccess(session_id=str(row['id']), invitation_id=str(row['invitation_id']),
             context_id=str(row['context_space_id']), snapshot_id=str(row['snapshot_id']), rights=tuple(row['rights']),
-            expires_at=row['expires_at'],provider=row['provider'])
+            expires_at=row['expires_at'],provider=row['provider'],owner_id=str(row['owner_id']))
 
     async def authenticate(self, session_hash):
         return await asyncio.to_thread(self._run, None,

@@ -28,18 +28,18 @@ from tests.test_canonical_graph_pipeline import drain
 pytestmark=pytest.mark.parametrize('generic',['0005_retire_legacy_category'],indirect=True)
 
 
-def client_for(p,provider):
+def client_for(p,provider,live=None):
     auth,_=build_auth(mapping={'external-alice':p['repo'].subject_id,'external-bob':uid()})
     app=create_app(services=ApplicationServices(context=FakeContextService(FakeContextEngine(RESULT)),policy=p['policy'],
-        guest=p['guest'],sharing=p['disclosure'],guest_chat=GuestSnapshotChat(guest=p['guest'],provider=provider)),
+        guest=p['guest'],sharing=p['disclosure'],guest_chat=GuestSnapshotChat(guest=p['guest'],provider=provider,live=live)),
         security=SecurityBindings(authenticate=auth.authenticate,policy=p['policy']),guest_http=GuestHTTPConfig(origin=ORIGIN,minimum_response_seconds=0))
     return TestClient(app,base_url=ORIGIN,headers={'Origin':ORIGIN})
 
 
-def invite(c,p,rights=('READ','ASK_AI')):
+def invite(c,p,rights=('READ','ASK_AI'),provider_name='offline'):
     from tests.test_disclosure import policy
     owner={'Authorization':'Bearer '+token()};root=f'/context-spaces/{p["scope"]}'
-    body=policy(include_proposed=True,rights=rights,provider='offline' if 'ASK_AI' in rights else None).wire();body.pop('excluded')
+    body=policy(include_proposed=True,rights=rights,provider=provider_name if 'ASK_AI' in rights else None).wire();body.pop('excluded')
     prepared=c.post(root+'/sharing/previews',headers=owner,json=body)
     assert prepared.status_code==201
     preview=prepared.json()

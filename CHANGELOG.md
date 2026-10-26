@@ -5,6 +5,16 @@ record or evidence of a published release. See [versioning](docs/versioning.md)
 and the [deployment register](docs/deployments.md). No product release/tag has
 been created; existing 0.1.0 package metadata belongs to development scaffolding.
 
+## QH-21 — real private guest ASK_AI, 2026-10-26
+
+- Allow the pinned Mistral Small provider only for OTP-verified, authorized snapshots;
+  send the minimized payload and question without original-source/live-Space retrieval.
+- Share atomic cumulative accounting with chat/UUM, retain history and debit old
+  experiments once; enforce the EUR10 ceiling and observed-credit guard without
+  session/lifetime call quotas. Show real model, effective remaining budget and cost.
+- Preserve offline automatic tests, exact references, independent epistemic warnings,
+  revocation/expiry and no canonical writes; no automatic paid retry or fallback.
+
 ## QH-18 / QH-21 / QH-22 — governed sharing UI and guest experience, 2026-10-25
 
 - Later owner-approved correction: one functional sharing entry in Actions utiles,

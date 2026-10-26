@@ -17,6 +17,13 @@ isolated-only and is not applied on the persistent VPS.
 
 ## Demo B sharing boundary — owner decision, 2026-10-25
 
+The later owner-approved [real guest Mistral increment](qh-40-mistral-guest.md)
+adds a snapshot-only outbound adapter to `GuestSnapshotChat`, using the existing
+PrivateSessionFactory/Mistral transport, private diagnostics and aggregate ledger.
+OTP/owner/provider/rights and fresh snapshot checks precede HTTP and follow generation.
+No new schema, retrieval engine, provider SDK, guest write or public deployment;
+offline remains the automatic-test provider and a distinct immutable policy choice.
+
 The owner's later [private activation](qh-40-private-activation.md) applies the
 additive 0009 schema without reset and explicitly binds the same sharing/guest
 services on the VPS, with private HTTPS and capture mailbox. It supersedes the
