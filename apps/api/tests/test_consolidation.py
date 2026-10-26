@@ -122,3 +122,19 @@ def test_diagnostic_initialization_failure_releases_running_job():
     ai.factory.diagnostic_call.side_effect=RuntimeError('offline diagnostic unavailable')
     with pytest.raises(RuntimeError):asyncio.run(service.consolidate(who,scope))
     repo.fail.assert_awaited_once_with(scope,batch['operation_id'])
+
+
+def test_previous_machine_state_is_supplied_separately_from_original_citable_source():
+    import json
+    from app.core.models import GenerationRequest, GenerationResult, Message, MessageRole
+    from app.understanding.uum import UumExtractionProvider
+    original=dict(source_revision_id='source',input_sha256='digest',text='Exact original.',turns=[])
+    source_message=Message(role=MessageRole.USER,content=json.dumps(original))
+    delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content='{}'))))
+    provider=UumExtractionProvider(delegate,consolidate=True,previous=({'text':'Prior unverified interpretation'},))
+    asyncio.run(provider.generate(GenerationRequest(messages=(Message(role=MessageRole.SYSTEM,content='Engine'),source_message))))
+    generated=delegate.generate.call_args.args[0]
+    assert generated.messages[-1]==source_message
+    assert 'Prior unverified interpretation' in generated.messages[-2].content
+    assert 'not new evidence' in generated.messages[-2].content
+    assert 'not new human' in generated.messages[0].content

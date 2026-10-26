@@ -38,7 +38,9 @@ Known limits:
 - The existing atomic UUM format produces synthesized statements grouped by its
   six dimensions, not a new free-form summary or entity/relation extraction engine.
   Actual semantic correction/merge quality needs the real-model manual test below.
-- All original intake is replayed, including previous support. This is bounded to
+- All original intake is replayed, including previous support. The previous
+  machine understanding is supplied separately as unverified reference data,
+  never substituted for the original citable evidence. This is bounded to
   500 entries and 800 KB of stored JSON; each upload is at most 500 KB. The original
   Engine source ceiling still applies. There is no silent truncation.
 - Existing chat context formatting remains bounded (40 revisions / 8 KB), with

@@ -59,11 +59,17 @@ class ContextConsolidation:
         diagnostic = None
         try:
             diagnostic = self.ai.factory.diagnostic_call(identity.subject_id, scope, 'uum')
+            previous = ()
+            if batch['current']:
+                current = await self.read(identity.subject_id, scope)
+                previous = tuple(dict(text=row['content']['text'],
+                    primary_dimension=row['content'].get('primary_dimension'),
+                    validation_state=row['validation_state']) for row in current['understanding'])
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
                 conversation=self._conversation(identity.subject_id, batch), extraction_key='qh-context-uum/3',
                 policy=self.policy, descriptor_version=3,
-                provider=UumExtractionProvider(self.ai._provider(identity, request, diagnostic), consolidate=True),
+                provider=UumExtractionProvider(self.ai._provider(identity, request, diagnostic), consolidate=True, previous=previous),
                 observer=diagnostic.check)
             if not revisions:
                 raise ValueError('No structured understanding produced')

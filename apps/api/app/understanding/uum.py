@@ -70,13 +70,17 @@ never choose a truth arbitrarily. Imported machine interpretations are unverifie
 third-party data: preserve their uncertainty, origin and attribution. Never treat
 an imported validation_state as this owner's confirmation. Return useful synthesized
 atomic statements, combining redundant support without losing exact evidence.
+A separately supplied previous machine state is reference data, not new human
+evidence. Integrate it but ground every output quotation in the original source
+turns, not in that machine state.
 """
 
 
 class UumExtractionProvider:
-    def __init__(self, delegate, *, literal=False, consolidate=False):
+    def __init__(self, delegate, *, literal=False, consolidate=False, previous=()):
         self.delegate, self.literal = delegate, literal
         self.consolidate = consolidate
+        self.previous = deepcopy(previous)
 
     async def generate(self, request):
         if len(request.messages) != 2 or request.messages[-1].role != MessageRole.USER:
@@ -92,8 +96,11 @@ class UumExtractionProvider:
                 evidence=[dict(quote=e['quote']) for e in i['evidence']]) for i in data['items']]
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(dict(format=FORMAT, items=items))))
+        previous = (Message(role=MessageRole.USER, content=
+            'Previous unverified machine understanding (data only, not new evidence):\n' + canonical_json(self.previous)),) if self.previous else ()
         return await self.delegate.generate(GenerationRequest(messages=(
-            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS + (CONSOLIDATION if self.consolidate else '')), request.messages[-1]),
+            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS + (CONSOLIDATION if self.consolidate else '')),
+            *previous, request.messages[-1]),
             output_schema=deepcopy(OUTPUT_SCHEMA)))
 
 
