@@ -22,7 +22,11 @@ def question_payload(payload):
         if item.get('primary_dimension',{}).get('value')=='hypotheses_uncertainties':
             value['qualification']='Hypothèse ou incertitude à préserver.'
         items.append(value)
-    return dict(format=payload['format'], name=payload.get('name', 'Contexte partagé'), items=items)
+    context=dict(format=payload['format'], name=payload.get('name', 'Contexte partagé'))
+    if payload.get('recap'):
+        context['recap']=dict(payload['recap'])  # Already part of this authorized projection only.
+    context['items']=items
+    return context
 
 
 class GuestSnapshotChat:

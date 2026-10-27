@@ -1,29 +1,39 @@
 import {test,expect} from '@playwright/test';
 const id='00000000-0000-0000-0000-000000000001',revision='00000000-0000-0000-0000-000000000002';
 
-test('three-field sharing with optional exclusion, question test and explicit approval',async({page})=>{
+for(const advanced of [false,true])test('main owner sharing stays simple, advanced='+advanced,async({page})=>{
  const bodies:any[]=[];let questions=0,approvals=0;
  await page.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/workspace'))return route.fulfill({json:{context_id:id,state:'current',pending_count:0,intake:[],understanding:[],current:{id:revision,version:1,revision_ids:[revision]},recap:{version_id:revision,title:'Organizzazione di un atelier informatico',text:'Linee guida per progettare un atelier.',support_revision_ids:[revision]}}});
   if(path.endsWith('/invitations')&&route.request().method()==='GET')return route.fulfill({json:{items:[]}});
   if(path.endsWith('/sharing/previews')){const body=route.request().postDataJSON();bodies.push(body);
-   return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:body,payload:{format:'qh.disclosure/1',name:'Atelier informatique',recap:{title:'Organizzazione di un atelier informatico',text:'Linee guida per progettare un atelier.'},items:body.excluded.length?[{reference:'R1',text:'Attività pratiche guidate.'}]:[{reference:'R1',text:'Utilizzare Jupyter Notebook.'},{reference:'R2',text:'Attività pratiche guidate.'}]},report:{risks:['unassessed_free_text'],exclusions:body.excluded.length?[{revision_id:revision,reason:'owner_restriction'}]:[],masks:[],anchors:[{reference:'R1',item_id:id,revision_id:revision}]}}});}
+   return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:body,payload:{format:'qh.disclosure/1',name:'Atelier informatique',recap:{title:'Organizzazione di un atelier informatico',text:'Linee guida per progettare un atelier.'},items:body.excluded.length?[{reference:'R1',text:'Attività pratiche guidate.'}]:[{reference:'R1',text:'Utilizzare Jupyter Notebook.'},{reference:'R2',text:'Attività pratiche guidate.'}]},report:{risks:['unassessed_free_text'],exclusions:body.excluded.length?[{revision_id:revision,reason:'owner_restriction'}]:[],masks:[],anchors:body.excluded.length?[{reference:'R1',item_id:revision,revision_id:id}]:[{reference:'R1',item_id:id,revision_id:revision}]}}});}
   if(path.endsWith('/ask')){questions++;return route.fulfill({json:{answer:'Sono previste attività pratiche guidate.',insufficient_context:false,simulated:true}});}
-  if(path.endsWith('/approve')){approvals++;return route.fulfill({json:{snapshot_id:revision}});}
+  if(path.endsWith('/approve')){approvals++;if(advanced&&approvals===1)return route.fulfill({status:409,json:{detail:'Context changed'}});expect(route.request().postDataJSON()).toEqual({fingerprint:'a'.repeat(64),exceptions:['unassessed_free_text']});return route.fulfill({json:{snapshot_id:revision}});}
   if(path.endsWith('/invitations'))return route.fulfill({json:{id,snapshot_id:revision,expires_at:'2030-01-01T00:00:00Z',invitation_token:'offline-token'}});
   return route.fulfill({status:404,json:{detail:'outside fixture'}});
  });
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
  const dialog=page.getByRole('dialog',{name:'Partager ce contexte',exact:true});await expect(dialog.locator('form input,form textarea')).toHaveCount(3);
+ await expect(dialog.getByRole('heading',{name:'Organizzazione di un atelier informatico',exact:true})).toBeVisible();
+ await expect(dialog.getByRole('button',{name:'Vérifier le partage',exact:true})).toHaveCount(0);
+ await expect(dialog.getByRole('button',{name:'Exclure cette information',exact:true})).toHaveCount(0);
+ await expect(dialog.getByText('Informations susceptibles d’être communiquées',{exact:true})).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');await dialog.getByLabel('Finalité du partage',{exact:true}).fill('Préparer un atelier');
- await dialog.getByRole('button',{name:'Vérifier le partage',exact:true}).click();await expect(dialog.getByRole('heading',{name:'Organizzazione di un atelier informatico',exact:true})).toBeVisible();
- await expect(dialog).not.toContainText(/READ|ASK_AI|proposed|non confirmé|R1|R2|S1|USD/);expect(Object.keys(bodies[0]).sort()).toEqual(['excluded','expires_at','purpose','recipient_email']);expect(questions).toBe(0);
- await dialog.getByText('Consulter les informations communicables',{exact:true}).click();await dialog.getByRole('button',{name:'Exclure cette information',exact:true}).first().click();
- await expect(dialog.getByText('Informations retirées à votre demande',{exact:true})).toBeVisible();expect(bodies[1].excluded).toEqual([{item_id:id,revision_id:revision}]);
- await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
- await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);
- const create=dialog.getByRole('button',{name:'Créer l’invitation',exact:true});await expect(create).toBeDisabled();await dialog.getByRole('checkbox').check();await create.click();
- await expect(dialog.getByLabel('Lien d’invitation',{exact:true})).toHaveValue(/\/guest#invite=offline-token/);expect(approvals).toBe(1);
+ const create=dialog.getByRole('button',{name:'Créer l’invitation',exact:true});await expect(create).toBeEnabled();
+ await expect(dialog.getByText('Utilizzare Jupyter Notebook.',{exact:true})).not.toBeVisible();
+ expect(questions).toBe(0);expect(approvals).toBe(0);expect(Object.keys(bodies[0]).sort()).toEqual(['excluded','expires_at','purpose','recipient_email']);
+ if(advanced){
+  await dialog.getByText('Confidentialité avancée',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
+  await dialog.getByRole('button',{name:'Exclure cette information',exact:true}).first().click();
+  await expect(dialog.getByText('Informations retirées à votre demande',{exact:true})).toBeVisible();expect(bodies.at(-1).excluded).toEqual([{item_id:id,revision_id:revision}]);
+  await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
+  await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);
+ }
+ await expect(create).toBeEnabled();await create.click();
+ if(advanced){await dialog.getByRole('button',{name:'Réessayer',exact:true}).click();await expect(create).toBeEnabled();expect(questions).toBe(1);await create.click();}
+ await expect(dialog.getByLabel('Lien d’invitation',{exact:true})).toHaveValue(/\/guest#invite=offline-token/);expect(approvals).toBe(advanced?2:1);
 });
 
 test('recipient sees only name and chat without requesting a raw snapshot',async({page})=>{
