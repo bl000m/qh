@@ -35,11 +35,26 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'file'|null>(null);
  const [draft,setDraft]=useDraft('message');
  const [notice,setNotice]=useState('');
+ const [availabilityError,setAvailabilityError]=useState(''),[checkingAvailability,setCheckingAvailability]=useState(false);
+ const availabilityGeneration=useRef(0);
  const panel=useRef<HTMLElement>(null);
  const appendAttempt=useRef<ContextIntake|null>(null),lock=useRef(false);
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
  const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);return value;},[api,scope]);
- useEffect(()=>{let active=true;setState(null);setError('');api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});api.chatCapabilities(scope).then(c=>{if(active)setCaps(c);}).catch(()=>{});return()=>{active=false;};},[api,scope]);
+ useEffect(()=>{let active=true;setState(null);setError('');api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});return()=>{active=false;};},[api,scope]);
+ const refreshAvailability=useCallback(async()=>{
+  const generation=++availabilityGeneration.current;
+  setCheckingAvailability(true);setAvailabilityError('');
+  try{const value=await api.chatCapabilities(scope);if(generation===availabilityGeneration.current)setCaps(value);}
+  catch(e){if(generation===availabilityGeneration.current){setCaps(null);setAvailabilityError(apiMessage(e));}}
+  finally{if(generation===availabilityGeneration.current)setCheckingAvailability(false);}
+ },[api,scope]);
+ useEffect(()=>{
+  void refreshAvailability();
+  const refresh=()=>{if(document.visibilityState==='visible')void refreshAvailability();};
+  window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',refresh);
+  return()=>{availabilityGeneration.current++;window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',refresh);};
+ },[refreshAvailability]);
  useEffect(()=>{if(open)panel.current?.focus();},[open,narrow]);
  useEffect(()=>{if(settingsRequest)setSettings(true);},[settingsRequest]);
  useEffect(()=>{const media=window.matchMedia('(max-width:850px)');const update=()=>setNarrow(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
@@ -59,7 +74,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    if(!next)return;
    await api.workspaceChat(scope,dialogue(next.intake));
    await reload();
-  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);}
+  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);void refreshAvailability();}
  }
  async function memorize(){
   if(lock.current||!state)return;
@@ -75,7 +90,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    }
    if(!synchronized)setNotice('Version enregistrée. La compréhension sera disponible après synchronisation. Actualisez son état.');
    else setNotice('Compréhension mise à jour');
-  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);}
+  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);void refreshAvailability();}
  }
  async function addFile(file:File|undefined,context:boolean){
   if(!file||lock.current)return;
@@ -103,6 +118,8 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   return()=>clearTimeout(timer);
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
+ const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Vos messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
+
 
  const summary=state?.recap;
  const sources=state?.understanding.filter(row=>!summary||summary.support_revision_ids.includes(row.revision_id))??[];
@@ -138,7 +155,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
      </article>)}
      {busy==='send'&&<p role="status">Préparation de la réponse…</p>}
     </div>
-    <div className="workspace-feedback">{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void reload().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
+    <div className="workspace-feedback">{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void reload().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Votre message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoutez une information ou posez une question…"/>
      <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>

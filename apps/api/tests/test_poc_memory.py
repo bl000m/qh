@@ -112,3 +112,17 @@ def test_poc_capabilities_http_serializes_global_limits_without_provider_call(tm
     for change in ({'automatic': False}, {'max_calls': 3}, {'max_seconds': 1800}):
         with pytest.raises(ValidationError):
             CapabilityOutput.model_validate({**value, **change})
+
+
+def test_accounting_block_is_reported_without_changing_history_or_spending(tmp_path,monkeypatch):
+    ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer);poc(ai,ledger)
+    state=json.loads(ledger.read_text())
+    state['blocked']=True
+    state['calls']=[dict(status='failed',reserved_usd=str(cost(0,MODEL_CONTEXT_TOKENS)),error='Mistral HTTP 400')]
+    ledger.write_text(json.dumps(state));before=ledger.read_bytes()
+    caps=asyncio.run(ai.capabilities(who,request()))
+    assert caps['accounting_blocked'] and not caps['enabled'] and not caps['plafond_reached']
+    assert Decimal(caps['remaining_usd'])>1
+    from app.api.chat_sessions import CapabilityOutput
+    assert CapabilityOutput.model_validate(caps).accounting_blocked
+    assert ledger.read_bytes()==before and not calls

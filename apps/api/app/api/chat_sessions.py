@@ -19,6 +19,7 @@ router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
 class CapabilityOutput(BaseModel):
     automatic: bool = False
     plafond_reached: bool = False
+    accounting_blocked: bool = False
     enabled: bool
     model: Literal['mistral-small-2603'] | None
     max_seconds: Literal[300, 1800] | None

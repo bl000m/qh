@@ -57,3 +57,31 @@ for(const width of [1440,375])test('Context Space discussion, pending intake, fa
  expect(await page.evaluate(()=>document.documentElement.scrollHeight-innerHeight)).toBeLessThanOrEqual(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
 });
+
+test('AI availability failures and accounting suspension are visible and can be refreshed without generation',async({page})=>{
+ const scope='00000000-0000-0000-0000-000000000001',owner='00000000-0000-0000-0000-000000000005';
+ let checks=0,posts=0;
+ await page.route('**/api/**',async route=>{
+  const p=new URL(route.request().url()).pathname.slice(4);
+  if(route.request().method()==='POST'&&!p.endsWith('/open'))posts++;
+  if(p==='/auth/me')return route.fulfill({json:{user_id:owner}});
+  if(p==='/context-spaces/'+scope)return route.fulfill({json:{id:scope,owner_id:owner,name:'Disponibilité IA',status:'active',created_at:'2026-10-27T00:00:00Z',updated_at:'2026-10-27T00:00:00Z'}});
+  if(p.endsWith('/workspace'))return route.fulfill({json:{context_id:scope,state:'pending',pending_count:1,current:null,recap:null,understanding:[],intake:[]}});
+  if(p.endsWith('/chat-sessions')){
+   checks++;if(checks===1)return route.fulfill({status:503,json:{detail:'offline unavailable'}});
+   const blocked=checks===2;
+   return route.fulfill({json:{automatic:true,enabled:!blocked,accounting_blocked:blocked,plafond_reached:false,model:blocked?null:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:blocked?null:Date.now()/1000+3600,remaining_calls:null,remaining_usd:'4.0'}});
+  }
+  return route.fulfill({status:404,json:{detail:'outside fixture'}});
+ });
+ await page.goto('/tests/fixtures/context-space.html');
+ await page.getByRole('textbox',{name:'Votre message',exact:true}).fill('Un message à envoyer.');
+ const send=page.getByRole('button',{name:'Envoyer',exact:true}),memory=page.getByRole('button',{name:'Mémoriser',exact:true});
+ await expect(page.getByText('La disponibilité de l’IA n’a pas pu être vérifiée.',{exact:true})).toBeVisible();
+ await expect(send).toBeDisabled();await expect(memory).toBeDisabled();
+ await page.getByRole('button',{name:'Actualiser la disponibilité',exact:true}).click();
+ await expect(page.getByText('L’IA est suspendue après une erreur du fournisseur. Vos messages sont conservés.',{exact:true})).toBeVisible();
+ await expect(send).toBeDisabled();await expect(memory).toBeDisabled();
+ await page.getByRole('button',{name:'Actualiser la disponibilité',exact:true}).click();
+ await expect(send).toBeEnabled();await expect(memory).toBeEnabled();expect(posts).toBe(0);
+});

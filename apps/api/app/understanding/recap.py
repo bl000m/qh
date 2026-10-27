@@ -8,7 +8,7 @@ RECAP_SCHEMA = dict(type='object', additionalProperties=False,
     required=['title', 'text', 'supporting_statements'], properties=dict(
         title=dict(type='string', minLength=1, maxLength=120),
         text=dict(type='string', minLength=1, maxLength=1500),
-        supporting_statements=dict(type='array', minItems=1, maxItems=100, uniqueItems=True,
+        supporting_statements=dict(type='array', minItems=1, maxItems=100,
             items=dict(type='string', minLength=1, maxLength=16000))))
 INSTRUCTIONS = '''
 The atomic instructions above apply ONLY inside understanding.

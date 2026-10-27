@@ -35,7 +35,7 @@ class DevelopmentAI:
 
     async def capabilities(self, identity, request):
         await self.chat._authorize(request)
-        enabled, exhausted = False, False
+        enabled, exhausted, accounting_blocked = False, False, False
         remaining = dict(remaining_calls=0, remaining_usd='0')
         eligible = (identity.subject_id == request.subject_id and self.factory.eligible_identity(identity)
             and identity.verified_session_id and identity.work_expires_at
@@ -43,10 +43,12 @@ class DevelopmentAI:
             and self.factory.allowed(identity.subject_id, request.context_id))
         if eligible:
             accounting = self.factory.remaining()
+            accounting_blocked = accounting['blocked']
             remaining = {k:v for k,v in accounting.items() if k!='blocked'}
             exhausted = not accounting['blocked'] and (remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd)
             enabled = await self.factory.available(identity.subject_id, request.context_id)
-        return dict(automatic=bool(eligible), plafond_reached=bool(eligible and exhausted), enabled=enabled,
+        return dict(automatic=bool(eligible), plafond_reached=bool(eligible and exhausted),
+            accounting_blocked=bool(eligible and accounting_blocked), enabled=enabled,
             model=self.factory.model if enabled else None, max_seconds=None if self.factory.poc else 1800,
             max_calls=self.factory.aggregate_calls, max_usd=self.factory.aggregate_usd, provider_expires_at=self.factory.expires_at if enabled else None,
             **remaining)
