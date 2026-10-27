@@ -173,3 +173,49 @@ def test_italian_subject_recap_stays_short_while_chat_receives_all_30_steps():
     assert [r['content']['text'] for r in expand_model_context(packet, max_revisions=100)] == details
     assert 'main language of the ORIGINAL' in recap.INSTRUCTIONS
     assert 'Never narrate the exchange' in recap.INSTRUCTIONS
+
+
+@pytest.mark.parametrize('attributed', [False, True], ids=['workshop-final-content', 'essential-personal-attribution'])
+def test_recap_final_content_and_essential_attribution_offline(attributed):
+    actions = ['Definire gli obiettivi.', 'Preparare i materiali.',
+        *[f'Preparare e verificare l’attività pratica {i}.' for i in range(3, 29)],
+        'Valutare i risultati.', 'Pianificare il follow-up.']
+    steps = '\n'.join(f'{i}. {action}' for i, action in enumerate(actions, 1))
+    if attributed:
+        original = 'Giulia: Preferirei un laboratorio in presenza, ma non ho ancora deciso se partecipare.'
+        detailed = 'Giulia preferirebbe un laboratorio in presenza; la sua partecipazione non è decisa.'
+        title = 'Preferenza di Giulia per il laboratorio'
+        summary = 'Giulia preferirebbe un laboratorio in presenza, ma non ha ancora deciso se partecipare.'
+    else:
+        original = 'Linee guida per progettare e condurre un atelier informatico:\n'+steps
+        detailed = 'L’assistente propone linee guida per un atelier informatico in 30 passaggi:\n'+steps
+        title = 'Organizzazione di un atelier informatico'
+        summary = ('Questo contesto contiene le linee guida per progettare e condurre un atelier informatico '
+            'in 30 passaggi, dalla definizione degli obiettivi e preparazione dei materiali fino alle '
+            'attività pratiche, alla valutazione dei risultati e al follow-up.')
+    output = dict(format=recap.FORMAT, understanding=dict(format='qh.atomic-understanding/1', items=[
+        dict(text=detailed, primary_dimension=None, evidence=[dict(quote=original)])]),
+        recap=dict(title=title, text=summary, supporting_statements=[detailed]))
+    frozen = deepcopy(output)
+    delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
+        role=MessageRole.ASSISTANT, content=json.dumps(output)))))
+    provider = UumExtractionProvider(delegate, consolidate=True, with_recap=True)
+    conversation = dict(id='final-content', revision_no=1, acquired_at='2026-10-27T10:00:00Z', metadata={},
+        turns=[dict(id='request', speaker='user', text='Puoi aiutarmi a preparare un laboratorio?'),
+            dict(id='content', speaker='user' if attributed else 'assistant (unverified dialogue)', text=original)])
+    conversation_before = deepcopy(conversation)
+    policy = Mock(evaluate=AsyncMock(return_value=type('Decision', (), dict(allowed=True))()))
+    source, rows = asyncio.run(propose_selected_conversation(subject_id=str(uuid4()), context_id=str(uuid4()),
+        conversation=conversation, extraction_key='recap-final-content', policy=policy, provider=provider, descriptor_version=3))
+    # Replays check the request and unchanged acceptance/preservation path. They
+    # do not establish how a real model will follow the semantic instructions.
+    instructions = delegate.generate.call_args.args[0].messages[0].content
+    assert 'final reusable result' in instructions and 'not the process that produced it' in instructions
+    assert 'Ideally 1-3 short sentences' in instructions and 'No target word count or minimum' in instructions
+    assert 'ONLY when indispensable to meaning' in instructions
+    assert provider.recap['title'] == title and provider.recap['text'] == summary
+    assert provider.recap['supporting_statements'] == [detailed]
+    assert rows[0]['content']['text'] == detailed and rows[0]['validation_state'] == 'proposed'
+    citation = rows[0]['content']['citations'][0]
+    assert citation['quote'] == source['content'][citation['start']:citation['end']] == original
+    assert output == frozen and conversation == conversation_before and delegate.generate.await_count == 1

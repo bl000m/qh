@@ -10,7 +10,7 @@ RECAP_SCHEMA = dict(type='object', additionalProperties=False,
         title=dict(type='string', minLength=1, maxLength=120,
             description='Short subject title in the main language of the original memorized content.'),
         text=dict(type='string', minLength=1, maxLength=1500,
-            description='Autonomous subject/knowledge overview in the original content language, at most 100 words; no dialogue narration.'),
+            description='Reusable final content: subject and available knowledge, ideally 1-3 sentences in the original content language, at most 100 words. Attribution only when essential to meaning; never a history of how the content was produced.'),
         supporting_statements=dict(type='array', minItems=1, maxItems=100,
             description='Exact copies of understanding.items[].text supporting this recap; never evidence[].quote or source quotations.',
             items=dict(type='string', minLength=1, maxLength=16000,
@@ -27,29 +27,50 @@ state the main subjects, what this context contains and what it helps understand
 Write BOTH recap.title and recap.text in the main language of the ORIGINAL
 memorized content, not the language of these instructions or schema. Keep detailed
 item.text in that original language too; evidence always remains verbatim.
-Usually 40-80 words suffice; at most 100 words. Shorter is fine: no minimum length.
-Describe the SUBJECT and reusable KNOWLEDGE directly, as an autonomous overview.
-Never narrate the exchange: no "The user requests", "The assistant responds",
-"L’utente chiede" or chronology of messages. Prefer a short subject title and
-"Questo contesto raccoglie..." for Italian content. For example:
-title="Organizzazione di un laboratorio informatico";
-text="Linee guida per progettare e condurre un laboratorio informatico: obiettivi,
-materiali, attività pratiche, strumenti digitali e valutazione. Il contesto include
-una proposta in 30 passaggi, consigli didattici e attività di follow-up."
-Mention proposals, hypotheticals and attribution when omitting them would change
-the meaning; a proposed workshop is not an adopted or completed workshop.
-No fixed taxonomy, empty sections or full procedure in the recap. Combine
-complementary information and avoid repetition. Use only knowledge represented
-in understanding. Keep complete ordered steps, tools and activities in item.text,
-not merely in evidence quotes: a short recap never licenses dropping details.
+For recap ONLY, identify (1) the subject, (2) the available knowledge and
+(3) the final reusable result that a newcomer can consult. Summarize that result,
+not the process that produced it. Read the conversation for its retained content:
+a request for a guide followed by a guide means the context CONTAINS that guide.
+Its recap describes the guide's scope and useful content, not the request or who
+wrote the guide. Apply this even when detailed items preserve speaking acts or
+speaker provenance: supporting_statements can retain those exact item texts while
+recap.text describes their substantive content. Do not rewrite the detailed items
+or their evidence to make them resemble the recap.
+Ideally 1-3 short sentences; at most 100 words. No target word count or minimum.
+Never narrate the exchange. Ignore conversational acts that add nothing to the
+retained result: questions, requests, intermediate answers, hesitations,
+reformulations and the identities of the questioner and answerer. A genuine open
+question or unresolved uncertainty that affects the result MUST still be retained.
+For procedural/reference knowledge, describe the available guidelines, steps,
+methods and tools directly. Authorship of a proposed guide is normally incidental;
+its availability does not mean anyone adopted, scheduled or carried it out.
+Keep personal identity/attribution in the recap ONLY when indispensable to meaning:
+a personal opinion/preference, an individual's commitment, an attributed decision,
+a disputed claim or a view that must not be presented as shared or established.
+Otherwise provenance remains in the detailed items and metadata without appearing
+in the recap. Do not turn a proposal into an approved decision, an intention into
+a completed action, or an important possibility into a certainty.
+Italian procedural example:
+title="Organizzazione di un atelier informatico";
+text="Questo contesto contiene le linee guida per progettare e condurre un atelier
+informatico in 30 passaggi, dalla definizione degli obiettivi e preparazione dei
+materiali fino alle attività pratiche, alla valutazione dei risultati e al follow-up."
+Italian example where attribution is essential:
+title="Preferenza di Giulia per il laboratorio";
+text="Giulia preferirebbe un laboratorio in presenza, ma non ha ancora deciso se
+partecipare."
+Both examples describe retained content in its own terms, not speaking turns.
+Use only knowledge supported by understanding; no fixed taxonomy, empty sections
+or full procedure in the recap. This recap task does not shorten or change the
+detailed Understanding State, original sources, quotations or epistemic status.
 Build understanding.items first, then write recap. For supporting_statements,
 copy the COMPLETE exact value of understanding.items[i].text for each item used
 in the recap. Do NOT copy understanding.items[i].evidence[j].quote: evidence quotes
 are original source words, whereas item.text is the synthesized statement.
 Do not paraphrase, shorten, translate or add Markdown to the copied item.text.
-Example: if an item has text="The assistant suggests Carnaroli rice." and
+Mechanical support-copy example: if an item has text="Carnaroli rice is an option for risotto." and
  evidence=[{"quote":"Try **Carnaroli** rice."}], its supporting_statements entry
-must be "The assistant suggests Carnaroli rice.", NEVER "Try **Carnaroli** rice.".
+must be "Carnaroli rice is an option for risotto.", NEVER "Try **Carnaroli** rice.".
 Before returning, check that every supporting_statements string equals exactly
 one understanding.items[].text and that no supporting string is repeated.
 These are support declarations, not new facts, IDs or fabricated citations.
