@@ -1,5 +1,5 @@
-import {ApiError,isUuid} from './transport';
-import type {GuestSessionView,SharedPayload,GuestAnswer,GuestProviderStatus} from '@qh/shared';
+import {ApiError} from './transport';
+import type {GuestSessionView,SharedPayload,GuestAnswer,GuestProviderStatus,RecipientAnswer} from '@qh/shared';
 export const sharingEnabled=import.meta.env.VITE_QH_SHARING==='1';
 
 export async function guestRequest(path:string,body?:unknown):Promise<unknown>{
@@ -12,8 +12,7 @@ export async function guestRequest(path:string,body?:unknown):Promise<unknown>{
 }
 export function sessionView(value:unknown):GuestSessionView{
  const v=value as GuestSessionView;
- if(!v||!isUuid(v.snapshot_id)||v.verification!=='mailbox_control'||!Array.isArray(v.rights)||!v.rights.length||
-   v.rights.some(r=>r!=='READ'&&r!=='ASK_AI')||!Number.isFinite(Date.parse(v.expires_at)))throw new ApiError(502);
+ if(!v||typeof v.name!=='string'||!v.name.trim()||typeof v.can_ask!=='boolean'||v.verification!=='mailbox_control'||!Number.isFinite(Date.parse(v.expires_at)))throw new ApiError(502);
  return v;
 }
 export function sharedPayload(value:unknown):SharedPayload{
@@ -22,6 +21,11 @@ export function sharedPayload(value:unknown):SharedPayload{
    !i||typeof i.reference!=='string'||typeof i.text!=='string'||i.text.length>16000||
    !['proposed','confirmed'].includes(i.validation_state)||!Array.isArray(i.sources)))throw new ApiError(502);
  if(v.recap&&(typeof v.recap.title!=='string'||!v.recap.title.trim()||v.recap.title.length>120||typeof v.recap.text!=='string'||!v.recap.text.trim()||v.recap.text.length>1500||v.recap.text.trim().split(/\s+/).length>100))throw new ApiError(502);
+ return v;
+}
+export function recipientAnswer(value:unknown):RecipientAnswer{
+ const v=value as RecipientAnswer;
+ if(!v||typeof v.answer!=='string'||!v.answer.trim()||typeof v.insufficient_context!=='boolean'||typeof v.simulated!=='boolean')throw new ApiError(502);
  return v;
 }
 export function guestAnswer(value:unknown):GuestAnswer{

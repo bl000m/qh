@@ -9,6 +9,7 @@ from app.core.models import ContextSpaceNotFound, ContextStorageUnavailable
 from app.understanding.enrichment import EnrichmentConflict, EnrichmentUnavailable
 from app.understanding import recap as recap_output
 from adapters.postgres.workspace_chat import WorkspaceChatStorage
+from adapters.postgres.current_understanding import current_understanding
 
 
 class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository):
@@ -31,7 +32,10 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
         pending = [str(r['id']) for r in rows if str(r['id']) not in consumed]
         job = c.execute('SELECT state FROM context_consolidation_jobs WHERE context_space_id=%s', (scope,)).fetchone()
         state = 'running' if job and job['state']=='running' else 'failed' if job and job['state']=='failed' else 'pending' if pending else 'current' if latest else 'empty'
-        return dict(context_id=scope, current=latest, pending_count=len(pending), state=state,
+        knowledge = current_understanding(c, scope)
+        if len(knowledge)>100:
+            raise EnrichmentUnavailable('Current understanding exceeds supported item bound')
+        return dict(understanding_ids=[r['id'] for r in knowledge], context_id=scope, current=latest, pending_count=len(pending), state=state,
                     intake=[dict(id=str(r['id']), **r['document']) for r in rows],
                     chat_attempts=self._chat_states(c, scope))
 

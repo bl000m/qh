@@ -121,9 +121,11 @@ def proof(request):
     return value
 
 
-def session_view(access):
-    return dict(snapshot_id=access.snapshot_id, rights=list(access.rights), expires_at=access.expires_at,
-        verification='mailbox_control')
+async def session_view(request, access, token):
+    right='ASK_AI' if 'ASK_AI' in access.rights else 'READ'
+    payload=await bound(request).snapshot(token, access.snapshot_id, right)
+    return dict(name=payload.get('name','Contexte partagé'),can_ask='ASK_AI' in access.rights,
+        expires_at=access.expires_at,verification='mailbox_control')
 
 
 @router.post('/context-spaces/{scope}/snapshots/{snapshot_id}/invitations', status_code=201)
@@ -154,17 +156,12 @@ async def verify(document: VerifyRequest, request: Request, response: Response):
     # Backend checks expiry/revocation on every request even if a stale cookie remains.
     response.set_cookie(COOKIE, result.token, max_age=1800, expires=result.access.expires_at,
         path='/', secure=True, httponly=True, samesite='strict')
-    return session_view(result.access)
+    return await session_view(request,result.access,result.token)
 
 
 @router.get('/guest/session')
 async def session(request: Request):
-    return session_view(await bound(request).session(proof(request)))
-
-
-@router.get('/guest/snapshots/{snapshot_id}')
-async def snapshot(snapshot_id: UUID, request: Request):
-    return await bound(request).snapshot(proof(request), str(snapshot_id))
+    return await session_view(request,await bound(request).session(proof(request)),proof(request))
 
 
 @router.post('/guest/logout', status_code=204)

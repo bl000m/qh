@@ -37,8 +37,9 @@ class ContextConsolidation:
         await self._allow(subject, scope)
         state = await self.repository_for(subject).read(scope)
         rows = []
-        if state['current']:
-            for revision in state['current']['revision_ids']:
+        ids = state.get('understanding_ids', state['current']['revision_ids'] if state['current'] else [])
+        if ids:
+            for revision in ids:
                 page = await self.context.browse(ContextRequest(subject_id=subject,
                     query=ContextBrowse(context_id=scope, view='history', limit=1, revision_id=revision)))
                 if len(page.revisions)!=1 or page.revisions[0].revision_id!=revision:
@@ -124,9 +125,9 @@ class ContextConsolidation:
             return dict(state='completed')
         try:
             result = await self.ai.respond(identity, replace(request, messages=self._dialogue(claimed['intake'], question),
-                include_proposed=True, consolidated_revision_ids=tuple(state['current']['revision_ids']) if state['current'] else ()))
+                include_proposed=True, consolidated_revision_ids=tuple(r['revision_id'] for r in state.get('understanding', [])) if 'understanding' in state else tuple(state['current']['revision_ids']) if state['current'] else ()))
             after = await repository.read(scope)
-            if after['current'] != state['current']:
+            if after['current'] != state['current'] or after.get('understanding_ids') != state.get('understanding_ids'):
                 raise EnrichmentUnavailable('Understanding changed during answer')
             await self._allow(identity.subject_id, scope)
         except Exception as exc:

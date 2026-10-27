@@ -25,7 +25,7 @@ class AccessPolicy:
     purpose: str
     rights: tuple[str, ...]
     expires_at: datetime
-    include_proposed: bool = False
+    include_proposed: bool = True
     include_quotes: bool = False
     provider: str | None = None
     excluded: tuple[RevisionKey, ...] = ()
@@ -77,6 +77,7 @@ class Selection:
     context_id: str
     stamp: str
     candidates: tuple[Candidate, ...]
+    name: str = 'Contexte partagé'
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

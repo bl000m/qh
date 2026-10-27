@@ -22,7 +22,7 @@ export default function WorkspaceAnswerSources({api,scope,attribution}:{api:QhAp
   {attribution.partial_coverage&&<p className="small muted">Seule une partie de la compréhension a été utilisée.</p>}
   <details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Sources du contexte</summary>
    <p className="small">{labels[attribution.support_basis]}.</p>
-   {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p><p className="small muted">{row.validation_state==='proposed'?'Interprétation non confirmée':row.validation_state==='rejected'?'Révision rejetée':'Confirmation humaine enregistrée'}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
+   {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
   </details>
  </div>;
 }

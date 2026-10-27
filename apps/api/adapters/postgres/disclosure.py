@@ -8,6 +8,7 @@ from psycopg.types.json import Jsonb
 
 from adapters.context.incremental import IncrementalContextEngine
 from adapters.postgres.canonical import CanonicalRepository, json_values
+from adapters.postgres.current_understanding import current_understanding
 from app.projections.disclosure import (
     AccessPolicy, ApprovedSnapshot, Candidate, DisclosurePreview, Selection, digest, validate_preview,
 )
@@ -32,25 +33,15 @@ class PostgresDisclosureRepository:
         if state is None or state['desired_version'] != state['applied_version']:
             raise ProjectionUnavailable('Disclosure unavailable')
         IncrementalContextEngine(repository, self.projector)._ready((scope,))
-        rows = json_values(c.execute('''
-            SELECT r.item_id,r.id,r.validation_state,d.source_item_id,d.source_revision_id,
-                d.target_item_id,d.target_revision_id FROM understanding_item_revisions r
-            JOIN understanding_items i ON i.id=r.item_id
-            LEFT JOIN relation_revision_details d ON d.item_revision_id=r.id
-            WHERE r.context_space_id=%s AND
-              ((r.id=i.current_revision_id AND r.validation_state='confirmed') OR
-               (r.validation_state='proposed' AND NOT EXISTS (
-                SELECT 1 FROM understanding_item_revisions n WHERE n.item_id=r.item_id
-                 AND (n.revision_no>r.revision_no OR n.based_on_revision_id=r.id))))
-            ORDER BY r.item_id,r.id LIMIT 101
-        ''', (scope,)).fetchall())
+        rows = current_understanding(c, scope)
         if len(rows) > 100:
             raise ProjectionUnavailable('Space exceeds the 100-revision disclosure bound; no partial snapshot')
         candidates = tuple(Candidate(key=RevisionKey(item_id=r['item_id'], revision_id=r['id']),
             state=r['validation_state'], endpoints=tuple(RevisionKey(item_id=r[side+'_item_id'],
                 revision_id=r[side+'_revision_id']) for side in ('source', 'target'))
                 if r['source_revision_id'] is not None else ()) for r in rows)
-        return Selection(context_id=scope, stamp=digest(dict(state=json_values(state), rows=rows)), candidates=candidates)
+        name = c.execute('SELECT name FROM context_spaces WHERE id=%s', (scope,)).fetchone()['name']
+        return Selection(context_id=scope, stamp=digest(dict(state=json_values(state), rows=rows, name=name)), candidates=candidates, name=name)
 
     def _with_owner(self, subject, scope, operation):
         identifier(scope)

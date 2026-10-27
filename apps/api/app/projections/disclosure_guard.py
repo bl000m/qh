@@ -59,8 +59,6 @@ class OutboundDisclosureGuard:
         text = content.get('text')
         if row.validation_state not in ('confirmed', 'proposed'):
             return None, 'ineligible_state', []
-        if row.validation_state == 'proposed' and not policy.include_proposed:
-            return None, 'unconfirmed', []
         if not isinstance(text, str) or not text.strip() or len(text) > 16000:
             return None, 'unsupported_content', []
         if HIGH_RISK.search(text) or any(ord(c) < 32 and c not in '\n\t' for c in text):

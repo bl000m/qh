@@ -20,7 +20,7 @@ export interface ConsolidatedVersion {
 }
 export interface WorkspaceState {
  context_id:string;state:'empty'|'pending'|'running'|'current'|'failed';pending_count:number;
- current:ConsolidatedVersion|null;intake:ContextIntake[];recap?:ContextRecap|null;
+ current:ConsolidatedVersion|null;intake:ContextIntake[];recap?:ContextRecap|null;understanding_ids?:string[];
  chat_attempts?:{question_id:string;operation_id:string;state:'running'|'failed'|'completed'}[];
 }
 

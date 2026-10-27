@@ -8,3 +8,5 @@ export type {PortableContext,ContextIntake,ConsolidatedVersion,WorkspaceState} f
 export type {OwnerSupportBasis} from './context-space';
 
 export type {ContextRecap} from './context-space';
+
+export type {RecipientAnswer,SharingInput} from './guest';

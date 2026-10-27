@@ -8,7 +8,7 @@ from app.projections.disclosure import (
     AccessPolicy, ApprovedSnapshot, DisclosureDecisionRequired, DisclosurePreview, TEXT_REVIEW,
     preview_fingerprint, validate_preview,
 )
-from app.projections.disclosure_guard import OutboundDisclosureGuard
+from app.projections.disclosure_guard import OutboundDisclosureGuard, redact, HIGH_RISK
 from app.projections.drafts import DraftSpec, ProjectionConflict, ProjectionNotFound, ProjectionUnavailable
 
 
@@ -27,9 +27,9 @@ class DisclosureService:
     def _scope(selection, policy):
         selected, excluded = {}, []
         for row in selection.candidates:
-            if row.key in policy.excluded or (row.state == 'proposed' and not policy.include_proposed):
+            if row.key in policy.excluded:
                 excluded.append(dict(revision_id=row.key.revision_id,
-                    reason='owner_restriction' if row.key in policy.excluded else 'unconfirmed'))
+                    reason='owner_restriction'))
             else:
                 selected[row.key] = row
         # Remove dangling relations to a fixed point; never expand scope to endpoints.
@@ -58,10 +58,12 @@ class DisclosureService:
                 expires_at=policy.expires_at))
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
         payload, report = self.guard.apply(rows, policy)
+        title = redact(selection.name)[0]
+        payload['name'] = title if not HIGH_RISK.search(title) else 'Contexte partagé'
         report['exclusions'] = excluded + report['exclusions']
         report['status'] = 'review_required' if payload['items'] else 'no_disclosable_items'
         report['message'] = ('Examinez la divulgation proposée.' if payload['items'] else
-            'Aucun élément divulgable. Aucune information n’a été confirmée ou partagée.')
+            'Aucune information communicable dans ce périmètre.')
         if len(json.dumps(payload).encode()) > 262144:
             raise ProjectionUnavailable('Disclosure exceeds bounded preview size')
         result = DisclosurePreview(id=str(uuid4()), context_id=scope, owner_id=subject,

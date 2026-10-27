@@ -4,25 +4,30 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter,Depends,Request
-from pydantic import BaseModel,ConfigDict,Field,StrictBool,StrictStr
+from pydantic import BaseModel,ConfigDict,Field,StrictStr
 
 from app.api.guest import GuestRoute,bound,proof
-from app.api.security import authenticated_subject
+from app.api.security import authenticated_subject, authenticated_chat_identity
 from app.projections.disclosure import AccessPolicy,LIVE_PROVIDER
 from app.projections.guest import GuestUnavailable
+from app.projections.drafts import RevisionKey, ProjectionConflict
+from app.chat.snapshot_answer import public_answer
 
 router=APIRouter(route_class=GuestRoute,tags=['governed sharing'])
+
+
+class ExclusionInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    item_id:UUID
+    revision_id:UUID
 
 
 class PolicyInput(BaseModel):
     model_config=ConfigDict(extra='forbid')
     recipient_email:StrictStr=Field(min_length=3,max_length=254)
     purpose:StrictStr=Field(min_length=1,max_length=1024)
-    rights:list[Literal['READ','ASK_AI']]=Field(min_length=1,max_length=2)
     expires_at:datetime
-    include_proposed:StrictBool=False
-    include_quotes:StrictBool=False
-    provider:Literal['offline','mistral-small-2603']|None=None
+    excluded:list[ExclusionInput]=Field(default_factory=list,max_length=100)
 
 
 class ApprovalInput(BaseModel):
@@ -50,10 +55,15 @@ def preview_view(preview):
 @router.post('/context-spaces/{scope}/sharing/previews',status_code=201)
 async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depends(authenticated_subject)):
     await owner_service(request).drafts._allow(subject,str(scope))
-    if document.provider==LIVE_PROVIDER:
-        choices=await request.app.state.services.guest_chat.providers(subject,str(scope))
-        if not any(p['model']==LIVE_PROVIDER and p['enabled'] for p in choices['providers']):raise GuestUnavailable('Provider unavailable')
-    policy=AccessPolicy(**{**document.model_dump(),'rights':tuple(document.rights)})
+    chat=request.app.state.services.guest_chat
+    if chat is None:raise GuestUnavailable('Sharing unavailable')
+    provider=LIVE_PROVIDER if chat.live is not None else 'offline'
+    if chat.live is not None and not chat.live.allowed(subject,str(scope)):
+        raise GuestUnavailable('Sharing unavailable')
+    policy=AccessPolicy(recipient_email=document.recipient_email,purpose=document.purpose,
+        expires_at=document.expires_at,rights=('ASK_AI',),provider=provider,
+        include_proposed=True,include_quotes=False,
+        excluded=tuple(RevisionKey(item_id=str(k.item_id),revision_id=str(k.revision_id)) for k in document.excluded))
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))
 
 
@@ -64,11 +74,38 @@ async def approve(scope:UUID,preview_id:UUID,document:ApprovalInput,request:Requ
     return dict(snapshot_id=snapshot.id,expires_at=snapshot.policy.expires_at)
 
 
-@router.post('/guest/snapshots/{snapshot_id}/ask')
-async def ask(snapshot_id:UUID,document:QuestionInput,request:Request):
+@router.post('/context-spaces/{scope}/sharing/previews/{preview_id}/ask')
+async def preview_question(scope:UUID,preview_id:UUID,document:QuestionInput,request:Request,
+                           identity=Depends(authenticated_chat_identity)):
+    sharing=owner_service(request)
+    chat=request.app.state.services.guest_chat
+    if chat is None:raise GuestUnavailable('Sharing unavailable')
+    preview=await sharing.preview(identity.subject_id,str(scope),str(preview_id))
+    async def recheck():
+        current=await sharing.preview(identity.subject_id,str(scope),str(preview_id))
+        sharing._fresh(current.policy,current.created_at)
+        if current.fingerprint!=preview.fingerprint or (await sharing.repository.select(identity.subject_id,str(scope))).stamp!=current.selection_stamp:
+            raise ProjectionConflict('Context changed; verify sharing again')
+        if current.policy.provider==LIVE_PROVIDER:
+            ai=request.app.state.services.development_ai
+            if ai is None:raise GuestUnavailable('Verified owner AI unavailable')
+            await ai.authorize_consolidation(identity,str(scope))
+        return current.payload
+    if preview.policy.provider==LIVE_PROVIDER:
+        value=await request.app.state.services.development_ai.answer_projection(identity,str(scope),preview.payload,document.question,recheck)
+    else:
+        value=await chat.answer_payload(identity.subject_id,str(scope),preview.policy.provider,
+            preview.payload,document.question,recheck)
+    return public_answer(value)
+
+
+@router.post('/guest/ask')
+async def ask(document:QuestionInput,request:Request):
     service=request.app.state.services.guest_chat
     if service is None:raise GuestUnavailable('Snapshot answer unavailable')
-    return await service.ask(proof(request),str(snapshot_id),document.question)
+    token=proof(request)
+    grant=await bound(request).session(token)
+    return public_answer(await service.ask(token,grant.snapshot_id,document.question))
 
 
 @router.get('/context-spaces/{scope}/sharing/providers')
@@ -83,4 +120,5 @@ async def providers(scope:UUID,request:Request,subject=Depends(authenticated_sub
 async def guest_provider(request:Request):
     service=request.app.state.services.guest_chat
     if service is None:raise GuestUnavailable('Provider unavailable')
-    return await service.status(proof(request))
+    status=await service.status(proof(request))
+    return {k:status[k] for k in ('enabled','simulated')}

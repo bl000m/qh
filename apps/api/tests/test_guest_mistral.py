@@ -12,7 +12,7 @@ from adapters.llm.guest_mistral import AUTHORIZATION,MistralSnapshotAnswers
 from adapters.llm.guest_offline import OfflineSnapshotProvider
 from adapters.llm.mistral import committed_cost,effective_ceiling
 from adapters.llm.session_config import PrivateSessionFactory
-from app.chat.guest import GuestSnapshotChat
+from app.chat.guest import GuestSnapshotChat, question_payload
 from app.core.models import GuestAccess,ProviderBudgetExceeded
 from app.projections.guest import GuestDenied,GuestUnavailable
 from tests.test_chat_sessions import setup as session_setup
@@ -27,7 +27,7 @@ def setup(tmp_path,monkeypatch,answer=None,status=200,subject='alice',handler=No
         wire=json.loads(request.content)
         assert wire['model']=='mistral-small-2603' and 'max_tokens' not in wire
         packet=json.loads(wire['messages'][1]['content'])
-        assert set(packet)=={'snapshot','question'} and packet['snapshot']==PAYLOAD
+        assert set(packet)=={'snapshot','question'} and packet['snapshot']==question_payload(PAYLOAD)
         assert wire['tool_choice']=='none'
         if handler:handler()
         return httpx.Response(status,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=30),
