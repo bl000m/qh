@@ -9,7 +9,9 @@ RECAP_SCHEMA = dict(type='object', additionalProperties=False,
         title=dict(type='string', minLength=1, maxLength=120),
         text=dict(type='string', minLength=1, maxLength=1500),
         supporting_statements=dict(type='array', minItems=1, maxItems=100,
-            items=dict(type='string', minLength=1, maxLength=16000))))
+            description='Exact copies of understanding.items[].text supporting this recap; never evidence[].quote or source quotations.',
+            items=dict(type='string', minLength=1, maxLength=16000,
+                description='Copy one complete understanding.items[].text verbatim, not its evidence quote.'))))
 INSTRUCTIONS = '''
 The atomic instructions above apply ONLY inside understanding.
 Return the strict qh.context-consolidation/1 envelope with understanding containing
@@ -23,8 +25,17 @@ Target about 100 words, at most 150 words, in one or two short paragraphs. Adapt
 to the material; no fixed taxonomy, empty sections, ingredient list or full procedure.
 Do not narrate successive user/assistant interventions. Combine complementary
 information and avoid repetition. Use only facts represented in understanding.
-Copy the exact text of each supporting detailed item into supporting_statements;
-these are support declarations, not new facts, IDs or fabricated citations.
+Build understanding.items first, then write recap. For supporting_statements,
+copy the COMPLETE exact value of understanding.items[i].text for each item used
+in the recap. Do NOT copy understanding.items[i].evidence[j].quote: evidence quotes
+are original source words, whereas item.text is the synthesized statement.
+Do not paraphrase, shorten, translate or add Markdown to the copied item.text.
+Example: if an item has text="The assistant suggests Carnaroli rice." and
+ evidence=[{"quote":"Try **Carnaroli** rice."}], its supporting_statements entry
+must be "The assistant suggests Carnaroli rice.", NEVER "Try **Carnaroli** rice.".
+Before returning, check that every supporting_statements string equals exactly
+one understanding.items[].text and that no supporting string is repeated.
+These are support declarations, not new facts, IDs or fabricated citations.
 If no useful understanding is supported, return empty items and recap=null.
 '''
 

@@ -88,11 +88,12 @@ turns, not in that machine state.
 
 
 class UumExtractionProvider:
-    def __init__(self, delegate, *, literal=False, consolidate=False, previous=(), with_recap=False):
+    def __init__(self, delegate, *, literal=False, consolidate=False, previous=(), with_recap=False, observer=None):
         self.delegate, self.literal = delegate, literal
         self.consolidate = consolidate
         self.previous = deepcopy(previous)
         self.with_recap, self.recap = with_recap, None
+        self.observer = observer
 
     async def generate(self, request):
         if len(request.messages) != 2 or request.messages[-1].role != MessageRole.USER:
@@ -118,7 +119,15 @@ class UumExtractionProvider:
             return result
         if result.message.role != MessageRole.ASSISTANT:
             raise ValueError('Consolidation must return an assistant envelope')
-        atomic, self.recap = recap_output.decode(result.message.content)
+        try:
+            atomic, self.recap = recap_output.decode(result.message.content)
+        except ValueError:
+            if self.observer:
+                self.observer('uum.recap_exact_statement_support', False,
+                    'Invalid recap envelope or exact detailed statement support')
+            raise
+        if self.observer:
+            self.observer('uum.recap_exact_statement_support', True)
         # Explicit envelope adapter, not a heuristic repair. The unchanged Engine
         # validates the exact atomic payload; diagnostics retain the raw envelope.
         return replace(result, message=Message(role=MessageRole.ASSISTANT, content=canonical_json(atomic)))

@@ -67,7 +67,7 @@ class ContextConsolidation:
                     primary_dimension=row['content'].get('primary_dimension'),
                     validation_state=row['validation_state']) for row in current['understanding'])
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True)
+                consolidate=True, previous=previous, with_recap=True, observer=diagnostic.check)
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
                 conversation=self._conversation(identity.subject_id, batch), extraction_key='qh-context-uum/3',

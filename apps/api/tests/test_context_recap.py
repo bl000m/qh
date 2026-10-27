@@ -114,3 +114,39 @@ def test_retrieval_hydrates_every_exact_consolidated_detail():
     service=ContextualChatService(context=context,policy=Mock(),provider=Mock(),model='offline')
     collected,partial=asyncio.run(service._collect(replace(request(),consolidated_revision_ids=tuple(r.revision_id for r in rows))))
     assert collected==tuple(rows) and not partial and context.browse.await_count==60
+
+
+def test_recap_instruction_distinguishes_statement_text_from_original_evidence():
+    details, output = recipe()
+    original_quote = 'Try **Carnaroli** rice.'
+    output['understanding']['items'][0]['evidence'] = [dict(quote=original_quote)]
+    request = build_context(context_id='space', revisions=(), messages=(
+        Message(role=MessageRole.USER, content='Recipe?'),)).request
+    # The Engine supplies the authorized source packet; no provider HTTP is used.
+    request = replace(request, messages=(request.messages[0], Message(role=MessageRole.USER,
+        content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=original_quote, turns=[])))))
+    delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
+        role=MessageRole.ASSISTANT, content=json.dumps(output)))))
+    observer = Mock()
+    provider = UumExtractionProvider(delegate, consolidate=True, with_recap=True, observer=observer)
+    asyncio.run(provider.generate(request))
+    observer.assert_called_once_with('uum.recap_exact_statement_support', True)
+    sent = delegate.generate.call_args.args[0]
+    assert 'NEVER "Try **Carnaroli** rice."' in sent.messages[0].content
+    field = sent.output_schema['properties']['recap']['anyOf'][0]['properties']['supporting_statements']
+    assert 'never evidence[].quote' in field['description']
+    assert 'not its evidence quote' in field['items']['description']
+    assert provider.recap['supporting_statements'] == details
+
+    # Reproduce the real failure shape without retaining the private response:
+    # an exact source quote is still invalid in a statement-support declaration.
+    output['recap']['supporting_statements'][0] = original_quote
+    delegate.generate.return_value = GenerationResult(message=Message(
+        role=MessageRole.ASSISTANT, content=json.dumps(output)))
+    observer.reset_mock()
+    with pytest.raises(ValueError, match='Exact unambiguous detailed recap support required'):
+        asyncio.run(provider.generate(request))
+    observer.assert_called_once_with('uum.recap_exact_statement_support', False,
+        'Invalid recap envelope or exact detailed statement support')
+    assert original_quote not in str(observer.call_args)
+    assert delegate.generate.await_count == 2  # One per explicit request, no retry.
