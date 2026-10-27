@@ -141,7 +141,7 @@ def test_previous_machine_state_is_supplied_separately_from_original_citable_sou
     import json
     from app.core.models import GenerationRequest, GenerationResult, Message, MessageRole
     from app.understanding.uum import UumExtractionProvider
-    original=dict(source_revision_id='source',input_sha256='digest',text='Exact original.',turns=[])
+    original=dict(source_revision_id='source',input_sha256='digest',text='Exact original.',turns=[dict(turn_id='original',start=0,end=15)])
     source_message=Message(role=MessageRole.USER,content=json.dumps(original))
     delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content='{}'))))
     provider=UumExtractionProvider(delegate,consolidate=True,previous=({'text':'Prior unverified interpretation'},))

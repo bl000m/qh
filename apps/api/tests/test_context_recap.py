@@ -124,7 +124,7 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
         Message(role=MessageRole.USER, content='Recipe?'),)).request
     # The Engine supplies the authorized source packet; no provider HTTP is used.
     request = replace(request, messages=(request.messages[0], Message(role=MessageRole.USER,
-        content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=original_quote, turns=[])))))
+        content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=original_quote, turns=[dict(turn_id='turn', start=0, end=len(original_quote))])))))
     delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))))
     observer = Mock()
