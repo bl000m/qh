@@ -16,7 +16,7 @@ from app.api.security import SecurityBindings
 
 from adapters.postgres.consolidation import PostgresConsolidationRepository
 from adapters.postgres.semantic_profiles import register_uum_profiles
-from app.core.models import GenerationResult, Message, MessageRole, ContextSpaceNotFound
+from app.core.models import GenerationResult, Message, MessageRole, ContextSpaceNotFound, ContextRequest, ContextBrowse
 from app.understanding.consolidation import ContextConsolidation
 from app.understanding.enrichment import EnrichmentUnavailable
 from tests.test_enrichment_pipeline import setup
@@ -134,3 +134,34 @@ def test_competing_claims_are_serialized_before_provider_work(generic,empty_data
         except EnrichmentUnavailable:return None
     with ThreadPoolExecutor(max_workers=2) as pool:values=list(pool.map(lambda _:claim(),range(2)))
     assert sum(v is not None for v in values)==1
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_explicit_recap_style_refresh_preserves_old_version_and_replays_new_version(generic, empty_database, monkeypatch):
+    from app.understanding import recap
+    p = generic
+    service, who, repositories, provider = prepare(p, empty_database)
+    scope = p['scope']
+    run(service.append(who.subject_id, scope, document()))
+    monkeypatch.setattr(recap, 'PRESENTATION_VERSION', 1)
+    old = run(service.consolidate(who, scope))
+    drain(p['worker'])
+    old_rows = run(service.read(who.subject_id, scope))['understanding']
+    monkeypatch.setattr(recap, 'PRESENTATION_VERSION', 2)
+    state = run(service.read(who.subject_id, scope))
+    assert state['pending_count'] == 0 and state['recap'] and not state['current']['has_recap']
+    assert provider.generate.await_count == 1  # Reading never infers.
+    new = run(service.consolidate(who, scope))
+    drain(p['worker'])
+    assert new['current']['version'] == 2 and new['current']['id'] != old['current']['id']
+    assert new['current']['has_recap'] and provider.generate.await_count == 2
+    again = run(service.consolidate(who, scope))
+    assert again['current'] == new['current'] and provider.generate.await_count == 2
+    with repositories(who.subject_id).connect() as connection:
+        retained = connection.execute('SELECT count(*) n FROM context_consolidations WHERE context_space_id=%s', (scope,)).fetchone()
+        assert retained['n'] == 2
+    for row in old_rows:
+        page = run(service.context.browse(ContextRequest(
+            subject_id=who.subject_id, query=ContextBrowse(
+                context_id=scope, view='history', revision_id=row['revision_id'], limit=1))))
+        assert page.revisions[0].content == row['content']

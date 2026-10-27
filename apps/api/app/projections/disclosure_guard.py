@@ -3,6 +3,7 @@ import re
 
 from app.core.uum import PRIMARY_DIMENSIONS
 from app.projections.disclosure import GUARD_VERSION, TEXT_REVIEW
+from app.projections.recap import projected_recap
 
 
 MASKS = (
@@ -44,7 +45,11 @@ class OutboundDisclosureGuard:
                 if redactions:
                     masks.append(dict(reference=reference, rules=sorted(set(redactions))))
         items, anchors, masks = self._relations(items, anchors, masks, relations, exclusions)
-        return dict(format=GUARD_VERSION, items=items), dict(exclusions=exclusions, anchors=anchors,
+        payload = dict(format=GUARD_VERSION, items=items)
+        recap = projected_recap(revisions, anchors, masks, redact, HIGH_RISK)
+        if recap:
+            payload['recap'] = recap
+        return payload, dict(exclusions=exclusions, anchors=anchors,
             masks=masks, risks=[TEXT_REVIEW] if items else [],
             warning='Texte libre non certifié anonyme, y compris par combinaison d’attributs. '
                 'Examinez les textes minimisés pour ce destinataire avant toute divulgation.')

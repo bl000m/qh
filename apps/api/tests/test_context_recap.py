@@ -45,7 +45,7 @@ def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_r
     original_hash=UnderstandingExtractor.source_hash(source)
     bound=recap.bind(provider.recap,rows,version)
     summary=recap.from_version([dict(content=r['content']) for r in bound],dict(id=version,revision_ids=[r['id'] for r in bound]))
-    assert summary['title']=='Préparation d’un risotto' and len(summary['text'].split())<=150
+    assert summary['title']=='Préparation d’un risotto' and len(summary['text'].split())<=100
     assert '320 g' not in summary['text'] and '320 g' in bound[0]['content']['text']
     assert [r['content']['text'] for r in bound]==details and len(bound)==3
     for row,expected in zip(bound,details):
@@ -63,7 +63,7 @@ def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_r
 @pytest.mark.parametrize('change',['too_long','invented_support','duplicate_support','wrong_version'])
 def test_bad_recap_is_rejected_without_repair_or_foreign_version_reuse(change):
     _,output=recipe()
-    if change=='too_long':output['recap']['text']='mot '*151
+    if change=='too_long':output['recap']['text']='mot '*101
     elif change=='invented_support':output['recap']['supporting_statements']=['Une information absente.']
     elif change=='duplicate_support':output['recap']['supporting_statements']*=2
     if change!='wrong_version':
@@ -150,3 +150,26 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
         'Invalid recap envelope or exact detailed statement support')
     assert original_quote not in str(observer.call_args)
     assert delegate.generate.await_count == 2  # One per explicit request, no retry.
+
+
+def test_italian_subject_recap_stays_short_while_chat_receives_all_30_steps():
+    details = [f'{i}. Attività {i}: preparare e verificare il materiale {i}.' for i in range(1, 31)]
+    output = consolidation_output(dict(format='qh.atomic-understanding/1', items=[
+        dict(text=t, primary_dimension=None, evidence=[dict(quote=t)]) for t in details]))
+    output['recap'].update(title='Organizzazione di un laboratorio informatico',
+        text='Linee guida proposte per organizzare un laboratorio informatico, con trenta attività pratiche e verifiche del materiale. La procedura dettagliata resta disponibile per la preparazione e lo svolgimento del laboratorio.')
+    atomic, summary = recap.decode(json.dumps(output))
+    assert len(summary['text'].split()) < 40  # No artificial minimum.
+    for length in (100, 101):
+        candidate = deepcopy(output); candidate['recap']['text'] = 'parola '*length
+        if length == 100: recap.decode(json.dumps(candidate))
+        else:
+            with pytest.raises(ValueError): recap.decode(json.dumps(candidate))
+    rows = tuple(revision(revision_id=str(i), item_id='item'+str(i), content=dict(text=item['text']))
+        for i, item in enumerate(atomic['items']))
+    context = build_context(context_id='space', revisions=rows, consolidated=True, extended_dialogue=True,
+        messages=(Message(role=MessageRole.USER, content='Dammi tutti i 30 passaggi completi.'),))
+    packet = json.loads(context.request.messages[1].content)
+    assert [r['content']['text'] for r in expand_model_context(packet, max_revisions=100)] == details
+    assert 'main language of the ORIGINAL' in recap.INSTRUCTIONS
+    assert 'Never narrate the exchange' in recap.INSTRUCTIONS

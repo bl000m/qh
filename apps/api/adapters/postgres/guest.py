@@ -166,10 +166,11 @@ class PostgresGuestRepository:
             if current != grant or right not in ('READ', 'ASK_AI') or right not in current.rights:
                 raise GuestDenied('Vérification impossible.')
             # Session/invitation/owner locks fence revocation through this final safe read.
-            row = c.execute('SELECT id,context_space_id,payload FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
+            row = c.execute('SELECT id,context_space_id,payload,policy FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
                 (current.snapshot_id, current.context_id)).fetchone()
             return GuestSnapshot(context_id=str(row['context_space_id']), snapshot_id=str(row['id']),
-                payload_json=json.dumps(row['payload'],ensure_ascii=False,sort_keys=True))
+                payload_json=json.dumps(row['payload'],ensure_ascii=False,sort_keys=True),
+                include_quotes=row['policy'].get('include_quotes') is True)
         return await asyncio.to_thread(self._run, None, read)
 
     async def logout(self, session_hash):

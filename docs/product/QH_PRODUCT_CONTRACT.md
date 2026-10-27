@@ -870,3 +870,19 @@ understanding. This is separate from controlled third-party disclosure. No new
 provider/model/budget, paid automatic test, persistent migration or runtime
 activation is authorized by this implementation. See [implementation and manual
 acceptance](../context-space-v02.md), including the remaining PDF limitation.
+
+### Concise understanding and source sovereignty — owner, 2026-10-27
+
+The recap describes the subject and available knowledge autonomously, in the main
+language of the original memorized content: usually 40–80 words when useful, no
+minimum and at most 100 words. Detailed structured knowledge retains complete
+procedures, tools and activities for chat; the recap is not its retrieval limit.
+No automatic re-extraction on questions. Missing authorized detail stays explicit.
+
+Projection READ/ASK_AI does not grant access to original conversations, documents,
+internal revisions, diagnostics or owner export. Original evidence stays preserved
+and owner-accessible. Existing explicit minimized-quote approval remains separate
+and restrictive by default. A recap may enter a newly approved snapshot only when
+its complete basis survives the disclosure scope without masking; otherwise omit
+it rather than disclose excluded knowledge. Existing approved snapshots remain
+immutable. Guest chat uses only the authorized materialized projection.

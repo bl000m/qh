@@ -4,10 +4,13 @@ from copy import deepcopy
 from app.understanding.extractor import decode_output, digest, nonempty, object_fields
 
 FORMAT = 'qh.context-consolidation/1'
+PRESENTATION_VERSION = 2
 RECAP_SCHEMA = dict(type='object', additionalProperties=False,
     required=['title', 'text', 'supporting_statements'], properties=dict(
-        title=dict(type='string', minLength=1, maxLength=120),
-        text=dict(type='string', minLength=1, maxLength=1500),
+        title=dict(type='string', minLength=1, maxLength=120,
+            description='Short subject title in the main language of the original memorized content.'),
+        text=dict(type='string', minLength=1, maxLength=1500,
+            description='Autonomous subject/knowledge overview in the original content language, at most 100 words; no dialogue narration.'),
         supporting_statements=dict(type='array', minItems=1, maxItems=100,
             description='Exact copies of understanding.items[].text supporting this recap; never evidence[].quote or source quotations.',
             items=dict(type='string', minLength=1, maxLength=16000,
@@ -18,13 +21,27 @@ Return the strict qh.context-consolidation/1 envelope with understanding contain
 all detailed qh.atomic-understanding/1 items, and recap containing title, text and
 supporting_statements. Keep the full useful detailed knowledge: quantities,
 ingredients, steps, variants, constraints and uncertainties when present. The
-100-150 word limit applies ONLY to recap.text, never to understanding.items.
+100-word maximum applies ONLY to recap.text, never to understanding.items.
 The recap is a short semantic overview for a newcomer, not the detailed content:
 state the main subjects, what this context contains and what it helps understand.
-Target about 100 words, at most 150 words, in one or two short paragraphs. Adapt
-to the material; no fixed taxonomy, empty sections, ingredient list or full procedure.
-Do not narrate successive user/assistant interventions. Combine complementary
-information and avoid repetition. Use only facts represented in understanding.
+Write BOTH recap.title and recap.text in the main language of the ORIGINAL
+memorized content, not the language of these instructions or schema. Keep detailed
+item.text in that original language too; evidence always remains verbatim.
+Usually 40-80 words suffice; at most 100 words. Shorter is fine: no minimum length.
+Describe the SUBJECT and reusable KNOWLEDGE directly, as an autonomous overview.
+Never narrate the exchange: no "The user requests", "The assistant responds",
+"L’utente chiede" or chronology of messages. Prefer a short subject title and
+"Questo contesto raccoglie..." for Italian content. For example:
+title="Organizzazione di un laboratorio informatico";
+text="Linee guida per progettare e condurre un laboratorio informatico: obiettivi,
+materiali, attività pratiche, strumenti digitali e valutazione. Il contesto include
+una proposta in 30 passaggi, consigli didattici e attività di follow-up."
+Mention proposals, hypotheticals and attribution when omitting them would change
+the meaning; a proposed workshop is not an adopted or completed workshop.
+No fixed taxonomy, empty sections or full procedure in the recap. Combine
+complementary information and avoid repetition. Use only knowledge represented
+in understanding. Keep complete ordered steps, tools and activities in item.text,
+not merely in evidence quotes: a short recap never licenses dropping details.
 Build understanding.items first, then write recap. For supporting_statements,
 copy the COMPLETE exact value of understanding.items[i].text for each item used
 in the recap. Do NOT copy understanding.items[i].evidence[j].quote: evidence quotes
@@ -60,7 +77,7 @@ def decode(text):
         return atomic, None
     object_fields(recap, ('title', 'text', 'supporting_statements'))
     title, summary = nonempty(recap['title']), nonempty(recap['text'])
-    if not title.strip() or len(title)>120 or not summary.strip() or len(summary)>1500 or len(summary.split())>150 or '\0' in title+summary:
+    if not title.strip() or len(title)>120 or not summary.strip() or len(summary)>1500 or len(summary.split())>100 or '\0' in title+summary:
         raise ValueError('Bounded nonempty recap required')
     support = recap['supporting_statements']
     texts = [i.get('text') for i in atomic['items'] if isinstance(i, dict)]
@@ -80,7 +97,7 @@ def bind(recap, revisions, version_id):
     if len(support)!=len(recap['supporting_statements']):
         raise ValueError('Recap support changed during canonical validation')
     rows[0]['content']['extraction']['recap'] = dict(format='qh.context-recap/1',
-        version_id=version_id, title=recap['title'], text=recap['text'],
+        version_id=version_id, presentation_version=PRESENTATION_VERSION, title=recap['title'], text=recap['text'],
         basis_revision_ids=[r['id'] for r in rows], support_revision_ids=support,
         provider_output_sha256=recap['provider_output_sha256'])
     return rows

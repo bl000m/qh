@@ -20,6 +20,12 @@ Renvoie seulement le JSON du schéma: answer, reference_aliases (liste d'alias R
 insufficient_context (informations manquantes, indépendant de la provenance), support_basis.
 canonical signifie support par les éléments du snapshot et exige des références exactes;
 mixed combine snapshot et question; dialogue utilise seulement la question et exige []; insufficient est permis.
+Le récapitulatif ne remplace pas les items détaillés: utilise tous les détails autorisés
+pour les procédures complètes, outils et activités. Si des étapes manquent, signale-le;
+ne complète jamais une liste à partir de connaissances générales en l'attribuant au snapshot.
+Les sources originales, conversations, documents, révisions internes et diagnostics
+ne sont pas accessibles. N'essaie pas de les reconstruire. Seules les éventuelles
+citations explicitement incluses dans le snapshot sont autorisées.
 Si la réponse complète est impossible, explique les limites sans reconstruire des informations masquées.
 Ne crée aucune connaissance confirmée. Aucun URL, coordonnées personnelles ou contenu sensible supplémentaire.'''
 

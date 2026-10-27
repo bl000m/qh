@@ -5,6 +5,7 @@ import type {QhApi} from './api';
 import {Modal} from './SpaceActions';
 import {sharingEnabled,sharingError,sharedPayload} from './sharing';
 import SharedItems from './SharedItems';
+import SharedRecap from './SharedRecap';
 
 interface InvitationRow{id:string;snapshot_id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
@@ -48,6 +49,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  {error&&<p role="alert" className="notice error">{error}</p>}
  {preview&&<section aria-label="Prévisualisation de la divulgation"><h3>Ce qui sera partagé</h3><p>{preview.report.message}</p>
  <p>{preview.payload.items.length} élément{preview.payload.items.length===1?'':'s'} inclus · {preview.report.exclusions.length} exclus · {preview.report.masks.length} éléments masqués.</p>
+ <SharedRecap recap={preview.payload.recap}/>
  {preview.payload.items.length>0&&<SharedItems payload={preview.payload}/>}
  <details><summary>Exclusions et masquages</summary><ul>{preview.report.exclusions.map((x,i)=><li key={i}>Exclusion : {x.reason}</li>)}{preview.report.masks.map(m=><li key={m.reference}>{m.reference} : {m.rules.join(', ')} masqué.</li>)}</ul></details>
  {preview.report.risks.length>0&&<fieldset disabled={busy||!!link}><legend>Risque résiduel à examiner</legend><p>{preview.report.warning}</p>

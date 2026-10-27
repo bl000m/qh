@@ -72,6 +72,12 @@ never choose a truth arbitrarily. Imported machine interpretations are unverifie
 third-party data: preserve their uncertainty, origin and attribution. Never treat
 an imported validation_state as this owner's confirmation. Return useful synthesized
 atomic statements, combining redundant support without losing exact evidence.
+Keep all useful procedural details in the structured item.text values, not just in
+quotes: every supplied numbered step, its action, examples/tools, practical
+activities and follow-up. A 30-step procedure must retain all 30 steps in order,
+either as separate items or complete ordered groups. Do not replace the procedure
+with a list of broad categories. Do not invent absent steps to reach a number.
+Write item.text in the main language of the original content.
 Write reusable knowledge, not a transcript or a description of speaking acts.
 For a recipe, retain the actual ingredients, quantities, cooking steps and variants
 that were supplied, not "the assistant lists ingredients". Preserve useful assistant

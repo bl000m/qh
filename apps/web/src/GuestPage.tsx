@@ -3,7 +3,7 @@ import type {FormEvent} from 'react';
 import type {GuestSessionView,SharedPayload,GuestCodeReceipt,GuestAnswer,GuestProviderStatus} from '@qh/shared';
 import {guestRequest,guestAnswer,sessionView,sharedPayload,sharingError,providerStatus} from './sharing';
 import {ApiError} from './transport';
-import SharedItems from './SharedItems';
+import SharedRecap from './SharedRecap';
 import qhLogo from './brand/qh-logo.png';
 
 export default function GuestPage(){
@@ -40,8 +40,10 @@ export default function GuestPage(){
  {ready&&!session&&invitation&&!receipt&&<form onSubmit={e=>{void requestCode(e);}}><label>Votre email<input type="email" required autoComplete="email" maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label><button disabled={busy}>Recevoir mon code</button></form>}
  {!session&&receipt&&<form onSubmit={e=>{void verify(e);}}><p>{receipt.message}</p><label>Code reçu par email<input required inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={e=>setCode(e.target.value)} disabled={busy}/></label><button disabled={busy||code.length!==8}>Vérifier le code</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setReceipt(null);setCode('');}}>Modifier l’email</button><small>Après un envoi, attendez une minute avant d’en demander un autre. Trois envois maximum par invitation.</small></form>}
  {session&&<><div className="actions"><p>Boîte email vérifiée · Accès temporaire jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p><button className="secondary" onClick={()=>{void logout();}}>Fermer mon accès</button></div>
- <h2>Snapshot autorisé</h2><p>Ce snapshot est figé. Les mises à jour du Space ne l’élargissent pas. Il ne donne aucun droit de modification.</p>
- {payload?<SharedItems payload={payload}/>:<p>La consultation directe n’est pas autorisée par cette invitation.</p>}
+ <section aria-label="Compréhension"><h2>Compréhension</h2>
+ {payload?<><SharedRecap recap={payload.recap}/>{!payload.recap&&<p>Aucun récapitulatif n’a été approuvé pour cette projection. Les informations autorisées restent disponibles ci-dessous.</p>}
+ <details><summary>Informations autorisées</summary>{payload.items.map(item=><div key={item.reference}><p>{item.text}</p>{item.validation_state==='proposed'&&<small>Proposition non confirmée</small>}</div>)}</details></>:<p>La consultation directe n’est pas autorisée par cette invitation.</p>}
+ <p className="small muted">Cette projection reste figée au périmètre approuvé.</p></section>
  {session.rights.includes('ASK_AI')&&<section aria-label="Question sur le snapshot"><h2>Poser une question</h2><p className="notice">{provider?.simulated?'Simulation locale uniquement — aucun appel IA réel ni facturation.':provider?.model==='mistral-small-2603'?(provider.enabled?'Mistral Small · mistral-small-2603 · réponses réelles.':'Mistral Small · indisponible. Aucun appel automatique.'): 'Vérification du provider…'} Seul le snapshot autorisé et votre question sont transmis.{provider?.remaining_usd!=null&&<span> Budget développement commun restant : {provider.remaining_usd} USD · plafond global autorisé 10 €, historique inclus. Réservation automatique avant chaque appel.</span>}{provider?.plafond_reached&&<span> Plafond IA atteint. Aucune nouvelle requête ne sera facturée.</span>}</p>
  <form onSubmit={e=>{void ask(e);}}><label>Votre question sur le snapshot<textarea required maxLength={2000} value={question} disabled={busy} onChange={e=>setQuestion(e.target.value)}/></label><button disabled={busy||!question.trim()||!provider?.enabled}>Interroger le snapshot</button></form>
  {answer&&<div role="status" className="guest-answer"><strong>{answer.simulated?'Simulation locale':'Réponse de Mistral Small'}</strong><p>{answer.answer}</p>{answer.insufficient_context&&<p>Informations incomplètes : cette réponse peut nécessiter des précisions.</p>}<small>Références du snapshot : {answer.reference_aliases.join(', ')||'aucune'}. {answer.simulated?'Cette simulation ne juge pas le sens de votre question.':'Les références ne certifient pas la vérité de la réponse.'} Les propositions restent à vérifier. {answer.accounting&&<>Coût comptabilisé : {answer.accounting.cost_usd} USD · tentative {answer.accounting.attempt}.</>}</small></div>}</section>}

@@ -206,3 +206,41 @@ def test_additive_snapshot_schema_keeps_canonical_rows_and_old_triggers(drafts,e
         after=c.execute("SELECT tgname,pg_get_triggerdef(oid) AS def FROM pg_trigger WHERE NOT tgisinternal AND tgrelid NOT IN "
             "('disclosure_previews'::regclass,'approved_snapshots'::regclass,'approved_snapshot_revisions'::regclass) ORDER BY tgname,def").fetchall()
         assert after==triggers
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_subject_recap_materializes_without_sources_and_guest_read_keeps_explicit_quote_policy(disclosure, monkeypatch):
+    from adapters.postgres.guest import PostgresGuestRepository
+    from app.core.models import GuestAccess
+    from app.projections.guest_payload import recipient_payload
+    from app.understanding import recap
+    p = disclosure
+    p['repo'].register_types(uum_definitions())
+    rows = [revision(p, text) for text in ('Obiettivi del laboratorio informatico.', 'Esercizi pratici e strumenti digitali.')]
+    for row in rows:
+        row['type_version'] = 3
+        row['content']['extraction'] = {}
+        row['content']['citations'] = [dict(source_revision_id=p['source']['id'], quote='Choose a pilot.')]
+    summary = dict(title='Organizzazione di un laboratorio informatico',
+        text='Proposta di laboratorio informatico con obiettivi, esercizi pratici e strumenti digitali.',
+        supporting_statements=[r['content']['text'] for r in rows], provider_output_sha256='synthetic')
+    rows = recap.bind(summary, rows, uid())
+    p['repo'].save(revisions=rows)
+    drain(p['worker'])
+    preview = prepare(p, include_proposed=True)
+    assert preview.payload['recap']['title'] == summary['title']
+    assert 'Choose a pilot.' not in json.dumps(preview.payload)
+    snapshot = approve(p, preview)
+    grant = GuestAccess(session_id=uid(), invitation_id=uid(), context_id=p['scope'], snapshot_id=snapshot.id,
+        rights=('READ',), expires_at=policy().expires_at)
+    # This check exercises the changed SQL payload/policy read; authentication
+    # itself is covered separately by guest policy and HTTP denial cases.
+    repository = PostgresGuestRepository(url=p['repo'].url)
+    monkeypatch.setattr(repository, '_active', lambda *args, **kwargs: grant)
+    def no_originals(*args, **kwargs): raise AssertionError('Guest payload must never hydrate originals')
+    monkeypatch.setattr(type(p['repo']), 'read_snapshot', no_originals)
+    stored = run(repository.payload(grant, 'READ'))
+    assert not stored.include_quotes
+    assert recipient_payload(stored.payload, include_quotes=stored.include_quotes) == snapshot.payload
+    # Materialized approval remains readable without canonical/source hydration.
+    assert run(p['disclosure'].snapshot(p['repo'].subject_id, p['scope'], snapshot.id)).payload == snapshot.payload

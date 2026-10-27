@@ -102,3 +102,11 @@ def test_disabled_live_binding_keeps_readonly_status_without_fallback(tmp_path,m
     assert not status['enabled'] and not status['simulated'] and status['model']=='mistral-small-2603'
     with pytest.raises(GuestDenied):asyncio.run(chat.ask('token','snapshot','Question'))
     assert not calls
+
+
+def test_missing_workshop_steps_remain_explicit_in_snapshot_only_answer(tmp_path, monkeypatch):
+    value = dict(answer='Les trente étapes ne sont pas présentes dans les informations autorisées.',
+        reference_aliases=['R1'], support_basis='canonical', insufficient_context=True)
+    chat, calls, _, _ = setup(tmp_path, monkeypatch, value)
+    result = asyncio.run(chat.ask('token', 'snapshot', 'Donne les trente étapes complètes.'))
+    assert result['insufficient_context'] and result['answer'] == value['answer'] and len(calls) == 1

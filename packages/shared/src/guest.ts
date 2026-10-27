@@ -41,7 +41,7 @@ export interface SharedItem {
   sources:string[]; citations?:{source:string;quote:string;redacted:boolean}[];
   primary_dimension?:{value:string;certainty:string;review_state:string};
 }
-export interface SharedPayload {format:'qh.disclosure/1';items:SharedItem[]}
+export interface SharedPayload {format:'qh.disclosure/1';items:SharedItem[];recap?:{title:string;text:string}}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
   report:{status:string;message:string;warning:string;risks:string[];

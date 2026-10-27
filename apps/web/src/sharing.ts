@@ -21,6 +21,7 @@ export function sharedPayload(value:unknown):SharedPayload{
  if(!v||v.format!=='qh.disclosure/1'||!Array.isArray(v.items)||!v.items.length||v.items.length>100||v.items.some(i=>
    !i||typeof i.reference!=='string'||typeof i.text!=='string'||i.text.length>16000||
    !['proposed','confirmed'].includes(i.validation_state)||!Array.isArray(i.sources)))throw new ApiError(502);
+ if(v.recap&&(typeof v.recap.title!=='string'||!v.recap.title.trim()||v.recap.title.length>120||typeof v.recap.text!=='string'||!v.recap.text.trim()||v.recap.text.length>1500||v.recap.text.trim().split(/\s+/).length>100))throw new ApiError(502);
  return v;
 }
 export function guestAnswer(value:unknown):GuestAnswer{
