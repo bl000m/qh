@@ -42,3 +42,14 @@ export function sharingError(e:unknown){
  return e instanceof ApiError&&e.status===409?'La prévisualisation a changé ou expiré. Préparez-la à nouveau.':
    e instanceof ApiError&&e.status===429?'Trop de tentatives. Patientez une minute.':'Accès indisponible ou non autorisé. Aucun contenu supplémentaire n’a été divulgué.';
 }
+
+/** Safe failure categories only: never render provider bodies or private diagnostics. */
+export function guestChatError(error:unknown):string{
+ if(!(error instanceof ApiError))return 'La réponse n’a pas pu être obtenue.';
+ if([402,429].includes(error.status))return sharingError(error);
+ if([401,403].includes(error.status))return 'Cet accès n’est plus valide. Rouvrez votre invitation.';
+ if([400,413,422].includes(error.status))return 'La question ou l’historique n’a pas pu être accepté. Rouvrez la discussion si nécessaire.';
+ if(error.status===503)return 'Le service de réponse est indisponible ou n’a pas pu valider la réponse.';
+ if(error.status===502)return 'La réponse reçue n’a pas pu être lue.';
+ return 'La réponse n’a pas pu être obtenue.';
+}

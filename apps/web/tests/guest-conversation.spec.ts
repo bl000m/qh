@@ -13,7 +13,7 @@ test('recipient clarifies and follows up in one temporary conversation',async({p
   if(path.endsWith('/ask')){
    const body=route.request().postDataJSON();requests.push(body);
    if(requests.length===1)await new Promise<void>(resolve=>{releaseFirst=resolve;});
-   if(body.question==='Riprova'&&!failed){failed=true;return route.fulfill({status:503,json:{detail:'unavailable'}});}
+   if(body.question==='Riprova'&&!failed){failed=true;return route.fulfill({status:503,json:{detail:'PRIVATE-PROVIDER-DETAIL'}});}
    return route.fulfill({json:{answer:replies[requests.length-1]??'Informazione disponibile.',insufficient_context:true,simulated:false}});
   }
   return route.fulfill({status:404});
@@ -34,6 +34,8 @@ test('recipient clarifies and follows up in one temporary conversation',async({p
  await field.fill('Riga uno');await field.press('Shift+Enter');await field.press('x');
  await expect(field).toHaveValue('Riga uno\nx');expect(requests).toHaveLength(3);
  await field.fill('Riprova');await field.press('Enter');await expect(page.getByRole('button',{name:'Réessayer',exact:true})).toBeVisible();
+ await expect(page.getByRole('alert')).toContainText('n’a pas pu valider la réponse');
+ await expect(page.locator('body')).not.toContainText('PRIVATE-PROVIDER-DETAIL');
  await page.getByRole('button',{name:'Réessayer',exact:true}).click();await expect(page.locator('.guest-answer')).toHaveCount(4);
  await expect(page.locator('.guest-question')).toHaveCount(4);expect(requests[4]).toEqual(requests[3]);
  for(let index=0;index<4;index++){await field.fill('Approfondisci '+index);await field.press('Enter');await expect(page.locator('.guest-answer')).toHaveCount(5+index);}

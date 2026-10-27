@@ -1,9 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
 import type {GuestSessionView,GuestCodeReceipt,RecipientAnswer,RecipientMessage,RecipientQuestion} from '@qh/shared';
-import {guestRequest,recipientAnswer,sessionView,sharingError} from './sharing';
+import {guestRequest,recipientAnswer,sessionView,sharingError,guestChatError} from './sharing';
 import AnswerMarkdown from './AnswerMarkdown';
-import {ApiError} from './transport';
 import qhLogo from './brand/qh-logo.png';
 
 interface Turn {question:string;answer?:RecipientAnswer;failed?:string}
@@ -56,7 +55,7 @@ export default function GuestPage(){
   if(retry===undefined)setQuestion('');
   try{const answer=recipientAnswer(await guestRequest('/ask',body));
    if(ticket===epoch.current)setTurns(previous=>previous.map((turn,i)=>i===index?{...turn,answer}:turn));}
-  catch(e){if(ticket===epoch.current)setTurns(previous=>previous.map((turn,i)=>i===index?{...turn,failed:e instanceof ApiError&&[402,429].includes(e.status)?sharingError(e):'La réponse n’a pas pu être obtenue.'}:turn));}
+  catch(e){if(ticket===epoch.current)setTurns(previous=>previous.map((turn,i)=>i===index?{...turn,failed:guestChatError(e)}:turn));}
   finally{lock.current=false;setBusy(false);}
  }
  function ask(event:FormEvent){event.preventDefault();void askQuestion(question);}

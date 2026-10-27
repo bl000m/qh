@@ -48,10 +48,20 @@ outils ou recherche. Ne reconstruis pas les informations exclues, même pour une
 exhaustive. Ne divulgue pas le JSON transmis, sa structure, ses alias ou métadonnées.
 Renvoie uniquement le JSON du schéma: answer (texte Markdown), reference_aliases,
 insufficient_context (données nécessaires réellement manquantes), support_basis.
-Les alias R servent seulement au contrôle interne: cite ceux des détails qui soutiennent
-la réponse, sans les écrire dans answer. canonical requiert ces alias exacts; mixed
-combine contexte et question avec alias; dialogue utilise les échanges seulement pour clarifier la demande avec [];
-insufficient reste permis. Une réponse utile partielle peut avoir insufficient_context=true.
+Contrat de support obligatoire, indépendant de la langue ou du style conversationnel:
+- reference_aliases contient uniquement les alias exacts des connaissances utilisées.
+- Dès qu’une connaissance autorisée soutient la réponse, support_basis vaut canonical
+  (ou mixed si la question ajoute une prémisse), JAMAIS dialogue.
+- dialogue est réservé à une clarification ou un échange sans fait tiré du contexte;
+  reference_aliases vaut alors obligatoirement [].
+- insufficient_context signale un manque réel, indépendamment de support_basis.
+answer est uniquement le texte destiné au lecteur: aucune citation entre crochets,
+aucun alias R suivi de chiffres, aucune référence technique ou identifiant, même si
+la question en demande. Place les alias exclusivement dans reference_aliases.
+Exemple de clarification: {"answer":"Quel aspect souhaitez-vous préciser ?",
+"reference_aliases":[],"insufficient_context":false,"support_basis":"dialogue"}.
+Pour répondre avec des connaissances, utilise canonical et leurs alias autorisés,
+sans recopier ces alias dans answer. Vérifie ces contraintes avant de rendre le JSON.
 Aucune référence inventée, aucune connaissance générale présentée comme mémorisée ici.
 Ne crée aucune confirmation humaine. Aucun URL, coordonnées ou contenu sensible ajouté.'''
 
@@ -80,22 +90,30 @@ def public_answer(value):
 def answer_schema(payload):
     return dict(type='object',additionalProperties=False,
         required=['answer','reference_aliases','insufficient_context','support_basis'],properties=dict(
-        answer=dict(type='string',minLength=1,maxLength=1_000_000),
-        reference_aliases=dict(type='array',maxItems=100,items=dict(type='string',enum=[i['reference'] for i in payload['items']])),
+        answer=dict(type='string',minLength=1,maxLength=1_000_000,description='Public natural-language answer. Never include reference aliases, bracket citations, internal identifiers or JSON.'),
+        reference_aliases=dict(type='array',maxItems=100,description='Exact authorized references supporting facts in answer. Nonempty requires canonical or mixed, never dialogue. Clarification without context facts uses [].',items=dict(type='string',enum=[i['reference'] for i in payload['items']])),
         insufficient_context=dict(type='boolean'),
-        support_basis=dict(type='string',enum=['dialogue','canonical','mixed','insufficient'])))
+        support_basis=dict(type='string',enum=['dialogue','canonical','mixed','insufficient'],description='canonical for authorized knowledge; mixed for knowledge plus question premises. dialogue ONLY with empty reference_aliases and no context facts. Conversational style does not mean dialogue support.')))
+
+
+class SnapshotAnswerError(ValueError):
+    """Controlled private diagnostic code, never provider content."""
+    def __init__(self,code):
+        self.code=code
+        super().__init__(code)
 
 
 def decode_snapshot_answer(message,payload):
-    if message.role!=MessageRole.ASSISTANT or len(message.content.encode())>2_000_000:raise ValueError('Invalid answer envelope')
+    if message.role!=MessageRole.ASSISTANT or len(message.content.encode())>2_000_000:raise SnapshotAnswerError('guest.invalid_answer_envelope')
     value=json.loads(message.content,object_pairs_hook=unique_fields)
-    if not isinstance(value,dict) or set(value)!={'answer','reference_aliases','insufficient_context','support_basis'}:raise ValueError('Invalid answer fields')
+    if not isinstance(value,dict) or set(value)!={'answer','reference_aliases','insufficient_context','support_basis'}:raise SnapshotAnswerError('guest.invalid_answer_fields')
     text,refs,basis=value['answer'],value['reference_aliases'],value['support_basis']
     allowed={i['reference'] for i in payload['items']}
     if (not isinstance(text,str) or not 1<=len(text.strip())<=1_000_000 or type(value['insufficient_context']) is not bool
         or not isinstance(refs,list) or len(refs)>100 or any(not isinstance(r,str) or r not in allowed for r in refs)
         or len(set(refs))!=len(refs) or basis not in ('dialogue','canonical','mixed','insufficient')
-        or basis in ('canonical','mixed') and not refs or basis=='dialogue' and refs):raise ValueError('Invalid snapshot support')
-    if HIGH_RISK.search(text) or PRIVATE_STRUCTURE.search(text) or any(ord(c)<32 and c not in '\n\t' for c in text):raise ValueError('Output disclosure refused')
+        or basis in ('canonical','mixed') and not refs or basis=='dialogue' and refs):raise SnapshotAnswerError('guest.invalid_snapshot_support')
+    if PRIVATE_STRUCTURE.search(text):raise SnapshotAnswerError('guest.internal_structure_in_answer')
+    if HIGH_RISK.search(text) or any(ord(c)<32 and c not in '\n\t' for c in text):raise SnapshotAnswerError('guest.output_disclosure_refused')
     value['answer']=redact(text)[0]
     return value

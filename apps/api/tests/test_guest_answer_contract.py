@@ -1,0 +1,38 @@
+"""Synthetic minimal reproductions of the actual HTTP-200 rejection patterns."""
+import asyncio
+import json
+
+import pytest
+
+from app.chat.snapshot_answer import SnapshotAnswerError, decode_snapshot_answer, projection_request
+from app.core.models import Message, MessageRole
+from app.projections.guest import GuestUnavailable
+from tests.test_guest_mistral import setup, PAYLOAD
+
+
+@pytest.mark.parametrize('answer,code',[
+    (dict(answer='Contenuto disponibile.',reference_aliases=['R1'],support_basis='dialogue',insufficient_context=False),'guest.invalid_snapshot_support'),
+    (dict(answer='Contenuto disponibile [R1].',reference_aliases=['R1'],support_basis='canonical',insufficient_context=False),'guest.internal_structure_in_answer'),
+])
+def test_real_failure_patterns_stay_rejected_with_precise_private_codes(tmp_path,monkeypatch,answer,code):
+    with pytest.raises(SnapshotAnswerError) as error:
+        decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(answer)),PAYLOAD)
+    assert error.value.code==code
+    chat,calls,_,grant=setup(tmp_path,monkeypatch,answer)
+    with pytest.raises(GuestUnavailable):asyncio.run(chat.ask('token',grant.snapshot_id,'Quale contenuto?'))
+    diagnostics=[json.loads(p.read_text()) for p in chat.live.factory.diagnostics.path.glob('*.json')]
+    assert len(calls)==1 and diagnostics[0]['outcome']=='rejected'
+    assert diagnostics[0]['checks'][-1]['reason']==code
+
+
+@pytest.mark.parametrize('basis,refs,text',[
+    ('canonical',['R1'],'È previsto un atelier.'),
+    ('dialogue',[],'Vuoi conoscere gli obiettivi o il programma?'),
+])
+def test_contract_explains_and_accepts_valid_knowledge_or_clarification(basis,refs,text):
+    request=projection_request(PAYLOAD,'Quali dati?',history=[dict(role='user',content='Il progetto?'),dict(role='assistant',content='Quale aspetto?')])
+    assert request.output_schema['properties']['answer']['description']
+    assert 'Nonempty requires canonical or mixed' in request.output_schema['properties']['reference_aliases']['description']
+    value=decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(dict(
+        answer=text,reference_aliases=refs,support_basis=basis,insufficient_context=False))),PAYLOAD)
+    assert value['answer']==text

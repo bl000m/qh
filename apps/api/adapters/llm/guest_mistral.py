@@ -4,7 +4,7 @@ from decimal import Decimal
 from app.core.models import ProviderBudgetExceeded
 from app.projections.disclosure import LIVE_PROVIDER
 from app.projections.guest import GuestDenied,GuestUnavailable
-from app.chat.snapshot_answer import decode_snapshot_answer, projection_request
+from app.chat.snapshot_answer import decode_snapshot_answer, projection_request, SnapshotAnswerError
 from adapters.llm.mistral import MODEL
 
 AUTHORIZATION=dict(owner_authorized=True,environment='private-development',model=MODEL,
@@ -55,6 +55,6 @@ class MistralSnapshotAnswers:
         except (GuestDenied,ProviderBudgetExceeded):
             diagnostic.finish('rejected','guest_access_or_budget');raise
         except Exception as exc:
-            diagnostic.check('guest.snapshot_answer_return',False,type(exc).__name__)
+            diagnostic.check('guest.snapshot_answer_return',False,exc.code if isinstance(exc,SnapshotAnswerError) else type(exc).__name__)
             diagnostic.finish('rejected','guest_snapshot_return')
             raise GuestUnavailable('Snapshot answer unavailable') from None
