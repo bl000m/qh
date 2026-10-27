@@ -32,7 +32,7 @@ class ChatOutput(BaseModel):
     model: str
     references: tuple[CanonicalRevision, ...]
     provided_revisions: tuple[CanonicalRevision, ...]
-    support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient']
+    support_basis: Literal['general', 'dialogue', 'canonical', 'mixed', 'insufficient']
     insufficient_context: bool
     partial_coverage: bool
     input_bound: int

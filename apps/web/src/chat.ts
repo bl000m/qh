@@ -1,10 +1,11 @@
+import type {OwnerSupportBasis} from '../../../packages/shared/src/context-space';
 import {ApiError} from './transport';
 import {revisionPage} from './understanding';
 import type {CanonicalRevision} from './understanding';
 export interface DialogueMessage {role:'user'|'assistant';content:string}
 export interface ChatAnswer {
   context_id:string;answer:string;model:string;references:CanonicalRevision[];provided_revisions:CanonicalRevision[];
-  support_basis:'dialogue'|'canonical'|'mixed'|'insufficient';insufficient_context:boolean;partial_coverage:boolean;input_bound:number;context_bytes:number;generation_seconds:number|null;
+  support_basis:OwnerSupportBasis;insufficient_context:boolean;partial_coverage:boolean;input_bound:number;context_bytes:number;generation_seconds:number|null;
 }
 export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean,dialogue:DialogueMessage[],automatic=false):ChatAnswer {
   const a=raw as ChatAnswer;
@@ -17,9 +18,9 @@ export function chatAnswer(raw:unknown,scope:string,includeProposed:boolean,dial
   const references=revisionPage({view:'history',items:a.references,next_after_revision_id:null},query).items;
   for(const r of provided)if(!(r.validation_state==='confirmed' && r.is_current_confirmed || includeProposed && r.validation_state==='proposed'))throw new ApiError(502);
   for(const r of references)if(!provided.some(p=>p.revision_id===r.revision_id && JSON.stringify(p)===JSON.stringify(r)))throw new ApiError(502);
-  if(!['dialogue','canonical','mixed','insufficient'].includes(a.support_basis)||
+  if(!['general','dialogue','canonical','mixed','insufficient'].includes(a.support_basis)||
     ['canonical','mixed'].includes(a.support_basis)&&!references.length||
-    a.support_basis==='dialogue'&&references.length||
+    ['general','dialogue'].includes(a.support_basis)&&references.length||
     ['dialogue','mixed'].includes(a.support_basis)&&!dialogue.some(m=>m.role==='user'&&m.content.trim()))throw new ApiError(502);
   return a;
 }

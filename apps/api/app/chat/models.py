@@ -22,7 +22,7 @@ class ChatResponse:
     model: str = "unbound"
     references: tuple[CanonicalRevision, ...] = ()
     provided_revisions: tuple[CanonicalRevision, ...] = ()
-    support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
+    support_basis: Literal['general', 'dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
     insufficient_context: bool = True  # Completeness warning, independent of support_basis.
     partial_coverage: bool = False
     input_bound: int = 0

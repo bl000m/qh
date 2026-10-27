@@ -48,3 +48,13 @@ test('support provenance and insufficient context are independent without bypass
  }
  expect(()=>chatAnswer({...answer,support_basis:'dialogue',insufficient_context:true,references:[],provided_revisions:[]},id,false,[])).toThrow();
 });
+
+test('general knowledge is accepted without attributing it to a Space or bypassing exact citations',()=>{
+ const messages=[{role:'user' as const,content:'Proponimi una lista della spesa per fare un risotto'}];
+ const general={...answer,answer:'Riso Carnaroli, brodo, cipolla, burro, Parmigiano.',support_basis:'general',references:[],provided_revisions:[]};
+ expect(chatAnswer(general,id,false,messages).support_basis).toBe('general');
+ expect(chatAnswer({...general,provided_revisions:[row]},id,true,messages).references).toHaveLength(0);
+ expect(()=>chatAnswer({...general,references:[row],provided_revisions:[row]},id,true,messages)).toThrow();
+ expect(()=>chatAnswer({...answer,references:[{...row,context_space_id:'00000000-0000-0000-0000-000000000099'}]},id,true,messages)).toThrow();
+ expect(()=>chatAnswer({...general,support_basis:'canonical'},id,true,messages)).toThrow();
+});

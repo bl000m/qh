@@ -5,8 +5,9 @@ export interface ContextOrigin {
  understanding:{id:string;text:string;primary_dimension:ContextDimension|null;certainty:'asserted'|'tentative'|null;validation_state:'proposed'|'confirmed'|'rejected';evidence:{source_revision_id:string;quote:string;turn_id:string|null}[]}[];
 }
 export interface PortableContext extends ContextOrigin {ancestry?:ContextOrigin[]}
+export type OwnerSupportBasis='general'|'dialogue'|'canonical'|'mixed'|'insufficient';
 export interface AnswerAttribution {
- model:string;support_basis:'dialogue'|'canonical'|'mixed'|'insufficient';insufficient_context:boolean;partial_coverage:boolean;reference_ids:string[];
+ model:string;support_basis:OwnerSupportBasis;insufficient_context:boolean;partial_coverage:boolean;reference_ids:string[];
 }
 export interface ContextIntake {
  id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;attribution?:AnswerAttribution;

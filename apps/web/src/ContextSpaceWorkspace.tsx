@@ -1,4 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
+import type {ReactNode} from 'react';
+import {Modal} from './SpaceActions';
 import type {QhApi} from './api';
 import {ApiError,apiMessage} from './api';
 import type {ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
@@ -13,7 +15,6 @@ import AIDiagnostics from './AIDiagnostics';
 import useDraft from './useDraft';
 
 type State=WorkspaceState & {understanding:CanonicalRevision[]};
-const labels={empty:'Aucun contexte mémorisé',pending:'Nouveaux apports en attente',running:'Mémorisation en cours',current:'Compréhension à jour',failed:'Échec de mémorisation'};
 function intake(kind:ContextIntake['kind'],text:string|null,name:string|null=null):ContextIntake {
  return {id:crypto.randomUUID(),kind,role:'user',text,name,context:null};
 }
@@ -28,9 +29,10 @@ function dialogue(items:ContextIntake[]):DialogueMessage[] {
 }
 function failure(error:unknown){return error instanceof ApiError&&error.status===402?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':error instanceof ApiError&&error.status===422?'L’analyse ou ses citations ne permettent pas une compréhension valide. Les apports restent disponibles.':error instanceof ApiError&&error.status===503?'Le résultat n’est pas confirmé. Actualisez l’état avant de réessayer ; les apports déjà enregistrés sont conservés.':apiMessage(error);}
 
-export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:string}) {
+export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,settingsRequest=0}:{api:QhApi;scope:string;heading?:ReactNode;settingsContent?:ReactNode;settingsRequest?:number}) {
  const [state,setState]=useState<State|null>(null),[caps,setCaps]=useState<SessionCapabilities|null>(null);
- const [open,setOpen]=useState(false),[expanded,setExpanded]=useState(false),[settings,setSettings]=useState(false);
+ const [open,setOpen]=useState(false),[settings,setSettings]=useState(false);
+ const [narrow,setNarrow]=useState(()=>window.matchMedia('(max-width:850px)').matches);
  const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'file'|null>(null);
  const [draft,setDraft]=useDraft('message');
  const [notice,setNotice]=useState('');
@@ -39,7 +41,9 @@ export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:strin
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
  const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);return value;},[api,scope]);
  useEffect(()=>{let active=true;setState(null);setError('');api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});api.chatCapabilities(scope).then(c=>{if(active)setCaps(c);}).catch(()=>{});return()=>{active=false;};},[api,scope]);
- useEffect(()=>{if(open)panel.current?.focus();},[open]);
+ useEffect(()=>{if(open)panel.current?.focus();},[open,narrow]);
+ useEffect(()=>{if(settingsRequest)setSettings(true);},[settingsRequest]);
+ useEffect(()=>{const media=window.matchMedia('(max-width:850px)');const update=()=>setNarrow(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  useEffect(()=>{log.current?.scrollTo({top:log.current.scrollHeight});},[state?.intake.length,busy]);
  function accept(next:WorkspaceState){setState(previous=>({...next,understanding:previous?.understanding??[]}));}
  async function saveDraft(){
@@ -54,9 +58,8 @@ export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:strin
   try{
    const next=await saveDraft();
    if(!next)return;
-   const answer=await api.workspaceChat(scope,dialogue(next.intake));
+   await api.workspaceChat(scope,dialogue(next.intake));
    await reload();
-   if(answer.insufficient_context||answer.partial_coverage)setNotice('Les informations disponibles ne permettent pas une réponse complète.');
   }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);}
  }
  async function memorize(){
@@ -72,7 +75,7 @@ export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:strin
     catch(e){if(!(e instanceof ApiError)||e.status!==503)throw e;await new Promise(resolve=>setTimeout(resolve,500));}
    }
    if(!synchronized)setNotice('Version enregistrée. La compréhension sera disponible après synchronisation. Actualisez son état.');
-   else setNotice('Compréhension enregistrée.');
+   else setNotice('Compréhension mise à jour');
   }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);}
  }
  async function addFile(file:File|undefined,context:boolean){
@@ -85,7 +88,7 @@ export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:strin
    const input=intake(context?'context':'document',context?null:text,file.name);
    if(context)input.context=JSON.parse(text);
    accept(await api.addIntake(scope,input));
-   setNotice(context?'Contexte importé, en attente de mémorisation.':'Document ajouté, en attente de mémorisation.');
+   setNotice(context?'Contexte importé. Cliquez sur Mémoriser pour l’intégrer.':'Document ajouté. Cliquez sur Mémoriser pour l’intégrer.');
   }catch(e){setError(e instanceof SyntaxError?'Le fichier ne contient pas un contexte JSON valide.':failure(e));}finally{lock.current=false;setBusy(null);}
  }
  async function download(){
@@ -101,43 +104,44 @@ export default function ContextSpaceWorkspace({api,scope}:{api:QhApi;scope:strin
   return()=>clearTimeout(timer);
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
- const consumed=new Set(state?.current?.intake_ids??[]);
+
+ const recap=<>
+    {state?.current?<><p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p></>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
+    {[...DIMENSIONS,['unclassified','Autres informations'] as const].map(([id,label])=>{
+     const rows=state?.understanding.filter(item=>(primaryAssignment(item)?.value??'unclassified')===id)??[];
+     return rows.length>0&&<section key={id}><h3>{label}</h3>{rows.map(item=><div className="understanding-statement" key={item.revision_id}><p>{String(item.content.text??'')}</p><details><summary>Provenance</summary>{recognizedCitations(item).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</details></div>)}</section>;
+    })}
+ </>;
  return <section className="context-space-v02" aria-label="Context Space">
-  <div className="context-space-tools"><strong>Discussion</strong><div className="actions">
-   <button type="button" className="secondary" aria-expanded={open} aria-controls="context-understanding" onClick={()=>setOpen(v=>!v)}>Compréhension</button>
+  <header className="context-space-tools">{heading??<strong>Discussion</strong>}<div className="actions">
    <label className="compact-model"><span className="sr-only">Modèle</span><select value="mistral-small-2603" onChange={()=>{}}><option value="mistral-small-2603">Mistral Small{caps?.enabled?'':' · indisponible'}</option></select></label>
-   <button type="button" className="secondary" aria-expanded={settings} onClick={()=>setSettings(v=>!v)}>Données envoyées</button>
-  </div></div>
-  {settings&&<div className="workspace-disclosure"><p>Envoyer transmet cette discussion et la compréhension consolidée à Mistral Small. Mémoriser transmet les apports de ce Space, y compris les documents et contextes importés. Les interprétations restent non confirmées par un humain. {caps?.automatic&&<>Budget commun restant : {caps.remaining_usd} USD.</>}</p>{caps?.automatic&&<AIDiagnostics api={api} scope={scope}/>}</div>}
-  <div className={'context-space-workspace'+(open?' with-understanding':'')+(expanded&&open?' understanding-expanded':'')}>
+   <button type="button" className="secondary" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>Compréhension</button>
+   <button type="button" className="secondary" onClick={()=>setSettings(true)}>Paramètres</button>
+  </div></header>
+  {settings&&<Modal title="Paramètres du Space" className="workspace-settings-dialog" onClose={()=>setSettings(false)}>
+   {settingsContent}
+   <details><summary>Données envoyées</summary><p>Envoyer transmet cette conversation et la compréhension de ce Space à Mistral Small. Mémoriser analyse les apports de ce Space, y compris les documents et contextes importés. {caps?.automatic&&<>Budget commun restant : {caps.remaining_usd} USD.</>}</p></details>
+   {caps?.automatic&&<details><summary>Diagnostics IA (développement)</summary><AIDiagnostics api={api} scope={scope}/></details>}
+  </Modal>}
+  <div className={'context-space-workspace'+(open&&!narrow?' with-understanding':'')}>
    <section className="workspace-discussion" aria-label="Discussion">
     <div className="workspace-log" ref={log} role="log" aria-label="Discussion du Context Space" aria-live="polite" aria-busy={!!busy} tabIndex={0}>
      {!state&&!error&&<p role="status">Chargement du contexte…</p>}
-     {state&&!state.intake.length&&<div className="workspace-welcome"><h2>Qu’aimeriez-vous garder en contexte ?</h2><p>Écrivez vos informations ou ajoutez un document. Discutez, puis choisissez Mémoriser pour construire votre compréhension.</p></div>}
+     {state&&!state.intake.length&&<div className="workspace-welcome"><h2>De quoi souhaitez-vous parler ?</h2><p>Posez une question, partagez vos idées ou ajoutez un document. Mémoriser permet de garder les informations utiles dans ce contexte.</p></div>}
      {state?.intake.map(item=><article key={item.id} className={'workspace-message '+(item.role==='assistant'?'assistant':'user')}>
       {item.kind==='message'?<><span className="sr-only">{item.role==='assistant'?'QH':'Vous'}</span>{item.role==='assistant'?<><AnswerMarkdown text={item.text!}/>{item.attribution&&<WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution}/>}</>:<p>{item.text}</p>}</>:<p>{item.kind==='context'?'Contexte importé':'Document'} : {item.name}</p>}
-      {item.role!=='assistant'&&!consumed.has(item.id)&&<span className="small muted">En attente de mémorisation</span>}
      </article>)}
      {busy==='send'&&<p role="status">Préparation de la réponse…</p>}
     </div>
     <div className="workspace-feedback">{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void reload().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Votre message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoutez une information ou posez une question…"/>
-     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="secondary" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" disabled={disabled||!state||(!state.pending_count&&!draft.trim())||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button></div></div>
-     <p className="small muted">Envoyer utilise la compréhension consolidée de ce Space, y compris ses interprétations non confirmées.</p>
-     <p className="small muted" role="status">{busy==='memory'?'Mémorisation en cours':state?labels[state.state]:'État indisponible'}{state&&state.pending_count>0?` · ${state.pending_count} apports en attente`:''}</p>
+     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim())||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>
      <input ref={documentInput} type="file" accept=".txt,.md,.markdown,.pdf" hidden onChange={event=>{void addFile(event.target.files?.[0],false);event.target.value='';}}/>
      <input ref={contextInput} type="file" accept=".json,application/json" hidden onChange={event=>{void addFile(event.target.files?.[0],true);event.target.value='';}}/>
     </form>
    </section>
-   {open&&<aside id="context-understanding" ref={panel} tabIndex={-1} className="context-understanding" aria-label="Compréhension">
-    <header><h2>Compréhension</h2><div className="actions"><button type="button" className="secondary" aria-pressed={expanded} onClick={()=>setExpanded(v=>!v)}>{expanded?'Réduire':'Agrandir'}</button><button type="button" className="secondary" onClick={()=>setOpen(false)}>Fermer</button></div></header>
-    {state?.current?<><p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p></>:<p>Aucun contexte mémorisé.</p>}
-    {[...DIMENSIONS,['unclassified','Autres informations'] as const].map(([id,label])=>{
-     const rows=state?.understanding.filter(item=>(primaryAssignment(item)?.value??'unclassified')===id)??[];
-     return rows.length>0&&<section key={id}><h3>{label}</h3>{rows.map(item=><div className="understanding-statement" key={item.revision_id}><p>{String(item.content.text??'')}</p><details><summary>Provenance</summary><p className="small">Interprétation de QH · non confirmée par un humain</p>{recognizedCitations(item).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</details></div>)}</section>;
-    })}
-   </aside>}
+   {open&&(narrow?<Modal title="Compréhension" className="workspace-understanding-overlay" onClose={()=>setOpen(false)}>{recap}</Modal>:<aside id="context-understanding" ref={panel} tabIndex={-1} className="context-understanding" aria-label="Compréhension"><header><h2>Compréhension</h2><button type="button" className="secondary" onClick={()=>setOpen(false)}>Fermer</button></header>{recap}</aside>)}
   </div>
  </section>;
 }

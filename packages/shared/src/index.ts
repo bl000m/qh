@@ -4,3 +4,5 @@ export type { GuestRight, GuestInvitationCreated, GuestCodeRequest, GuestCodeRec
   GuestVerifyRequest, GuestSessionView } from './guest';
 export type {SharingPolicy,SharedItem,SharedPayload,SharingPreview,GuestAnswer,GuestProviderStatus} from './guest';
 export type {PortableContext,ContextIntake,ConsolidatedVersion,WorkspaceState} from './context-space';
+
+export type {OwnerSupportBasis} from './context-space';

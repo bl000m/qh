@@ -4,7 +4,7 @@ import {apiMessage} from './api';
 import type {AnswerAttribution} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
 import {recognizedCitations} from './understanding';
-const labels={dialogue:'Conversation envoyée',canonical:'Compréhension citée',mixed:'Conversation et compréhension citées',insufficient:'Appui non établi'};
+const labels={general:'Connaissances générales',dialogue:'Conversation',canonical:'Informations de ce Space',mixed:'Informations de ce Space et conseils généraux',insufficient:'Informations disponibles'};
 
 export default function WorkspaceAnswerSources({api,scope,attribution}:{api:QhApi;scope:string;attribution:AnswerAttribution}){
  const [rows,setRows]=useState<CanonicalRevision[]|null>(null),[error,setError]=useState('');
@@ -16,10 +16,11 @@ export default function WorkspaceAnswerSources({api,scope,attribution}:{api:QhAp
    setRows(pages.flatMap(p=>p.items));
   }catch(e){setError(apiMessage(e));}
  }
+ if(!attribution.reference_ids.length)return attribution.support_basis==='general'?<p className="small muted">Réponse générale</p>:null;
  return <div className="workspace-answer-support">
   {attribution.insufficient_context&&<p className="small muted">Les informations disponibles ne suffisent pas à répondre complètement.</p>}
   {attribution.partial_coverage&&<p className="small muted">Seule une partie de la compréhension a été utilisée.</p>}
-  <details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Appui et sources de cette réponse</summary>
+  <details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Sources du contexte</summary>
    <p className="small">{labels[attribution.support_basis]}.</p>
    {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p><p className="small muted">{row.validation_state==='proposed'?'Interprétation non confirmée':row.validation_state==='rejected'?'Révision rejetée':'Confirmation humaine enregistrée'}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
   </details>
