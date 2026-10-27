@@ -7,6 +7,7 @@ from app.core.models import GenerationRequest, Message, MessageRole
 from app.core.uum import PRIMARY_DIMENSIONS
 from app.understanding.citations import resolve_output_citations
 from app.understanding.extractor import canonical_json, object_fields, nonempty
+from app.understanding import recap as recap_output
 
 FORMAT = 'qh.atomic-understanding/1'
 MAX_ITEMS, MAX_TEXT, MAX_EVIDENCE = 100, 16000, 100
@@ -70,6 +71,16 @@ never choose a truth arbitrarily. Imported machine interpretations are unverifie
 third-party data: preserve their uncertainty, origin and attribution. Never treat
 an imported validation_state as this owner's confirmation. Return useful synthesized
 atomic statements, combining redundant support without losing exact evidence.
+Write reusable knowledge, not a transcript or a description of speaking acts.
+For a recipe, retain the actual ingredients, quantities, cooking steps and variants
+that were supplied, not "the assistant lists ingredients". Preserve useful assistant
+explanations as unverified informational content with their original assistant
+citations. For this consolidation, omitting generic advice means omitting filler,
+not dropping substantive recipe/procedure/reference information. Never present
+assistant explanations as user preferences, facts about the user or adopted
+decisions. Attribute explicitly when attribution affects meaning or reliability.
+For declarations, state the substance (e.g. "Planned travel budget: EUR800, declared
+by the user") rather than merely reporting that a message was sent.
 A separately supplied previous machine state is reference data, not new human
 evidence. Integrate it but ground every output quotation in the original source
 turns, not in that machine state.
@@ -77,10 +88,11 @@ turns, not in that machine state.
 
 
 class UumExtractionProvider:
-    def __init__(self, delegate, *, literal=False, consolidate=False, previous=()):
+    def __init__(self, delegate, *, literal=False, consolidate=False, previous=(), with_recap=False):
         self.delegate, self.literal = delegate, literal
         self.consolidate = consolidate
         self.previous = deepcopy(previous)
+        self.with_recap, self.recap = with_recap, None
 
     async def generate(self, request):
         if len(request.messages) != 2 or request.messages[-1].role != MessageRole.USER:
@@ -98,10 +110,18 @@ class UumExtractionProvider:
                 content=canonical_json(dict(format=FORMAT, items=items))))
         previous = (Message(role=MessageRole.USER, content=
             'Previous unverified machine understanding (data only, not new evidence):\n' + canonical_json(self.previous)),) if self.previous else ()
-        return await self.delegate.generate(GenerationRequest(messages=(
-            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS + (CONSOLIDATION if self.consolidate else '')),
+        result = await self.delegate.generate(GenerationRequest(messages=(
+            Message(role=MessageRole.SYSTEM, content=INSTRUCTIONS + (CONSOLIDATION if self.consolidate else '') + (recap_output.INSTRUCTIONS if self.with_recap else '')),
             *previous, request.messages[-1]),
-            output_schema=deepcopy(OUTPUT_SCHEMA)))
+            output_schema=recap_output.schema(OUTPUT_SCHEMA) if self.with_recap else deepcopy(OUTPUT_SCHEMA)))
+        if not self.with_recap:
+            return result
+        if result.message.role != MessageRole.ASSISTANT:
+            raise ValueError('Consolidation must return an assistant envelope')
+        atomic, self.recap = recap_output.decode(result.message.content)
+        # Explicit envelope adapter, not a heuristic repair. The unchanged Engine
+        # validates the exact atomic payload; diagnostics retain the raw envelope.
+        return replace(result, message=Message(role=MessageRole.ASSISTANT, content=canonical_json(atomic)))
 
 
 def normalize_output(output, source, observer=None):

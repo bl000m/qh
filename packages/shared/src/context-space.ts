@@ -12,10 +12,13 @@ export interface AnswerAttribution {
 export interface ContextIntake {
  id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;attribution?:AnswerAttribution;
 }
+export interface ContextRecap {
+ version_id:string;title:string;text:string;support_revision_ids:string[];
+}
 export interface ConsolidatedVersion {
- id:string;context_space_id:string;version:number;intake_ids:string[];source_revision_id:string;revision_ids:string[];created_at:string;
+ id:string;context_space_id:string;version:number;intake_ids:string[];source_revision_id:string;revision_ids:string[];created_at:string;has_recap?:boolean;
 }
 export interface WorkspaceState {
  context_id:string;state:'empty'|'pending'|'running'|'current'|'failed';pending_count:number;
- current:ConsolidatedVersion|null;intake:ContextIntake[];
+ current:ConsolidatedVersion|null;intake:ContextIntake[];recap?:ContextRecap|null;
 }

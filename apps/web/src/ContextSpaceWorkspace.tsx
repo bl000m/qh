@@ -6,7 +6,6 @@ import {ApiError,apiMessage} from './api';
 import type {ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
 import {recognizedCitations} from './understanding';
-import {DIMENSIONS,primaryAssignment} from './uum';
 import type {DialogueMessage} from './chat';
 import type {SessionCapabilities} from './provider-session';
 import AnswerMarkdown from './AnswerMarkdown';
@@ -29,7 +28,7 @@ function dialogue(items:ContextIntake[]):DialogueMessage[] {
 }
 function failure(error:unknown){return error instanceof ApiError&&error.status===402?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':error instanceof ApiError&&error.status===422?'L’analyse ou ses citations ne permettent pas une compréhension valide. Les apports restent disponibles.':error instanceof ApiError&&error.status===503?'Le résultat n’est pas confirmé. Actualisez l’état avant de réessayer ; les apports déjà enregistrés sont conservés.':apiMessage(error);}
 
-export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,settingsRequest=0}:{api:QhApi;scope:string;heading?:ReactNode;settingsContent?:ReactNode;settingsRequest?:number}) {
+export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,settingsRequest=0,name}:{api:QhApi;name?:string;scope:string;heading?:ReactNode;settingsContent?:ReactNode;settingsRequest?:number}) {
  const [state,setState]=useState<State|null>(null),[caps,setCaps]=useState<SessionCapabilities|null>(null);
  const [open,setOpen]=useState(false),[settings,setSettings]=useState(false);
  const [narrow,setNarrow]=useState(()=>window.matchMedia('(max-width:850px)').matches);
@@ -45,7 +44,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  useEffect(()=>{if(settingsRequest)setSettings(true);},[settingsRequest]);
  useEffect(()=>{const media=window.matchMedia('(max-width:850px)');const update=()=>setNarrow(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  useEffect(()=>{log.current?.scrollTo({top:log.current.scrollHeight});},[state?.intake.length,busy]);
- function accept(next:WorkspaceState){setState(previous=>({...next,understanding:previous?.understanding??[]}));}
+ function accept(next:WorkspaceState){setState(previous=>({...next,understanding:previous?.understanding??[],recap:next.current?.id===previous?.current?.id?previous?.recap:null}));}
  async function saveDraft(){
   if(!draft.trim())return state;
   if(!appendAttempt.current||appendAttempt.current.text!==draft)appendAttempt.current=intake('message',draft);
@@ -105,13 +104,19 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
 
+ const summary=state?.recap;
+ const sources=state?.understanding.filter(row=>!summary||summary.support_revision_ids.includes(row.revision_id))??[];
  const recap=<>
-    {state?.current?<><p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p></>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
-    {[...DIMENSIONS,['unclassified','Autres informations'] as const].map(([id,label])=>{
-     const rows=state?.understanding.filter(item=>(primaryAssignment(item)?.value??'unclassified')===id)??[];
-     return rows.length>0&&<section key={id}><h3>{label}</h3>{rows.map(item=><div className="understanding-statement" key={item.revision_id}><p>{String(item.content.text??'')}</p><details><summary>Provenance</summary>{recognizedCitations(item).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</details></div>)}</section>;
-    })}
+  {state?.current?<>
+   <p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
+   <h3>{summary?.title??name??'Ce contexte'}</h3>
+   {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
+   <button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button>
+   {sources.length>0&&<details className="recap-sources"><summary>Consulter les sources</summary>{sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>}
+   <p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p>
+  </>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
  </>;
+
  return <section className="context-space-v02" aria-label="Context Space">
   <header className="context-space-tools">{heading??<strong>Discussion</strong>}<div className="actions">
    <label className="compact-model"><span className="sr-only">Modèle</span><select value="mistral-small-2603" onChange={()=>{}}><option value="mistral-small-2603">Mistral Small{caps?.enabled?'':' · indisponible'}</option></select></label>
@@ -136,7 +141,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     <div className="workspace-feedback">{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void reload().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Votre message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoutez une information ou posez une question…"/>
-     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim())||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>
+     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>
      <input ref={documentInput} type="file" accept=".txt,.md,.markdown,.pdf" hidden onChange={event=>{void addFile(event.target.files?.[0],false);event.target.value='';}}/>
      <input ref={contextInput} type="file" accept=".json,application/json" hidden onChange={event=>{void addFile(event.target.files?.[0],true);event.target.value='';}}/>
     </form>

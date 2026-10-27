@@ -6,3 +6,5 @@ export type {SharingPolicy,SharedItem,SharedPayload,SharingPreview,GuestAnswer,G
 export type {PortableContext,ContextIntake,ConsolidatedVersion,WorkspaceState} from './context-space';
 
 export type {OwnerSupportBasis} from './context-space';
+
+export type {ContextRecap} from './context-space';

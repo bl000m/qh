@@ -13,6 +13,7 @@ from app.policy.models import PolicyAction, PolicyRequest
 from app.understanding.selected import propose_selected_conversation
 from app.understanding.uum import UumExtractionProvider
 from app.understanding.enrichment import EnrichmentUnavailable
+from app.understanding import recap as recap_output
 
 
 class ContextConsolidation:
@@ -40,7 +41,7 @@ class ContextConsolidation:
                     raise EnrichmentUnavailable('Consolidated revision unavailable')
                 rows.append(asdict(page.revisions[0]))
         await self._allow(subject, scope)
-        return dict(**state, understanding=rows)
+        return dict(**state, understanding=rows, recap=recap_output.from_version(rows, state['current']))
 
     async def append(self, subject, scope, document):
         await self._allow(subject, scope)
@@ -65,14 +66,17 @@ class ContextConsolidation:
                 previous = tuple(dict(text=row['content']['text'],
                     primary_dimension=row['content'].get('primary_dimension'),
                     validation_state=row['validation_state']) for row in current['understanding'])
+            provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
+                consolidate=True, previous=previous, with_recap=True)
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
                 conversation=self._conversation(identity.subject_id, batch), extraction_key='qh-context-uum/3',
                 policy=self.policy, descriptor_version=3,
-                provider=UumExtractionProvider(self.ai._provider(identity, request, diagnostic), consolidate=True, previous=previous),
+                provider=provider,
                 observer=diagnostic.check)
             if not revisions:
                 raise ValueError('No structured understanding produced')
+            revisions = recap_output.bind(provider.recap, revisions, operation)
             await self.ai._authorize(identity, request)
             await self._allow(identity.subject_id, scope)
             result = await repository.publish(scope, operation,

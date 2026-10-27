@@ -57,13 +57,14 @@ export class QhApi {
   async workspace(scope:string):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
     const state=await this.sharing<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>(scope,'workspace');
     if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Array.isArray(state.understanding)||!Number.isInteger(state.pending_count))throw new ApiError(502);
+    if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>150||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
     return state;
   }
   async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
   async consolidate(scope:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/consolidate','POST');}
   async exportContext(scope:string):Promise<PortableContext>{return this.sharing(scope,'workspace/export');}
   async workspaceChat(scope:string,messages:DialogueMessage[]):Promise<ChatAnswer>{
-    return chatAnswer(await this.sharing(scope,'workspace/messages','POST',{messages,include_proposed:false}),scope,true,messages,true);
+    return chatAnswer(await this.sharing(scope,'workspace/messages','POST',{messages,include_proposed:false}),scope,true,messages,true,true);
   }
   async sharing<T>(scope:string,suffix:string,method='GET',body?:unknown):Promise<T>{
     if(!isUuid(scope))throw new ApiError(404);

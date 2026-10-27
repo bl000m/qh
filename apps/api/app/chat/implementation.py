@@ -37,14 +37,16 @@ class ContextualChatService:
     async def _collect(self, request):
         if request.consolidated_revision_ids is not None:
             rows = []
-            for revision in request.consolidated_revision_ids[:40]:
+            if len(request.consolidated_revision_ids)>100:
+                raise ChatContextUnavailable('Consolidated understanding exceeds supported item count')
+            for revision in request.consolidated_revision_ids:
                 page = await self.context.browse(ContextRequest(subject_id=request.subject_id,
                     query=ContextBrowse(context_id=request.context_id, view='history', limit=1,
                                         revision_id=revision)))
                 if len(page.revisions)!=1 or page.revisions[0].revision_id!=revision:
                     raise ChatContextUnavailable('Consolidated revision unavailable')
                 rows.append(page.revisions[0])
-            return tuple(rows), len(request.consolidated_revision_ids)>40
+            return tuple(rows), False
         rows, partial = [], False
         for view in ('current', 'proposed') if request.include_proposed else ('current',):
             cursor = None

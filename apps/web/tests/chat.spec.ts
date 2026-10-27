@@ -58,3 +58,12 @@ test('general knowledge is accepted without attributing it to a Space or bypassi
  expect(()=>chatAnswer({...answer,references:[{...row,context_space_id:'00000000-0000-0000-0000-000000000099'}]},id,true,messages)).toThrow();
  expect(()=>chatAnswer({...general,support_basis:'canonical'},id,true,messages)).toThrow();
 });
+
+test('consolidated chat accepts all detailed records beyond the legacy presentation budget',()=>{
+ const details=Array.from({length:60},(_,i)=>({...row,revision_id:'00000000-0000-0000-0000-'+String(i+10).padStart(12,'0'),item_id:'00000000-0000-0000-0000-'+String(i+100).padStart(12,'0'),content:{text:'Détail mémorisé '+i}}));
+ const value={...answer,provided_revisions:details,references:[details[59]],context_bytes:24000,input_bound:30000};
+ const question=[{role:'user' as const,content:'Donne-moi le dernier détail mémorisé.'}];
+ expect(chatAnswer(value,id,true,question,true,true).references[0].content.text).toBe('Détail mémorisé 59');
+ expect(()=>chatAnswer(value,id,true,question,true)).toThrow();
+ expect(()=>chatAnswer({...value,references:[{...details[59],context_space_id:'00000000-0000-0000-0000-000000009999'}]},id,true,question,true,true)).toThrow();
+});

@@ -71,6 +71,7 @@ class BuiltContext:
     input_bound: int
     context_bytes: int
     extended_dialogue: bool = False
+    consolidated: bool = False
 
 
 def input_bound(messages):
@@ -88,7 +89,9 @@ def build_context(*, context_id, revisions, messages, include_proposed=False, pa
     if any(m.role != (MessageRole.USER if i % 2 == 0 else MessageRole.ASSISTANT)
            for i, m in enumerate(messages)):
         raise ChatInputInvalid('Alternating dialogue required')
-    if type(include_proposed) is not bool or len(revisions) > MAX_REVISIONS:
+    max_revisions = 100 if consolidated else MAX_REVISIONS
+    max_context_bytes = 1_000_000 if consolidated else MAX_CONTEXT_BYTES
+    if type(include_proposed) is not bool or len(revisions) > max_revisions:
         raise ChatInputInvalid('Explicit bounded selection required')
     if len(json.dumps([m.content for m in messages]).encode()) > 1_000_000:
         raise ChatInputInvalid('Dialogue exceeds safe JSON processing size')
@@ -108,7 +111,13 @@ They are authoritative for questions about the Space while retaining their actua
 unconfirmed epistemic state. New dialogue is pending intake: if it corrects or
 contradicts the consolidated state, distinguish the pending correction explicitly
 instead of pretending it has already been consolidated. With no consolidated
-revisions, dialogue can still support a clearly attributed answer.
+revisions, dialogue and general knowledge can still support an explicitly attributed
+answer. The supplied records contain the detailed understanding, not just its short
+recap. Use their substantive information and exact citations to answer requests for
+complete ingredients, quantities, procedures or other memorized details.
+When asked what this Space contains or what variants/steps it mentions, answer only
+from these records: do not fill gaps using general knowledge. Offer general additions
+only as clearly separate suggestions; never imply they were memorized here.
 """ if consolidated else ''
     prefix = Message(role=MessageRole.SYSTEM, content=SYSTEM + authority)
 
@@ -122,7 +131,7 @@ revisions, dialogue can still support a clearly attributed answer.
     def formatted(rows):
         try:
             return Message(role=MessageRole.USER, content=encode_model_context(
-                context_id, rows, partial=partial or len(rows) < len(revisions)))
+                context_id, rows, partial=partial or len(rows) < len(revisions), max_revisions=max_revisions))
         except (ValueError, TypeError, KeyError, UnicodeError, RecursionError) as exc:
             raise ChatContextUnavailable('Invalid canonical context serialization') from exc
 
@@ -130,7 +139,9 @@ revisions, dialogue can still support a clearly attributed answer.
         # Preserve every canonical field; no inferred source body, quote or state.
         candidate = formatted([*data, value])
         request_messages = (prefix, candidate, *messages)
-        if len(candidate.content.encode()) > MAX_CONTEXT_BYTES or (not extended_dialogue and input_bound(request_messages) > MAX_INPUT_BOUND):
+        if len(candidate.content.encode()) > max_context_bytes or (not extended_dialogue and input_bound(request_messages) > MAX_INPUT_BOUND):
+            if consolidated:
+                raise ChatInputInvalid('Detailed understanding exceeds safe chat input size')
             continue  # Never truncate a proposition, a citation or temporal metadata.
         selected.append(row)
         data.append(value)
@@ -142,7 +153,7 @@ revisions, dialogue can still support a clearly attributed answer.
     # Nested content/source dicts are mutable even in frozen dataclasses. Retain
     # exactly what was sent; the service independently rechecks live freshness.
     return BuiltContext(GenerationRequest(messages=assembled), tuple(deepcopy(selected)),
-                        partial or len(selected) < len(revisions), bound, len(context.content.encode()), extended_dialogue)
+                        partial or len(selected) < len(revisions), bound, len(context.content.encode()), extended_dialogue, consolidated)
 
 
 def unique_keys(pairs):
@@ -181,13 +192,13 @@ def decode_answer(message, context, observer=None):
         if type(insufficient) is not bool:
             rejection_reason = 'insufficient_context must be a JSON boolean'
             raise ValueError()
-        if type(ids) is not list or len(ids) > MAX_REVISIONS:
-            rejection_reason = 'reference_aliases must be a JSON array of at most 40 aliases; use [] for none'
+        if type(ids) is not list or len(ids) > (100 if context.consolidated else MAX_REVISIONS):
+            rejection_reason = 'reference_aliases must be a bounded JSON array; use [] for none'
             raise ValueError()
         passed()
         rule = 'chat.sent_context_integrity'
         packet = json.loads(context.request.messages[1].content, object_pairs_hook=unique_keys)
-        rows = expand_model_context(packet)
+        rows = expand_model_context(packet, max_revisions=100 if context.consolidated else MAX_REVISIONS)
         # The untrusted output cannot supply a map; the actual sent map must also
         # agree with the trusted canonical records retained by this exact request.
         if (encoded(rows) != encoded([asdict(r) for r in context.revisions])

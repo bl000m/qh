@@ -129,7 +129,7 @@ function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;orig
  const breadcrumb=<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span></nav>;
  return <section className="context-page">{breadcrumbHost?createPortal(breadcrumb,breadcrumbHost):breadcrumb}
  {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<Notice>Chargement du Context Space…</Notice>:<article className="detail definitive-space">
- <ContextSpaceWorkspace key={space.id} api={api} scope={space.id} settingsRequest={renameRequest}
+ <ContextSpaceWorkspace key={space.id} api={api} scope={space.id} name={space.name} settingsRequest={renameRequest}
  heading={<div className="space-title"><div className="space-name-line"><h1 ref={heading} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Renommer le Space" disabled={!organization.value||organization.busy} onClick={()=>setRenameRequest(n=>n+1)}><Icon name="edit"/></button></div></div>}
  settingsContent={<><ContextSettings visible renameRequest={renameRequest} space={space} api={api} state={organization} onChanged={setSpace}/><SharingControl key={space.id} api={api} scope={space.id} name={space.name}/></>}/>
 

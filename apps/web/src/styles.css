@@ -1243,3 +1243,7 @@ body:has(.context-space-v02){overflow:hidden;background:#fff;}
  .workspace-understanding-overlay>header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px;}
  .workspace-understanding-overlay>header button{flex:none;}
 }
+
+.context-recap{font-size:15px;line-height:1.65;white-space:pre-wrap;margin:12px 0 20px;}
+.recap-sources{margin:20px 0;font-size:13px;}.recap-sources>summary{cursor:pointer;}
+.recap-sources section{margin:16px 0;}.recap-sources blockquote{white-space:pre-wrap;border-left:2px solid #d0d0d5;margin:10px 0;padding-left:12px;overflow-wrap:anywhere;}

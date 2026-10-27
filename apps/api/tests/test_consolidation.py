@@ -1,5 +1,6 @@
 """Offline contract/invariant checks; these do not demonstrate model quality."""
 import asyncio
+import json
 from copy import deepcopy
 from dataclasses import replace
 from types import SimpleNamespace
@@ -11,13 +12,20 @@ from pydantic import ValidationError
 
 from app.api.consolidation import IntakeInput, PortableContext
 from app.chat.implementation import ContextualChatService
-from app.core.models import ContextSpaceNotFound
+from app.core.models import ContextSpaceNotFound, GenerationResult, Message, MessageRole
 from app.understanding.consolidation import ContextConsolidation
 from tests.test_chat_service import request
 
 
 def document(text='Le responsable est Alice.'):
     return dict(id=str(uuid4()),kind='message',role='user',text=text,name=None,context=None)
+
+
+def consolidation_output(wire):
+    texts=[item['text'] for item in wire['items']]
+    return dict(format='qh.context-consolidation/1',understanding=wire,
+        recap=dict(title='Contexte de test',text='Ce contexte présente les informations déclarées et leurs incertitudes.',
+            supporting_statements=texts) if texts else None)
 
 
 def fixture():
@@ -41,16 +49,21 @@ def test_unauthorized_owner_stops_before_private_reads_or_generation():
     repo.read.assert_not_awaited();repo.claim.assert_not_awaited();repo.append.assert_not_awaited();ai._authorize.assert_not_awaited()
 
 
-def test_one_atomic_publish_after_engine_and_repeat_does_not_generate(monkeypatch):
+def test_one_atomic_publish_after_engine_and_repeat_does_not_generate():
     service,who,scope,repo,ai,batch=fixture()
-    engine=AsyncMock(return_value=({'id':str(uuid4())},({'id':str(uuid4())},)))
-    monkeypatch.setattr('app.understanding.consolidation.propose_selected_conversation',engine)
+    wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Le responsable est Alice.',
+        primary_dimension=None,evidence=[dict(quote='Le responsable est Alice.')])])
+    delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,
+        content=json.dumps(consolidation_output(wire))))))
+    ai._provider.return_value=delegate
     asyncio.run(service.consolidate(who,scope))
     repo.publish.assert_awaited_once()
     assert repo.publish.call_args.args[2]==[r['id'] for r in batch['intake']]
+    published=repo.publish.call_args.args[4]
+    assert published[0]['content']['extraction']['recap']['version_id']==batch['operation_id']
     repo.claim.return_value={'replayed':True};repo.read.return_value=dict(current=None)
     asyncio.run(service.consolidate(who,scope))
-    assert engine.await_count==1 and repo.publish.await_count==1
+    assert delegate.generate.await_count==1 and repo.publish.await_count==1
 
 
 @pytest.mark.parametrize('failure',[TimeoutError(),ValueError('invalid citations'),None])

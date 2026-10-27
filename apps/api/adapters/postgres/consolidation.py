@@ -11,8 +11,11 @@ from app.understanding.enrichment import EnrichmentConflict, EnrichmentUnavailab
 
 class PostgresConsolidationRepository(CanonicalRepository):
     def _latest(self, c, scope):
-        row = c.execute('SELECT * FROM context_consolidations WHERE context_space_id=%s '
-                        'ORDER BY version DESC LIMIT 1', (scope,)).fetchone()
+        row = c.execute("""SELECT v.*, EXISTS(SELECT 1 FROM understanding_item_revisions r
+            WHERE r.id=ANY(v.revision_ids) AND r.context_space_id=v.context_space_id
+            AND r.content #>> '{extraction,recap,version_id}'=v.id::text) AS has_recap
+            FROM context_consolidations v WHERE context_space_id=%s
+            ORDER BY version DESC LIMIT 1""", (scope,)).fetchone()
         return json_values(row) if row else None
 
     def _read(self, c, scope):
@@ -48,10 +51,10 @@ class PostgresConsolidationRepository(CanonicalRepository):
                         # Never expire a running paid operation silently. A process crash
                         # needs an operator to establish that no request remains in flight.
                         raise EnrichmentUnavailable('Consolidation already in progress')
-                    if not state['pending_count']:
+                    if not state['pending_count'] and (not state['current'] or state['current']['has_recap']):
                         return dict(replayed=True, **state)
                     ids = [row['id'] for row in state['intake']]
-                    operation = str(uuid5(UUID(scope), 'consolidation:'+':'.join(ids)))
+                    operation = str(uuid5(UUID(scope), 'consolidation:recap-v1:'+':'.join(ids)))
                     c.execute("""INSERT INTO context_consolidation_jobs(context_space_id,operation_id,state)
                         VALUES (%s,%s,'running') ON CONFLICT(context_space_id) DO UPDATE
                         SET operation_id=EXCLUDED.operation_id,state='running',started_at=clock_timestamp()""", (scope,operation))

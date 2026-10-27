@@ -25,7 +25,7 @@ from tests.test_migrations import empty_database as empty_database
 from tests.test_native_context import real_engine as real_engine
 from tests.test_native_semantics_sql import dedicated_server_only as dedicated_server_only
 from tests.test_canonical_graph_pipeline import drain
-from tests.test_consolidation import document
+from tests.test_consolidation import document, consolidation_output
 
 
 def run(operation):
@@ -39,7 +39,7 @@ def prepare(p, config):
     # Real Engine and exact-citation validation; provider is explicitly an offline replay.
     wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Le responsable est Alice.',
         primary_dimension='situation_information',assignment_certainty='asserted',evidence=[dict(quote='Le responsable est Alice.')])])
-    provider=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(wire)))))
+    provider=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(consolidation_output(wire))))))
     ai=Mock(authorize_consolidation=AsyncMock(),_authorize=AsyncMock(),_provider=Mock(return_value=provider))
     repository=lambda subject:PostgresConsolidationRepository(url=p['repo'].url,subject_id=subject)
     service=ContextConsolidation(context=context,policy=policy,ai=ai,repository_for=repository)
@@ -54,6 +54,8 @@ def test_atomic_consolidation_persistence_retry_correction_and_owner_isolation(g
     drain(p['worker'])
     reopened=ContextConsolidation(context=service.context,policy=service.policy,ai=service.ai,repository_for=repositories)
     state=run(reopened.read(who.subject_id,scope))
+    assert state['recap']['version_id']==saved['current']['id']
+    assert state['recap']['text'] and saved['current']['has_recap']
     assert state['understanding'][0]['validation_state']=='proposed'
     assert not state['understanding'][0]['is_current_confirmed']
     assert state['understanding'][0]['content']['citations'][0]['quote']==row['text']
@@ -84,7 +86,7 @@ def test_atomic_consolidation_persistence_retry_correction_and_owner_isolation(g
     imported_wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Import non confirmé : Alice est responsable.',
         primary_dimension='situation_information',assignment_certainty='tentative',
         evidence=[dict(quote='"text": "Le responsable est Alice."')])])
-    provider.generate.return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(imported_wire)))
+    provider.generate.return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(consolidation_output(imported_wire))))
     other=run(service.consolidate(who,p['sibling']))
     from adapters.context.incremental import ProjectionWorker
     drain(ProjectionWorker(p['repo'],p['projector'],(p['sibling'],)))
