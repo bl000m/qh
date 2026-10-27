@@ -49,3 +49,7 @@ export interface SharingPreview {
 }
 export interface GuestProviderStatus {model:'offline'|'mistral-small-2603';enabled:boolean;simulated:boolean;remaining_usd?:string|null;plafond_reached?:boolean;authorized_total_eur?:string;budget_scope?:'development_global'}
 export interface GuestAnswer {simulated:boolean;model?:'mistral-small-2603';answer:string;reference_aliases:string[];insufficient_context:boolean;support_basis?:'dialogue'|'canonical'|'mixed'|'insufficient';budget?:GuestProviderStatus;accounting?:{attempt:number;cost_usd:string;usage:{prompt_tokens:number;completion_tokens:number}}}
+
+/** Temporary recipient dialogue; at most six complete turns, 16000 characters total. */
+export interface RecipientMessage {role:'user'|'assistant';content:string}
+export interface RecipientQuestion {question:string;history?:RecipientMessage[]}

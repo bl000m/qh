@@ -10,3 +10,5 @@ export type {OwnerSupportBasis} from './context-space';
 export type {ContextRecap} from './context-space';
 
 export type {RecipientAnswer,SharingInput} from './guest';
+
+export type {RecipientMessage,RecipientQuestion} from './guest';

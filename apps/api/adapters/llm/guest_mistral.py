@@ -36,7 +36,7 @@ class MistralSnapshotAnswers:
     async def respond(self,grant,payload,question,recheck):
         return await self.answer_payload(grant.owner_id,grant.context_id,payload,question,recheck)
 
-    async def answer_payload(self,owner,scope,payload,question,recheck):
+    async def answer_payload(self,owner,scope,payload,question,recheck,history=None):
         if not self.allowed(owner,scope):raise GuestDenied('Vérification impossible.')
         remaining=self.factory.remaining()
         if Decimal(remaining['remaining_usd'])<self.factory.reservation_usd:raise ProviderBudgetExceeded()
@@ -45,7 +45,7 @@ class MistralSnapshotAnswers:
         try:
             await recheck()  # Revocation/expiry immediately before paid reservation/HTTP.
             provider=self.factory.bind_global(diagnostic=diagnostic)
-            result=await provider.generate(projection_request(payload,question))
+            result=await provider.generate(projection_request(payload,question,history))
             value=decode_snapshot_answer(result.message,payload)
             diagnostic.check('guest.snapshot_answer_exact_aliases_and_disclosure',True)
             await recheck()

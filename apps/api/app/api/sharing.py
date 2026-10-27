@@ -41,6 +41,10 @@ class QuestionInput(BaseModel):
     question:StrictStr=Field(min_length=1,max_length=2000)
 
 
+class GuestQuestionInput(QuestionInput):
+    history:list[dict[str,StrictStr]]=Field(default_factory=list,max_length=12)
+
+
 def owner_service(request):
     service=request.app.state.services.sharing
     if service is None:raise GuestUnavailable('Sharing unavailable')
@@ -100,12 +104,12 @@ async def preview_question(scope:UUID,preview_id:UUID,document:QuestionInput,req
 
 
 @router.post('/guest/ask')
-async def ask(document:QuestionInput,request:Request):
+async def ask(document:GuestQuestionInput,request:Request):
     service=request.app.state.services.guest_chat
     if service is None:raise GuestUnavailable('Snapshot answer unavailable')
     token=proof(request)
     grant=await bound(request).session(token)
-    return public_answer(await service.ask(token,grant.snapshot_id,document.question))
+    return public_answer(await service.ask(token,grant.snapshot_id,document.question,history=document.history))
 
 
 @router.get('/context-spaces/{scope}/sharing/providers')

@@ -52,7 +52,8 @@ class GuestRoute(APIRoute):
                     if request.headers.get('content-type', '').split(';')[0] != 'application/json':
                         raise HTTPException(400, 'Requête invalide.')
                     length = request.headers.get('content-length', '')
-                    if not length.isdecimal() or int(length) > 4096:
+                    limit=128000 if request.url.path=='/guest/ask' else 4096
+                    if not length.isdecimal() or int(length) > limit:
                         raise HTTPException(413, 'Requête invalide.')
                 result = await handler(request)
             except RequestValidationError:
