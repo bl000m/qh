@@ -7,8 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator, model_validator
 
 from app.api.security import authenticated_subject, authenticated_chat_identity
-from app.api.development_ai import execute, FullChatInput
-from app.api.chat import ChatOutput
+from app.api.development_ai import execute
 from app.api.chat_sessions import chat_request
 from app.api.context_spaces import allowed_query
 
@@ -133,13 +132,29 @@ async def export(context_id: UUID, request: Request, response: Response, subject
         version=state['current']['version'],consolidated_at=state['current']['created_at'],understanding=items)
 
 
-@router.post('/messages', response_model=ChatOutput)
-async def messages(context_id: UUID, payload: FullChatInput, request: Request, response: Response,
+class WorkspaceMessageInput(StrictDocument):
+    question_id: UUID
+    operation_id: UUID
+
+
+class RegenerationInput(StrictDocument):
+    operation_id: UUID
+
+
+@router.post('/regenerate')
+async def regenerate(context_id: UUID, payload: RegenerationInput, request: Request, response: Response,
+                     identity=Depends(authenticated_chat_identity)):
+    return await execute(service(request,response).consolidate(identity,str(context_id),str(payload.operation_id)))
+
+
+@router.post('/messages')
+async def messages(context_id: UUID, payload: WorkspaceMessageInput, request: Request, response: Response,
                    identity=Depends(authenticated_chat_identity)):
-    result=await execute(service(request,response).respond(identity,str(context_id),
-        chat_request(identity.subject_id,context_id,payload)))
-    return ChatOutput(context_id=context_id,answer=result.message.content,model=result.model,
-        references=result.references,provided_revisions=result.provided_revisions,
-        support_basis=result.support_basis,insufficient_context=result.insufficient_context,
-        partial_coverage=result.partial_coverage,input_bound=result.input_bound,
-        context_bytes=result.context_bytes,generation_seconds=result.generation_seconds)
+    from app.understanding.consolidation import WorkspaceChatFailed
+    async def respond():
+        try:
+            return await service(request,response).respond(identity,str(context_id),
+                chat_request(identity.subject_id,context_id),str(payload.question_id),str(payload.operation_id))
+        except WorkspaceChatFailed:
+            raise HTTPException(502, 'La réponse n’a pas pu être générée.') from None
+    return await execute(respond())

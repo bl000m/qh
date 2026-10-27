@@ -10,7 +10,7 @@ export interface AnswerAttribution {
  model:string;support_basis:OwnerSupportBasis;insufficient_context:boolean;partial_coverage:boolean;reference_ids:string[];
 }
 export interface ContextIntake {
- id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;attribution?:AnswerAttribution;
+ id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;attribution?:AnswerAttribution;reply_to?:string;
 }
 export interface ContextRecap {
  version_id:string;title:string;text:string;support_revision_ids:string[];
@@ -21,4 +21,9 @@ export interface ConsolidatedVersion {
 export interface WorkspaceState {
  context_id:string;state:'empty'|'pending'|'running'|'current'|'failed';pending_count:number;
  current:ConsolidatedVersion|null;intake:ContextIntake[];recap?:ContextRecap|null;
+ chat_attempts?:{question_id:string;operation_id:string;state:'running'|'failed'|'completed'}[];
 }
+
+export interface WorkspaceMessageInput {question_id:string;operation_id:string}
+export interface WorkspaceRegenerationInput {operation_id:string}
+export interface WorkspaceMessageReceipt {state:'completed'}

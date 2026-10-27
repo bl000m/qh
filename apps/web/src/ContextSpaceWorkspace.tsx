@@ -6,7 +6,6 @@ import {ApiError,apiMessage} from './api';
 import type {ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
 import {recognizedCitations} from './understanding';
-import type {DialogueMessage} from './chat';
 import type {SessionCapabilities} from './provider-session';
 import AnswerMarkdown from './AnswerMarkdown';
 import WorkspaceAnswerSources from './WorkspaceAnswerSources';
@@ -17,31 +16,24 @@ type State=WorkspaceState & {understanding:CanonicalRevision[]};
 function intake(kind:ContextIntake['kind'],text:string|null,name:string|null=null):ContextIntake {
  return {id:crypto.randomUUID(),kind,role:'user',text,name,context:null};
 }
-function dialogue(items:ContextIntake[]):DialogueMessage[] {
- const messages:DialogueMessage[]=[];
- for(const item of items.filter(i=>i.kind==='message')){
-  const content=item.text!;
-  if(messages.at(-1)?.role===item.role)messages[messages.length-1].content+='\n\n'+content;
-  else if(messages.length||item.role==='user')messages.push({role:item.role,content});
- }
- return messages;
-}
 function failure(error:unknown){return error instanceof ApiError&&error.status===402?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':error instanceof ApiError&&error.status===422?'L’analyse ou ses citations ne permettent pas une compréhension valide. Les apports restent disponibles.':error instanceof ApiError&&error.status===503?'Le résultat n’est pas confirmé. Actualisez l’état avant de réessayer ; les apports déjà enregistrés sont conservés.':apiMessage(error);}
 
 export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,settingsRequest=0,name}:{api:QhApi;name?:string;scope:string;heading?:ReactNode;settingsContent?:ReactNode;settingsRequest?:number}) {
  const [state,setState]=useState<State|null>(null),[caps,setCaps]=useState<SessionCapabilities|null>(null);
  const [open,setOpen]=useState(false),[settings,setSettings]=useState(false);
  const [narrow,setNarrow]=useState(()=>window.matchMedia('(max-width:850px)').matches);
- const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'file'|null>(null);
+ const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'regenerate'|'file'|null>(null);
  const [draft,setDraft]=useDraft('message');
  const [notice,setNotice]=useState('');
+ const [questionStates,setQuestionStates]=useState<Record<string,'sending'|'uncertain'|'failed'>>({});
+ const sendOperations=useRef<Record<string,string>>({}),regenerationAttempt=useRef<string|null>(null);
  const [availabilityError,setAvailabilityError]=useState(''),[checkingAvailability,setCheckingAvailability]=useState(false);
  const availabilityGeneration=useRef(0);
  const panel=useRef<HTMLElement>(null);
  const appendAttempt=useRef<ContextIntake|null>(null),lock=useRef(false);
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
  const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);return value;},[api,scope]);
- useEffect(()=>{let active=true;setState(null);setError('');api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});return()=>{active=false;};},[api,scope]);
+ useEffect(()=>{let active=true;setState(null);setError('');setQuestionStates({});sendOperations.current={};regenerationAttempt.current=null;api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});return()=>{active=false;};},[api,scope]);
  const refreshAvailability=useCallback(async()=>{
   const generation=++availabilityGeneration.current;
   setCheckingAvailability(true);setAvailabilityError('');
@@ -66,22 +58,41 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   const next=await api.addIntake(scope,appendAttempt.current);accept(next);appendAttempt.current=null;setDraft('');
   return {...next,understanding:state?.understanding??[]};
  }
- async function send(){
-  if(lock.current||!draft.trim()||!state)return;
-  lock.current=true;setBusy('send');setError('');setNotice('');
-  try{
-   const next=await saveDraft();
-   if(!next)return;
-   await api.workspaceChat(scope,dialogue(next.intake));
-   await reload();
-  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);void refreshAvailability();}
+ async function synchronize(){
+  const next=await reload();
+  setQuestionStates(previous=>Object.fromEntries(Object.keys(previous).map(id=>[id,next.chat_attempts?.find(a=>a.question_id===id)?.state==='running'?'uncertain':'failed'])));
+  if(next.state==='failed')regenerationAttempt.current=null;
+  return next;
  }
- async function memorize(){
-  if(lock.current||!state)return;
-  lock.current=true;setBusy('memory');setError('');setNotice('');
+ async function send(question?:string){
+  if(lock.current||!state||(!question&&!draft.trim()))return;
+  lock.current=true;setBusy('send');setError('');setNotice('');
+  let target=question;
   try{
-   await saveDraft();
-   const saved=await api.consolidate(scope);accept(saved);setState(previous=>previous?{...previous,understanding:[]}:previous);setOpen(true);
+   const next=question?state:await saveDraft();
+   target=question??next?.intake.filter(i=>i.kind==='message'&&i.role==='user').at(-1)?.id;
+   if(!target)return;
+   const failed=next?.chat_attempts?.find(a=>a.question_id===target)?.state==='failed';
+   const operation=failed||!sendOperations.current[target]?crypto.randomUUID():sendOperations.current[target];
+   sendOperations.current[target]=operation;
+   setQuestionStates(previous=>({...previous,[target!]:'sending'}));
+   await api.workspaceChat(scope,target,operation);
+   await reload();
+  }catch(e){
+   if(target){
+    setQuestionStates(previous=>({...previous,[target!]:'uncertain'}));
+    try{await synchronize();}catch{/* A read failure leaves the question awaiting synchronization. */}
+   }else setError('Le message n’a pas pu être enregistré. Vous pouvez réessayer.');
+  }finally{lock.current=false;setBusy(null);void refreshAvailability();}
+ }
+ async function memorize(regenerate=false){
+  if(lock.current||!state)return;
+  lock.current=true;setBusy(regenerate?'regenerate':'memory');setError('');setNotice('');
+  try{
+   if(!regenerate)await saveDraft();
+   if(regenerate&&!regenerationAttempt.current)regenerationAttempt.current=crypto.randomUUID();
+   const saved=regenerate?await api.regenerate(scope,regenerationAttempt.current!):await api.consolidate(scope);
+   regenerationAttempt.current=null;accept(saved);setState(previous=>previous?{...previous,understanding:[]}:previous);setOpen(true);
    // Projection is asynchronous. These reads never generate or retry paid work.
    let synchronized=false;
    for(let attempt=0;attempt<16;attempt++){
@@ -90,7 +101,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    }
    if(!synchronized)setNotice('Version enregistrée. La compréhension sera disponible après synchronisation. Actualisez son état.');
    else setNotice('Compréhension mise à jour');
-  }catch(e){setError(failure(e));}finally{lock.current=false;setBusy(null);void refreshAvailability();}
+  }catch(e){setError(failure(e));if(regenerate){try{await synchronize();}catch{/* Keep operation identity while publication is uncertain. */}}}finally{lock.current=false;setBusy(null);void refreshAvailability();}
  }
  async function addFile(file:File|undefined,context:boolean){
   if(!file||lock.current)return;
@@ -121,6 +132,15 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Vos messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
 
 
+ const items=state?.intake??[];
+ const paired=new Map(items.filter(i=>i.reply_to).map(i=>[i.reply_to!,i]));
+ const displayed=items.filter(i=>!i.reply_to).flatMap(i=>paired.has(i.id)?[i,paired.get(i.id)!]:[i]);
+ function questionStatus(item:ContextIntake){
+  if(item.kind!=='message'||item.role!=='user'||paired.has(item.id))return null;
+  const index=items.indexOf(item);
+  if(items.slice(index+1).some(i=>i.role==='assistant'&&!i.reply_to))return null;
+  return questionStates[item.id]??(state?.chat_attempts?.find(a=>a.question_id===item.id)?.state==='running'?'uncertain':'failed');
+ }
  const summary=state?.recap;
  const sources=state?.understanding.filter(row=>!summary||summary.support_revision_ids.includes(row.revision_id))??[];
  const recap=<>
@@ -129,7 +149,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    <h3>{summary?.title??name??'Ce contexte'}</h3>
    {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
    {state.current.has_recap===false&&<p className="small muted">Mémoriser actualisera le récapitulatif, sans ajouter de message.</p>}
-   <button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button>
+   <div className="actions"><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void memorize(true);}}>{busy==='regenerate'?'Régénération…':'Régénérer'}</button></div>
    {sources.length>0&&<details className="recap-sources"><summary>Consulter les sources</summary>{sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>}
    <p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p>
   </>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
@@ -151,12 +171,16 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     <div className="workspace-log" ref={log} role="log" aria-label="Discussion du Context Space" aria-live="polite" aria-busy={!!busy} tabIndex={0}>
      {!state&&!error&&<p role="status">Chargement du contexte…</p>}
      {state&&!state.intake.length&&<div className="workspace-welcome"><h2>De quoi souhaitez-vous parler ?</h2><p>Posez une question, partagez vos idées ou ajoutez un document. Mémoriser permet de garder les informations utiles dans ce contexte.</p></div>}
-     {state?.intake.map(item=><article key={item.id} className={'workspace-message '+(item.role==='assistant'?'assistant':'user')}>
+     {displayed.map(item=><article key={item.id} className={'workspace-message '+(item.role==='assistant'?'assistant':'user')}>
       {item.kind==='message'?<><span className="sr-only">{item.role==='assistant'?'QH':'Vous'}</span>{item.role==='assistant'?<><AnswerMarkdown text={item.text!}/>{item.attribution&&<WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution}/>}</>:<p>{item.text}</p>}</>:<p>{item.kind==='context'?'Contexte importé':'Document'} : {item.name}</p>}
+      {questionStatus(item)&&<div className="message-feedback">
+       <p role={questionStatus(item)==='sending'?'status':'alert'}>{questionStatus(item)==='sending'?'Préparation de la réponse…':questionStatus(item)==='uncertain'?'La réponse est en attente de synchronisation.':'La réponse n’a pas pu être obtenue. Votre question est conservée.'}</p>
+       {questionStatus(item)==='uncertain'?<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().catch(()=>{});}}>Actualiser l’état</button>:questionStatus(item)==='failed'&&<button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void send(item.id);}}>Réessayer</button>}
+      </div>}
      </article>)}
      {busy==='send'&&<p role="status">Préparation de la réponse…</p>}
     </div>
-    <div className="workspace-feedback">{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void reload().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
+    <div className="workspace-feedback">{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Votre message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoutez une information ou posez une question…"/>
      <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>

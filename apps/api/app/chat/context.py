@@ -152,8 +152,20 @@ only as clearly separate suggestions; never imply they were memorized here.
         raise ChatInputInvalid('Dialogue exceeds the input budget')
     # Nested content/source dicts are mutable even in frozen dataclasses. Retain
     # exactly what was sent; the service independently rechecks live freshness.
-    return BuiltContext(GenerationRequest(messages=assembled), tuple(deepcopy(selected)),
+    return BuiltContext(GenerationRequest(messages=assembled, output_schema=answer_schema(context, extended=extended_dialogue, consolidated=consolidated)), tuple(deepcopy(selected)),
                         partial or len(selected) < len(revisions), bound, len(context.content.encode()), extended_dialogue, consolidated)
+
+
+def answer_schema(context, *, extended, consolidated):
+    aliases = list(json.loads(context.content)['allowed_reference_aliases'])
+    return dict(type='object', additionalProperties=False,
+        required=['answer', 'reference_aliases', 'insufficient_context', 'support_basis'], properties=dict(
+            answer=dict(type='string', minLength=1, maxLength=1_000_000 if extended else MAX_OUTPUT_CHARS,
+                description='The complete natural-language response as one Markdown string. Lists, tables and detailed schedules belong inside this string, never nested objects.'),
+            reference_aliases=dict(type='array', maxItems=(100 if consolidated else MAX_REVISIONS) if aliases else 0,
+                items=dict(type='string', enum=aliases) if aliases else dict(type='string')),
+            insufficient_context=dict(type='boolean'),
+            support_basis=dict(type='string', enum=['general', 'dialogue', 'canonical', 'mixed', 'insufficient'])))
 
 
 def unique_keys(pairs):

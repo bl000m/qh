@@ -6,14 +6,18 @@ intake is replayed together so corrections cannot blindly erase earlier evidence
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
 import json
-from uuid import uuid4
 
-from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound
+from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded
+from app.chat.context import ChatProviderUnavailable
 from app.policy.models import PolicyAction, PolicyRequest
 from app.understanding.selected import propose_selected_conversation
 from app.understanding.uum import UumExtractionProvider
 from app.understanding.enrichment import EnrichmentUnavailable
 from app.understanding import recap as recap_output
+
+
+class WorkspaceChatFailed(ChatProviderUnavailable):
+    pass
 
 
 class ContextConsolidation:
@@ -47,13 +51,13 @@ class ContextConsolidation:
         await self._allow(subject, scope)
         return await self.repository_for(subject).append(scope, document)
 
-    async def consolidate(self, identity, scope):
+    async def consolidate(self, identity, scope, regeneration=None):
         await self._allow(identity.subject_id, scope)
         if self.ai is None:
             raise EnrichmentUnavailable('AI unavailable')
         request = await self.ai.authorize_consolidation(identity, scope)
         repository = self.repository_for(identity.subject_id)
-        batch = await repository.claim(scope)
+        batch = await repository.claim(scope, regeneration) if regeneration else await repository.claim(scope)
         if batch.get('replayed'):
             return await self.read(identity.subject_id, scope)
         operation = batch['operation_id']
@@ -68,9 +72,11 @@ class ContextConsolidation:
                     validation_state=row['validation_state']) for row in current['understanding'])
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
                 consolidate=True, previous=previous, with_recap=True, observer=diagnostic.check)
+            original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
-                conversation=self._conversation(identity.subject_id, batch), extraction_key='qh-context-uum/3',
+                conversation=self._conversation(identity.subject_id, batch),
+                extraction_key='qh-context-uum/3'+(':'+operation if original else ''), original_source=original,
                 policy=self.policy, descriptor_version=3,
                 provider=provider,
                 observer=diagnostic.check)
@@ -107,20 +113,50 @@ class ContextConsolidation:
                 previous_version=batch['current']['id'] if batch['current'] else None,
                 intake_ids=[r['id'] for r in batch['intake']]))
 
-    async def respond(self, identity, scope, request):
+    async def respond(self, identity, scope, request, question, operation):
         if self.ai is None:
             raise EnrichmentUnavailable('AI unavailable')
         state = await self.read(identity.subject_id, scope)
-        ids = tuple(state['current']['revision_ids']) if state['current'] else ()
-        result = await self.ai.respond(identity, replace(request,
-            include_proposed=True, consolidated_revision_ids=ids))
-        after = await self.repository_for(identity.subject_id).read(scope)
-        if after['current'] != state['current']:
-            raise EnrichmentUnavailable('Understanding changed during answer')
-        await self._allow(identity.subject_id, scope)
-        await self.repository_for(identity.subject_id).append(scope,dict(id=str(uuid4()),kind='message',
-            role='assistant',text=result.message.content,name=None,context=None,
+        repository = self.repository_for(identity.subject_id)
+        await self.ai.authorize_consolidation(identity, scope)
+        claimed = await repository.claim_chat(scope, question, operation)
+        if claimed.get('completed'):
+            return dict(state='completed')
+        try:
+            result = await self.ai.respond(identity, replace(request, messages=self._dialogue(claimed['intake'], question),
+                include_proposed=True, consolidated_revision_ids=tuple(state['current']['revision_ids']) if state['current'] else ()))
+            after = await repository.read(scope)
+            if after['current'] != state['current']:
+                raise EnrichmentUnavailable('Understanding changed during answer')
+            await self._allow(identity.subject_id, scope)
+        except Exception as exc:
+            await repository.finish_chat(scope, question, operation)
+            if isinstance(exc, (ProviderBudgetExceeded, ContextSpaceNotFound)):
+                raise
+            raise WorkspaceChatFailed('Response generation failed') from None
+        # If publication is uncertain, leave the running receipt. Synchronization
+        # must establish the result before a new paid attempt can be claimed.
+        await repository.finish_chat(scope, question, operation, dict(kind='message',role='assistant',
+            text=result.message.content,name=None,context=None,reply_to=question,
             attribution=dict(model=result.model,support_basis=result.support_basis,
                 insufficient_context=result.insufficient_context,partial_coverage=result.partial_coverage,
                 reference_ids=[r.revision_id for r in result.references])))
-        return result
+        return dict(state='completed')
+
+    @staticmethod
+    def _dialogue(items, question):
+        replies = {r['reply_to']:r for r in items if r.get('reply_to')}
+        messages = []
+        for row in items:
+            if row['kind']!='message' or row.get('reply_to'):
+                continue
+            message = Message(role=MessageRole(row['role']),content=row['text'])
+            if messages and messages[-1].role==message.role:
+                messages[-1] = Message(role=message.role,content=messages[-1].content+'\n\n'+message.content)
+            elif messages or message.role==MessageRole.USER:
+                messages.append(message)
+            if row['id']==question:
+                return tuple(messages)
+            if row['id'] in replies:
+                messages.append(Message(role=MessageRole.ASSISTANT,content=replies[row['id']]['text']))
+        raise ValueError('Persisted question required')

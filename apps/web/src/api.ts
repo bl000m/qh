@@ -1,3 +1,4 @@
+import type {WorkspaceMessageInput,WorkspaceRegenerationInput,WorkspaceMessageReceipt} from '../../../packages/shared/src/context-space';
 import type {PortableContext,ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {AIDiagnostic} from './AIDiagnostics';
 import {DIMENSIONS} from './uum';
@@ -63,8 +64,10 @@ export class QhApi {
   async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
   async consolidate(scope:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/consolidate','POST');}
   async exportContext(scope:string):Promise<PortableContext>{return this.sharing(scope,'workspace/export');}
-  async workspaceChat(scope:string,messages:DialogueMessage[]):Promise<ChatAnswer>{
-    return chatAnswer(await this.sharing(scope,'workspace/messages','POST',{messages,include_proposed:false}),scope,true,messages,true,true);
+  async regenerate(scope:string,operation:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/regenerate','POST',{operation_id:operation} satisfies WorkspaceRegenerationInput);}
+  async workspaceChat(scope:string,question:string,operation:string):Promise<void>{
+    const receipt=await this.sharing<WorkspaceMessageReceipt>(scope,'workspace/messages','POST',{question_id:question,operation_id:operation} satisfies WorkspaceMessageInput);
+    if(receipt?.state!=='completed')throw new ApiError(502);
   }
   async sharing<T>(scope:string,suffix:string,method='GET',body?:unknown):Promise<T>{
     if(!isUuid(scope))throw new ApiError(404);

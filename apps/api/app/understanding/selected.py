@@ -58,7 +58,7 @@ def selected_source(context_id, conversation):
     return source
 
 
-async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None):
+async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None, original_source=None):
     def observed(rule, operation):
         try:
             result = operation()
@@ -69,7 +69,9 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
         if observer:
             observer(rule, True)
         return result
-    source = selected_source(context_id, conversation)
+    source = deepcopy(original_source) if original_source is not None else selected_source(context_id, conversation)
+    if source['context_space_id'] != str(context_id):
+        raise PermissionError('Original source outside authorized Space')
     buffer = _PreparedSource(subject_id, source)
 
     class ResolvedProvider:

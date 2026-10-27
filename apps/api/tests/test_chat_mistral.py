@@ -38,7 +38,7 @@ def test_concrete_adapter_reuses_port_and_http_mock_only(tmp_path,monkeypatch):
         seen.append(req)
         p=json.loads(req.content)
         assert json.loads(p['messages'][1]['content'])['allowed_reference_aliases']=={'R1':'revision'}
-        assert p['model']==MODEL and p['max_tokens']==1000 and p['response_format']=={'type':'json_object'}
+        assert p['model']==MODEL and p['max_tokens']==1000 and p['response_format']==dict(type='json_schema',json_schema=dict(name='qh_atomic_understanding',schema=context.request.output_schema,strict=True))
         return httpx.Response(200,json=dict(model=MODEL,usage=dict(prompt_tokens=100,completion_tokens=30),
             choices=[dict(finish_reason='stop',message=dict(content='{"answer":"ok","reference_aliases":["R1"],"insufficient_context":false,"support_basis":"canonical"}'))]))
     provider=ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger,transport=httpx.MockTransport(handler))
@@ -85,3 +85,29 @@ def test_unmarked_extraction_ledger_is_rejected_without_modifying_it(tmp_path,mo
     original=ledger.read_bytes()
     with pytest.raises(ChatConfigurationError):ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger)
     assert ledger.read_bytes()==original
+
+
+@pytest.mark.parametrize('bad_reference', [False, True])
+def test_detailed_six_day_answer_uses_strict_root_schema_and_exact_provenance(tmp_path, monkeypatch, bad_reference):
+    from app.chat.context import ChatProviderUnavailable
+    auth, ledger = setup(tmp_path, monkeypatch)
+    context = built((revision(),), extended_dialogue=True)
+    planning = '\n\n'.join(f'### Jour {i}\n- Matin : préparation.\n- Après-midi : exercice pratique.' for i in range(1, 7))
+    seen = []
+    def handler(request):
+        wire = json.loads(request.content); seen.append(wire)
+        schema = wire['response_format']['json_schema']
+        assert schema['strict'] and schema['schema']['additionalProperties'] is False
+        fields = schema['schema']['properties']
+        assert fields['answer']['type'] == 'string' and fields['reference_aliases']['items']['enum'] == ['R1']
+        return httpx.Response(200, json=dict(model=MODEL, usage=dict(prompt_tokens=100, completion_tokens=300),
+            choices=[dict(finish_reason='stop', message=dict(content=json.dumps(dict(answer=planning,
+                reference_aliases=['OUTSIDE' if bad_reference else 'R1'], insufficient_context=False, support_basis='canonical'))))]))
+    provider = ScopedMistralChatProvider(authorization_path=auth, ledger_path=ledger, transport=httpx.MockTransport(handler))
+    result = asyncio.run(provider.generate(context.request))
+    if bad_reference:
+        with pytest.raises(ChatProviderUnavailable): decode_answer(result.message, context)
+    else:
+        answer, refs, insufficient, basis = decode_answer(result.message, context)
+        assert answer == planning and refs == (revision(),) and not insufficient and basis == 'canonical'
+    assert len(seen) == 1

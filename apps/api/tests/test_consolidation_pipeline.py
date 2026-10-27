@@ -165,3 +165,79 @@ def test_explicit_recap_style_refresh_preserves_old_version_and_replays_new_vers
             subject_id=who.subject_id, query=ContextBrowse(
                 context_id=scope, view='history', revision_id=row['revision_id'], limit=1))))
         assert page.revisions[0].content == row['content']
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_explicit_regeneration_reuses_original_source_and_preserves_previous_on_failure(generic, empty_database):
+    p = generic
+    service, who, repositories, provider = prepare(p, empty_database)
+    scope = p['scope']; original = document()
+    run(service.append(who.subject_id, scope, original))
+    first = run(service.consolidate(who, scope)); drain(p['worker'])
+    def source_count():
+        with p['repo'].connect() as c:
+            return c.execute('SELECT count(*) n FROM source_revisions WHERE context_space_id=%s', (scope,)).fetchone()['n']
+    before = source_count(); operation = str(uuid4())
+    second = run(service.consolidate(who, scope, operation)); drain(p['worker'])
+    assert second['current']['version'] == 2 and second['current']['source_revision_id'] == first['current']['source_revision_id']
+    assert second['current']['intake_ids'] == first['current']['intake_ids'] and second['pending_count'] == 0
+    assert not set(second['current']['revision_ids']) & set(first['current']['revision_ids'])
+    assert source_count() == before and provider.generate.await_count == 2
+    assert run(service.consolidate(who, scope, operation))['current'] == second['current']
+    assert provider.generate.await_count == 2
+    run(service.append(who.subject_id, scope, document('Nouvelle information encore en attente.')))
+    provider.generate.side_effect = ValueError('Synthetic invalid output')
+    failed = str(uuid4())
+    with pytest.raises(ValueError): run(service.consolidate(who, scope, failed))
+    state = run(service.read(who.subject_id, scope))
+    assert state['current'] == second['current'] and state['pending_count'] == 1 and source_count() == before
+    from app.understanding.enrichment import EnrichmentConflict
+    with pytest.raises(EnrichmentConflict): run(service.consolidate(who, scope, failed))
+    assert provider.generate.await_count == 3
+    provider.generate.side_effect = None
+    third = run(service.consolidate(who, scope, str(uuid4()))); drain(p['worker'])
+    assert third['current']['version'] == 3 and source_count() == before and third['pending_count'] == 1
+    with pytest.raises(EnrichmentConflict): run(service.consolidate(who, scope, failed))
+    assert provider.generate.await_count == 4
+    with p['repo'].connect() as c:
+        assert c.execute('SELECT count(*) n FROM context_consolidations WHERE context_space_id=%s', (scope,)).fetchone()['n'] == 3
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_manual_chat_retry_retains_one_question_and_one_answer_with_durable_failure(generic, empty_database):
+    from app.chat.context import ChatProviderUnavailable
+    from app.understanding.consolidation import WorkspaceChatFailed
+    from app.understanding.enrichment import EnrichmentConflict
+    from tests.test_chat_service import request
+    p = generic
+    service, who, repositories, _ = prepare(p, empty_database)
+    scope = p['scope']; question = document('Prépare un planning sur six jours.')
+    run(service.append(who.subject_id, scope, question))
+    service.ai.respond = AsyncMock(side_effect=ChatProviderUnavailable('Synthetic invalid envelope'))
+    failed = str(uuid4())
+    with pytest.raises(WorkspaceChatFailed): run(service.respond(who, scope, request(), question['id'], failed))
+    state = run(service.read(who.subject_id, scope))
+    assert len(state['intake']) == 1 and state['chat_attempts'][0]['state'] == 'failed'
+    with pytest.raises(EnrichmentConflict): run(service.respond(who, scope, request(), question['id'], failed))
+    assert service.ai.respond.await_count == 1
+    service.ai.respond.side_effect = None
+    service.ai.respond.return_value = SimpleNamespace(message=Message(role=MessageRole.ASSISTANT, content='Planning en six jours.'),
+        model='mistral-small-2603', support_basis='general', insufficient_context=False, partial_coverage=False, references=())
+    operation = str(uuid4())
+    run(service.respond(who, scope, request(), question['id'], operation))
+    state = run(service.read(who.subject_id, scope))
+    assert len(state['intake']) == 2 and state['intake'][0]['id'] == question['id']
+    assert state['intake'][1]['reply_to'] == question['id'] and state['intake'][1]['attribution']['support_basis'] == 'general'
+    assert state['chat_attempts'][0]['state'] == 'completed'
+    run(service.respond(who, scope, request(), question['id'], operation))
+    assert service.ai.respond.await_count == 2 and len(run(service.read(who.subject_id, scope))['intake']) == 2
+    other = document('Autre question.')
+    run(service.append(who.subject_id, scope, other))
+    repo = repositories(who.subject_id)
+    first_attempt, second_attempt = str(uuid4()), str(uuid4())
+    run(repo.claim_chat(scope, other['id'], first_attempt))
+    with pytest.raises(EnrichmentConflict): run(repo.claim_chat(scope, other['id'], second_attempt))
+    run(repo.finish_chat(scope, other['id'], first_attempt))
+    run(repo.claim_chat(scope, other['id'], second_attempt))
+    run(repo.finish_chat(scope, other['id'], second_attempt))
+    with pytest.raises(EnrichmentConflict): run(repo.claim_chat(scope, other['id'], first_attempt))

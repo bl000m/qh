@@ -8,9 +8,10 @@ from adapters.postgres.canonical import CanonicalRepository, json_values
 from app.core.models import ContextSpaceNotFound, ContextStorageUnavailable
 from app.understanding.enrichment import EnrichmentConflict, EnrichmentUnavailable
 from app.understanding import recap as recap_output
+from adapters.postgres.workspace_chat import WorkspaceChatStorage
 
 
-class PostgresConsolidationRepository(CanonicalRepository):
+class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository):
     def _latest(self, c, scope):
         row = c.execute("""SELECT v.*, EXISTS(SELECT 1 FROM understanding_item_revisions r
             WHERE r.id=ANY(v.revision_ids) AND r.context_space_id=v.context_space_id
@@ -23,7 +24,7 @@ class PostgresConsolidationRepository(CanonicalRepository):
     def _read(self, c, scope):
         latest = self._latest(c, scope)
         rows = c.execute('SELECT id,document FROM context_intake WHERE context_space_id=%s '
-                         'ORDER BY created_at,id LIMIT 501', (scope,)).fetchall()
+                         "AND document->>'kind' NOT IN ('chat_attempt','regeneration_attempt') ORDER BY created_at,id LIMIT 501", (scope,)).fetchall()
         if len(rows) > 500:
             raise ValueError('Context intake exceeds supported limit')
         consumed = set(latest['intake_ids']) if latest else set()
@@ -31,7 +32,18 @@ class PostgresConsolidationRepository(CanonicalRepository):
         job = c.execute('SELECT state FROM context_consolidation_jobs WHERE context_space_id=%s', (scope,)).fetchone()
         state = 'running' if job and job['state']=='running' else 'failed' if job and job['state']=='failed' else 'pending' if pending else 'current' if latest else 'empty'
         return dict(context_id=scope, current=latest, pending_count=len(pending), state=state,
-                    intake=[dict(id=str(r['id']), **r['document']) for r in rows])
+                    intake=[dict(id=str(r['id']), **r['document']) for r in rows],
+                    chat_attempts=self._chat_states(c, scope))
+
+    def _append_on(self, c, scope, document):
+        from app.understanding.extractor import canonical_json
+        old = c.execute('SELECT 1 FROM context_intake WHERE id=%s AND context_space_id=%s',
+            (document['id'],scope)).fetchone()
+        size = c.execute('SELECT coalesce(sum(octet_length(document::text)),0) n FROM context_intake WHERE context_space_id=%s', (scope,)).fetchone()['n']
+        if not old and size+len(canonical_json(document).encode())>800000:
+            raise ValueError('Context exceeds supported original intake byte limit')
+        self._immutable(c, 'context_intake', dict(id=document['id'], context_space_id=scope,
+            document={k:v for k,v in document.items() if k!='id'}))
 
     def _operation(self, action, scope, document=None, source=None, revisions=()):
         try:
@@ -39,30 +51,44 @@ class PostgresConsolidationRepository(CanonicalRepository):
                 self._authorize(c, (scope,), lock=True)
                 c.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))', ('qh-context:'+scope,))
                 if action=='append':
-                    from app.understanding.extractor import canonical_json
-                    old=c.execute('SELECT 1 FROM context_intake WHERE id=%s AND context_space_id=%s',
-                                  (document['id'],scope)).fetchone()
-                    size=c.execute('SELECT coalesce(sum(octet_length(document::text)),0) n FROM context_intake WHERE context_space_id=%s', (scope,)).fetchone()['n']
-                    if not old and size+len(canonical_json(document).encode())>800000:
-                        raise ValueError('Context exceeds supported original intake byte limit')
-                    self._immutable(c, 'context_intake', dict(id=document['id'],
-                        context_space_id=scope, document={k:v for k,v in document.items() if k!='id'}))
+                    self._append_on(c, scope, document)
                 if action=='claim':
                     state = self._read(c, scope)
+                    regeneration = document and document.get('regeneration')
+                    if regeneration:
+                        operation = str(uuid5(UUID(scope), 'regenerate:'+regeneration))
+                        if c.execute('SELECT 1 FROM context_consolidations WHERE id=%s AND context_space_id=%s', (operation,scope)).fetchone():
+                            return dict(replayed=True, **state)
+                        if c.execute('SELECT 1 FROM context_intake WHERE id=%s AND context_space_id=%s',
+                                (str(uuid5(UUID(operation), 'regeneration-failed')),scope)).fetchone():
+                            raise EnrichmentConflict('Regeneration failed; a new explicit operation is required')
+                        if not state['current']:
+                            raise ValueError('No memorized source to regenerate')
                     if state['state']=='running':
                         # Never expire a running paid operation silently. A process crash
                         # needs an operator to establish that no request remains in flight.
                         raise EnrichmentUnavailable('Consolidation already in progress')
-                    if not state['pending_count'] and (not state['current'] or state['current']['has_recap']):
+                    if not regeneration and not state['pending_count'] and (not state['current'] or state['current']['has_recap']):
                         return dict(replayed=True, **state)
                     ids = [row['id'] for row in state['intake']]
-                    operation = str(uuid5(UUID(scope), f'consolidation:recap-v{recap_output.PRESENTATION_VERSION}:'+':'.join(ids)))
+                    if regeneration:
+                        ids = state['current']['intake_ids']
+                        state['intake'] = [r for r in state['intake'] if r['id'] in ids]
+                    else:
+                        operation = str(uuid5(UUID(scope), f'consolidation:recap-v{recap_output.PRESENTATION_VERSION}:'+':'.join(ids)))
+                    if regeneration:
+                        self._immutable(c, 'context_intake', dict(id=operation, context_space_id=scope,
+                            document=dict(kind='regeneration_attempt')))
                     c.execute("""INSERT INTO context_consolidation_jobs(context_space_id,operation_id,state)
                         VALUES (%s,%s,'running') ON CONFLICT(context_space_id) DO UPDATE
                         SET operation_id=EXCLUDED.operation_id,state='running',started_at=clock_timestamp()""", (scope,operation))
-                    return dict(operation_id=operation, **state)
+                    return dict(operation_id=operation, regenerating=bool(regeneration), **state)
                 if action=='fail':
-                    c.execute("UPDATE context_consolidation_jobs SET state='failed' WHERE context_space_id=%s AND operation_id=%s AND state='running'", (scope,document['operation_id']))
+                    changed = c.execute("UPDATE context_consolidation_jobs SET state='failed' WHERE context_space_id=%s AND operation_id=%s AND state='running'", (scope,document['operation_id'])).rowcount
+                    operation = document['operation_id']
+                    if changed and c.execute("SELECT 1 FROM context_intake WHERE id=%s AND context_space_id=%s AND document->>'kind'='regeneration_attempt'", (operation,scope)).fetchone():
+                        self._immutable(c, 'context_intake', dict(id=str(uuid5(UUID(operation),'regeneration-failed')),
+                            context_space_id=scope,document=dict(kind='regeneration_attempt')))
                 if action=='publish':
                     job = c.execute('SELECT * FROM context_consolidation_jobs WHERE context_space_id=%s FOR UPDATE', (scope,)).fetchone()
                     existing = c.execute('SELECT 1 FROM context_consolidations WHERE id=%s AND context_space_id=%s', (document['operation_id'],scope)).fetchone()
@@ -74,7 +100,7 @@ class PostgresConsolidationRepository(CanonicalRepository):
                     if not state or state['desired_version']!=state['applied_version']:
                         raise EnrichmentUnavailable('Context projection not ready')
                     latest = self._latest(c, scope)
-                    self._save_on(c, sources=(source,), revisions=revisions)
+                    self._save_on(c, sources=() if latest and source['id']==latest['source_revision_id'] else (source,), revisions=revisions)
                     c.execute("""INSERT INTO context_consolidations(id,context_space_id,version,intake_ids,source_revision_id,revision_ids)
                         VALUES (%s,%s,%s,%s::uuid[],%s,%s::uuid[])""",
                         (document['operation_id'],scope,(latest['version'] if latest else 0)+1,
@@ -93,8 +119,11 @@ class PostgresConsolidationRepository(CanonicalRepository):
     async def append(self, scope, document):
         return await asyncio.to_thread(self._operation, 'append', scope, document)
 
-    async def claim(self, scope):
-        return await asyncio.to_thread(self._operation, 'claim', scope)
+    async def claim(self, scope, regeneration=None):
+        return await asyncio.to_thread(self._operation, 'claim', scope, dict(regeneration=regeneration))
+
+    async def original(self, scope, revision):
+        return (await asyncio.to_thread(self.read_sources, (scope,), (revision,)))[0]
 
     async def fail(self, scope, operation):
         return await asyncio.to_thread(self._operation, 'fail', scope, dict(operation_id=operation))
