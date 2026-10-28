@@ -7,6 +7,7 @@ export interface DomainBubble {
   y: number;
   radius: number;
 }
+export interface BubbleLabel {width: number; height: number}
 
 // Disk coordinates reserve space for drift, hover and the keyboard focus ring.
 const clearance = .025;
@@ -21,20 +22,27 @@ const orderedCandidates = Array.from({length: 50}, (_, index) => {
   return [...candidates].sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y));
 });
 
-function pack(domains: DomainBubble[], scale: number): DomainBubble[] | null {
+function pack(domains: DomainBubble[], scale: number, labels: Record<string, BubbleLabel>, diameter: number): DomainBubble[] | null {
   const placed: DomainBubble[] = [];
   for (const [index, domain] of domains.entries()) {
     const radius = domain.radius * scale;
+    const label = labels[domain.domain.id];
     const position = orderedCandidates[index].find(point =>
       Math.hypot(point.x, point.y) + radius + clearance <= .96 &&
-      placed.every(other => Math.hypot(point.x - other.x, point.y - other.y) >= radius + other.radius + 2 * clearance));
+      (!label || Math.abs(point.x) + label.width / diameter <= .96) &&
+      placed.every(other => {
+        if (Math.hypot(point.x - other.x, point.y - other.y) < radius + other.radius + 2 * clearance) return false;
+        const previous = labels[other.domain.id];
+        return !label || !previous || Math.abs(point.x - other.x) >= (label.width + previous.width) / diameter + 2 * clearance ||
+          Math.abs(point.y - other.y) >= (label.height + previous.height) / diameter + 2 * clearance;
+      }));
     if (!position) return null;
     placed.push({...domain, ...position, radius});
   }
   return placed;
 }
 
-export function domainBubbles(organization: Organization): DomainBubble[] {
+export function domainBubbles(organization: Organization, labels: Record<string, BubbleLabel> = {}, diameter = 1): DomainBubble[] {
   const counts = new Map(organization.domains.map(domain => [domain.id, 0]));
   for (const memberships of Object.values(organization.memberships)) {
     for (const id of memberships) counts.set(id, (counts.get(id) ?? 0) + 1);
@@ -47,9 +55,10 @@ export function domainBubbles(organization: Organization): DomainBubble[] {
   let result: DomainBubble[] = [];
   for (let attempt = 0; attempt < 14; attempt++) {
     const scale = (low + high) / 2;
-    const packed = pack(domains, scale);
+    const packed = pack(domains, scale, labels, diameter);
     if (packed) { low = scale; result = packed; } else high = scale;
   }
+  if (domains.length && !result.length) return domainBubbles(organization);
   // Preserve the owner's keyboard order rather than sorting by bubble size.
   return organization.domains.map(domain => result.find(bubble => bubble.domain.id === domain.id)!);
 }

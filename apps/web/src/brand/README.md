@@ -19,8 +19,8 @@ used by the client; no alternate wordmark is invented or reconstructed.
   `branding/incoming/Interface de bulles _ équilibre de vie.png` (1266×1243).
   Public home artwork, static and fully contained; its labels are part of the image.
   `QH _ Vos contextes, maîtrisés.png` supplies the composition reference only.
-- `qh-environment-bubble.png`: byte-identical copy of the supplied
-  `branding/incoming/qh_bolla_trasparente.png` (900×900 RGBA), reused for the
+- `qh-environment-bubble.png`: byte-identical copy of the latest supplied
+  `branding/incoming/Sphère de savon irisée sur fond blanc.png` (1261×1247 RGBA), reused for the
   environment sphere and its domains. Composition reference:
   `Tableau de bord environnemental minimaliste.png`; no additional artwork effects.
 

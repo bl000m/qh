@@ -51,7 +51,7 @@ for (const width of [1440, 1366, 390]) test(`environment displays real domains, 
   }
   const links = page.locator('.environment-domain-link');
   expect((await links.last().boundingBox())!.width).toBeGreaterThan((await links.first().boundingBox())!.width);
-  await expect(page.locator('.environment-sphere>.environment-bubble-art')).toHaveJSProperty('naturalWidth', 900);
+  await expect(page.locator('.environment-sphere>.environment-bubble-art')).toHaveJSProperty('naturalWidth', 1261);
   const before = await links.first().evaluate(node => getComputedStyle(node.parentElement!).transform);
   await expect.poll(() => links.first().evaluate(node => getComputedStyle(node.parentElement!).transform)).not.toBe(before);
   await page.emulateMedia({reducedMotion: 'reduce'});
