@@ -9,7 +9,6 @@ import EnvironmentDomains,{useOrganization,SpaceMemberships,OrganizationEditor,C
 import { navigate, usePath, domainPath, spacePath, parseRoute } from './navigation';
 import Link from './NavLink';
 import qhLogo from './brand/qh-logo.png';
-import qhBubble from './brand/qh-bubble.png';
 import {Orb,Icon} from './Ui';
 import ContextSettings from './ContextSettings';
 import {drafts} from './drafts';
@@ -19,16 +18,10 @@ import {Modal} from './SpaceActions';
 import Loading from './Loading';
 import PublicPages, {isPublicPath} from './PublicPages';
 import EnvironmentHome from './EnvironmentHome';
-
-function DecorativeBubble() {
-  return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
-}
+import SessionLoading, {SessionFailure} from './SessionLoading';
 
 function Notice({ error, children }: { error?: boolean; children: ReactNode }) {
   return <p className={error ? 'notice error' : 'notice'} role={error ? 'alert' : 'status'}>{children}</p>;
-}
-function SignIn({login,disabled=false,children}:{login?:()=>void;disabled?:boolean;children?:ReactNode}){
- return <section className="signin">{children}<div className="welcome-heading"><DecorativeBubble/><div><h1>Bienvenue dans ton environnement QH</h1><p>Connecte-toi pour accéder à tes Context Spaces.</p></div></div><button disabled={disabled} onClick={login}>Se connecter</button></section>;
 }
 function Metadata({ space }: { space: ContextSpace }) {
   return <dl className="metadata">
@@ -46,7 +39,7 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
   const title=useRef<HTMLHeadingElement>(null),domainMenu=useRef<HTMLDetailsElement>(null);
   const breadcrumb=!home?<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span><span aria-current="page">{heading}</span></nav>:null;
   const breadcrumbs=breadcrumb&&breadcrumbHost?createPortal(breadcrumb,breadcrumbHost):breadcrumb;
-  useEffect(()=>{if(home||organization.value)title.current?.focus();},[home,activeDomain?.id,domain]);
+  useEffect(()=>{if(home||organization.value)title.current?.focus();},[home,activeDomain?.id,domain,home&&!!organization.value]);
   const [sort,setSort]=useState<'recent'|'used'>('recent');
   const [primaryDomain,setPrimaryDomain]=useState('');
   const spacesCarousel=useRef<HTMLUListElement>(null);
@@ -82,6 +75,7 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
     return () => { active = false; };
   }, [api, refresh,sort,domain,selection,home]);
   useEffect(()=>{setForm(false);setCreateError('');setName('');},[domain,collection]);
+  if(home&&!organization.value)return organization.error?<><Notice error>{organization.error}</Notice><button className="secondary" onClick={organization.reload}>Réessayer</button></>:<SessionLoading/>;
   if(home)return <EnvironmentHome state={organization} headingRef={title}/>;
   async function more() {
     if (!next || loading) return;
@@ -175,7 +169,7 @@ function Environment({api,logout,breadcrumbHost}:{api:QhApi;logout:()=>void;brea
   }, [api, refresh]);
   useEffect(()=>{if(identity&&parseRoute(path).kind!=='space')drafts.logout();},[identity,path]);
   if (error) return <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>;
-  if (!identity) return <><SignIn disabled/><Loading overlay label="Vérification de ton identité QH…"/></>;
+  if (!identity) return <SessionLoading/>;
   const route=parseRoute(path);
   return <>
     {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces api={api} breadcrumbHost={breadcrumbHost} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api} breadcrumbHost={breadcrumbHost} ownerId={identity}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
@@ -201,14 +195,12 @@ export default function App({ session }: { session: BrowserSession }) {
   const api = useMemo(() => new QhApi(session.readyToken??session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
   const logout=useCallback(()=>{drafts.logout();let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke. */}api.revokeSessionsBeforeLogout(credential);void session.logout();},[api,session]);
-  if(isPublicPath(path)||!retained&&path==='/')return <PublicPages path={path} session={session} state={state}/>;
+  if(state==='starting')return <SessionLoading/>;
+  if(state==='error'||state==='expired'&&!retained)return <SessionFailure expired={state==='expired'} retry={()=>{void session.login();}}/>;
+  if(isPublicPath(path)||!retained)return <PublicPages path={path} session={session} state={state}/>;
   return <div className={'app-shell'+(retained?' signed-in':'')}><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Ton contexte, sous ton contrôle.</span></a><div className="header-breadcrumbs" ref={setBreadcrumbHost}/>
     {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={logout}><Icon name="logout"/></button></nav>}</header>
     <main id="main-content" tabIndex={-1}>
-      {state === 'authenticated'||state==='expired'&&session.preserveDrafts ? <><Environment api={api} logout={logout} breadcrumbHost={breadcrumbHost}/>{state==='expired'&&<SessionExpired session={session}/>}</> : <><SignIn disabled={state==='starting'} login={()=>{void session.login();}}>
-          {state === 'expired' && <Notice error>Ta session a expiré. Reconnecte-toi pour continuer.</Notice>}
-          {state === 'error' && <Notice error>La connexion n’a pas abouti. Réessaie.</Notice>}
-          {state === 'signed-out' && <Notice>Tu es déconnecté de QH.</Notice>}
-      </SignIn>{state==='starting'&&<Loading overlay label="Connexion en cours…"/>}</>}
+      <Environment api={api} logout={logout} breadcrumbHost={breadcrumbHost}/>{state==='expired'&&<SessionExpired session={session}/>}
     </main><footer>QH — Environnement souverain de contexte</footer></div>;
 }

@@ -4,7 +4,7 @@ test('public home, information pages and authenticated return on desktop and mob
   await page.route('**/api/**', route => {
     const path = new URL(route.request().url()).pathname;
     if (path === '/api/auth/me') return route.fulfill({json: {user_id: '00000000-0000-0000-0000-000000000005'}});
-    if (path === '/api/environment') return route.fulfill({json: {version: 0, domains: [], themes: [], memberships: {}, primary_domains: {}}});
+    if (path === '/api/environment') return route.fulfill({json: {version: 0, domains: [], memberships: {}, primary_domains: {}, usage: {}}});
     if (path === '/api/environment/spaces') return route.fulfill({json: {items: [], next_after_id: null}});
     return route.fulfill({status: 404, json: {detail: 'outside fixture'}});
   });

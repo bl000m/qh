@@ -30,10 +30,10 @@ for(const width of [1366,375])test('connection, creation and immediate committed
  await expect(page.getByRole('heading',{name:'Marre de tout réexpliquer à chaque IA ?'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  const logo=await page.locator('.public-brand img').getAttribute('src');
- await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('.loading-overlay')).toBeVisible();
- await expect(page.locator('.signin')).toBeVisible();identify();
+ await page.getByRole('button',{name:'Se connecter',exact:true}).click();await expect(page.locator('.qh-session-loading')).toBeVisible();
+ await expect(page.locator('.signin')).toHaveCount(0);identify();
  await expect(page.getByRole('heading',{name:'Mon environnement',exact:true})).toBeVisible();
- await expect(page.locator('.loading-overlay')).toHaveCount(0);
+ await expect(page.locator('.qh-session-loading')).toHaveCount(0);
  expect(await page.locator('#environment-title').evaluate(n=>getComputedStyle(n).outlineStyle)).toBe('none');
  await page.getByRole('link',{name:'Travail',exact:true}).click();
  await page.getByRole('button',{name:'Créer mon premier Context Space',exact:true}).click();

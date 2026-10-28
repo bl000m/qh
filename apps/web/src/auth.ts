@@ -99,6 +99,8 @@ export function createSession(manager = new UserManager(oidcSettings(window.loca
       return initializing;
     },
     async login() {
+      if(state==='starting')return;
+      set('starting');
       try {
         await manager.clearStaleState();
         await manager.signinRedirect({ state: safeReturnPath(window.location.pathname), nonce: crypto.randomUUID() });

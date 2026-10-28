@@ -8,7 +8,7 @@
 .environment-window { grid-column:1; width:100%; min-width:0; height:var(--environment-area-height); overflow:visible; }
 .environment-sphere { position:relative; width:100%; height:100%; container-type:inline-size; }
 .environment-bubble-art { display:block; width:100%; height:100%; position:absolute; inset:0; object-fit:contain; pointer-events:none; }
-.environment-sphere>.environment-bubble-art { filter:blur(10px); opacity:.12; transform:scale(1.08); }
+.environment-sphere>.environment-bubble-art { filter:blur(10px); opacity:.3; transform:scale(1.08); }
 .environment-domains { list-style:none; margin:0; padding:0; }
 .environment-domain { position:absolute; z-index:1; aspect-ratio:1; container-type:inline-size; animation:environment-float var(--float-duration) ease-in-out var(--float-delay) infinite var(--float-direction); }
 .environment-domain:hover,.environment-domain:focus-within { animation-play-state:paused; }
