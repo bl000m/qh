@@ -1,0 +1,6 @@
+<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Offline workspace loading</title></head><body><div id="root"></div><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';
+import ContextSpaceWorkspace from '../../src/ContextSpaceWorkspace';import {QhApi} from '../../src/api';import '../../src/styles.css';
+const api=new QhApi(()=> 'isolated-fixture',()=>{});
+createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(ContextSpaceWorkspace,{api,scope:'00000000-0000-0000-0000-000000000001'})));
+</script></body></html>

@@ -5,6 +5,7 @@ intake is replayed together so corrections cannot blindly erase earlier evidence
 """
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
+import asyncio
 import json
 
 from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded
@@ -36,15 +37,20 @@ class ContextConsolidation:
     async def read(self, subject, scope):
         await self._allow(subject, scope)
         state = await self.repository_for(subject).read(scope)
-        rows = []
         ids = state.get('understanding_ids', state['current']['revision_ids'] if state['current'] else [])
-        if ids:
-            for revision in ids:
+        # Each exact read retains its policy and graph checks. Bound concurrent
+        # I/O instead of serializing the same independent work for every item.
+        reads = asyncio.Semaphore(4)
+
+        async def read_revision(revision):
+            async with reads:
                 page = await self.context.browse(ContextRequest(subject_id=subject,
                     query=ContextBrowse(context_id=scope, view='history', limit=1, revision_id=revision)))
                 if len(page.revisions)!=1 or page.revisions[0].revision_id!=revision:
                     raise EnrichmentUnavailable('Consolidated revision unavailable')
-                rows.append(asdict(page.revisions[0]))
+                return asdict(page.revisions[0])
+
+        rows = await asyncio.gather(*(read_revision(revision) for revision in ids))
         await self._allow(subject, scope)
         return dict(**state, understanding=rows, recap=recap_output.from_version(rows, state['current']))
 

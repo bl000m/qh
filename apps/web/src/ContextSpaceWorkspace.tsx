@@ -20,6 +20,8 @@ function failure(error:unknown){return error instanceof ApiError&&error.status==
 
 export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,settingsRequest=0,name}:{api:QhApi;name?:string;scope:string;heading?:ReactNode;settingsContent?:ReactNode;settingsRequest?:number}) {
  const [state,setState]=useState<State|null>(null),[caps,setCaps]=useState<SessionCapabilities|null>(null);
+ const [loadStatus,setLoadStatus]=useState<'loading'|'empty'|'ready'|'error'>('loading');
+ const initialRead=useRef<{api:QhApi;scope:string;promise:Promise<State>}|null>(null);
  const [open,setOpen]=useState(false),[settings,setSettings]=useState(false);
  const [narrow,setNarrow]=useState(()=>window.matchMedia('(max-width:850px)').matches);
  const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'regenerate'|'file'|null>(null);
@@ -29,17 +31,30 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const sendOperations=useRef<Record<string,string>>({}),regenerationAttempt=useRef<string|null>(null);
  const [availabilityError,setAvailabilityError]=useState(''),[checkingAvailability,setCheckingAvailability]=useState(false);
  const availabilityGeneration=useRef(0);
+ const availabilityRead=useRef<{api:QhApi;scope:string;promise:Promise<SessionCapabilities>}|null>(null);
  const panel=useRef<HTMLElement>(null);
  const appendAttempt=useRef<ContextIntake|null>(null),lock=useRef(false);
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
- const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);return value;},[api,scope]);
- useEffect(()=>{let active=true;setState(null);setError('');setQuestionStates({});sendOperations.current={};regenerationAttempt.current=null;api.workspace(scope).then(s=>{if(active)setState(s);}).catch(e=>{if(active)setError(failure(e));});return()=>{active=false;};},[api,scope]);
+ const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);setLoadStatus(value.current?'ready':'empty');return value;},[api,scope]);
+ useEffect(()=>{
+  let active=true;
+  setState(null);setLoadStatus('loading');setError('');setQuestionStates({});sendOperations.current={};regenerationAttempt.current=null;
+  // Reuse only an in-flight mount read (including React StrictMode's replay).
+  if(initialRead.current?.api!==api||initialRead.current.scope!==scope)initialRead.current={api,scope,promise:api.workspace(scope)};
+  const request=initialRead.current;
+  request.promise.then(value=>{if(active){setState(value);setLoadStatus(value.current?'ready':'empty');}})
+   .catch(e=>{if(active){setLoadStatus('error');setError(failure(e));}})
+   .finally(()=>{if(initialRead.current===request)initialRead.current=null;});
+  return()=>{active=false;};
+ },[api,scope]);
  const refreshAvailability=useCallback(async()=>{
   const generation=++availabilityGeneration.current;
   setCheckingAvailability(true);setAvailabilityError('');
-  try{const value=await api.chatCapabilities(scope);if(generation===availabilityGeneration.current)setCaps(value);}
+  if(availabilityRead.current?.api!==api||availabilityRead.current.scope!==scope)availabilityRead.current={api,scope,promise:api.chatCapabilities(scope)};
+  const request=availabilityRead.current;
+  try{const value=await request.promise;if(generation===availabilityGeneration.current)setCaps(value);}
   catch(e){if(generation===availabilityGeneration.current){setCaps(null);setAvailabilityError(apiMessage(e));}}
-  finally{if(generation===availabilityGeneration.current)setCheckingAvailability(false);}
+  finally{if(availabilityRead.current===request)availabilityRead.current=null;if(generation===availabilityGeneration.current)setCheckingAvailability(false);}
  },[api,scope]);
  useEffect(()=>{
   void refreshAvailability();
@@ -51,7 +66,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  useEffect(()=>{if(settingsRequest)setSettings(true);},[settingsRequest]);
  useEffect(()=>{const media=window.matchMedia('(max-width:850px)');const update=()=>setNarrow(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  useEffect(()=>{log.current?.scrollTo({top:log.current.scrollHeight});},[state?.intake.length,busy]);
- function accept(next:WorkspaceState){setState(previous=>({...next,understanding:previous?.understanding??[],recap:next.current?.id===previous?.current?.id?previous?.recap:null}));}
+ function accept(next:WorkspaceState){setState(previous=>({...next,understanding:previous?.understanding??[],recap:next.current?.id===previous?.current?.id?previous?.recap:null}));setLoadStatus(next.current?'ready':'empty');}
  async function saveDraft(){
   if(!draft.trim())return state;
   if(!appendAttempt.current||appendAttempt.current.text!==draft)appendAttempt.current=intake('message',draft);
@@ -144,6 +159,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const summary=state?.recap;
  const sources=state?.understanding.filter(row=>!summary||summary.support_revision_ids.includes(row.revision_id))??[];
  const recap=<>
+  {loadStatus==='loading'?<p role="status" className="small muted">Chargement de la compréhension…</p>:loadStatus==='error'?<p role="alert" className="small muted">La compréhension n’a pas pu être chargée. Actualisez l’état pour réessayer.</p>:<>
   {state?.current?<>
    <p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
    <h3>{summary?.title??name??'Ce contexte'}</h3>
@@ -153,6 +169,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    {sources.length>0&&<details className="recap-sources"><summary>Consulter les sources</summary>{sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>}
    <p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p>
   </>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
+  </>}
  </>;
 
  return <section className="context-space-v02" aria-label="Context Space">
