@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import type {CSSProperties, RefObject} from 'react';
 import type {useOrganization} from './EnvironmentDomains';
 import {AddDomain} from './EnvironmentDomains';
-import {domainBubbles} from './environment-bubbles';
+import {domainBubbles, domainDisplayNames} from './environment-bubbles';
 import type {BubbleLabel} from './environment-bubbles';
 import Link from './NavLink';
 import {domainPath} from './navigation';
@@ -13,6 +13,7 @@ import './environment-home.css';
 export default function EnvironmentHome({state, headingRef}: {state: ReturnType<typeof useOrganization>; headingRef: RefObject<HTMLHeadingElement>}) {
   const [adding, setAdding] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
+  const displayNames = useMemo(() => domainDisplayNames(state.value?.domains ?? []), [state.value]);
   const [measurements, setMeasurements] = useState<{width: number; height: number; labels: Record<string, BubbleLabel>}>({width: 800, height: 650, labels: {}});
   const bubbles = useMemo(() => state.value ? domainBubbles(state.value, measurements.labels, measurements.width, measurements.height) : [], [state.value, measurements]);
   const areaHeight = Math.max(measurements.height, ...bubbles.map(item => item.y + item.radius + 24));
@@ -47,7 +48,7 @@ export default function EnvironmentHome({state, headingRef}: {state: ReturnType<
           <li key={domain.id} data-domain-id={domain.id} className="environment-domain" style={{left: `${x - radius}px`, top: `${y - radius}px`, width: `${radius * 2}px`, '--float-duration': `${5.5 + index % 5}s`, '--float-delay': `${-index * 1.3}s`, '--float-direction': index % 2 ? 'reverse' : 'normal'} as CSSProperties}>
             <Link to={domainPath(domain.id)} className="environment-domain-link" label={`${domain.name} — ${count} Context Space${count > 1 ? 's' : ''}`} title={domain.name}>
               <img className="environment-bubble-art" src={bubble} width={1261} height={1247} alt="" aria-hidden="true"/>
-              <span className="environment-domain-text"><span className="environment-domain-label"><span aria-hidden="true">&gt;</span><span>{domain.name}</span></span><span className="environment-domain-count">{count} espace{count > 1 ? 's' : ''}</span></span>
+              <span className="environment-domain-text"><span className={'environment-domain-label' + (displayNames[domain.id] === domain.name ? ' environment-domain-label-full' : '')}><span aria-hidden="true">&gt;</span><span>{displayNames[domain.id]}</span></span><span className="environment-domain-count">{count} espace{count > 1 ? 's' : ''}</span></span>
             </Link>
           </li>)}</ul>
       </div></div>
