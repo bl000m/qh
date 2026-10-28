@@ -138,10 +138,10 @@ test('401 discards private UI and requires login; reload does not persist tokens
   await storageIsTokenFree(page);
   await page.reload(); await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();
 });
-test('logout clears local state and reaches real Keycloak logout', async ({page}) => {
+test('logout clears local state and returns from Keycloak to public home', async ({page}) => {
   await page.goto('/'); await login(page);
   await page.getByRole('button',{name:'Se déconnecter'}).click();
-  await expect(page.locator('body')).toContainText(/logged out|déconnect|logout|logging out/i);
+  await expect(page.getByRole('heading',{name:'Marre de tout réexpliquer à chaque IA ?',exact:true})).toBeVisible();
   await page.goto('/'); await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeVisible();
   await storageIsTokenFree(page);
 });

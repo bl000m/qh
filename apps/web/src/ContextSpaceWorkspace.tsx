@@ -157,7 +157,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
  const memoryStatus=!state?null:memoryPending||state.state==='running'?'Mémorisation en cours…':state.pending_count>0?'Nouveaux échanges à mémoriser':state.current?'Compréhension à jour':null;
- const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Tes messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
+ const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée. Tes messages sont conservés ; utilise « Actualiser la disponibilité » pour réessayer.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Tes messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
 
 
  const items=state?.intake??[];

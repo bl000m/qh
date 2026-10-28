@@ -91,7 +91,7 @@ test.describe.serial('real isolated OIDC session transitions', () => {
     await finishBootstrap(loading, 1);
     const background = page.locator('.environment-sphere>.environment-bubble-art');
     await expect(background).toHaveJSProperty('naturalWidth', 1400);
-    expect(await background.evaluate(node => ({opacity: getComputedStyle(node).opacity, filter: getComputedStyle(node).filter, pointerEvents: getComputedStyle(node).pointerEvents}))).toEqual({opacity: '0.4', filter: 'blur(8px)', pointerEvents: 'none'});
+    expect(await background.evaluate(node => ({opacity: getComputedStyle(node).opacity, filter: getComputedStyle(node).filter, pointerEvents: getComputedStyle(node).pointerEvents}))).toEqual({opacity: '0.65', filter: 'blur(4px)', pointerEvents: 'none'});
     await page.screenshot({path: info.outputPath('visible-background.png')});
   });
 

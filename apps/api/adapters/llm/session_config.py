@@ -78,13 +78,20 @@ class PrivateSessionFactory:
                 or not Decimal('0') < Decimal(state['max_usd']) <= usd_cap):
                 raise ValueError()
             trial = r.get('development_account')
-            if trial is not None and (type(trial) is not dict
-                or set(trial) != {'environment', 'subject_id', 'principal_id'}
-                or trial['environment'] != 'development'
-                or any(not isinstance(trial[k], str) or not trial[k] for k in ('subject_id','principal_id'))
-                or len(trial['principal_id']) != 64):
-                raise ValueError('Explicit verified development account required')
+            additional = r.get('additional_development_accounts', [])
+            if type(additional) is not list or len(additional) > 1 or additional and trial is None:
+                raise ValueError('Explicit verified development accounts required')
+            accounts = ([trial] if trial is not None else []) + additional
+            for account in accounts:
+                if (type(account) is not dict or set(account) != {'environment', 'subject_id', 'principal_id'}
+                    or account['environment'] != 'development'
+                    or any(not isinstance(account[k], str) or not account[k] for k in ('subject_id','principal_id'))
+                    or len(account['principal_id']) != 64):
+                    raise ValueError('Explicit verified development account required')
+            if len({a['subject_id'] for a in accounts}) != len(accounts) or len({a['principal_id'] for a in accounts}) != len(accounts):
+                raise ValueError('Distinct verified development accounts required')
             self.development_account = trial
+            self.development_accounts = tuple(accounts)
             grants = r['grants']
             if (not isinstance(grants, list) or not grants or len(grants) > 100
                 or any(type(g) is not dict or set(g) not in ({'subject_id', 'context_id'}, {'subject_id', 'context_id', 'snapshot_sha256'})
@@ -112,7 +119,7 @@ class PrivateSessionFactory:
     def allowed(self, subject_id, context_id):
         try:
             current = private_json(self.authorization_path)
-            return ((self.development_account is not None and subject_id == self.development_account['subject_id'] or (subject_id, context_id) in self.scopes)
+            return ((any(subject_id == account['subject_id'] for account in self.development_accounts) or (subject_id, context_id) in self.scopes)
                 and datetime.now(timezone.utc).timestamp() < self.expires_at
                 and hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest() == self.authorization_hash)
         except Exception:
@@ -142,13 +149,12 @@ class PrivateSessionFactory:
             return False
 
     def eligible_identity(self, identity):
-        return (self.development_account is not None
-            and identity.subject_id == self.development_account['subject_id']
-            and identity.principal_id == self.development_account['principal_id'])
+        return any(identity.subject_id == account['subject_id'] and identity.principal_id == account['principal_id']
+            for account in self.development_accounts)
 
     def accepts_snapshot(self, subject_id, context_id, digest):
         if self.development_account is not None:
-            return subject_id == self.development_account['subject_id']
+            return any(subject_id == account['subject_id'] for account in self.development_accounts)
         expected = self.snapshots.get((subject_id, context_id))
         return expected is None or expected == digest
 

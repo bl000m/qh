@@ -89,6 +89,14 @@ export function createSession(manager = browserManager(),
   manager.events.addAccessTokenExpired(()=>{if(renewalEnabled&&state==='authenticated')void ready().catch(()=>{});else if(state==='authenticated')clear('expired');});
   const wake=()=>{if(state==='authenticated')void ready().catch(()=>{});};
   if(renewalEnabled){window.addEventListener('focus',wake);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake();});}
+  window.addEventListener('pagehide',()=>{if(state==='authenticated')set('starting');});
+  window.addEventListener('pageshow',event=>{
+    if(!event.persisted)return;
+    const previous=hint();
+    if(!previous||!user||previous.subject!==user.profile.sub||previous.issuer!==user.profile.iss){clear('signed-out');window.history.replaceState(null,'','/');window.dispatchEvent(new PopStateEvent('popstate'));}
+    else if(user&&!user.expired&&(!renewalEnabled||Date.now()<started+8*3600000))set('authenticated');
+    else clear('expired');
+  });
   return {
     preserveDrafts:renewalEnabled,
     readyToken:ready,
@@ -104,6 +112,10 @@ export function createSession(manager = browserManager(),
         if (callback) window.history.replaceState(null, '', '/');
         try {
           await manager.clearStaleState();
+          if(callback&&new URL(callback).searchParams.has('state')&&!new URL(callback).searchParams.has('code')&&!new URL(callback).searchParams.has('error')) {
+            await manager.signoutRedirectCallback(callback);
+            clear('signed-out');window.dispatchEvent(new PopStateEvent('popstate'));return;
+          }
           const next = callback ? await manager.signinRedirectCallback(callback) : (await manager.getUser?.()) ?? await manager.signinSilent();
           if (generation !== epoch) {void manager.removeUser(); return;}
           if (!next || next.expired || !next.access_token) throw new Error('Expired session');
@@ -134,13 +146,13 @@ export function createSession(manager = browserManager(),
     },
     async logout() {
       const idToken = user?.id_token;
-      epoch++;clearTimeout(timer);user=null;forget();set('signed-out');
+      epoch++;clearTimeout(timer);user=null;forget();set('starting');
       try {
         if(renewalEnabled)try{await manager.revokeTokens(['refresh_token']);}catch{/* Local logout remains effective if revocation is unavailable. */}
         await manager.removeUser();
-        // No post_logout_redirect_uri: reuse the approved realm allowlist unchanged.
-        await manager.signoutRedirect({ id_token_hint: idToken });
-      } catch { clear('signed-out'); }
+        // Reuse the already approved callback URI and validate the logout transaction there.
+        await manager.signoutRedirect({ id_token_hint: idToken, post_logout_redirect_uri: window.location.origin+'/oidc/callback', state: 'qh-logout' });
+      } catch { clear('error'); }
     },
     accessToken:token,
     expire: () => clear('expired')

@@ -848,6 +848,17 @@ reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera fact
 before sending. Previous decisions above remain historical and continue outside
 this precisely scoped development mode. See [implementation contract](../qh-51-essai-ia.md).
 
+## Explicit two-account demo authorization — owner, 2026-10-28
+
+Alice and Bob may use the same server-side Mistral Small configuration in their
+own Spaces. Both exact verified OIDC subject/principal pairs must be explicitly
+listed in private authorization; all other accounts remain denied. Sharing the
+provider key grants no access to another account's Spaces or conversations.
+The existing aggregate ledger, history, USD5/EUR10 envelope, observed-credit guard,
+expiry and maximum-cost reservations are unchanged and shared, never per-account
+or replenished. No paid call is needed to check availability. Non-eligible accounts
+receive valid disabled capabilities rather than an invalid quota-free response.
+
 ## Context Space V0.2 — owner UX pivot, 2026-10-26
 
 The explicit Context Space V0.2 request supersedes mandatory item/dimension review

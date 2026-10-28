@@ -1,4 +1,4 @@
-"""Ordinary explicit sends for one verified development account, all owned Spaces.
+"""Ordinary explicit sends for explicitly verified demo accounts, owned Spaces only.
 
 No consent/grant/activation registry. The same canonical chat and Understanding
 Engine retain policy, graph freshness, provenance and proposed-only publication.
@@ -10,6 +10,7 @@ from app.chat.context import ChatProviderUnavailable
 from app.core.models import ProviderBudgetExceeded
 from app.chat.models import ChatRequest
 from app.core.models import ContextSpaceNotFound
+from app.chat.sessions import unavailable_capabilities
 
 
 class DevelopmentAI:
@@ -41,6 +42,8 @@ class DevelopmentAI:
             and identity.verified_session_id and identity.work_expires_at
             and self.clock() < min(identity.expires_at, identity.work_expires_at)
             and self.factory.allowed(identity.subject_id, request.context_id))
+        if not eligible:
+            return unavailable_capabilities(1800)
         if eligible:
             accounting = self.factory.remaining()
             accounting_blocked = accounting['blocked']
