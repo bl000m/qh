@@ -9,11 +9,10 @@ import httpx
 import pytest
 
 from adapters.llm.mistral import ExperimentBudget, MistralProvider
-from app.understanding.citations import CitationResolutionError
 from app.understanding.quote_schema import exact_quote_schema
 from app.understanding.selected import propose_selected_conversation, selected_source
 from app.understanding.uum import OUTPUT_SCHEMA, UumExtractionProvider
-from tests.test_consolidation import consolidation_output
+from tests.test_consolidation import consolidation_output, reference_output
 
 
 def workshop(count=30):
@@ -62,16 +61,19 @@ def test_consolidation_quote_schema_and_final_validation_offline(tmp_path, monke
         sent.append(body)
         assert 'max_tokens' not in body and body['model'] == 'mistral-small-2603'
         schema = body['response_format']['json_schema']['schema']['properties']['understanding']
+        packet = json.loads(body['messages'][-1]['content'])
+        text = ''.join(s['text'] for s in packet['segments'])
+        choices_by_quote = {text[p['start']:p['end']]:p['ref'] for p in packet['passages']}
         for shape in schema['properties']['items']['items']['anyOf']:
-            choices = shape['properties']['evidence']['items']['properties']['quote']['enum']
-            assert question not in choices and all(lines[i] in choices for i in (5, 7, 9))
+            choices = shape['properties']['evidence_refs']['items']['enum']
+            assert question not in choices_by_quote and all(choices_by_quote[lines[i]] in choices for i in (5, 7, 9))
             if bad_quote:
-                assert evidence[0]['quote'] not in choices
+                assert evidence[0]['quote'] not in choices_by_quote
         # Simulate even a provider violating the constrained schema: the Engine
         # must still reject, with no quote splitting/repair or automatic retry.
         return httpx.Response(200, json=dict(model='mistral-small-2603',
             usage=dict(prompt_tokens=1000, completion_tokens=500), choices=[dict(
-                finish_reason='stop', message=dict(content=json.dumps(output)))]))
+                finish_reason='stop', message=dict(content=json.dumps(reference_output(output, packet))))]))
 
     delegate = MistralProvider(budget=ExperimentBudget(tmp_path/'ledger.json', create=True),
         transport=httpx.MockTransport(respond), provider_defaults=True)
@@ -81,7 +83,7 @@ def test_consolidation_quote_schema_and_final_validation_offline(tmp_path, monke
         conversation=conversation, extraction_key='workshop-test', policy=policy,
         provider=provider, descriptor_version=3)
     if bad_quote:
-        with pytest.raises(CitationResolutionError): asyncio.run(call)
+        with pytest.raises(ValueError): asyncio.run(call)
     else:
         source, rows = asyncio.run(call)
         assert len(rows) == 1 and rows[0]['validation_state'] == 'proposed'

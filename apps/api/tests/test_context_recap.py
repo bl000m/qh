@@ -16,7 +16,7 @@ from app.understanding import recap
 from app.chat.context import build_context, decode_answer, ChatContextUnavailable, ChatInputInvalid
 from app.chat.references import expand_model_context
 from tests.test_chat_context import revision
-from tests.test_consolidation import consolidation_output
+from tests.test_consolidation import consolidation_output, reference_replay
 
 
 def recipe():
@@ -35,6 +35,7 @@ def recipe():
 def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_recap():
     details,output=recipe();frozen=deepcopy(output)
     delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(output)))))
+    reference_replay(delegate)
     provider=UumExtractionProvider(delegate,consolidate=True,with_recap=True)
     policy=Mock(evaluate=AsyncMock(return_value=type('Decision',(),dict(allowed=True))()))
     scope,subject,version=str(uuid4()),str(uuid4()),str(uuid4())
@@ -127,10 +128,12 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
         content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=original_quote, turns=[dict(turn_id='turn', start=0, end=len(original_quote))])))))
     delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))))
+    reference_replay(delegate)
     observer = Mock()
     provider = UumExtractionProvider(delegate, consolidate=True, with_recap=True, observer=observer)
     asyncio.run(provider.generate(request))
-    observer.assert_called_once_with('uum.recap_exact_statement_support', True)
+    observer.assert_any_call('uum.authorized_passage_references', True)
+    observer.assert_any_call('uum.recap_exact_statement_support', True)
     sent = delegate.generate.call_args.args[0]
     assert 'NEVER "Try **Carnaroli** rice."' in sent.messages[0].content
     field = sent.output_schema['properties']['recap']['anyOf'][0]['properties']['supporting_statements']
@@ -146,7 +149,7 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
     observer.reset_mock()
     with pytest.raises(ValueError, match='Exact unambiguous detailed recap support required'):
         asyncio.run(provider.generate(request))
-    observer.assert_called_once_with('uum.recap_exact_statement_support', False,
+    observer.assert_any_call('uum.recap_exact_statement_support', False,
         'Invalid recap envelope or exact detailed statement support')
     assert original_quote not in str(observer.call_args)
     assert delegate.generate.await_count == 2  # One per explicit request, no retry.
@@ -199,6 +202,7 @@ def test_recap_final_content_and_essential_attribution_offline(attributed):
     frozen = deepcopy(output)
     delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))))
+    reference_replay(delegate)
     provider = UumExtractionProvider(delegate, consolidate=True, with_recap=True)
     conversation = dict(id='final-content', revision_no=1, acquired_at='2026-10-27T10:00:00Z', metadata={},
         turns=[dict(id='request', speaker='user', text='Puoi aiutarmi a preparare un laboratorio?'),

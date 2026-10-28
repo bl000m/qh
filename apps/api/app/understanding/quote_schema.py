@@ -5,6 +5,14 @@ from app.understanding.citations import CitationResolutionError, resolve_output_
 
 
 def exact_quote_schema(atomic_schema, packet):
+    quotes = exact_quotes(packet)
+    schema = deepcopy(atomic_schema)
+    for shape in schema['properties']['items']['items']['anyOf']:
+        shape['properties']['evidence']['items']['properties']['quote']['enum'] = quotes
+    return schema
+
+
+def exact_quotes(packet):
     # The Engine has already authorized this exact source packet. Retain full
     # turns for qualifications across lines, plus individual original lines for
     # concise multi-part evidence. No source edits, semantic splitting or repairs.
@@ -19,10 +27,7 @@ def exact_quote_schema(atomic_schema, packet):
     quotes = _unique_quotes(list(candidates), source)
     if not quotes:
         raise ValueError('No unique original quotation available for consolidation')
-    schema = deepcopy(atomic_schema)
-    for shape in schema['properties']['items']['items']['anyOf']:
-        shape['properties']['evidence']['items']['properties']['quote']['enum'] = quotes
-    return schema
+    return quotes
 
 
 def _unique_quotes(candidates, source):

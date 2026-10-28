@@ -10,7 +10,7 @@ import pytest
 from app.core.models import GenerationResult, Message, MessageRole
 from app.understanding.selected import propose_selected_conversation
 from app.understanding.uum import UumExtractionProvider
-from tests.test_consolidation import consolidation_output
+from tests.test_consolidation import consolidation_output, reference_replay
 
 
 @pytest.mark.parametrize('declared', [False, True])
@@ -34,6 +34,7 @@ def test_question_is_not_a_personal_fact_and_assistant_advice_is_not_adoption(de
     frozen = deepcopy(conversation)
     delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))))
+    reference_replay(delegate)
     policy = Mock(evaluate=AsyncMock(return_value=type('Decision', (), dict(allowed=True))()))
     source, rows = asyncio.run(propose_selected_conversation(subject_id=str(uuid4()), context_id=str(uuid4()),
         conversation=conversation, extraction_key='fidelity-offline', policy=policy,

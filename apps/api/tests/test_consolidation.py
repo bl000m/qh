@@ -28,6 +28,29 @@ def consolidation_output(wire):
             supporting_statements=texts) if texts else None)
 
 
+def reference_output(output, packet):
+    """Encode canonical fixtures using only passage labels disclosed in this request."""
+    output = deepcopy(output)
+    text = ''.join(segment['text'] for segment in packet['segments'])
+    refs = {text[p['start']:p['end']]:p['ref'] for p in packet['passages']}
+    atomic = output.get('understanding', output)
+    if atomic.get('format') == 'qh.atomic-understanding/1':
+        atomic['format'] = 'qh.atomic-understanding.refs/1'
+    for item in atomic['items']:
+        item['evidence_refs'] = [refs.get(e['quote'], 'unknown-passage') for e in item.pop('evidence')]
+    return output
+
+
+def reference_replay(provider):
+    def respond(request):
+        result = provider.generate.return_value
+        packet = json.loads(request.messages[-1].content)
+        output = reference_output(json.loads(result.message.content), packet)
+        return replace(result, message=Message(role=MessageRole.ASSISTANT, content=json.dumps(output)))
+    provider.generate.side_effect = respond
+    return provider
+
+
 def fixture():
     context=Mock(browse=AsyncMock(return_value=SimpleNamespace(revisions=())))
     policy=Mock(evaluate=AsyncMock(return_value=SimpleNamespace(allowed=True)))
@@ -56,6 +79,7 @@ def test_one_atomic_publish_after_engine_and_repeat_does_not_generate():
         primary_dimension=None,evidence=[dict(quote='Le responsable est Alice.')])])
     delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,
         content=json.dumps(consolidation_output(wire))))))
+    reference_replay(delegate)
     ai._provider.return_value=delegate
     async def publish(scope, operation, intake_ids, source, revisions):
         return dict(current=dict(id=operation, revision_ids=[r['id'] for r in revisions]))
@@ -79,6 +103,7 @@ def test_published_recap_is_not_disclosed_after_owner_revocation():
         primary_dimension=None,evidence=[dict(quote='Le responsable est Alice.')])])
     ai._provider.return_value=Mock(generate=AsyncMock(return_value=GenerationResult(
         message=Message(role=MessageRole.ASSISTANT, content=json.dumps(consolidation_output(wire))))))
+    reference_replay(ai._provider.return_value)
 
     async def publish(scope, operation, intake_ids, source, revisions):
         service.policy.evaluate.return_value=SimpleNamespace(allowed=False)
@@ -169,11 +194,14 @@ def test_previous_machine_state_is_supplied_separately_from_original_citable_sou
     from app.understanding.uum import UumExtractionProvider
     original=dict(source_revision_id='source',input_sha256='digest',text='Exact original.',turns=[dict(turn_id='original',start=0,end=15)])
     source_message=Message(role=MessageRole.USER,content=json.dumps(original))
-    delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content='{}'))))
+    delegate=reference_replay(Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
+        role=MessageRole.ASSISTANT,content=json.dumps(dict(format='qh.atomic-understanding/1',items=[])))))))
     provider=UumExtractionProvider(delegate,consolidate=True,previous=({'text':'Prior unverified interpretation'},))
     asyncio.run(provider.generate(GenerationRequest(messages=(Message(role=MessageRole.SYSTEM,content='Engine'),source_message))))
     generated=delegate.generate.call_args.args[0]
-    assert generated.messages[-1]==source_message
+    packet=json.loads(generated.messages[-1].content)
+    assert ''.join(s['text'] for s in packet['segments'])==original['text']
+    assert packet['turns']==original['turns']
     assert 'Prior unverified interpretation' in generated.messages[-2].content
     assert 'not new evidence' in generated.messages[-2].content
     assert 'not new human' in generated.messages[0].content

@@ -25,7 +25,7 @@ from tests.test_migrations import empty_database as empty_database
 from tests.test_native_context import real_engine as real_engine
 from tests.test_native_semantics_sql import dedicated_server_only as dedicated_server_only
 from tests.test_canonical_graph_pipeline import drain
-from tests.test_consolidation import document, consolidation_output
+from tests.test_consolidation import document, consolidation_output, reference_replay
 
 
 def run(operation):
@@ -40,6 +40,7 @@ def prepare(p, config):
     wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Le responsable est Alice.',
         primary_dimension='situation_information',assignment_certainty='asserted',evidence=[dict(quote='Le responsable est Alice.')])])
     provider=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(consolidation_output(wire))))))
+    reference_replay(provider)
     ai=Mock(authorize_consolidation=AsyncMock(),_authorize=AsyncMock(),_provider=Mock(return_value=provider))
     repository=lambda subject:PostgresConsolidationRepository(url=p['repo'].url,subject_id=subject)
     service=ContextConsolidation(context=context,policy=policy,ai=ai,repository_for=repository)
@@ -85,7 +86,7 @@ def test_atomic_consolidation_persistence_retry_correction_and_owner_isolation(g
     original=provider.generate.return_value
     imported_wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Import non confirmé : Alice est responsable.',
         primary_dimension='situation_information',assignment_certainty='tentative',
-        evidence=[dict(quote='"text": "Le responsable est Alice."')])])
+        evidence=[dict(quote=json.dumps(portable, ensure_ascii=False, sort_keys=True))])])
     provider.generate.return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(consolidation_output(imported_wire))))
     other=run(service.consolidate(who,p['sibling']))
     from adapters.context.incremental import ProjectionWorker
