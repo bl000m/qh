@@ -1,5 +1,5 @@
 import ContextSpaceWorkspace from './ContextSpaceWorkspace';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {createPortal} from 'react-dom';
 import { apiMessage, QhApi, validName } from './api';
@@ -19,6 +19,8 @@ import Loading from './Loading';
 import PublicPages, {isPublicPath} from './PublicPages';
 import EnvironmentHome from './EnvironmentHome';
 import SessionLoading, {SessionFailure} from './SessionLoading';
+import {useApplicationSession} from './application-session';
+import type {Organization} from './environment';
 
 function Notice({ error, children }: { error?: boolean; children: ReactNode }) {
   return <p className={error ? 'notice error' : 'notice'} role={error ? 'alert' : 'status'}>{children}</p>;
@@ -31,8 +33,8 @@ function Metadata({ space }: { space: ContextSpace }) {
     <div><dt>Dernière modification</dt><dd><time dateTime={space.updated_at}>{new Date(space.updated_at).toLocaleString('fr-FR')}</time></dd></div>
   </dl>;
 }
-function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api: QhApi; domain?: string|null; collection?: boolean;breadcrumbHost:HTMLElement|null }) {
-  const organization=useOrganization(api);
+function Spaces({ api, domain = null, collection = false,breadcrumbHost,initialOrganization }: { api: QhApi; domain?: string|null; collection?: boolean;breadcrumbHost:HTMLElement|null;initialOrganization?:Organization }) {
+  const organization=useOrganization(api,true,initialOrganization);
   const home=!domain&&!collection;
   const activeDomain=organization.value?.domains.find(d=>d.id===domain);
   const heading=home?'Mon environnement':activeDomain?.name??(domain==='unclassified'?'Non classés':domain?'Domaine':'Tous les Context Spaces');
@@ -75,7 +77,7 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
     return () => { active = false; };
   }, [api, refresh,sort,domain,selection,home]);
   useEffect(()=>{setForm(false);setCreateError('');setName('');},[domain,collection]);
-  if(home&&!organization.value)return organization.error?<><Notice error>{organization.error}</Notice><button className="secondary" onClick={organization.reload}>Réessayer</button></>:<SessionLoading/>;
+  if(home&&!organization.value)return organization.error?<><Notice error>{organization.error}</Notice><button className="secondary" onClick={organization.reload}>Réessayer</button></>:<Loading label="Chargement de ton organisation…"/>;
   if(home)return <EnvironmentHome state={organization} headingRef={title}/>;
   async function more() {
     if (!next || loading) return;
@@ -157,22 +159,14 @@ function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;orig
 
  </article>}</section>;
 }
-function Environment({api,logout,breadcrumbHost}:{api:QhApi;logout:()=>void;breadcrumbHost:HTMLElement|null}) {
+function Environment({api,logout,breadcrumbHost,identity,initialOrganization}:{api:QhApi;logout:()=>void;breadcrumbHost:HTMLElement|null;identity:string;initialOrganization?:Organization}) {
   const path = usePath();
-  const [identity, setIdentity] = useState('');
-  const [error, setError] = useState('');
-  const [refresh, setRefresh] = useState(0);
-  useEffect(() => {
-    let active = true; setError('');
-    api.me().then(id => { if (active) {drafts.verifyOwner(id);setIdentity(id);} }).catch(reason => { if (active) setError(apiMessage(reason)); });
-    return () => { active = false; };
-  }, [api, refresh]);
+  const seed = useRef(initialOrganization);
+  useEffect(()=>{seed.current=undefined;},[]);
   useEffect(()=>{if(identity&&parseRoute(path).kind!=='space')drafts.logout();},[identity,path]);
-  if (error) return <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>;
-  if (!identity) return <SessionLoading/>;
   const route=parseRoute(path);
   return <>
-    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces api={api} breadcrumbHost={breadcrumbHost} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api} breadcrumbHost={breadcrumbHost} ownerId={identity}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
+    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces api={api} breadcrumbHost={breadcrumbHost} initialOrganization={seed.current} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api} breadcrumbHost={breadcrumbHost} ownerId={identity}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
 
 
   </>;
@@ -189,18 +183,17 @@ function Settings({api,identity,logout}:{api:QhApi;identity:string;logout:()=>vo
 }
 export default function App({ session }: { session: BrowserSession }) {
   const path = usePath();
-  const state = useSyncExternalStore(session.subscribe, session.snapshot);
   const [breadcrumbHost,setBreadcrumbHost]=useState<HTMLDivElement|null>(null);
-  const retained=state==='authenticated'||state==='expired'&&!!session.preserveDrafts;
   const api = useMemo(() => new QhApi(session.readyToken??session.accessToken, session.expire), [session]);
-  useEffect(() => { void session.initialize(); }, [session]);
+  const view=useApplicationSession(session,api),state=view.state;
+  const retained=view.phase==='authenticated';
   const logout=useCallback(()=>{drafts.logout();let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke. */}api.revokeSessionsBeforeLogout(credential);void session.logout();},[api,session]);
-  if(state==='starting')return <SessionLoading/>;
-  if(state==='error'||state==='expired'&&!retained)return <SessionFailure expired={state==='expired'} retry={()=>{void session.login();}}/>;
-  if(isPublicPath(path)||!retained)return <PublicPages path={path} session={session} state={state}/>;
+  if(view.phase==='initializing')return <SessionLoading/>;
+  if(view.phase==='error')return <SessionFailure expired={state==='expired'} message={view.error} retry={view.error?view.retry:()=>{void session.login();}}/>;
+  if(isPublicPath(path)||view.phase==='unauthenticated')return <PublicPages path={path} session={session} state={state}/>;
   return <div className={'app-shell'+(retained?' signed-in':'')}><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Ton contexte, sous ton contrôle.</span></a><div className="header-breadcrumbs" ref={setBreadcrumbHost}/>
     {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={logout}><Icon name="logout"/></button></nav>}</header>
     <main id="main-content" tabIndex={-1}>
-      <Environment api={api} logout={logout} breadcrumbHost={breadcrumbHost}/>{state==='expired'&&<SessionExpired session={session}/>}
+      <Environment api={api} logout={logout} breadcrumbHost={breadcrumbHost} identity={view.bootstrap!.identity} initialOrganization={view.bootstrap!.organization}/>{state==='expired'&&<SessionExpired session={session}/>}
     </main><footer>QH — Environnement souverain de contexte</footer></div>;
 }

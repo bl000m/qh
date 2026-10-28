@@ -23,9 +23,10 @@ export function AddDomain({state,onClose}:{state:ReturnType<typeof useOrganizati
   <div className="actions"><button disabled={state.busy||!name.trim()}>{state.busy?'Enregistrement…':'Ajouter le domaine'}</button><button type="button" className="secondary" disabled={state.busy} onClick={onClose}>Annuler</button></div>
  </form></Modal>;
 }
-export function useOrganization(api:QhApi,enabled=true){
- const [value,setValue]=useState<Organization|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
- useEffect(()=>{if(!enabled){setValue(null);return;}let active=true;setError('');api.organization().then(v=>{if(active)setValue(v);}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[api,refresh,enabled]);
+export function useOrganization(api:QhApi,enabled=true,initialValue?:Organization){
+ const seededApi=useRef(initialValue?api:null);
+ const [value,setValue]=useState<Organization|null>(initialValue??null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
+ useEffect(()=>{if(!enabled){seededApi.current=null;setValue(null);return;}if(seededApi.current===api&&refresh===0)return;let active=true;setError('');api.organization().then(v=>{if(active)setValue(v);}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[api,refresh,enabled]);
  async function save(next:Organization){const previous=value;setValue(next);setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setValue(previous);setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Recharge avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
  return {value,error,busy,save,reload:()=>{setValue(null);setRefresh(n=>n+1);}};
 }

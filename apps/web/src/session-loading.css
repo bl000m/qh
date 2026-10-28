@@ -1,6 +1,8 @@
-.qh-session-loading { position:fixed; inset:0; z-index:90; display:grid; place-items:center; background:#fafafa; }
-.qh-session-symbol { display:block; width:64px; height:64px; animation:qh-session-turn 8s linear infinite; }
+.qh-session-loading { display:grid; place-items:center; min-height:100dvh; background:#fafafa; }
+.qh-session-mark { position:relative; display:grid; place-items:center; width:104px; height:104px; }
+.qh-session-logo { display:block; width:64px; height:auto; }
+.qh-session-ring { position:absolute; inset:0; border:1px solid #d4d4d8; border-top-color:#77777e; border-radius:50%; animation:qh-session-turn 1.8s linear infinite; }
 .qh-session-failure { display:grid; place-items:center; min-height:100dvh; padding:24px; background:#fafafa; text-align:center; }
 .qh-session-failure p { max-width:34rem; margin:0 0 24px; }
 @keyframes qh-session-turn { to { transform:rotate(360deg); } }
-@media(prefers-reduced-motion:reduce) { .qh-session-symbol { animation:none; } }
+@media(prefers-reduced-motion:reduce) { .qh-session-ring { animation:none; } }

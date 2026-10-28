@@ -35,7 +35,13 @@ export function safeReturnPath(value: unknown): string {
   const route=parseRoute(value);
   return route.kind==='domain'||route.kind==='space'?value:'/';
 }
-export function createSession(manager = new UserManager(oidcSettings(window.location.origin, import.meta.env.VITE_OIDC_ISSUER)),
+function browserManager() {
+  return new UserManager(oidcSettings(window.location.origin, import.meta.env.VITE_OIDC_ISSUER));
+}
+export function completeSilentCallback() {
+  return browserManager().signinSilentCallback();
+}
+export function createSession(manager = browserManager(),
     renewalEnabled = import.meta.env.VITE_QH_DEVELOPMENT_SESSION === '1'): BrowserSession {
   let state: SessionState = 'starting';
   let user: User | null = null;
@@ -43,7 +49,20 @@ export function createSession(manager = new UserManager(oidcSettings(window.loca
   const listeners = new Set<() => void>();
   const set = (next: SessionState) => { state = next; listeners.forEach(listener => listener()); };
   let started=0,epoch=0,timer:ReturnType<typeof setTimeout>|undefined,renewing:Promise<string>|undefined;
-  const clear = (next: SessionState) => { epoch++;clearTimeout(timer);user = null;void manager.removeUser();set(next); };
+  const resumeKey = 'qh.oidc.resume.' + (manager.settings?.authority ?? window.location.origin);
+  type ResumeHint = {started: number; subject: string; issuer: string};
+  const forget = () => {try {sessionStorage.removeItem(resumeKey);} catch {/* Storage is optional. */}};
+  const hint = (): ResumeHint | null => {
+    try {
+      const value = JSON.parse(sessionStorage.getItem(resumeKey) ?? 'null');
+      return value && Number.isFinite(value.started) && typeof value.subject === 'string' && typeof value.issuer === 'string' ? value : null;
+    } catch {return null;}
+  };
+  const remember = () => {
+    // This is a restoration hint, never a credential or evidence of authentication.
+    try {sessionStorage.setItem(resumeKey, JSON.stringify({started, subject: user!.profile.sub, issuer: user!.profile.iss}));} catch {/* Tokens remain memory-only. */}
+  };
+  const clear = (next: SessionState) => { epoch++;clearTimeout(timer);user = null;forget();void manager.removeUser();set(next); };
   const token=()=>{
     if(!user||user.expired||!user.access_token){clear('expired');throw new Error('Session expired');}
     return user.access_token;
@@ -78,23 +97,30 @@ export function createSession(manager = new UserManager(oidcSettings(window.loca
     initialize() {
       // StrictMode must never redeem a code twice.
       initializing ??= (async () => {
-        if (window.location.pathname !== '/oidc/callback') { set('anonymous'); return; }
-        const callback = window.location.href;
-        window.history.replaceState(null, '', '/');
+        const callback = window.location.pathname === '/oidc/callback' ? window.location.href : null;
+        const previous = callback ? null : hint(), generation = epoch;
+        if (!callback && !previous) {set('anonymous'); return;}
+        if (previous && (previous.started > Date.now() || Date.now() - previous.started >= 8 * 3600000)) {clear('expired'); return;}
+        if (callback) window.history.replaceState(null, '', '/');
         try {
           await manager.clearStaleState();
-          user = await manager.signinRedirectCallback(callback);
-          if (user.expired || !user.access_token) throw new Error('Expired session');
+          const next = callback ? await manager.signinRedirectCallback(callback) : (await manager.getUser?.()) ?? await manager.signinSilent();
+          if (generation !== epoch) {void manager.removeUser(); return;}
+          if (!next || next.expired || !next.access_token) throw new Error('Expired session');
+          if (previous && (next.profile.sub !== previous.subject || next.profile.iss !== previous.issuer)) throw new Error('Session changed');
+          user = next;
           // QH-52: an explicitly requested domain or Space survives reauthentication.
           // Ordinary login still lands home; never restore an implicit last Space.
-          const target=safeReturnPath(user.state);
-          window.history.replaceState(null, '', renewalEnabled||target.startsWith('/domains/')?target:'/');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          if (callback) {
+            const target=safeReturnPath(user.state);
+            window.history.replaceState(null, '', renewalEnabled||target.startsWith('/domains/')?target:'/');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }
           const authenticatedAt=user.profile.auth_time;
-          started=typeof authenticatedAt==='number'&&authenticatedAt>0&&authenticatedAt*1000<=Date.now()?authenticatedAt*1000:Date.now();
+          started=previous?.started ?? (typeof authenticatedAt==='number'&&authenticatedAt>0&&authenticatedAt*1000<=Date.now()?authenticatedAt*1000:Date.now());
           if(renewalEnabled&&Date.now()>=started+8*3600000){clear('expired');return;}
-          set('authenticated');schedule();
-        } catch { clear('error'); }
+          remember();set('authenticated');schedule();
+        } catch { if (generation === epoch) clear('error'); }
       })();
       return initializing;
     },
@@ -108,7 +134,7 @@ export function createSession(manager = new UserManager(oidcSettings(window.loca
     },
     async logout() {
       const idToken = user?.id_token;
-      epoch++;clearTimeout(timer);user=null;set('signed-out');
+      epoch++;clearTimeout(timer);user=null;forget();set('signed-out');
       try {
         if(renewalEnabled)try{await manager.revokeTokens(['refresh_token']);}catch{/* Local logout remains effective if revocation is unavailable. */}
         await manager.removeUser();
