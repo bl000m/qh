@@ -20,9 +20,10 @@ used by the client; no alternate wordmark is invented or reconstructed.
   Public home artwork, static and fully contained; its labels are part of the image.
   `QH _ Vos contextes, maîtrisés.png` supplies the composition reference only.
 - `qh-environment-bubble.png`: byte-identical copy of the latest supplied
-  `branding/incoming/Sphère de savon irisée sur fond blanc.png` (1261×1247 RGBA), reused for the
+  `branding/incoming/qh_bolla_con_ombra.png` (1400×1450 RGBA), reused for the
   environment sphere and its domains. Composition reference:
-  `Tableau de bord environnemental minimaliste.png`; no additional artwork effects.
+  `Maquette UX de bulles iridescentes.png`. The supplied shadow and transparency
+  remain intact; no artwork redraw or recoloring.
 
 Authorization covers the owner's requested QH product preview/frontend integration
 and theme preparation. No general artwork licence is invented. The full source
