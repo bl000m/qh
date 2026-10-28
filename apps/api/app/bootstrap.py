@@ -18,6 +18,7 @@ from app.chat.sessions import ProviderSessions
 from app.chat.implementation import ContextualChatService
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
 from adapters.postgres.config import database_url
+from adapters.postgres.connections import runtime_connections
 from adapters.postgres.security import PostgresSecurityReader
 from adapters.postgres.spaces import PostgresContextSpaceRepository
 from app.api.security import SecurityBindings
@@ -68,6 +69,13 @@ def create_runtime_app(*, guest_settings=None):
 
     @asynccontextmanager
     async def lifespan(application):
+        # Dispose after request/worker shutdown, also when startup fails.
+        with runtime_connections(database_url()):
+            async with application_lifespan(application):
+                yield
+
+    @asynccontextmanager
+    async def application_lifespan(application):
         runtime = None
         application.state.native_context = None
         enabled = os.environ.get("QH_NATIVE_CONTEXT_ENABLED", "false")

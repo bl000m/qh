@@ -9,10 +9,9 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-import psycopg
 from psycopg import sql
-from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
+from adapters.postgres.connections import connection as database_connection
 
 TEMPORAL = ("fact_from", "fact_to", "valid_from", "valid_to")
 
@@ -38,23 +37,8 @@ class CanonicalRepository:
     def connect(self, **kwargs):
         if self.connection_options is not None:
             kwargs.setdefault("options", self.connection_options)
-        connection = psycopg.connect(
-            host=self.url.host,
-            port=self.url.port,
-            dbname=self.url.database,
-            user=self.url.username,
-            password=self.url.password,
-            connect_timeout=5,
-            row_factory=dict_row,
-            **kwargs,
-        )
-        try:
-            with connection:
-                yield connection
-        finally:
-            # psycopg 3.2.9 does not close if its context-manager commit raises.
-            # Deferred publication errors must never leak sessions/transactions.
-            connection.close()
+        with database_connection(self.url, **kwargs) as connection:
+            yield connection
 
     def _authorize(self, c, scopes, *, lock=False):
         scopes = sorted(set(map(str, scopes)))
