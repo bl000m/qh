@@ -17,6 +17,7 @@ import SessionExpired from './SessionExpired';
 import SharingControl from './SharingControl';
 import {Modal} from './SpaceActions';
 import Loading from './Loading';
+import PublicPages, {isPublicPath} from './PublicPages';
 
 function DecorativeBubble() {
   return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
@@ -190,12 +191,14 @@ function Settings({api,identity,logout}:{api:QhApi;identity:string;logout:()=>vo
  </div></section>;
 }
 export default function App({ session }: { session: BrowserSession }) {
+  const path = usePath();
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
   const [breadcrumbHost,setBreadcrumbHost]=useState<HTMLDivElement|null>(null);
   const retained=state==='authenticated'||state==='expired'&&!!session.preserveDrafts;
   const api = useMemo(() => new QhApi(session.readyToken??session.accessToken, session.expire), [session]);
   useEffect(() => { void session.initialize(); }, [session]);
   const logout=useCallback(()=>{drafts.logout();let credential:string|null=null;try{credential=session.accessToken();}catch{/* Expired credentials cannot revoke. */}api.revokeSessionsBeforeLogout(credential);void session.logout();},[api,session]);
+  if(isPublicPath(path)||!retained&&path==='/')return <PublicPages path={path} session={session} state={state}/>;
   return <div className={'app-shell'+(retained?' signed-in':'')}><a className="skip-link" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus();}}>Aller au contenu</a><header className="topbar"><a href="/" aria-label="QH — accueil" onClick={event => { event.preventDefault(); navigate('/'); }} className="brand"><img src={qhLogo} width={876} height={768} alt="QH"/><span>Ton contexte, sous ton contrôle.</span></a><div className="header-breadcrumbs" ref={setBreadcrumbHost}/>
     {state === 'authenticated' && <nav className="account-navigation" aria-label="Compte QH"><Link to="/settings" label="Paramètres de mon environnement"><Icon name="settings"/>Paramètres</Link><button aria-label="Se déconnecter" title="Se déconnecter" className="secondary logout-button" onClick={logout}><Icon name="logout"/></button></nav>}</header>
     <main id="main-content" tabIndex={-1}>

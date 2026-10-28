@@ -1,0 +1,59 @@
+.public-shell { min-height:100dvh; background:#fdfcfb; color:#151515; padding:0 clamp(20px,5.5vw,96px); }
+.public-header { display:flex; align-items:center; justify-content:space-between; gap:32px; min-height:112px; max-width:1600px; margin:auto; }
+.public-brand { display:flex; flex-shrink:0; }
+.public-brand img { width:78px; height:auto; }
+.public-header nav { display:flex; gap:clamp(20px,3vw,48px); margin-left:auto; }
+.public-header a { text-decoration:none; }
+.public-header nav a { padding:10px 0; font-size:16px; }
+.public-header nav a:hover,.public-header nav .public-current { text-decoration:underline; text-underline-offset:6px; }
+.public-account { display:flex; align-items:flex-start; gap:12px; margin-left:clamp(0px,3vw,48px); padding-top:22px; }
+.public-account button,.public-environment { min-height:46px; padding:10px 20px; border-radius:16px; font-size:14px; white-space:nowrap; }
+.public-account button.secondary { color:#151515; border-color:#c9c9ce; }
+.public-account button:disabled { cursor:not-allowed; }
+.public-registration { display:grid; gap:3px; text-align:center; }
+.public-registration button { background:#444; border-color:#444; color:#fff; opacity:1; }
+.public-registration span { font-size:10px; color:#666; }
+.public-environment { border:1px solid #c9c9ce; }
+.public-shell main { max-width:1600px; margin:auto; min-height:0; padding:24px 0 48px; }
+.public-hero { display:grid; grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr); align-items:center; gap:24px; min-height:calc(100dvh - 184px); }
+.public-copy h1 { max-width:720px; margin:0 0 24px; font-size:clamp(40px,5.5vw,84px); font-weight:750; line-height:1.04; letter-spacing:-.055em; overflow-wrap:normal; }
+.public-copy>p { max-width:610px; margin:0; font-size:clamp(17px,1.65vw,25px); line-height:1.5; }
+.public-benefits { display:flex; list-style:none; padding:0; margin:42px 0 0; gap:20px; }
+.public-benefits li { display:flex; align-items:center; gap:12px; flex:1; font-size:13px; line-height:1.5; }
+.public-benefits li+li { padding-left:20px; border-left:1px solid #d7d7db; }
+.public-benefits .ui-icon { width:26px; height:26px; flex-shrink:0; }
+.public-sphere { display:block; width:100%; height:auto; max-height:calc(100dvh - 170px); object-fit:contain; }
+.public-information { max-width:850px; padding:clamp(32px,8vh,100px) 0; margin:auto; }
+.public-information h1 { font-size:clamp(36px,4.5vw,64px); font-weight:700; line-height:1.1; margin:0 0 32px; }
+.public-information p,.public-security { font-size:20px; line-height:1.8; }
+.public-security { padding-left:24px; }
+.public-security li { margin:16px 0; }
+.public-price { padding:32px; border:1px solid #dedede; border-radius:20px; }
+.public-price .public-offer { font-size:14px; color:#626262; }
+.public-price .public-price-amount { font-size:clamp(28px,4vw,44px); font-weight:650; }
+.public-price .public-price-details { font-size:16px; margin-top:24px; color:#626262; }
+@media(max-width:1100px) {
+ .public-header { gap:20px; flex-wrap:wrap; padding:20px 0; }
+ .public-header nav { order:3; width:100%; justify-content:center; margin:0; }
+ .public-account { margin:0; padding-top:18px; }
+ .public-copy h1 { font-size:clamp(38px,5.3vw,60px); }
+ .public-benefits { flex-direction:column; gap:16px; margin-top:28px; }
+ .public-benefits li+li { padding:0; border:0; }
+ .public-hero { min-height:0; padding:32px 0; }
+}
+@media(max-width:700px) {
+ .public-header { gap:12px; }
+ .public-brand img { width:54px; }
+ .public-account { gap:8px; }
+ .public-account button,.public-environment { padding:10px 12px; font-size:12px; min-height:40px; border-radius:12px; }
+ .public-registration span { font-size:9px; }
+ .public-header nav { gap:24px; }
+ .public-header nav a { font-size:13px; }
+ .public-hero { grid-template-columns:1fr; gap:32px; padding:16px 0; }
+ .public-copy h1 { font-size:clamp(38px,8vw,56px); max-width:540px; }
+ .public-copy>p { font-size:18px; }
+ .public-sphere { max-height:none; max-width:540px; margin:auto; }
+ .public-information { padding:24px 0; }
+ .public-information p,.public-security { font-size:18px; }
+ .public-price { padding:24px; }
+}

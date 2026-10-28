@@ -15,6 +15,10 @@ used by the client; no alternate wordmark is invented or reconstructed.
   with its alpha/proportions intact. Decorative only on welcome/environment.
 - `qh-icon.png`: 64×64 whole-mark fit with transparent padding, derived from
   the transparent logo; no glyph cropped or invented.
+- `qh-home-sphere.png`: byte-identical copy of the owner-supplied
+  `branding/incoming/Interface de bulles _ équilibre de vie.png` (1266×1243).
+  Public home artwork, static and fully contained; its labels are part of the image.
+  `QH _ Vos contextes, maîtrisés.png` supplies the composition reference only.
 
 Authorization covers the owner's requested QH product preview/frontend integration
 and theme preparation. No general artwork licence is invented. The full source

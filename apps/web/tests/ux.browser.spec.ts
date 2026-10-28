@@ -82,8 +82,8 @@ test('skip link is first keyboard stop, focuses main, then disappears without co
  const clipped=()=>skip.evaluate(n=>getComputedStyle(n).clipPath);
  expect(await clipped()).toBe('inset(50%)');await page.keyboard.press('Tab');await expect(skip).toBeFocused();expect(await clipped()).toBe('none');
  await page.screenshot({path:info.outputPath('qh43-skip-focus-desktop.png')});
- await page.keyboard.press('Enter');await expect(page.locator('#main-content')).toBeFocused();expect(await clipped()).toBe('inset(50%)');
- await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeFocused();
+ await page.keyboard.press('Enter');await expect(page.locator('#public-content')).toBeFocused();expect(await clipped()).toBe('inset(50%)');
+ await expect(page.getByRole('button',{name:'Se connecter',exact:true})).toBeEnabled();
  await login(page);await afterLogin(page,expected.scope);const field=page.getByLabel('Votre question sur ce contexte');await expect(field).toBeEnabled();
  await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('#main-content')).toBeFocused();expect(await clipped()).toBe('inset(50%)');
  await field.focus();await expect(field).toBeFocused();
@@ -97,23 +97,20 @@ test('skip link is first keyboard stop, focuses main, then disappears without co
  await field.blur();await page.screenshot({path:info.outputPath('qh43-unfocused-desktop.png'),fullPage:true});
 });
 
-test('selected original mark and central hero bubble load on welcome without external artwork',async({page},info)=>{
- await page.goto('/');const logo=page.locator('.brand img');await expect(logo).toHaveAttribute('alt','QH');
+test('selected original mark and supplied static sphere load on public home',async({page},info)=>{
+ await page.goto('/');const logo=page.locator('.public-brand img');await expect(logo).toHaveAttribute('alt','QH');
  await expect(logo).toHaveJSProperty('naturalWidth',876);
  const logoBox=await logo.boundingBox();expect(logoBox).not.toBeNull();
  expect(logoBox!.width/logoBox!.height).toBeCloseTo(876/768,2);
- await expect(page.locator('.signin .qh-bubble')).toHaveAttribute('aria-hidden','true');
- await expect(page.locator('.signin .qh-bubble')).toHaveJSProperty('naturalWidth',400);
- const bubbleBox=await page.locator('.signin .qh-bubble').boundingBox();expect(bubbleBox).not.toBeNull();
- expect(bubbleBox!.width/bubbleBox!.height).toBeCloseTo(4/3,2);
- expect(bubbleBox!.width).toBeGreaterThanOrEqual(450);
- expect(Math.abs(bubbleBox!.x+bubbleBox!.width/2-(await page.locator('.signin').boundingBox())!.x-(await page.locator('.signin').boundingBox())!.width/2)).toBeLessThan(2);
- expect((await page.locator('.signin').boundingBox())!.width).toBeGreaterThan(1000);
+ const sphere=page.locator('.public-sphere');
+ await expect(sphere).toHaveJSProperty('naturalWidth',1266);
+ const bubbleBox=await sphere.boundingBox();expect(bubbleBox).not.toBeNull();
+ expect(bubbleBox!.width/bubbleBox!.height).toBeCloseTo(1266/1243,2);
  const icon=await page.locator('link[rel="icon"]').getAttribute('href');expect(icon).toBeTruthy();
  expect((await page.request.get(icon!)).status()).toBe(200);
  await page.screenshot({path:info.outputPath('qh43-branded-welcome-desktop.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});
- const mobileBubble=await page.locator('.signin .qh-bubble').boundingBox();
+ const mobileBubble=await sphere.boundingBox();
  expect(Math.abs(mobileBubble!.x+mobileBubble!.width/2-195)).toBeLessThan(2);
  await page.screenshot({path:info.outputPath('qh43-branded-welcome-mobile.png'),fullPage:true});
  await page.setViewportSize({width:320,height:812});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
