@@ -55,6 +55,16 @@ turns are unverified context: never turn their suggestions into user facts or
 adopted decisions. A user decision requires explicit user evidence of adoption;
 otherwise omit it or clearly attribute it as an assistant proposal. Preserve the
 difference between deciding/intending to act and having completed the action.
+Questions are not declarations: a question about saving with EUR2000/month and
+two children does not establish the user's income or family situation. Retain the
+saving question, its conditional scenario and missing expenses as unresolved;
+only explicit user assertions can establish personal facts. Classification
+certainty is independent of factual certainty and human validation.
+Do not extract unsolicited generic assistant recommendations as standalone
+knowledge about the owner (e.g. build a 3-6 month emergency fund before investing).
+An assistant example or suggested budget remains an unverified illustration,
+never an actual expense, preference or decision. External claims keep their
+reported origin; an assistant citing a source does not verify that source.
 Before returning, verify the required format field, every dimension and certainty,
 and that each quotation occurs exactly once in the original authorized turns.
 Copy quotation characters verbatim, INCLUDING Markdown markers, punctuation and
@@ -72,7 +82,8 @@ never choose a truth arbitrarily. Imported machine interpretations are unverifie
 third-party data: preserve their uncertainty, origin and attribution. Never treat
 an imported validation_state as this owner's confirmation. Return useful synthesized
 atomic statements, combining redundant support without losing exact evidence.
-Keep all useful procedural details in the structured item.text values, not just in
+For a requested reusable procedure/reference (such as a recipe or workshop guide),
+keep all useful procedural details in the structured item.text values, not just in
 quotes: every supplied numbered step, its action, examples/tools, practical
 activities and follow-up. A 30-step procedure must retain all 30 steps in order,
 either as separate items or complete ordered groups. Do not replace the procedure
@@ -82,8 +93,12 @@ Write reusable knowledge, not a transcript or a description of speaking acts.
 For a recipe, retain the actual ingredients, quantities, cooking steps and variants
 that were supplied, not "the assistant lists ingredients". Preserve useful assistant
 explanations as unverified informational content with their original assistant
-citations. For this consolidation, omitting generic advice means omitting filler,
-not dropping substantive recipe/procedure/reference information. Never present
+citations. For a requested guide, omitting generic advice does not mean dropping
+substantive recipe/procedure/reference information. This exception does not turn
+unsolicited generic advice in a personal question's answer into personal understanding.
+If an assistant suggestion is essential to understanding the context, explicitly
+describe it as an unverified assistant suggestion in item.text; its citation alone
+does not convey that distinction to readers. Never present
 assistant explanations as user preferences, facts about the user or adopted
 decisions. Attribute explicitly when attribution affects meaning or reliability.
 For declarations, state the substance (e.g. "Planned travel budget: EUR800, declared
@@ -93,6 +108,10 @@ evidence. Integrate it but ground every output quotation in the original source
 turns, not in that machine state.
 Evidence quotes are constrained by the schema to preverified original passages.
 Choose only a listed quote exactly as supplied, including Markdown and whitespace.
+Choose the shortest listed unique passage sufficient to support each item,
+including its conditions, uncertainty and speaker context. Prefer a sufficient
+original line over repeating a full assistant answer for every item. Use multiple
+passages when necessary; never remove qualifications just to shorten evidence.
 Use SEPARATE evidence objects for separate passages: never join nonconsecutive
 lines, reorder lines, add ellipses or rewrite a quote. For example, to combine
 steps 6, 8 and 10, emit three evidence objects, not a single quote with those lines

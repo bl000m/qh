@@ -39,3 +39,28 @@ for(const width of [1366,375])test('content-focused understanding and settings-o
  await settings.getByRole('button',{name:'Fermer la fenêtre',exact:true}).click();
  await expect(conversation.getByText('Sources du contexte',{exact:true})).toHaveCount(0);
 });
+
+test('shared source passages appear once without losing distinct items or source identities',async({page})=>{
+ const rows=Array.from({length:12},(_,i)=>({...row,item_id:crypto.randomUUID(),revision_id:crypto.randomUUID(),content:{...row.content,text:`Sens distinct ${i+1}.`}}));
+ const otherSource='00000000-0000-0000-0000-000000000008';
+ const separate={...rows[0],item_id:crypto.randomUUID(),revision_id:crypto.randomUUID(),provenance:[{...row.provenance[0],source_revision_id:otherSource}],content:{...row.content,text:'Une autre source indépendante.',citations:[{...row.content.citations[0],source_revision_id:otherSource}]}};
+ await page.route('**/api/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/chat-sessions'))return route.fulfill({json:{automatic:false,enabled:false,model:null}});
+  if(path.endsWith('/workspace'))return route.fulfill({json:{context_id:scope,state:'current',pending_count:0,current:{id:version,context_space_id:scope,version:1,intake_ids:[],revision_ids:[...rows.map(r=>r.revision_id),separate.revision_id],source_revision_id:version,created_at:row.created_at,has_recap:true},recap:{version_id:version,title:'Synthèse partielle',text:'Un résumé.',support_revision_ids:[rows[0].revision_id]},understanding:[...rows,separate],intake:[]}});
+  return route.fulfill({status:404,json:{detail:'offline only'}});
+ });
+ await page.goto('/tests/fixtures/workspace-loading.html');
+ await page.getByRole('button',{name:'Paramètres',exact:true}).click();
+ const settings=page.getByRole('dialog',{name:'Paramètres du Space',exact:true});
+ await settings.getByText('Sources et traçabilité',{exact:true}).click();
+ const shared=settings.getByRole('region',{name:'Source 1',exact:true});
+ await expect(shared.locator('blockquote')).toHaveCount(1);
+ await expect(shared).toContainText('Éléments de compréhension liés (12)');
+ for(let i=1;i<=12;i++)await expect(shared.getByText(`Sens distinct ${i}.`,{exact:true})).toBeVisible();
+ await expect(shared.getByText('Proposé · passages 1',{exact:true})).toHaveCount(12);
+ await shared.getByText('Référence précise',{exact:true}).click();
+ await expect(shared).toContainText(`Source : ${version} · caractères 0–21`);
+ await expect(settings.getByRole('region',{name:'Source 2',exact:true}).locator('blockquote')).toHaveText('Un atelier à préparer.');
+ await expect(settings.getByText('Une autre source indépendante.',{exact:true})).toBeVisible();
+});

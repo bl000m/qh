@@ -50,6 +50,10 @@ a disputed claim or a view that must not be presented as shared or established.
 Otherwise provenance remains in the detailed items and metadata without appearing
 in the recap. Do not turn a proposal into an approved decision, an intention into
 a completed action, or an important possibility into a certainty.
+A personal question's conditional scenario is not a declared personal situation.
+Keep unknown income, family circumstances and expenses unknown unless explicitly
+declared by the user. An assistant's illustrative budget or generic recommendation
+is not an established fact or an adopted plan; retain that distinction in the recap.
 Italian procedural example:
 title="Organizzazione di un atelier informatico";
 text="Questo contesto contiene le linee guida per progettare e condurre un atelier

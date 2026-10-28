@@ -5,7 +5,7 @@ import type {QhApi} from './api';
 import {ApiError,apiMessage} from './api';
 import type {ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
-import {recognizedCitations} from './understanding';
+import WorkspaceUnderstandingSources from './WorkspaceUnderstandingSources';
 import type {SessionCapabilities} from './provider-session';
 import AnswerMarkdown from './AnswerMarkdown';
 import WorkspaceAnswerSources from './WorkspaceAnswerSources';
@@ -170,7 +170,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   return questionStates[item.id]??(state?.chat_attempts?.find(a=>a.question_id===item.id)?.state==='running'?'uncertain':'failed');
  }
  const summary=state?.recap;
- const sources=state?.understanding.filter(row=>!summary||summary.support_revision_ids.includes(row.revision_id))??[];
+ const sources=state?.understanding??[];
  const recap=<>
   {busy==='memory'||busy==='regenerate'?<div className="memory-progress"><Loading label="Mémorisation en cours"/><p>Compréhension en cours de préparation et d’enregistrement…</p></div>:loadStatus==='loading'?<Loading label="Chargement de la compréhension…"/>:loadStatus==='error'?<p role="alert" className="small muted">La compréhension n’a pas pu être chargée. Actualise l’état pour réessayer.</p>:<>
   {state?.current?<>
@@ -199,7 +199,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     {loadingSources&&<Loading label="Chargement des sources…"/>}
     {sourceError&&<><p role="alert">{sourceError}</p><button type="button" className="secondary" disabled={loadingSources} onClick={()=>{void showSources();}}>Réessayer les sources</button></>}
     {!state?.current&&<p>Aucune compréhension mémorisée dans ce Space.</p>}
-    {sourcesVisited&&sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
+    {sourcesVisited&&<WorkspaceUnderstandingSources rows={sources}/>}
     {items.filter(item=>item.role==='assistant'&&item.attribution).map((item,index)=><section key={item.id}>
      <h3>Réponse {index+1}</h3>
      {item.reply_to&&<p>Question : {items.find(question=>question.id===item.reply_to)?.text}</p>}
