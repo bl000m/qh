@@ -7,6 +7,22 @@ import {apiMessage} from './api';
 import type {Organization} from './environment';
 import {Orb} from './Ui';
 import Loading from './Loading';
+import {Modal} from './SpaceActions';
+function withNewDomain(value:Organization,name:string):Organization {
+ return {...value,domains:[...value.domains,{id:crypto.randomUUID(),name:name.trim()}]};
+}
+export function AddDomain({state,onClose}:{state:ReturnType<typeof useOrganization>;onClose:()=>void}){
+ const [name,setName]=useState('');
+ async function submit(){
+  if(!state.value||state.busy||!name.trim()||state.value.domains.length>=50)return;
+  try{await state.save(withNewDomain(state.value,name));onClose();}catch{/* Organization state exposes the save error. */}
+ }
+ return <Modal title="Ajouter un domaine" className="create-space-dialog" onClose={()=>{if(!state.busy)onClose();}}><form onSubmit={event=>{event.preventDefault();void submit();}}>
+  <label htmlFor="new-environment-domain">Nom du domaine</label><input id="new-environment-domain" autoFocus maxLength={100} required value={name} disabled={state.busy} onChange={event=>setName(event.target.value)}/>
+  {state.error&&<p role="alert">{state.error}</p>}
+  <div className="actions"><button disabled={state.busy||!name.trim()}>{state.busy?'Enregistrement…':'Ajouter le domaine'}</button><button type="button" className="secondary" disabled={state.busy} onClick={onClose}>Annuler</button></div>
+ </form></Modal>;
+}
 export function useOrganization(api:QhApi,enabled=true){
  const [value,setValue]=useState<Organization|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
  useEffect(()=>{if(!enabled){setValue(null);return;}let active=true;setError('');api.organization().then(v=>{if(active)setValue(v);}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[api,refresh,enabled]);
@@ -32,7 +48,7 @@ export function OrganizationEditor({state}:{state:ReturnType<typeof useOrganizat
  return <section><button type="button" className="secondary" disabled={!value||busy} onClick={()=>{setDraft(structuredClone(value));setEditing(true);}}>Organiser mes domaines</button>{error&&<p role="alert">{error}</p>}
  {editing&&draft&&<form className="organization-editor" aria-label="Organisation des domaines" onSubmit={e=>{e.preventDefault();void submit();}}><p>Modifier ces repères ne change ni le contenu ni les droits des Spaces.</p><nav className="secondary-navigation" aria-label="Voir les Spaces"><Link to="/spaces">Tous les Context Spaces</Link><Link to="/spaces/unclassified">Non classés</Link></nav>
  {draft.domains.map((d,i)=><div className="domain-edit" key={d.id}><label htmlFor={'domain-'+d.id}>Nom du domaine {i+1}</label><input id={'domain-'+d.id} required maxLength={100} value={d.name} disabled={busy} onChange={e=>setDraft({...draft,domains:draft.domains.map(v=>v.id===d.id?{...v,name:e.target.value}:v)})}/><label htmlFor={'domain-description-'+d.id}>Description du domaine {i+1}</label><textarea id={'domain-description-'+d.id} maxLength={500} value={d.description??''} disabled={busy} onChange={e=>setDraft({...draft,domains:draft.domains.map(v=>v.id===d.id?{...v,description:e.target.value}:v)})}/><button type="button" className="secondary" disabled={busy} onClick={()=>setDraft({...draft,domains:draft.domains.filter(v=>v.id!==d.id),memberships:Object.fromEntries(Object.entries(draft.memberships).map(([s,ids])=>[s,ids.filter(id=>id!==d.id)])),primary_domains:Object.fromEntries(Object.entries(draft.memberships).flatMap(([s,ids])=>{const rest=ids.filter(id=>id!==d.id);return rest.length?[[s,draft.primary_domains[s]===d.id?rest[0]:draft.primary_domains[s]]]:[];}))})}>Retirer le domaine {i+1}</button></div>)}
- <label htmlFor="new-domain">Nouveau domaine</label><input id="new-domain" value={newName} maxLength={100} onChange={e=>setNewName(e.target.value)}/><button type="button" disabled={busy||!newName.trim()||draft.domains.length>=50} onClick={()=>{setDraft({...draft,domains:[...draft.domains,{id:crypto.randomUUID(),name:newName}]});setNewName('');}}>Ajouter le domaine</button>
+ <label htmlFor="new-domain">Nouveau domaine</label><input id="new-domain" value={newName} maxLength={100} onChange={e=>setNewName(e.target.value)}/><button type="button" disabled={busy||!newName.trim()||draft.domains.length>=50} onClick={()=>{setDraft(withNewDomain(draft,newName));setNewName('');}}>Ajouter le domaine</button>
  <div className="actions"><button disabled={busy}>Enregistrer l’organisation</button><button type="button" className="secondary" disabled={busy} onClick={()=>setEditing(false)}>Annuler l’organisation</button></div></form>}
  </section>;
 }

@@ -18,6 +18,7 @@ import SharingControl from './SharingControl';
 import {Modal} from './SpaceActions';
 import Loading from './Loading';
 import PublicPages, {isPublicPath} from './PublicPages';
+import EnvironmentHome from './EnvironmentHome';
 
 function DecorativeBubble() {
   return <img className="qh-bubble" src={qhBubble} width={400} height={300} alt="" aria-hidden="true" decoding="async"/>;
@@ -72,14 +73,16 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
     organizationVersion.current=version;
   },[organization.value?.version]);
   useEffect(() => {
+    if(home)return;
     let active = true;
     setLoading(true); setError('');setNext(null);
     api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setLoadedSelection(selection); setNext(page.next_after_id); } })
       .catch(reason => { if (active) {setItems([]);setLoadedSelection(selection);setError(apiMessage(reason));} })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [api, refresh,sort,domain,selection]);
+  }, [api, refresh,sort,domain,selection,home]);
   useEffect(()=>{setForm(false);setCreateError('');setName('');},[domain,collection]);
+  if(home)return <EnvironmentHome state={organization} headingRef={title}/>;
   async function more() {
     if (!next || loading) return;
     setLoading(true); setError('');
