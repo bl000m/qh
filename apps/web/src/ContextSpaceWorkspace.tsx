@@ -32,6 +32,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const [draft,setDraft]=useDraft('message');
  const [notice,setNotice]=useState('');
  const [questionStates,setQuestionStates]=useState<Record<string,'sending'|'uncertain'|'failed'>>({});
+ const [sendingQuestion,setSendingQuestion]=useState<string|null>(null);
  const sendOperations=useRef<Record<string,string>>({}),regenerationAttempt=useRef<string|null>(null);
  const [availabilityError,setAvailabilityError]=useState(''),[checkingAvailability,setCheckingAvailability]=useState(false);
  const availabilityGeneration=useRef(0);
@@ -93,12 +94,13 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  }
  async function send(question?:string){
   if(lock.current||!state||(!question&&!draft.trim()))return;
-  lock.current=true;setBusy('send');setError('');setNotice('');
+  lock.current=true;setBusy('send');setSendingQuestion(question??null);setError('');setNotice('');
   let target=question;
   try{
    const next=question?state:await saveDraft();
    target=question??next?.intake.filter(i=>i.kind==='message'&&i.role==='user').at(-1)?.id;
    if(!target)return;
+   setSendingQuestion(target);
    const failed=next?.chat_attempts?.find(a=>a.question_id===target)?.state==='failed';
    const operation=failed||!sendOperations.current[target]?crypto.randomUUID():sendOperations.current[target];
    sendOperations.current[target]=operation;
@@ -110,7 +112,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     setQuestionStates(previous=>({...previous,[target!]:'uncertain'}));
     try{await synchronize();}catch{/* A read failure leaves the question awaiting synchronization. */}
    }else setError('Le message n’a pas pu être enregistré. Tu peux réessayer.');
-  }finally{lock.current=false;setBusy(null);void refreshAvailability();}
+  }finally{lock.current=false;setBusy(null);setSendingQuestion(null);void refreshAvailability();}
  }
  async function memorize(regenerate=false){
   if(lock.current||!state)return;
@@ -200,12 +202,12 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
      {state&&!state.intake.length&&<div className="workspace-welcome"><h2>Commence à discuter.</h2><p>QH peut ensuite en retenir l’essentiel dans ce Space.</p></div>}
      {displayed.map(item=><article key={item.id} className={'workspace-message '+(item.role==='assistant'?'assistant':'user')}>
       {item.kind==='message'?<><span className="sr-only">{item.role==='assistant'?'QH':'Toi'}</span>{item.role==='assistant'?<><AnswerMarkdown text={item.text!}/>{item.attribution&&<WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution}/>}</>:<p>{item.text}</p>}</>:<p>{item.kind==='context'?'Contexte importé':'Document'} : {item.name}</p>}
-      {questionStatus(item)&&<div className="message-feedback">
-       <p role={questionStatus(item)==='sending'?'status':'alert'}>{questionStatus(item)==='sending'?'Préparation de la réponse…':questionStatus(item)==='uncertain'?'La réponse est en attente de synchronisation.':'La réponse n’a pas pu être obtenue. Ta question est conservée.'}</p>
+      {questionStatus(item)&&questionStatus(item)!=='sending'&&<div className="message-feedback">
+       <p role="alert">{questionStatus(item)==='uncertain'?'La réponse est en attente de synchronisation.':'La réponse n’a pas pu être obtenue. Ta question est conservée.'}</p>
        {questionStatus(item)==='uncertain'?<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().catch(()=>{});}}>Actualiser l’état</button>:questionStatus(item)==='failed'&&<button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void send(item.id);}}>Réessayer</button>}
       </div>}
      </article>)}
-     {busy==='send'&&<p role="status">Préparation de la réponse…</p>}
+     {busy==='send'&&!error&&(!sendingQuestion||!paired.has(sendingQuestion)&&questionStates[sendingQuestion]==='sending')&&<div className="workspace-message assistant workspace-answer-pending" role="status">Préparation de la réponse…</div>}
     </div>
     <div className="workspace-feedback">{(busy==='memory'||busy==='regenerate')&&<p role="status">Mémorisation en cours : analyse et enregistrement de tes apports…</p>}{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>

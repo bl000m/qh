@@ -16,13 +16,13 @@ export default function WorkspaceAnswerSources({api,scope,attribution}:{api:QhAp
    setRows(pages.flatMap(p=>p.items));
   }catch(e){setError(apiMessage(e));}
  }
- if(!attribution.reference_ids.length)return attribution.support_basis==='general'?<p className="small muted">Réponse générale</p>:null;
+ if(!attribution.reference_ids.length&&!attribution.insufficient_context&&!attribution.partial_coverage)return null;
  return <div className="workspace-answer-support">
   {attribution.insufficient_context&&<p className="small muted">Les informations disponibles ne suffisent pas à répondre complètement.</p>}
   {attribution.partial_coverage&&<p className="small muted">Seule une partie de la compréhension a été utilisée.</p>}
-  <details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Sources du contexte</summary>
+  {attribution.reference_ids.length>0&&<details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Sources du contexte</summary>
    <p className="small">{labels[attribution.support_basis]}.</p>
    {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
-  </details>
+  </details>}
  </div>;
 }

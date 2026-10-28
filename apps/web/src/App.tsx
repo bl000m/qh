@@ -49,8 +49,14 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
   const [primaryDomain,setPrimaryDomain]=useState('');
   const spacesCarousel=useRef<HTMLUListElement>(null);
   const [items, setItems] = useState<ContextSpace[]>([]);
+  const selection=JSON.stringify([domain,sort]);
+  const currentSelection=useRef(selection);
+  currentSelection.current=selection;
+  const [loadedSelection,setLoadedSelection]=useState('');
+  const visibleItems=loadedSelection===selection?items:[];
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const collectionLoading=loading||loadedSelection!==selection;
   const [error, setError] = useState('');
   const [refresh, setRefresh] = useState(0);
   const [form, setForm] = useState(false);
@@ -67,19 +73,21 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
   useEffect(() => {
     let active = true;
     setLoading(true); setError('');setNext(null);
-    api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setNext(page.next_after_id); } })
-      .catch(reason => { if (active) setError(apiMessage(reason)); })
+    api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setLoadedSelection(selection); setNext(page.next_after_id); } })
+      .catch(reason => { if (active) {setItems([]);setLoadedSelection(selection);setError(apiMessage(reason));} })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [api, refresh,sort,domain]);
+  }, [api, refresh,sort,domain,selection]);
+  useEffect(()=>{setForm(false);setCreateError('');setName('');},[domain,collection]);
   async function more() {
     if (!next || loading) return;
     setLoading(true); setError('');
     try {
       const page = await api.resumeSpaces(sort,domain,next);
+      if(currentSelection.current!==selection)return;
       setItems(previous => [...previous, ...page.items.filter(item => !previous.some(p => p.id === item.id))]);
       setNext(page.next_after_id);
-    } catch (reason) { setError(apiMessage(reason)); } finally { setLoading(false); }
+    } catch (reason) { if(currentSelection.current===selection)setError(apiMessage(reason)); } finally { if(currentSelection.current===selection)setLoading(false); }
   }
   async function create(event: FormEvent) {
     event.preventDefault(); if (creating) return;
@@ -98,7 +106,7 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
     <div className={home?'environment-topline':'domain-heading'}>{!home&&domain!=='unclassified'&&<Orb tone={(organization.value?.domains.findIndex(d=>d.id===domain)??0)*34}/>}<h1 id="environment-title" ref={title} tabIndex={-1}>{heading}</h1></div>
     {activeDomain?.description&&<p>{activeDomain.description}</p>}
     {home&&<EnvironmentDomains state={organization}/>}
-    <section className={home?"resume-shelf":"space-collection"} aria-labelledby="spaces-title"><div className="section-heading spaces-section-heading"><h2 id="spaces-title">{home?'Mes Context Spaces':'Context Spaces'}</h2><div className="actions">{(home||items.length>0)&&<label className="sort-control"><span className="sr-only">Ordre des Spaces</span><select value={sort} onChange={e=>setSort(e.target.value as 'recent'|'used')}><option value="recent">Récemment ouverts</option><option value="used">Les plus utilisés</option></select></label>}{home&&<Link to="/spaces">Tous les Spaces <span aria-hidden="true">›</span></Link>}{(home||items.length>0||form)&&<button onClick={() => { setPrimaryDomain(activeDomain?.id??'');setForm(true); }} disabled={form}>Créer un Context Space</button>}</div></div>
+    <section className={home?"resume-shelf":"space-collection"} aria-labelledby="spaces-title"><div className="section-heading spaces-section-heading"><h2 id="spaces-title">{home?'Mes Context Spaces':'Context Spaces'}</h2><div className="actions">{(home||visibleItems.length>0)&&<label className="sort-control"><span className="sr-only">Ordre des Spaces</span><select value={sort} onChange={e=>setSort(e.target.value as 'recent'|'used')}><option value="recent">Récemment ouverts</option><option value="used">Les plus utilisés</option></select></label>}{home&&<Link to="/spaces">Tous les Spaces <span aria-hidden="true">›</span></Link>}{(home||visibleItems.length>0||form)&&<button onClick={() => { setPrimaryDomain(activeDomain?.id??'');setForm(true); }} disabled={form}>Créer un Context Space</button>}</div></div>
     {form && <Modal title="Créer un Context Space" className="create-space-dialog" onClose={()=>{if(!creating)setForm(false);}}><form onSubmit={event => { void create(event); }}>
       <label htmlFor="space-name">Nom du Context Space</label>
       <p id="name-help" className="muted">Un nom qui t’aide à retrouver ce contexte. 256 caractères maximum.</p>
@@ -110,18 +118,18 @@ function Spaces({ api, domain = null, collection = false,breadcrumbHost }: { api
     </form></Modal>}
     {!form&&createError&&<Notice error>{createError}</Notice>}
     {error && <><Notice error>{error}</Notice><button className="secondary" onClick={() => setRefresh(v => v + 1)}>Réessayer</button></>}
-    {loading && <Loading label="Chargement des Context Spaces…"/>}
-    {!loading && !error && items.length===0 && <div className="empty compact-empty"><h3>{activeDomain?'Ce domaine est encore vide.':domain==='unclassified'?'Tous tes Spaces sont organisés.':'Ton premier contexte commence ici.'}</h3>{domain!=='unclassified'&&<button onClick={()=>{setPrimaryDomain(activeDomain?.id??'');setForm(true);}}>Créer mon premier Context Space</button>}</div>}
+    {collectionLoading && <Loading label="Chargement des Context Spaces…"/>}
+    {!collectionLoading && !error && visibleItems.length===0 && <div className="empty compact-empty"><h3>{activeDomain?'Ce domaine est encore vide.':domain==='unclassified'?'Tous tes Spaces sont organisés.':'Ton premier contexte commence ici.'}</h3>{domain!=='unclassified'&&<button onClick={()=>{setPrimaryDomain(activeDomain?.id??'');setForm(true);}}>Créer mon premier Context Space</button>}</div>}
     {home&&<CarouselArrows target={spacesCarousel} name="Spaces"/>}
-    <ul ref={spacesCarousel} className={home?"space-grid horizontal-carousel":"space-grid"} aria-label={home?"Carrousel Mes Context Spaces":"Context Spaces de cette vue"}>{items.map(item => <li key={item.id} className="space-card">
+    <ul ref={spacesCarousel} className={home?"space-grid horizontal-carousel":"space-grid"} aria-label={home?"Carrousel Mes Context Spaces":"Context Spaces de cette vue"}>{visibleItems.map(item => <li key={item.id} className="space-card">
       <Link to={spacePath(item.id,activeDomain?.id)} label={item.name} title={item.name} onIntent={()=>api.prefetchWorkspace(item.id)}>
-        <Orb tone={items.indexOf(item)*42+105}/><h3>{item.name}</h3>{!home&&<span className="open-space">Ouvrir <span aria-hidden="true">›</span></span>}
+        <Orb tone={visibleItems.indexOf(item)*42+105}/><h3>{item.name}</h3>{!home&&<span className="open-space">Ouvrir <span aria-hidden="true">›</span></span>}
 
       </Link>
       {collection&&<div className="space-card-caption"><SpaceMemberships space={item} state={organization}/><details><summary>Métadonnées du Space</summary><p>{item.name}</p><Metadata space={item} /></details></div>}
 
     </li>)}</ul>
-    {next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}</section>
+    {loadedSelection===selection && next && <button className="secondary" disabled={loading} onClick={() => { void more(); }}>Afficher plus</button>}</section>
   </section>;
 }
 function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;origin?:string;breadcrumbHost:HTMLElement|null;ownerId:string}){
@@ -143,7 +151,7 @@ function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;orig
  },[id,api,refresh,ownerId]);
  const breadcrumb=<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span></nav>;
  return <section className="context-page">{breadcrumbHost?createPortal(breadcrumb,breadcrumbHost):breadcrumb}
- {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<article className="detail definitive-space"><section className="context-space-v02"><header className="context-space-tools"><h1>Context Space</h1></header><section className="workspace-discussion"><Loading label="Chargement du Context Space…"/></section></section></article>:<article className="detail definitive-space">
+ {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<article className="detail definitive-space"><section className="context-space-v02"><header className="context-space-tools"><h1>Context Space</h1><div className="actions"><button className="secondary" disabled>Compréhension</button><button className="secondary" disabled>Partager</button><button className="secondary" disabled>Paramètres</button></div></header><div className="context-space-workspace"><section className="workspace-discussion" aria-busy="true"><div className="workspace-log"><Loading label="Chargement du Context Space…"/></div><div className="workspace-composer"><label className="sr-only" htmlFor="context-loading-message">Ton message</label><textarea id="context-loading-message" rows={3} disabled placeholder="Ajoute une information ou pose une question…"/><div className="workspace-composer-actions"><button disabled>Envoyer</button></div></div></section></div></section></article>:<article className="detail definitive-space">
  <ContextSpaceWorkspace key={space.id} api={api} scope={space.id} name={space.name} settingsRequest={renameRequest}
  heading={<div className="space-title"><div className="space-name-line"><h1 ref={heading} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Renommer le Space" disabled={!organization.value||organization.busy} onClick={()=>setRenameRequest(n=>n+1)}><Icon name="edit"/></button></div></div>}
  sharingContent={<SharingControl key={space.id} api={api} scope={space.id} name={space.name} label="Partager" primary/>}
@@ -166,7 +174,7 @@ function Environment({api,logout,breadcrumbHost}:{api:QhApi;logout:()=>void;brea
   if (!identity) return <><SignIn disabled/><Loading overlay label="Vérification de ton identité QH…"/></>;
   const route=parseRoute(path);
   return <>
-    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces key={path} api={api} breadcrumbHost={breadcrumbHost} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api} breadcrumbHost={breadcrumbHost} ownerId={identity}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
+    {route.kind==='home'||route.kind==='domain'||route.kind==='collection'?<Spaces api={api} breadcrumbHost={breadcrumbHost} domain={route.kind==='domain'?route.id:route.kind==='collection'?route.domain:null} collection={route.kind==='collection'}/>:route.kind==='space'?<Detail key={route.id} id={route.id} origin={route.origin} api={api} breadcrumbHost={breadcrumbHost} ownerId={identity}/>:route.kind==='settings'?<Settings api={api} identity={identity} logout={logout}/>:<><Notice error>Cette page est introuvable.</Notice><Link to="/">Mon environnement</Link></>}
 
 
   </>;

@@ -427,7 +427,7 @@ main:has(>.environment-home) {padding-top:2rem;}
 @media(prefers-reduced-motion:reduce){.orb-art,.space-card>a{transition:none!important;}}
 /* Stable Latin bold metrics in the supported browser image and on the owner's Mac. */
 .signed-in {font-family:Arial,'Helvetica Neue',system-ui,sans-serif;}
-@media(min-width:851px){.signed-in:has(.environment-home){padding-top:46px;}.signed-in .environment-topline h1{margin-left:20px;}.signed-in main:has(.space-workspace){padding-top:10px;}.signed-in main:has(.space-workspace) .breadcrumbs{margin-top:8px;}.signed-in .detail{margin-top:12px;}.space-title{align-self:flex-start;padding-top:12px;}}
+@media(min-width:851px){.signed-in .environment-topline h1{margin-left:20px;}.signed-in main:has(.space-workspace){padding-top:10px;}.signed-in main:has(.space-workspace) .breadcrumbs{margin-top:8px;}.signed-in .detail{margin-top:12px;}.space-title{align-self:flex-start;padding-top:12px;}}
 @media(max-width:850px){.signed-in main:has(.space-workspace){padding-top:12px;}.signed-in main:has(.space-workspace) .breadcrumbs{margin-bottom:10px;}.support-toggle{margin:16px 0 0;}.support-open .support-toggle{margin:0 0 16px;}}
 /* The desktop reference fits all seven domains; intrinsic image width must not widen a card. */
 .signed-in .domain-grid.horizontal-carousel>li {min-width:0;}
@@ -1121,7 +1121,7 @@ body:has(.definitive-space){background:linear-gradient(135deg,#fcfcfd,#f9fafc);}
 .chat-footer .chat-data-scope{margin:0;padding:0 14px 10px;font-size:11px;}
 .chat-footer .chat-data-scope[open]{max-height:160px;overflow:auto;}
 .memory-modal.space-action-dialog{width:min(900px,calc(100vw - 32px));max-width:900px;padding:30px 36px;border:1px solid #dce6f4;border-radius:28px;background:linear-gradient(120deg,#fff,#fcfdff);box-shadow:0 35px 90px #223c6530;}
-.memory-modal::backdrop{background:#647c9a38;backdrop-filter:blur(9px);}
+.memory-modal::backdrop{background:#647c9a38;}
 .memory-modal>header{justify-content:flex-end;position:relative;margin:0;}
 .memory-modal>header>h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
 .memory-lead{text-align:center;}.memory-lead>.ui-icon{display:block;width:38px;height:38px;color:#1655ff;margin:0 0 12px;}
@@ -1321,3 +1321,9 @@ body:has(.context-space-v02){overflow:hidden;background:#fff;}
 
 .app-shell .header-breadcrumbs .breadcrumbs{margin:0;padding:0;font-size:13px;gap:8px;}
 .app-shell .header-breadcrumbs .breadcrumbs>[aria-current="page"]{display:inline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Keep breadcrumbs in the same header slot on home, domain and Space. */
+.app-shell .header-breadcrumbs{order:0;flex:1;min-width:0;padding:0;}
+.app-shell .header-breadcrumbs .breadcrumbs{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;overflow:hidden;}
+.app-shell .topbar .brand{background:transparent;border:0;box-shadow:none;}
+.workspace-answer-pending{min-height:48px;color:#737378;font-size:14px;}
