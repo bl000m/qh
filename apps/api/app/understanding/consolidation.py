@@ -6,6 +6,7 @@ intake is replayed together so corrections cannot blindly erase earlier evidence
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
 import json
+import time
 
 from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded
 from app.chat.context import ChatProviderUnavailable
@@ -54,6 +55,7 @@ class ContextConsolidation:
         return await self.repository_for(subject).append(scope, document)
 
     async def consolidate(self, identity, scope, regeneration=None):
+        started_at = time.perf_counter()
         await self._allow(identity.subject_id, scope)
         if self.ai is None:
             raise EnrichmentUnavailable('AI unavailable')
@@ -73,7 +75,7 @@ class ContextConsolidation:
                     primary_dimension=row['content'].get('primary_dimension'),
                     validation_state=row['validation_state']) for row in current['understanding'])
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True, observer=diagnostic.check)
+                consolidate=True, previous=previous, with_recap=True, observer=diagnostic.check, measure=diagnostic.measure)
             original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
@@ -94,14 +96,14 @@ class ContextConsolidation:
             # its validated recap; detailed reads retain the graph readiness gate.
             result = dict(result, recap=recap_output.from_version(revisions, result['current']))
             diagnostic.check('uum.atomic_context_consolidation', True)
-            diagnostic.finish('accepted', 'context_consolidation')
+            diagnostic.finish('accepted', 'context_consolidation', started_at=started_at)
             return result
         except BaseException:
             # On ambiguous commit, the repository only marks a still-running job;
             # an already committed idle version remains intact and replayable.
             await repository.fail(scope, operation)
             if diagnostic is not None:
-                diagnostic.finish('rejected', 'context_consolidation')
+                diagnostic.finish('rejected', 'context_consolidation', started_at=started_at)
             raise
 
     def _conversation(self, subject, batch):

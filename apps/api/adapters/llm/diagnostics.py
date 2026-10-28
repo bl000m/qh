@@ -7,6 +7,48 @@ import time
 from uuid import UUID, uuid4
 
 
+def uum_output_metrics(response):
+    """Lengths/counts only. Malformed output remains the Engine's responsibility."""
+    sizes = {}
+    try:
+        content = response['choices'][0]['message']['content']
+        if not isinstance(content, str):
+            return {}
+        sizes = dict(output_json_chars=len(content), output_json_bytes=len(content.encode()))
+        output = json.loads(content)
+        items = output.get('understanding', output)['items']
+        if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+            return sizes
+        sizes['atomic_items'] = len(items)
+        if all(isinstance(item.get('text'), str) for item in items):
+            sizes['atomic_text_chars'] = sum(len(item['text']) for item in items)
+        evidence = [item.get('evidence_refs', item.get('evidence')) for item in items]
+        if any(not isinstance(refs, list) for refs in evidence):
+            return sizes
+        return dict(**sizes, passage_references=sum(map(len, evidence)),
+            evidence_json_chars=sum(len(json.dumps(refs, ensure_ascii=False, separators=(',', ':'))) for refs in evidence))
+    except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+        return sizes
+
+
+def performance_warnings(metrics):
+    """Advisory only; see docs/qh-51-essai-ia.md for thresholds and units."""
+    warnings = []
+    source, items = metrics.get('source_chars'), metrics.get('atomic_items')
+    input_tokens, output_tokens = metrics.get('input_tokens'), metrics.get('output_tokens')
+    output_chars, evidence = metrics.get('output_json_chars'), metrics.get('evidence_json_chars')
+    catalogue = metrics.get('catalogue_chars')
+    if input_tokens and output_tokens is not None and output_tokens>=2000 and output_tokens>3*input_tokens:
+        warnings.append('output_tokens_over_3x_input')
+    if source and items is not None and items>=8 and items>source/100:
+        warnings.append('dense_atomic_items')
+    if output_chars and evidence is not None and output_chars>=2000 and evidence>output_chars/2:
+        warnings.append('evidence_over_half_output')
+    if source and catalogue is not None and catalogue>=4000 and catalogue>2*source:
+        warnings.append('catalogue_over_2x_source')
+    return warnings
+
+
 class PrivateDiagnostics:
     retention = 3600
     max_records = 100
@@ -112,6 +154,11 @@ class DiagnosticCall:
         self.identity = None
         self.accounting_summary = None
         self.pending_checks = []
+        self.metrics = {}
+
+    def measure(self, **values):
+        # Callers supply numeric metadata only, never prompt/source content.
+        self.metrics.update(values)
 
     def begin(self):
         self.identity = self.store.begin(subject=self.subject, scope=self.scope, kind=self.kind)
@@ -130,6 +177,7 @@ class DiagnosticCall:
             return
         # Never persist request/system prompt, credentials or provider headers.
         exchange = raw.last_exchange or {}
+        latency = exchange.get('latency_seconds', (raw.last_failure or {}).get('latency_seconds'))
         response = exchange.get('response')
         text = json.dumps(response, ensure_ascii=False)
         redacted = bool(raw._key and raw._key in text)
@@ -140,10 +188,23 @@ class DiagnosticCall:
         if row is not None:
             self.accounting_summary=dict(attempt=index+1,status=row['status'],
                 cost_usd=row.get('observed_usd'),usage=row.get('usage'))
+        if self.kind == 'uum':
+            usage = (row or {}).get('usage') or {}
+            self.measure(input_tokens=usage.get('prompt_tokens'), output_tokens=usage.get('completion_tokens'),
+                provider_ms=round(latency*1000, 3) if latency is not None else None,
+                **uum_output_metrics(exchange.get('response')))
+            request = raw.last_request
+            if request is not None:
+                self.measure(request_message_chars=sum(len(m.content) for m in request.messages),
+                    request_schema_chars=len(json.dumps(request.output_schema, ensure_ascii=False, separators=(',', ':'))))
         self.store.update(self.identity, raw_response=response, secret_redacted=redacted,
             attempt_index=index, accounting=row, http_status=exchange.get('http_status',
-                (raw.last_failure or {}).get('http_status')), latency_seconds=exchange.get('latency_seconds'))
+                (raw.last_failure or {}).get('http_status')), latency_seconds=latency,
+            metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))
 
-    def finish(self, outcome, phase):
+    def finish(self, outcome, phase, *, started_at=None):
+        if started_at is not None:
+            self.measure(consolidation_ms=round((time.perf_counter()-started_at)*1000, 3))
         if self.identity:
-            self.store.update(self.identity, outcome=outcome, phase=phase)
+            self.store.update(self.identity, outcome=outcome, phase=phase,
+                metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))
