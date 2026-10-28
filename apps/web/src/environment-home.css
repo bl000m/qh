@@ -1,23 +1,22 @@
 .app-shell:has(.environment-home-visual) { background:linear-gradient(to bottom,#fff 50%,#f0f1f2); }
 .app-shell.signed-in:has(.environment-home-visual)>main { display:flex; justify-content:center; padding:16px 0; }
-.environment-home-visual { display:grid; grid-template-columns:minmax(230px,1fr) auto; align-items:center; gap:32px; width:100%; align-self:center; --environment-view-diameter:min(960px,calc(100dvh - 145px),calc(100vw - 490px)); --environment-diameter:max(var(--environment-minimum-diameter),var(--environment-view-diameter)); }
-.environment-introduction { text-align:left; max-width:360px; }
-.environment-introduction h1 { font-size:clamp(32px,3vw,44px); font-weight:650; margin:0 0 20px; letter-spacing:-.035em; }
+.environment-home-visual { display:grid; grid-template-columns:minmax(240px,.65fr) minmax(0,2.2fr); align-items:center; gap:32px; width:100%; align-self:center; }
+.environment-introduction { text-align:left; max-width:320px; }
+.environment-introduction h1 { font-size:38px; font-weight:600; margin:0 0 20px; letter-spacing:-.035em; }
 .environment-introduction p { font-size:18px; line-height:1.65; color:#65656b; margin:0; }
-.environment-stage { display:grid; grid-template-columns:var(--environment-view-diameter) 90px; gap:20px; align-items:center; width:fit-content; margin:0; }
-.environment-window { grid-column:1; width:var(--environment-view-diameter); height:var(--environment-view-diameter); overflow:visible; }
-.environment-window.is-scrollable { overflow:auto; overscroll-behavior:contain; }
-.environment-sphere { position:relative; width:var(--environment-diameter); aspect-ratio:1; container-type:inline-size; }
-.environment-sphere::after { content:''; position:absolute; left:20%; right:20%; bottom:4px; height:12px; background:#20202412; border-radius:50%; filter:blur(10px); pointer-events:none; }
+.environment-stage { display:grid; grid-template-columns:minmax(0,1fr) 90px; gap:24px; align-items:center; width:100%; margin:0; }
+.environment-window { grid-column:1; width:100%; min-width:0; height:var(--environment-area-height); overflow:visible; }
+.environment-sphere { position:relative; width:100%; height:100%; container-type:inline-size; }
 .environment-bubble-art { display:block; width:100%; height:100%; position:absolute; inset:0; object-fit:contain; pointer-events:none; }
+.environment-sphere>.environment-bubble-art { filter:blur(8px); opacity:.45; transform:scale(1.1); }
 .environment-domains { list-style:none; margin:0; padding:0; }
-.environment-domain { position:absolute; aspect-ratio:1; container-type:inline-size; animation:environment-float var(--float-duration) ease-in-out var(--float-delay) infinite var(--float-direction); }
+.environment-domain { position:absolute; z-index:1; aspect-ratio:1; container-type:inline-size; animation:environment-float var(--float-duration) ease-in-out var(--float-delay) infinite var(--float-direction); }
 .environment-domain:hover,.environment-domain:focus-within { animation-play-state:paused; }
 .environment-domain-link { position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:100%; border-radius:50%; text-decoration:none; transition:transform 180ms ease; }
 .environment-domain-link:hover { transform:scale(1.025); }
 .environment-domain-link:focus-visible { outline:2px solid #333; outline-offset:2px; }
 .environment-domain-text { display:flex; flex:none; flex-direction:column; align-items:center; gap:6px; width:max-content; position:relative; text-align:center; }
-.environment-domain-label { display:flex; flex:none; align-items:center; justify-content:center; gap:7px; width:max-content; white-space:nowrap; padding:6px 10px; border-radius:8px; background:#181818; color:#fff; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:16px; line-height:1.25; }
+.environment-domain-label { display:flex; flex:none; align-items:center; justify-content:center; gap:7px; width:max-content; white-space:nowrap; padding:6px 12px; border-radius:8px; background:#181818; color:#fff; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:14px; font-weight:400; line-height:1.25; }
 .environment-domain-label>span:last-child { white-space:nowrap; }
 .environment-domain-count { font-size:13px; line-height:1.25; color:#626266; white-space:nowrap; }
 .environment-add { grid-column:2; display:flex; flex-direction:column; align-items:center; gap:10px; padding:0; color:#68686d; background:transparent; border:0; font-size:14px; font-weight:400; text-align:center; }
@@ -27,18 +26,21 @@
 .environment-empty { position:absolute; top:50%; left:20%; width:60%; transform:translateY(-50%); text-align:center; color:#707074; font-size:14px; }
 .environment-error { grid-column:1/-1; max-width:600px; margin:12px auto; text-align:center; font-size:14px; }
 .environment-error button { margin-top:8px; }
-.environment-scroll-hint { grid-column:2; text-align:center; color:#707074; font-size:12px; margin:0; }
 @keyframes environment-float {
   0%,100% { transform:translate(clamp(-2px,-.3cqi,-1px),clamp(-4px,-.6cqi,-2px)); }
   50% { transform:translate(clamp(1px,.3cqi,2px),clamp(2px,.6cqi,4px)); }
 }
 @media(max-width:850px) {
- .environment-home-visual { grid-template-columns:1fr; gap:24px; --environment-view-diameter:min(650px,calc(100vw - 32px)); }
+ .environment-home-visual { grid-template-columns:1fr; gap:24px; }
  .environment-introduction { max-width:540px; }
- .environment-stage { display:flex; flex-direction:column; gap:24px; }
- .environment-introduction h1 { font-size:32px; margin-bottom:12px; }
- .environment-introduction p { font-size:17px; }
- .environment-scroll-hint { grid-column:1; }
+ .environment-stage { grid-template-columns:minmax(0,1fr) 64px; gap:12px; }
+ .environment-introduction h1 { font-size:36px; margin-bottom:12px; }
+ .environment-introduction p { font-size:18px; }
+ .environment-add { font-size:14px; }
+}
+@media(max-width:500px) {
+ .environment-stage { grid-template-columns:minmax(0,1fr); }
+ .environment-add { grid-column:1; }
  .environment-add { flex-direction:row; font-size:14px; }
  .environment-add>span:first-child { width:44px; height:44px; font-size:28px; }
 }

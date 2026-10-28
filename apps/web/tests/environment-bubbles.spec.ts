@@ -20,14 +20,15 @@ test('real multi-domain memberships determine bounded, monotonic bubble sizes', 
   expect(domainBubbles(document)).toEqual(bubbles);
 });
 
-test('zero to fifty domains fit the disk without overlap, including drift clearance', () => {
+test('zero to fifty domains use the available width without overlap, including drift clearance', () => {
   for (const count of [0, 1, 2, 5, 7, 12, 20, 35, 50]) {
     const bubbles = domainBubbles(organization(count));
     expect(bubbles).toHaveLength(count);
     for (const [index, bubble] of bubbles.entries()) {
       expect(bubble.radius).toBeGreaterThan(0);
-      expect(Math.hypot(bubble.x, bubble.y) + bubble.radius + .025).toBeLessThanOrEqual(.960001);
-      for (const other of bubbles.slice(index + 1)) expect(Math.hypot(bubble.x - other.x, bubble.y - other.y)).toBeGreaterThanOrEqual(bubble.radius + other.radius + .05 - 1e-8);
+      expect(bubble.x - bubble.radius).toBeGreaterThanOrEqual(0);
+      expect(bubble.x + bubble.radius).toBeLessThanOrEqual(800);
+      for (const other of bubbles.slice(index + 1)) expect(Math.hypot(bubble.x - other.x, bubble.y - other.y)).toBeGreaterThanOrEqual(bubble.radius + other.radius + 20);
     }
   }
 });

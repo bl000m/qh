@@ -9,56 +9,49 @@ export interface DomainBubble {
 }
 export interface BubbleLabel {width: number; height: number}
 
-// Disk coordinates reserve space for drift, hover and the keyboard focus ring.
-const clearance = .025;
-const candidates = Array.from({length: 401}, (_, index) => {
-  const distance = .92 * Math.sqrt(index / 400);
-  const angle = index * Math.PI * (3 - Math.sqrt(5));
-  return {x: Math.cos(angle) * distance, y: Math.sin(angle) * distance};
-});
-const orderedCandidates = Array.from({length: 50}, (_, index) => {
-  const angle = index * Math.PI * (3 - Math.sqrt(5)) - .7;
-  const target = {x: Math.cos(angle) * .45, y: Math.sin(angle) * .45};
-  return [...candidates].sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y));
-});
-
-function pack(domains: DomainBubble[], scale: number, labels: Record<string, BubbleLabel>, diameter: number): DomainBubble[] | null {
-  const placed: DomainBubble[] = [];
-  for (const [index, domain] of domains.entries()) {
+// Pixel footprints include labels, drift, hover and keyboard focus. The artwork
+// behind them is decorative and imposes no circular boundary on navigation.
+function arrange(domains: DomainBubble[], labels: Record<string, BubbleLabel>, width: number, scale: number): DomainBubble[] {
+  const rows: {bubble: DomainBubble; width: number; height: number}[][] = [[]];
+  for (const domain of domains) {
     const radius = domain.radius * scale;
-    const label = labels[domain.domain.id];
-    const position = orderedCandidates[index].find(point =>
-      Math.hypot(point.x, point.y) + radius + clearance <= .96 &&
-      (!label || Math.abs(point.x) + label.width / diameter <= .96) &&
-      placed.every(other => {
-        if (Math.hypot(point.x - other.x, point.y - other.y) < radius + other.radius + 2 * clearance) return false;
-        const previous = labels[other.domain.id];
-        return !label || !previous || Math.abs(point.x - other.x) >= (label.width + previous.width) / diameter + 2 * clearance ||
-          Math.abs(point.y - other.y) >= (label.height + previous.height) / diameter + 2 * clearance;
-      }));
-    if (!position) return null;
-    placed.push({...domain, ...position, radius});
+    const label = labels[domain.domain.id] ?? {width: domain.domain.name.length * 8.5 + 40, height: 52};
+    const item = {bubble: {...domain, radius}, width: Math.max(2 * radius, label.width) + 24, height: Math.max(2 * radius, label.height) + 24};
+    const row = rows.at(-1)!;
+    const used = row.reduce((sum, value) => sum + value.width + 40, 0);
+    if (row.length && used + item.width > width - 32) rows.push([item]);
+    else row.push(item);
   }
-  return placed;
+  let top = 16;
+  return rows.flatMap((row, rowIndex) => {
+    const total = row.reduce((sum, item) => sum + item.width, 0);
+    const gap = Math.max(40, (width - 32 - total) / (row.length + 1));
+    let left = (width - total - gap * (row.length - 1)) / 2;
+    const height = Math.max(0, ...row.map(item => item.height));
+    const placed = row.map((item, index) => {
+      const bubble = {...item.bubble, x: left + item.width / 2, y: top + height / 2 + ((index + rowIndex) % 3 - 1) * 8};
+      left += item.width + gap;
+      return bubble;
+    });
+    top += height + 48;
+    return placed;
+  });
 }
 
-export function domainBubbles(organization: Organization, labels: Record<string, BubbleLabel> = {}, diameter = 1): DomainBubble[] {
+export function domainBubbles(organization: Organization, labels: Record<string, BubbleLabel> = {}, width = 800, height = 650): DomainBubble[] {
   const counts = new Map(organization.domains.map(domain => [domain.id, 0]));
   for (const memberships of Object.values(organization.memberships)) {
     for (const id of memberships) counts.set(id, (counts.get(id) ?? 0) + 1);
   }
   const maximum = Math.max(1, ...counts.values());
+  const base = Math.max(40, 52 * Math.min(1, Math.max(.74, width / 600), Math.sqrt(12 / Math.max(1, organization.domains.length))));
   const domains = organization.domains.map(domain => ({domain, count: counts.get(domain.id)!, x: 0, y: 0,
-    radius: 1 + .65 * Math.log1p(counts.get(domain.id)!) / Math.log1p(maximum)}));
-  domains.sort((a, b) => b.radius - a.radius || a.domain.id.localeCompare(b.domain.id));
-  let low = 0, high = .64 / Math.max(1, ...domains.map(domain => domain.radius));
-  let result: DomainBubble[] = [];
-  for (let attempt = 0; attempt < 14; attempt++) {
-    const scale = (low + high) / 2;
-    const packed = pack(domains, scale, labels, diameter);
-    if (packed) { low = scale; result = packed; } else high = scale;
+    radius: base * (1 + .65 * Math.log1p(counts.get(domain.id)!) / Math.log1p(maximum))}));
+  let scale = 1;
+  let result = arrange(domains, labels, width, scale);
+  while (result.some(bubble => bubble.y + bubble.radius + 16 > height) && scale > 40 / base + 1e-6) {
+    scale = Math.max(40 / base, scale * .92);
+    result = arrange(domains, labels, width, scale);
   }
-  if (domains.length && !result.length) return domainBubbles(organization);
-  // Preserve the owner's keyboard order rather than sorting by bubble size.
-  return organization.domains.map(domain => result.find(bubble => bubble.domain.id === domain.id)!);
+  return result;
 }

@@ -92,12 +92,12 @@ test('first domain appears without a reload; keyboard focus returns to the add c
   await expect(page.getByRole('button', {name: 'Ajouter un domaine', exact: true})).toBeFocused();
 });
 
-test('dense mobile environments keep fifty readable click targets inside the sphere', async ({page}) => {
+test('dense mobile environments keep fifty readable click targets in the page', async ({page}) => {
   await page.setViewportSize({width: 390, height: 844});
   await page.emulateMedia({reducedMotion: 'reduce'});
   await open(page, 50);
   await expect(page.getByRole('button', {name: 'Ajouter un domaine', exact: true})).toBeDisabled();
-  await expect(page.getByText('Fais défiler la bulle pour explorer tous tes domaines.')).toBeVisible();
+  await expect(page.locator('.environment-domain-label')).toHaveCount(50);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const geometry = await page.locator('.environment-domain-link').evaluateAll(nodes => nodes.map(node => {
     const circle = node.getBoundingClientRect(), text = node.querySelector('.environment-domain-text')!.getBoundingClientRect();
