@@ -31,6 +31,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'regenerate'|'file'|null>(null);
  const [draft,setDraft]=useDraft('message');
  const [notice,setNotice]=useState('');
+ const [memoryPending,setMemoryPending]=useState(false);
  const [questionStates,setQuestionStates]=useState<Record<string,'sending'|'uncertain'|'failed'>>({});
  const [sendingQuestion,setSendingQuestion]=useState<string|null>(null);
  const sendOperations=useRef<Record<string,string>>({}),regenerationAttempt=useRef<string|null>(null);
@@ -116,18 +117,18 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  }
  async function memorize(regenerate=false){
   if(lock.current||!state)return;
-  lock.current=true;setBusy(regenerate?'regenerate':'memory');setError('');setNotice('');
+  lock.current=true;setBusy(regenerate?'regenerate':'memory');setMemoryPending(true);setError('');setNotice('');
   setOpen(true);
   try{
    if(!regenerate)await saveDraft();
    if(regenerate&&!regenerationAttempt.current)regenerationAttempt.current=crypto.randomUUID();
    const saved=regenerate?await api.regenerate(scope,regenerationAttempt.current!):await api.consolidate(scope);
-   regenerationAttempt.current=null;accept(saved);setOpen(true);setSourcesVisited(false);setSourceError('');setLoadingSources(false);
+   setMemoryPending(false);regenerationAttempt.current=null;accept(saved);setOpen(true);setSourcesVisited(false);setSourceError('');setLoadingSources(false);
    if(!saved.recap){
     try{await reload(saved.current?.id);}catch{setLoadStatus('error');setNotice('Version enregistrée. Le récapitulatif n’a pas pu être chargé. Actualise l’état pour le consulter.');return;}
    }
    setNotice('Compréhension mise à jour');
-  }catch(e){setError(failure(e));if(regenerate){try{await synchronize();}catch{/* Keep operation identity while publication is uncertain. */}}}finally{lock.current=false;setBusy(null);void refreshAvailability();}
+  }catch(e){setError(failure(e));if(regenerate){try{await synchronize();}catch{/* Keep operation identity while publication is uncertain. */}}}finally{lock.current=false;setBusy(null);setMemoryPending(false);void refreshAvailability();}
  }
  async function addFile(file:File|undefined,context:boolean){
   if(!file||lock.current)return;
@@ -155,6 +156,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   return()=>clearTimeout(timer);
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
+ const memoryStatus=!state?null:memoryPending||state.state==='running'?'Mémorisation en cours…':state.pending_count>0?'Nouveaux échanges à mémoriser':state.current?'Compréhension à jour':null;
  const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Tes messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
 
 
@@ -212,7 +214,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     <div className="workspace-feedback">{(busy==='memory'||busy==='regenerate')&&<p role="status">Mémorisation en cours : analyse et enregistrement de tes apports…</p>}{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Ton message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoute une information ou pose une question…"/>
-     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{!!state?.pending_count&&<span className="workspace-unsaved small muted">Modifications non mémorisées</span>}</div></div>
+     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{memoryStatus&&<span className="workspace-unsaved small muted" role="status">{memoryStatus}</span>}</div></div>
      <input ref={documentInput} type="file" accept=".txt,.md,.markdown,.pdf" hidden onChange={event=>{void addFile(event.target.files?.[0],false);event.target.value='';}}/>
      <input ref={contextInput} type="file" accept=".json,application/json" hidden onChange={event=>{void addFile(event.target.files?.[0],true);event.target.value='';}}/>
     </form>
