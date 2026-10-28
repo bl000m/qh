@@ -6,10 +6,11 @@ import type {QhApi,ContextSpace} from './api';
 import {apiMessage} from './api';
 import type {Organization} from './environment';
 import {Orb} from './Ui';
+import Loading from './Loading';
 export function useOrganization(api:QhApi,enabled=true){
  const [value,setValue]=useState<Organization|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
  useEffect(()=>{if(!enabled){setValue(null);return;}let active=true;setError('');api.organization().then(v=>{if(active)setValue(v);}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[api,refresh,enabled]);
- async function save(next:Organization){const previous=value;setValue(next);setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setValue(previous);setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Rechargez avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
+ async function save(next:Organization){const previous=value;setValue(next);setBusy(true);setError('');try{const saved=await api.organize(next);setValue(saved);return saved;}catch(e){setValue(previous);setError(e instanceof Error&&'status' in e&&e.status===409?'L’organisation a changé. Recharge avant de modifier à nouveau.':apiMessage(e));throw e;}finally{setBusy(false);}}
  return {value,error,busy,save,reload:()=>{setValue(null);setRefresh(n=>n+1);}};
 }
 export function CarouselArrows({target,name}:{target:RefObject<HTMLUListElement>;name:string}){
@@ -20,7 +21,7 @@ export default function EnvironmentDomains({state}:{state:ReturnType<typeof useO
  const carousel=useRef<HTMLUListElement>(null);const {value,error}=state;
  return <section aria-labelledby="domains-title" className="personal-domains"><div className="section-heading"><h2 id="domains-title">Mes domaines</h2><CarouselArrows target={carousel} name="Domaines"/></div>
  {error&&<div role="alert"><p>{error}</p><button type="button" onClick={state.reload}>Recharger l’organisation</button></div>}
- {!value&&!error&&<p role="status">Chargement de votre organisation…</p>}
+ {!value&&!error&&<Loading label="Chargement de ton organisation…"/>}
  {value&&<ul ref={carousel} className="domain-grid horizontal-carousel" aria-label="Carrousel Mes domaines">{value.domains.map((domain,index)=><li key={domain.id}><Link to={domainPath(domain.id)} className="domain-orb"><Orb tone={index*38}/><span>{domain.name}</span></Link></li>)}</ul>}
  </section>;
 }

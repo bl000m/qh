@@ -32,6 +32,7 @@ def fixture():
     context=Mock(browse=AsyncMock(return_value=SimpleNamespace(revisions=())))
     policy=Mock(evaluate=AsyncMock(return_value=SimpleNamespace(allowed=True)))
     repo=Mock(read=AsyncMock(),claim=AsyncMock(),fail=AsyncMock(),publish=AsyncMock(),append=AsyncMock())
+    repo.publish.return_value=dict(current=None)
     ai=Mock(authorize_consolidation=AsyncMock(),_authorize=AsyncMock())
     ai.factory.diagnostic_call.return_value=Mock()
     service=ContextConsolidation(context=context,policy=policy,ai=ai,repository_for=lambda subject:repo)
@@ -56,7 +57,13 @@ def test_one_atomic_publish_after_engine_and_repeat_does_not_generate():
     delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,
         content=json.dumps(consolidation_output(wire))))))
     ai._provider.return_value=delegate
-    asyncio.run(service.consolidate(who,scope))
+    async def publish(scope, operation, intake_ids, source, revisions):
+        return dict(current=dict(id=operation, revision_ids=[r['id'] for r in revisions]))
+    repo.publish.side_effect=publish
+    receipt=asyncio.run(service.consolidate(who,scope))
+    assert receipt['recap']['version_id']==batch['operation_id']
+    assert receipt['recap']['title']=='Contexte de test'
+    assert service.context.browse.await_count==2  # No post-write graph polling.
     repo.publish.assert_awaited_once()
     assert repo.publish.call_args.args[2]==[r['id'] for r in batch['intake']]
     published=repo.publish.call_args.args[4]
@@ -64,6 +71,23 @@ def test_one_atomic_publish_after_engine_and_repeat_does_not_generate():
     repo.claim.return_value={'replayed':True};repo.read.return_value=dict(current=None)
     asyncio.run(service.consolidate(who,scope))
     assert delegate.generate.await_count==1 and repo.publish.await_count==1
+
+
+def test_published_recap_is_not_disclosed_after_owner_revocation():
+    service,who,scope,repo,ai,_=fixture()
+    wire=dict(format='qh.atomic-understanding/1',items=[dict(text='Le responsable est Alice.',
+        primary_dimension=None,evidence=[dict(quote='Le responsable est Alice.')])])
+    ai._provider.return_value=Mock(generate=AsyncMock(return_value=GenerationResult(
+        message=Message(role=MessageRole.ASSISTANT, content=json.dumps(consolidation_output(wire))))))
+
+    async def publish(scope, operation, intake_ids, source, revisions):
+        service.policy.evaluate.return_value=SimpleNamespace(allowed=False)
+        return dict(current=dict(id=operation, revision_ids=[r['id'] for r in revisions]))
+
+    repo.publish.side_effect=publish
+    with pytest.raises(ContextSpaceNotFound):
+        asyncio.run(service.consolidate(who,scope))
+    repo.publish.assert_awaited_once()
 
 
 @pytest.mark.parametrize('failure',[TimeoutError(),ValueError('invalid citations'),None])

@@ -25,7 +25,7 @@ for(const width of [1440,375])test('Context Space discussion, pending intake, fa
   return route.fulfill({json:value});
  });
  await page.goto('/tests/fixtures/context-space.html');
- const field=page.getByRole('textbox',{name:'Votre message',exact:true});await expect(field).toBeEnabled();
+ const field=page.getByRole('textbox',{name:'Ton message',exact:true});await expect(field).toBeEnabled();
  await expect(page.getByRole('tab')).toHaveCount(0);await expect(page.getByRole('button',{name:'Mémoriser',exact:true})).toBeDisabled();
  await expect(page.getByRole('complementary',{name:'Compréhension'})).toHaveCount(0);expect(consolidations).toBe(0);
  await page.locator('input[type=file]').first().setInputFiles({name:'contexte.md',mimeType:'text/markdown',buffer:Buffer.from('Préparer le projet.')});
@@ -75,7 +75,7 @@ test('AI availability failures and accounting suspension are visible and can be 
   return route.fulfill({status:404,json:{detail:'outside fixture'}});
  });
  await page.goto('/tests/fixtures/context-space.html');
- await page.getByRole('textbox',{name:'Votre message',exact:true}).fill('Un message à envoyer.');
+ await page.getByRole('textbox',{name:'Ton message',exact:true}).fill('Un message à envoyer.');
  const send=page.getByRole('button',{name:'Envoyer',exact:true}),memory=page.getByRole('button',{name:'Mémoriser',exact:true});
  await expect(page.getByText('La disponibilité de l’IA n’a pas pu être vérifiée.',{exact:true})).toBeVisible();
  await expect(send).toBeDisabled();await expect(memory).toBeDisabled();

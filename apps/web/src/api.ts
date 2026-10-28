@@ -30,6 +30,11 @@ function space(value: unknown): ContextSpace {
       !Number.isFinite(Date.parse(v.updated_at))) throw new ApiError(502);
   return v;
 }
+function workspaceState(state:WorkspaceState,scope:string):WorkspaceState {
+    if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Number.isInteger(state.pending_count))throw new ApiError(502);
+    if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>(state.current.has_recap?100:150)||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
+    return state;
+}
 export class QhApi {
   private readonly navigationReads=new NavigationReads();
   private readonly prefetching=new Set<string>();
@@ -75,14 +80,14 @@ export class QhApi {
   }
   private async readWorkspace(scope:string):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
     const state=await this.sharing<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>(scope,'workspace');
-    if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Array.isArray(state.understanding)||!Number.isInteger(state.pending_count))throw new ApiError(502);
-    if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>(state.current.has_recap?100:150)||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
+    workspaceState(state,scope);
+    if(!Array.isArray(state.understanding))throw new ApiError(502);
     return state;
   }
   async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
-  async consolidate(scope:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/consolidate','POST');}
+  async consolidate(scope:string):Promise<WorkspaceState>{return workspaceState(await this.sharing(scope,'workspace/consolidate','POST'),scope);}
   async exportContext(scope:string):Promise<PortableContext>{return this.sharing(scope,'workspace/export');}
-  async regenerate(scope:string,operation:string):Promise<WorkspaceState>{return this.sharing(scope,'workspace/regenerate','POST',{operation_id:operation} satisfies WorkspaceRegenerationInput);}
+  async regenerate(scope:string,operation:string):Promise<WorkspaceState>{return workspaceState(await this.sharing(scope,'workspace/regenerate','POST',{operation_id:operation} satisfies WorkspaceRegenerationInput),scope);}
   async workspaceChat(scope:string,question:string,operation:string):Promise<void>{
     const receipt=await this.sharing<WorkspaceMessageReceipt>(scope,'workspace/messages','POST',{question_id:question,operation_id:operation} satisfies WorkspaceMessageInput);
     if(receipt?.state!=='completed')throw new ApiError(502);
@@ -246,7 +251,7 @@ export class QhApi {
 }
 export function apiMessage(error: unknown): string {
   if (error instanceof ApiError && error.status === 404) return 'Ce Context Space est introuvable ou inaccessible.';
-  if (error instanceof ApiError && error.status === 403) return 'Votre compte ne dispose pas des autorisations nécessaires.';
-  if (error instanceof ApiError && error.status === 422) return 'Vérifiez les informations saisies.';
-  return 'Le service est indisponible. Réessayez dans un instant.';
+  if (error instanceof ApiError && error.status === 403) return 'Ton compte ne dispose pas des autorisations nécessaires.';
+  if (error instanceof ApiError && error.status === 422) return 'Vérifie les informations saisies.';
+  return 'Le service est indisponible. Réessaie dans un instant.';
 }

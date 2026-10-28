@@ -89,6 +89,10 @@ class ContextConsolidation:
             await self._allow(identity.subject_id, scope)
             result = await repository.publish(scope, operation,
                 [row['id'] for row in batch['intake']], source, revisions)
+            await self._allow(identity.subject_id, scope, verify_graph=False)
+            # This is the committed write receipt, not a graph retrieval. Reuse
+            # its validated recap; detailed reads retain the graph readiness gate.
+            result = dict(result, recap=recap_output.from_version(revisions, result['current']))
             diagnostic.check('uum.atomic_context_consolidation', True)
             diagnostic.finish('accepted', 'context_consolidation')
             return result

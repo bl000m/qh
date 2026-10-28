@@ -9,7 +9,7 @@ import SharedRecap from './SharedRecap';
 import AnswerMarkdown from './AnswerMarkdown';
 
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
-const reasonLabels:Record<string,string>={owner_restriction:'Informations retirées à votre demande',recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
+const reasonLabels:Record<string,string>={owner_restriction:'Informations retirées à ta demande',recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
 const maskLabels:Record<string,string>={email:'Adresses email masquées',url:'Liens masqués',number:'Coordonnées ou numéros masqués',identifier:'Identifiants masqués'};
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('');
@@ -60,7 +60,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  const masks=[...new Set(preview?.report.masks.flatMap(x=>x.rules.map(r=>maskLabels[r]??'Informations masquées')))];
  return <Modal title="Partager ce contexte" onClose={onClose} className="sharing-dialog"><p>{name}</p>
  <p>Le destinataire pourra poser des questions sur ce contexte, dans les limites de l’accès autorisé. Les sources et la structure interne restent privées.</p>
- <form onSubmit={(event:FormEvent)=>{event.preventDefault();void approve();}}><fieldset disabled={busy||!!link}><legend>Votre partage</legend>
+ <form onSubmit={(event:FormEvent)=>{event.preventDefault();void approve();}}><fieldset disabled={busy||!!link}><legend>Ton partage</legend>
  <label>Email du destinataire<input type="email" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/></label>
  <label>Finalité du partage<textarea required maxLength={1024} value={purpose} onChange={e=>setPurpose(e.target.value)}/></label>
  <label>Expiration<input type="datetime-local" step="1" required value={expiry} onChange={e=>setExpiry(e.target.value)}/></label>
@@ -76,15 +76,15 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  {preview.payload.items.length>0&&<details><summary>Consulter les informations communicables</summary>{preview.payload.items.map(item=><div key={item.reference}><p>{item.text}</p>{!link&&<button type="button" className="secondary" disabled={busy||!preview.report.anchors?.some(a=>a.reference===item.reference)} onClick={()=>{void exclude(item.reference);}}>Exclure cette information</button>}</div>)}</details>}
  {(exclusions.length>0||masks.length>0)&&<div><h4>Protection appliquée</h4>{[...exclusions,...masks].map(text=><p key={text}>{text}</p>)}</div>}
  {excluded.length>0&&!link&&<button type="button" className="secondary" disabled={busy} onClick={()=>{setExcluded([]);}}>Annuler les exclusions supplémentaires</button>}
- {preview.payload.items.length>0&&!link&&<details><summary>Tester une question comme le destinataire</summary><p>Ce test lance une réponse à votre demande, uniquement sur les informations communicables.</p><label>Question de test<textarea value={question} maxLength={2000} onChange={e=>setQuestion(e.target.value)} disabled={busy}/></label><button type="button" disabled={busy||!question.trim()} onClick={()=>{void testQuestion();}}>Tester la question</button>{answer&&<div className="guest-answer">{answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={answer.answer}/>{answer.insufficient_context&&<p>Les informations communicables sont insuffisantes pour répondre complètement.</p>}</div>}</details>}
- <p>Le masquage automatique ne garantit pas à lui seul la confidentialité : vérifiez ces textes pour ce destinataire, y compris les informations indirectement identifiantes.</p>
+ {preview.payload.items.length>0&&!link&&<details><summary>Tester une question comme le destinataire</summary><p>Ce test lance une réponse à ta demande, uniquement sur les informations communicables.</p><label>Question de test<textarea value={question} maxLength={2000} onChange={e=>setQuestion(e.target.value)} disabled={busy}/></label><button type="button" disabled={busy||!question.trim()} onClick={()=>{void testQuestion();}}>Tester la question</button>{answer&&<div className="guest-answer">{answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={answer.answer}/>{answer.insufficient_context&&<p>Les informations communicables sont insuffisantes pour répondre complètement.</p>}</div>}</details>}
+ <p>Le masquage automatique ne garantit pas à lui seul la confidentialité : vérifie ces textes pour ce destinataire, y compris les informations indirectement identifiantes.</p>
  </section>}
  <section><h3>Invitations</h3>{rows.map(row=><p key={row.id}>{row.recipient_email} · {row.revoked_at?'Révoquée':'Expire le '+new Date(row.expires_at).toLocaleString('fr-FR')} <button className="secondary" disabled={busy||!!row.revoked_at} onClick={()=>{void revoke(row.id);}}>Révoquer l’accès</button></p>)}</section>
  </details>
  {link&&<section aria-label="Invitation créée"><h3>Invitation prête</h3><p>Le destinataire devra vérifier sa boîte email.</p><label>Lien d’invitation<input readOnly value={link} onFocus={e=>e.target.select()}/></label></section>}
  </Modal>;
 }
-export default function SharingControl({api,scope,name}:{api:QhApi;scope:string;name:string}){
+export default function SharingControl({api,scope,name,label='Partager ce contexte',primary=false}:{api:QhApi;scope:string;name:string;label?:string;primary?:boolean}){
  const [open,setOpen]=useState(false);if(!sharingEnabled)return null;
- return <div className="sharing-entry"><button className="secondary" onClick={()=>setOpen(true)}>Partager ce contexte</button>{open&&<Editor key={scope} api={api} scope={scope} name={name} onClose={()=>setOpen(false)}/>}</div>;
+ return <div className="sharing-entry"><button className={primary?'sharing-primary':'secondary'} onClick={()=>setOpen(true)}>{label}</button>{open&&<Editor key={scope} api={api} scope={scope} name={name} onClose={()=>setOpen(false)}/>}</div>;
 }

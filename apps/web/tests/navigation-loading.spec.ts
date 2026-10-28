@@ -69,6 +69,6 @@ test('cold Space starts metadata and content together and does not await organiz
  expect(paths).toContain('/api/context-spaces/'+scope);
  metadata();await expect(page.getByRole('heading',{name:'Cold Space',exact:true})).toBeVisible();
  expect(paths).not.toContain('/api/environment');
- content();await expect(page.getByRole('textbox',{name:'Votre message',exact:true})).toBeEnabled();
+ content();await expect(page.getByRole('textbox',{name:'Ton message',exact:true})).toBeEnabled();
  organization();expect(paths.filter(path=>path.endsWith('/workspace'))).toHaveLength(1);
 });

@@ -23,14 +23,14 @@ for(const uncertain of [false,true])test('same-question manual recovery without 
   return route.fulfill({status:404,json:{detail:'outside fixture'}});
  });
  await page.goto('/tests/fixtures/context-space.html');
- await page.getByRole('textbox',{name:'Votre message',exact:true}).fill('Prépare un planning détaillé sur six jours.');
+ await page.getByRole('textbox',{name:'Ton message',exact:true}).fill('Prépare un planning détaillé sur six jours.');
  await page.getByRole('button',{name:'Envoyer',exact:true}).click();
  const message=page.locator('.workspace-message.user');await expect(message).toHaveCount(1);
  if(uncertain){
   await expect(message).toContainText('en attente de synchronisation');await expect(message.getByRole('button',{name:'Réessayer',exact:true})).toHaveCount(0);
   complete();await message.getByRole('button',{name:'Actualiser l’état',exact:true}).click();
  }else{
-  await expect(message).toContainText('Votre question est conservée');
+  await expect(message).toContainText('Ta question est conservée');
   await expect(page.getByText(/Le résultat n’est pas confirmé/)).toHaveCount(0);
   await message.getByRole('button',{name:'Réessayer',exact:true}).evaluate((button:HTMLButtonElement)=>{button.click();button.click();});
  }

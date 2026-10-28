@@ -22,7 +22,7 @@ for(const result of ['ready','empty','error'] as const)test(`initial understandi
  const panel=page.getByRole('complementary',{name:'Compréhension',exact:true});
  await expect(panel.getByRole('status')).toHaveText('Chargement de la compréhension…');
  await expect(panel).not.toContainText('pas encore été mémorisé');
- await expect(page.getByText('Chargement du contexte…',{exact:true})).toBeVisible();
+ await expect(page.locator('.workspace-log').getByRole('status')).toBeVisible();
  // Availability is independent of the pending workspace request.
  await expect(page.locator('.workspace-availability')).toHaveCount(0);
  await panel.getByRole('button',{name:'Fermer',exact:true}).click();await toggle.click();
