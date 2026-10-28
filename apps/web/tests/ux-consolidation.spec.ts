@@ -88,7 +88,10 @@ test('an older source request cannot overwrite a newly committed recap',async({p
   return route.fulfill({status:404,json:{detail:'offline'}});
  });
  await page.goto('/tests/fixtures/context-space.html');await page.getByRole('button',{name:'Compréhension',exact:true}).click();
- await page.getByText('Consulter les sources',{exact:true}).click();await expect.poll(()=>reads).toBe(2);
+ await page.getByRole('button',{name:'Paramètres',exact:true}).click();
+ const settings=page.getByRole('dialog',{name:'Paramètres du Space',exact:true});
+ await settings.getByText('Sources et traçabilité',{exact:true}).click();await expect.poll(()=>reads).toBe(2);
+ await settings.getByRole('button',{name:'Fermer la fenêtre',exact:true}).click();
  await page.getByRole('button',{name:'Régénérer',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Nouvelle compréhension'})).toBeVisible();
  const completed=page.waitForResponse(r=>r.url().endsWith('/workspace'));release();await completed;

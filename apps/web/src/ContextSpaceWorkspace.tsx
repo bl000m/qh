@@ -174,13 +174,13 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const recap=<>
   {busy==='memory'||busy==='regenerate'?<div className="memory-progress"><Loading label="Mémorisation en cours"/><p>Compréhension en cours de préparation et d’enregistrement…</p></div>:loadStatus==='loading'?<Loading label="Chargement de la compréhension…"/>:loadStatus==='error'?<p role="alert" className="small muted">La compréhension n’a pas pu être chargée. Actualise l’état pour réessayer.</p>:<>
   {state?.current?<>
-   <p className="small muted">Version {state.current.version} · {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
+   <p className="small muted">Mis à jour le {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
    <h3>{summary?.title??name??'Ce contexte'}</h3>
    {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
    {state.current.has_recap===false&&<p className="small muted">Mémoriser actualisera le récapitulatif, sans ajouter de message.</p>}
    <div className="actions"><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void memorize(true);}}>Régénérer</button></div>
-   <details className="recap-sources" onToggle={event=>{if(event.currentTarget.open&&!sourcesVisited)void showSources();}}><summary>Consulter les sources</summary>{loadingSources&&<Loading label="Chargement des sources…"/>}{sourceError&&<><p role="alert">{sourceError}</p><button type="button" className="secondary" disabled={loadingSources} onClick={()=>{void showSources();}}>Réessayer les sources</button></>}{sourcesVisited&&sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>
-   <p className="small muted">Pour corriger cette compréhension, ajoute un message puis mémorise.</p>
+
+   <p className="small muted">Cette compréhension évolue avec tes échanges. Mémorise-les pour l'actualiser.</p>
   </>:<p>Ce contexte n’a pas encore été mémorisé. Ajoute des informations puis clique sur Mémoriser.</p>}
   </>}
  </>;
@@ -194,6 +194,19 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   </div></header>
   {settings&&<Modal title="Paramètres du Space" className="workspace-settings-dialog" onClose={()=>setSettings(false)}>
    {settingsContent}
+   <details className="recap-sources" onToggle={event=>{if(event.currentTarget.open&&!sourcesVisited&&state?.current)void showSources();}}><summary>Sources et traçabilité</summary>
+    <h3>Compréhension actuelle</h3>
+    {loadingSources&&<Loading label="Chargement des sources…"/>}
+    {sourceError&&<><p role="alert">{sourceError}</p><button type="button" className="secondary" disabled={loadingSources} onClick={()=>{void showSources();}}>Réessayer les sources</button></>}
+    {!state?.current&&<p>Aucune compréhension mémorisée dans ce Space.</p>}
+    {sourcesVisited&&sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
+    {items.filter(item=>item.role==='assistant'&&item.attribution).map((item,index)=><section key={item.id}>
+     <h3>Réponse {index+1}</h3>
+     {item.reply_to&&<p>Question : {items.find(question=>question.id===item.reply_to)?.text}</p>}
+     <AnswerMarkdown text={item.text??''}/>
+     <WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution!}/>
+    </section>)}
+   </details>
    <details><summary>Données envoyées</summary><p>Envoyer transmet cette conversation et la compréhension de ce Space à Mistral Small. Mémoriser analyse les apports de ce Space, y compris les documents et contextes importés. {caps?.automatic&&<>Budget commun restant : {caps.remaining_usd} USD.</>}</p></details>
    {caps?.automatic&&<details><summary>Diagnostics IA (développement)</summary><AIDiagnostics api={api} scope={scope}/></details>}
   </Modal>}
@@ -203,7 +216,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
      {!state&&!error&&<Loading label="Chargement du contexte…"/>}
      {state&&!state.intake.length&&<div className="workspace-welcome"><h2>Commence à discuter.</h2><p>QH peut ensuite en retenir l’essentiel dans ce Space.</p></div>}
      {displayed.map(item=><article key={item.id} className={'workspace-message '+(item.role==='assistant'?'assistant':'user')}>
-      {item.kind==='message'?<><span className="sr-only">{item.role==='assistant'?'QH':'Toi'}</span>{item.role==='assistant'?<><AnswerMarkdown text={item.text!}/>{item.attribution&&<WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution}/>}</>:<p>{item.text}</p>}</>:<p>{item.kind==='context'?'Contexte importé':'Document'} : {item.name}</p>}
+      {item.kind==='message'?<><span className="sr-only">{item.role==='assistant'?'QH':'Toi'}</span>{item.role==='assistant'?<><AnswerMarkdown text={item.text!}/>{item.attribution&&<WorkspaceAnswerSources api={api} scope={scope} attribution={item.attribution} showReferences={false}/>}</>:<p>{item.text}</p>}</>:<p>{item.kind==='context'?'Contexte importé':'Document'} : {item.name}</p>}
       {questionStatus(item)&&questionStatus(item)!=='sending'&&<div className="message-feedback">
        <p role="alert">{questionStatus(item)==='uncertain'?'La réponse est en attente de synchronisation.':'La réponse n’a pas pu être obtenue. Ta question est conservée.'}</p>
        {questionStatus(item)==='uncertain'?<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().catch(()=>{});}}>Actualiser l’état</button>:questionStatus(item)==='failed'&&<button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void send(item.id);}}>Réessayer</button>}
