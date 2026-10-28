@@ -4,8 +4,9 @@ from app.core.models import CanonicalRevision, CanonicalSource, RevisionRelation
 from adapters.context.native import NativeContextError, checked_rows
 
 
-def hydrate(repository, query, revision_ids):
-    snapshot = repository.read_snapshot(query.context_ids, revision_ids)
+def hydrate(repository, query, revision_ids, *, snapshot=None):
+    if snapshot is None:
+        snapshot = repository.read_snapshot(query.context_ids, revision_ids)
     checked_rows(snapshot)
     rows = snapshot['understanding_item_revisions']
     if {r['id'] for r in rows} != set(revision_ids):

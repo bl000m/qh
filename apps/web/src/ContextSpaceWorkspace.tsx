@@ -23,6 +23,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const [loadStatus,setLoadStatus]=useState<'loading'|'empty'|'ready'|'error'>('loading');
  const initialRead=useRef<{api:QhApi;scope:string;promise:Promise<State>}|null>(null);
  const [open,setOpen]=useState(false),[settings,setSettings]=useState(false);
+ const [sourcesVisited,setSourcesVisited]=useState(false);
  const [narrow,setNarrow]=useState(()=>window.matchMedia('(max-width:850px)').matches);
  const [error,setError]=useState(''),[busy,setBusy]=useState<'send'|'memory'|'regenerate'|'file'|null>(null);
  const [draft,setDraft]=useDraft('message');
@@ -35,7 +36,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const panel=useRef<HTMLElement>(null);
  const appendAttempt=useRef<ContextIntake|null>(null),lock=useRef(false);
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
- const reload=useCallback(async()=>{const value=await api.workspace(scope);setState(value);setLoadStatus(value.current?'ready':'empty');return value;},[api,scope]);
+ const reload=useCallback(async()=>{const value=await api.workspace(scope,true);setState(value);setLoadStatus(value.current?'ready':'empty');return value;},[api,scope]);
  useEffect(()=>{
   let active=true;
   setState(null);setLoadStatus('loading');setError('');setQuestionStates({});sendOperations.current={};regenerationAttempt.current=null;
@@ -166,7 +167,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
    {state.current.has_recap===false&&<p className="small muted">Mémoriser actualisera le récapitulatif, sans ajouter de message.</p>}
    <div className="actions"><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void memorize(true);}}>{busy==='regenerate'?'Régénération…':'Régénérer'}</button></div>
-   {sources.length>0&&<details className="recap-sources"><summary>Consulter les sources</summary>{sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>}
+   {sources.length>0&&<details className="recap-sources" onToggle={event=>{if(event.currentTarget.open)setSourcesVisited(true);}}><summary>Consulter les sources</summary>{sourcesVisited&&sources.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}</details>}
    <p className="small muted">Pour corriger cette compréhension, ajoutez un message puis mémorisez.</p>
   </>:<p>Ce contexte n’a pas encore été mémorisé. Ajoutez des informations puis cliquez sur Mémoriser.</p>}
   </>}

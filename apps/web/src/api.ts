@@ -13,6 +13,7 @@ import {chatAnswer} from './chat';
 import type {ChatAnswer,DialogueMessage} from './chat';
 import { revisionPage } from './understanding';
 import type { BrowseQuery, RevisionPage, RevisionQuery } from './understanding';
+import {NavigationReads} from './navigation-reads';
 // QH-9 wire contract; never import backend implementation or accept a UI owner.
 export interface ContextSpace {
   id: string; owner_id: string; name: string; status: string;
@@ -30,17 +31,23 @@ function space(value: unknown): ContextSpace {
   return v;
 }
 export class QhApi {
+  private readonly navigationReads=new NavigationReads();
+  private readonly prefetching=new Set<string>();
+  private navigationOwner:string|null=null;
   private readonly organizationWrites=new Set<Promise<Organization>>();
   private readonly openingWrites=new Map<string,Promise<void>>();
   private readonly providerGrants=new Map<string,string>();
   private closing=false;
   revokeSessionsBeforeLogout(credential?:string|null) {
+    this.navigationReads.clear();this.navigationOwner=null;
     // Start revocation with the current in-memory token before local logout clears it.
     if(credential!==null)for(const [id,scope] of this.providerGrants)void this.revokeSession(scope,id,credential).catch(()=>{});
     this.closing=true;this.providerGrants.clear();
   }
   constructor(private readonly token: () => string|Promise<string>, private readonly expired: () => void) {}
   private async request(path: string, method = 'GET', body?: unknown, credential?:string): Promise<unknown> {
+    const mutation=method!=='GET'&&!path.endsWith('/open');
+    if(mutation)this.navigationReads.clear();
     const token = credential??await this.token();
     let response: Response;
     try {
@@ -49,13 +56,24 @@ export class QhApi {
         body: body ? JSON.stringify(body) : undefined, credentials: 'omit', cache: 'no-store', redirect: 'error',
         keepalive: method === 'DELETE'
       });
-    } catch { throw new ApiError(503); }
+    } catch { if(mutation)this.navigationReads.clear();throw new ApiError(503); }
+    const missingSpace=response.status===404&&/^\/context-spaces\/[^/]+(?:\/workspace)?$/.test(path);
+    if(mutation||[401,403].includes(response.status)||missingSpace)this.navigationReads.clear();
     if (response.status === 401) this.expired();
     if (!response.ok) throw new ApiError(response.status);
     if(response.status===204)return null;
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
-  async workspace(scope:string):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
+  workspace(scope:string,fresh=false):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
+    if(fresh)this.navigationReads.remove('workspace:'+scope);
+    return this.navigationReads.read('workspace:'+scope,()=>this.readWorkspace(scope),10_000);
+  }
+  prefetchWorkspace(scope:string):void{
+    if(!this.navigationOwner||this.closing||this.prefetching.has(scope)||this.prefetching.size>=2)return;
+    this.prefetching.add(scope);
+    void this.workspace(scope).catch(()=>{}).finally(()=>this.prefetching.delete(scope));
+  }
+  private async readWorkspace(scope:string):Promise<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>{
     const state=await this.sharing<WorkspaceState & {understanding:import('./understanding').CanonicalRevision[]}>(scope,'workspace');
     if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Array.isArray(state.understanding)||!Number.isInteger(state.pending_count))throw new ApiError(502);
     if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>(state.current.has_recap?100:150)||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
@@ -129,6 +147,9 @@ export class QhApi {
     return revisionPage(await this.request('/context-spaces/'+scope+'/review?limit='+limit+(after?'&after_revision_id='+encodeURIComponent(after):'')),{context_ids:[scope],view:'proposed',limit});
   }
   async resumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
+    return this.navigationReads.read('spaces:'+sort+':'+domain+':'+after,()=>this.readResumeSpaces(sort,domain,after));
+  }
+  private async readResumeSpaces(sort:'recent'|'used',domain:string|null,after?:string):Promise<SpacePage>{
     await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);
     const params=new URLSearchParams({sort,limit:'20'});if(domain)params.set('domain',domain);if(after)params.set('after_id',after);
     const raw=await this.request('/environment/spaces?'+params) as SpacePage;
@@ -142,10 +163,11 @@ export class QhApi {
   async opened(scope:string,event_id:string):Promise<void>{
     if(!isUuid(scope)||!isUuid(event_id))throw new ApiError(404);
     const pending=this.openingWrites.get(event_id);if(pending)return pending;
+    this.navigationReads.remove('organization');this.navigationReads.removePrefix('spaces:');
     const write=this.request('/environment/spaces/'+scope+'/open','POST',{event_id}).then(()=>{});this.openingWrites.set(event_id,write);
     try{await write;}finally{if(this.openingWrites.get(event_id)===write)this.openingWrites.delete(event_id);}
   }
-  async organization():Promise<Organization>{await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);return organization(await this.request('/environment'));}
+  organization():Promise<Organization>{return this.navigationReads.read('organization',async()=>{await Promise.allSettled([...this.openingWrites.values(),...this.organizationWrites]);return organization(await this.request('/environment'));});}
   async organize(document:Organization):Promise<Organization>{
     const write=this.request('/environment','PUT',{version:document.version,domains:document.domains,memberships:document.memberships,primary_domains:document.primary_domains,...(document.space_descriptions?{space_descriptions:document.space_descriptions}:{})}).then(organization);
     this.organizationWrites.add(write);try{return await write;}finally{this.organizationWrites.delete(write);}
@@ -199,6 +221,8 @@ export class QhApi {
     this.closing=false;
     const v = await this.request('/auth/me') as { user_id?: string };
     if (!v || !isUuid(v.user_id ?? '')) throw new ApiError(502);
+    if(this.navigationOwner!==v.user_id)this.navigationReads.clear();
+    this.navigationOwner=v.user_id!;
     return v.user_id!;
   }
   async list(after?: string): Promise<SpacePage> {
@@ -209,7 +233,7 @@ export class QhApi {
   }
   async get(id: string): Promise<ContextSpace> {
     if (!isUuid(id)) throw new ApiError(404);
-    return space(await this.request('/context-spaces/' + id));
+    return this.navigationReads.read('space:'+id,async()=>space(await this.request('/context-spaces/' + id)));
   }
   async rename(id:string,name:string):Promise<ContextSpace> {
     if(!isUuid(id)||!validName(name))throw new ApiError(422);

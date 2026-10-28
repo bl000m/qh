@@ -491,10 +491,16 @@ class IncrementalContextEngine:
             candidates = await asyncio.to_thread(self.repository.browse_candidates, query)
             ids = [r['id'] for r in candidates]
             hits = ()
+            snapshot = None
             if ids:
+                def read_snapshot(scopes, refs):
+                    nonlocal snapshot
+                    snapshot = self.repository.read_snapshot(scopes, refs)
+                    return immutable_snapshot(snapshot)
+
                 engine = NativeContextEngine(
                     self.projector.driver, slice_id=self.projector.key(query.context_id),
-                    read_snapshot=lambda scopes, refs: immutable_snapshot(self.repository.read_snapshot(scopes, refs)),
+                    read_snapshot=read_snapshot,
                 )
                 result = await engine.select_revisions(
                     context_ids=query.context_ids, revision_ids=ids, view=query.view)
@@ -502,7 +508,8 @@ class IncrementalContextEngine:
                 if {h.item_revision.revision_id for h in hits} != set(ids):
                     raise NativeContextError('Missing selected graph assertion')
             visible = ids[:query.limit]
-            revisions = await asyncio.to_thread(hydrate, self.repository, query, visible)
+            revisions = await asyncio.to_thread(hydrate, self.repository, query, visible,
+                snapshot=snapshot if len(ids) == len(visible) else None)
             after = await asyncio.to_thread(self._ready, query.context_ids)
             if before != after:
                 raise NativeContextError('Projection advanced during browse')

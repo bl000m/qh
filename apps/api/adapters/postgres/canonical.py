@@ -344,6 +344,7 @@ class CanonicalRepository:
         if not isinstance(query, ContextBrowse):
             raise ValueError('Explicit browse contract required')
         after = str(UUID(str(query.after_revision_id))) if query.after_revision_id else None
+        selected = list(query.revision_ids) or ([query.revision_id] if query.revision_id else None)
         with self.connect() as c:
             c.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
             scopes = self._authorize(c, query.context_ids)
@@ -359,7 +360,7 @@ class CanonicalRepository:
                     OR (%s='current' AND r.id=i.current_revision_id AND r.validation_state='confirmed'))
                   AND (%s::text IS NULL OR s.structural_kind::text=%s)
                   AND (%s::uuid IS NULL OR r.item_id=%s::uuid)
-                  AND (%s::uuid IS NULL OR r.id=%s::uuid)
+                  AND (%s::uuid[] IS NULL OR r.id=ANY(%s::uuid[]))
                   AND (%s::uuid IS NULL OR d.source_item_id=%s::uuid OR d.target_item_id=%s::uuid)
                   AND (NOT %s OR (NOT EXISTS (SELECT 1 FROM understanding_item_revisions child WHERE child.based_on_revision_id=r.id)
                     AND NOT EXISTS (SELECT 1 FROM understanding_item_revisions newer WHERE newer.item_id=r.item_id AND newer.revision_no>r.revision_no)))
@@ -381,7 +382,7 @@ class CanonicalRepository:
                       AND a->>'certainty' IN ('asserted','tentative')))
                 ORDER BY r.id LIMIT %s
             ''', (scopes,after,after,query.view,query.view,query.view,
-                  query.kind,query.kind,query.item_id,query.item_id,query.revision_id,query.revision_id,
+                  query.kind,query.kind,query.item_id,query.item_id,selected,selected,
                   query.related_item_id,query.related_item_id,query.related_item_id,
                   query.latest_pending,query.descriptor,query.descriptor_dimension,
                   query.descriptor,query.descriptor,query.descriptor_dimension,query.descriptor_dimension,

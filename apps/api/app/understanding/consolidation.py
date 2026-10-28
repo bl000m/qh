@@ -5,7 +5,6 @@ intake is replayed together so corrections cannot blindly erase earlier evidence
 """
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
-import asyncio
 import json
 
 from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded
@@ -26,32 +25,28 @@ class ContextConsolidation:
         self.context, self.policy, self.ai = context, policy, ai
         self.repository_for = repository_for
 
-    async def _allow(self, subject, scope):
+    async def _allow(self, subject, scope, *, verify_graph=True):
         decision = await self.policy.evaluate(PolicyRequest(subject_id=subject,
             action=PolicyAction.PROPOSE_UPDATE, context_ids=(scope,)))
         if not decision.allowed:
             raise ContextSpaceNotFound('Context space not found')
-        await self.context.browse(ContextRequest(subject_id=subject,
-            query=ContextBrowse(context_id=scope, view='history', limit=1)))
+        if verify_graph:
+            await self.context.browse(ContextRequest(subject_id=subject,
+                query=ContextBrowse(context_id=scope, view='history', limit=1)))
 
     async def read(self, subject, scope):
-        await self._allow(subject, scope)
+        await self._allow(subject, scope, verify_graph=False)
         state = await self.repository_for(subject).read(scope)
         ids = state.get('understanding_ids', state['current']['revision_ids'] if state['current'] else [])
-        # Each exact read retains its policy and graph checks. Bound concurrent
-        # I/O instead of serializing the same independent work for every item.
-        reads = asyncio.Semaphore(4)
-
-        async def read_revision(revision):
-            async with reads:
-                page = await self.context.browse(ContextRequest(subject_id=subject,
-                    query=ContextBrowse(context_id=scope, view='history', limit=1, revision_id=revision)))
-                if len(page.revisions)!=1 or page.revisions[0].revision_id!=revision:
-                    raise EnrichmentUnavailable('Consolidated revision unavailable')
-                return asdict(page.revisions[0])
-
-        rows = await asyncio.gather(*(read_revision(revision) for revision in ids))
-        await self._allow(subject, scope)
+        # One exact batch shares readiness, graph verification and canonical
+        # hydration. Empty Spaces still pass through the graph availability gate.
+        page = await self.context.browse(ContextRequest(subject_id=subject,
+            query=ContextBrowse(context_id=scope, view='history', limit=max(1, len(ids)), revision_ids=tuple(ids))))
+        indexed = {row.revision_id: row for row in page.revisions} if ids else {}
+        if set(indexed) != set(ids) or ids and len(page.revisions) != len(ids):
+            raise EnrichmentUnavailable('Consolidated revision unavailable')
+        rows = [asdict(indexed[id]) for id in ids]
+        await self._allow(subject, scope, verify_graph=False)
         return dict(**state, understanding=rows, recap=recap_output.from_version(rows, state['current']))
 
     async def append(self, subject, scope, document):

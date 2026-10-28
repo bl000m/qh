@@ -137,6 +137,48 @@ def test_competing_claims_are_serialized_before_provider_work(generic,empty_data
 
 
 @pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_exact_batch_keeps_graph_checks_and_rejects_cross_space_selection(generic, empty_database, monkeypatch):
+    p = generic
+    service, who, repositories, provider = prepare(p, empty_database)
+    texts = ['Alice dirige le projet.', 'Bob gère le budget.']
+    wire = dict(format='qh.atomic-understanding/1', items=[dict(text=text,
+        primary_dimension='situation_information', assignment_certainty='asserted',
+        evidence=[dict(quote=text)]) for text in texts])
+    provider.generate.return_value = GenerationResult(message=Message(
+        role=MessageRole.ASSISTANT, content=json.dumps(consolidation_output(wire))))
+    versions = {}
+    for scope in (p['scope'], p['sibling']):
+        run(service.append(who.subject_id, scope, document(' '.join(texts))))
+        versions[scope] = run(service.consolidate(who, scope))['current']
+        from adapters.context.incremental import ProjectionWorker
+        drain(ProjectionWorker(p['repo'], p['projector'], (scope,)))
+    state = run(service.read(who.subject_id, p['scope']))
+    assert {r['revision_id'] for r in state['understanding']} == set(versions[p['scope']]['revision_ids'])
+    assert len(state['understanding']) == 2
+    assert provider.generate.await_count == 2  # Only the two explicit memorisations.
+    repository = repositories(who.subject_id)
+    original = repository.read
+
+    async def contaminated(scope):
+        state = await original(scope)
+        state['understanding_ids'] += versions[p['sibling']]['revision_ids']
+        return state
+
+    with monkeypatch.context() as patch:
+        patch.setattr(repository, 'read', contaminated)
+        patch.setattr(service, 'repository_for', lambda subject: repository)
+        with pytest.raises(EnrichmentUnavailable):
+            run(service.read(who.subject_id, p['scope']))
+    with p['projector'].driver.session() as session:
+        session.run('MATCH (r:QH30Revision {slice_id:$slice, revision_id:$id}) DETACH DELETE r',
+            slice=p['projector'].key(p['scope']), id=versions[p['scope']]['revision_ids'][0]).consume()
+    from app.core.models import ContextRetrievalUnavailable
+    with pytest.raises(ContextRetrievalUnavailable):
+        run(service.read(who.subject_id, p['scope']))
+    assert provider.generate.await_count == 2
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
 def test_explicit_recap_style_refresh_preserves_old_version_and_replays_new_version(generic, empty_database, monkeypatch):
     from app.understanding import recap
     p = generic

@@ -177,9 +177,16 @@ class ContextBrowse:
     unclassified: bool = False
     item_id: UnderstandingItemId | None = None
     revision_id: UnderstandingRevisionId | None = None
+    # Internal exact selection; HTTP browse still exposes only revision_id.
+    revision_ids: tuple[UnderstandingRevisionId, ...] = ()
     related_item_id: UnderstandingItemId | None = None
 
     def __post_init__(self):
+        if (not isinstance(self.revision_ids, tuple) or len(self.revision_ids) > 100
+                or any(not isinstance(id, str) or not id for id in self.revision_ids)
+                or len(set(self.revision_ids)) != len(self.revision_ids)
+                or self.revision_ids and self.revision_id is not None):
+            raise ValueError('Bounded unambiguous exact revision selection required')
         if not self.context_id or self.view not in ('current', 'proposed', 'history'):
             raise ValueError('Explicit scope and view required')
         if type(self.limit) is not int or not 1 <= self.limit <= 100:

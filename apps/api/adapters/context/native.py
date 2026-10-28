@@ -306,7 +306,7 @@ class NativeContextEngine:
         if not candidates:
             return ContextResult(hits=())
         try:
-            snapshot = self.read_snapshot(
+            snapshot = await asyncio.to_thread(self.read_snapshot,
                 query.context_ids, tuple(c["revision"]["revision_id"] for c in candidates)
             )
         except Exception as exc:

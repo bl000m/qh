@@ -53,7 +53,8 @@ class PostgresOrganizationRepository:
                     args=(Jsonb(current['usage']),Jsonb(current['usage']),subject,domain,domain,Jsonb(current['memberships']),domain,Jsonb(current['memberships']),domain)
                     if after and not c.execute(cte+'SELECT id FROM ranked WHERE id=%s', (*args,after)).fetchone():
                         raise ContextSpaceNotFound('Resume cursor unavailable')
-                    return [str(r['id']) for r in c.execute(cte+'''SELECT id FROM ranked WHERE position>
+                    return [space(r) for r in c.execute(cte+'SELECT '+FIELDS+''' FROM ranked
+                        JOIN context_spaces cs ON cs.id=ranked.id WHERE position>
                         coalesce((SELECT position FROM ranked WHERE id=%s::uuid),0) ORDER BY position LIMIT %s''',(*args,after,limit)).fetchall()]
                 if opening:
                     scope,event_id=opening

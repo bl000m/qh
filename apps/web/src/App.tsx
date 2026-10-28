@@ -51,17 +51,21 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [success, setSuccess] = useState('');
+  const organizationVersion=useRef<number>();
+  useEffect(()=>{
+    const version=organization.value?.version;
+    if(version===undefined)return;
+    if(organizationVersion.current!==undefined&&organizationVersion.current!==version)setRefresh(n=>n+1);
+    organizationVersion.current=version;
+  },[organization.value?.version]);
   useEffect(() => {
     let active = true;
-    // Initial metadata hydration must not reset a page the owner already paginated.
-    if(!organization.value&&!organization.error){setLoading(true);return;}
-    if(domain&&domain!=='unclassified'&&!activeDomain){setLoading(false);setItems([]);return;}
     setLoading(true); setError('');setNext(null);
     api.resumeSpaces(sort,domain).then(page => { if (active) { setItems(page.items); setNext(page.next_after_id); } })
       .catch(reason => { if (active) setError(apiMessage(reason)); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [api, refresh,sort,domain,organization.value?.version,organization.error,activeDomain?.id]);
+  }, [api, refresh,sort,domain]);
   async function more() {
     if (!next || loading) return;
     setLoading(true); setError('');
@@ -108,7 +112,7 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
     {!loading && !error && items.length===0 && <div className="empty compact-empty"><h3>{activeDomain?'Ce domaine est encore vide.':domain==='unclassified'?'Tous vos Spaces sont organisés.':'Votre premier contexte commence ici.'}</h3>{domain!=='unclassified'&&<button onClick={()=>{setPrimaryDomain(activeDomain?.id??'');setForm(true);}}>Créer mon premier Context Space</button>}</div>}
     {home&&<CarouselArrows target={spacesCarousel} name="Spaces"/>}
     <ul ref={spacesCarousel} className={home?"space-grid horizontal-carousel":"space-grid"} aria-label={home?"Carrousel Reprendre mes Context Spaces":"Context Spaces de cette vue"}>{items.map(item => <li key={item.id} className="space-card">
-      <Link to={spacePath(item.id,activeDomain?.id)} label={item.name} title={item.name}>
+      <Link to={spacePath(item.id,activeDomain?.id)} label={item.name} title={item.name} onIntent={()=>api.prefetchWorkspace(item.id)}>
         <Orb tone={items.indexOf(item)*42+105}/><h3>{item.name}</h3>{!home&&<span className="open-space">Ouvrir <span aria-hidden="true">›</span></span>}
 
       </Link>
@@ -121,11 +125,20 @@ function Spaces({ api, recent, onCreated, domain = null, collection = false }: {
 function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;origin?:string;breadcrumbHost:HTMLElement|null;ownerId:string}){
  const [space,setSpace]=useState<ContextSpace|null>(null),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
  const [renameRequest,setRenameRequest]=useState(0);
+ const [workspaceLoaded,setWorkspaceLoaded]=useState(false);
  const heading=useRef<HTMLHeadingElement>(null);
  useEffect(()=>{if(space)heading.current?.focus();},[space]);
- const organization=useOrganization(api,space!==null),openEvent=useRef(crypto.randomUUID());
+ const organization=useOrganization(api,workspaceLoaded),openEvent=useRef(crypto.randomUUID());
  const from=organization.value?.domains.find(d=>d.id===(origin??organization.value?.primary_domains[id])&&organization.value?.memberships[id]?.includes(d.id));
- useEffect(()=>{let active=true;setSpace(null);setError('');api.get(id).then(value=>{if(active){drafts.enter(ownerId,id);setSpace(value);void api.opened(id,openEvent.current).catch(()=>{});}}).catch(e=>{if(active)setError(apiMessage(e));});return()=>{active=false;};},[id,api,refresh,ownerId]);
+ useEffect(()=>{
+  let active=true;setSpace(null);setError('');setWorkspaceLoaded(false);
+  // Start independent content I/O immediately; fresh metadata still authorizes
+  // entry before any prefetched content is rendered.
+  const completed=()=>{if(active)setWorkspaceLoaded(true);};
+  void api.workspace(id).then(completed,completed);
+  api.get(id).then(value=>{if(active){drafts.enter(ownerId,id);setSpace(value);void api.opened(id,openEvent.current).catch(()=>{});}}).catch(e=>{if(active)setError(apiMessage(e));});
+  return()=>{active=false;};
+ },[id,api,refresh,ownerId]);
  const breadcrumb=<nav aria-label="Fil d’Ariane" className="breadcrumbs"><Link to="/">Mon environnement</Link><span aria-hidden="true"> / </span>{space&&from&&<><Link to={domainPath(from.id)}>{from.name}</Link><span aria-hidden="true"> / </span></>}<span aria-current="page">{space?.name??'Context Space'}</span></nav>;
  return <section className="context-page">{breadcrumbHost?createPortal(breadcrumb,breadcrumbHost):breadcrumb}
  {error?<><Notice error>{error}</Notice><button onClick={()=>setRefresh(v=>v+1)}>Réessayer</button></>:!space?<Notice>Chargement du Context Space…</Notice>:<article className="detail definitive-space">

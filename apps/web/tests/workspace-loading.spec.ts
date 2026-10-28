@@ -36,5 +36,5 @@ for(const result of ['ready','empty','error'] as const)test(`initial understandi
  }
  await panel.getByRole('button',{name:'Fermer',exact:true}).click();await toggle.click();
  await expect(panel).toBeVisible();
- expect(requests).toEqual(['GET /api/context-spaces/'+scope+'/workspace','GET /api/context-spaces/'+scope+'/chat-sessions']);
+ expect([...requests].sort()).toEqual(['GET /api/context-spaces/'+scope+'/workspace','GET /api/context-spaces/'+scope+'/chat-sessions'].sort());
 });
