@@ -1,5 +1,5 @@
 import type {CanonicalRevision, Citation, SourceRevision} from './understanding';
-import {recognizedCitations} from './understanding';
+import {recognizedCitations,sourceCitationLabel} from './understanding';
 
 function groupSources(rows:CanonicalRevision[]){
  const groups=new Map<string,{source:SourceRevision;passages:Citation[];items:{row:CanonicalRevision;passages:number[]}[]}>();
@@ -23,7 +23,7 @@ export default function WorkspaceUnderstandingSources({rows}:{rows:CanonicalRevi
  return <>{groupSources(rows).map(({source,passages,items},index)=><section key={source.source_revision_id} aria-label={`Source ${index+1}`}>
   <h4>Source {index+1} · révision {source.revision_no}</h4>
   {passages.map((citation,i)=><div key={i}>
-   <p className="small muted">Passage {i+1}</p><blockquote>{citation.quote}</blockquote>
+   <p className="small muted">{sourceCitationLabel(source,citation)??`Passage ${i+1}`}</p><blockquote>{citation.quote}</blockquote>
    <details><summary>Référence précise</summary><p className="small">Source : {citation.source_revision_id} · caractères {citation.start}–{citation.end}{citation.turn_id&&` · tour ${citation.turn_id}`}</p></details>
   </div>)}
   <h5>Éléments de compréhension liés ({items.length})</h5>

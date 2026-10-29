@@ -175,7 +175,7 @@ def test_answer_attribution_is_persisted_by_backend_after_version_recheck():
     assert saved['attribution']['reference_ids']==['exact-reference']
     assert saved['attribution']['insufficient_context'] and saved['role']=='assistant'
     assert ai.respond.call_args.args[1].consolidated_revision_ids==('exact-reference',)
-    repo.finish_chat.reset_mock();repo.read.return_value=dict(current=dict(id='changed',revision_ids=[]))
+    repo.finish_chat.reset_mock();repo.read.return_value=dict(current=dict(id='changed',revision_ids=[]),intake=[question])
     from app.understanding.consolidation import WorkspaceChatFailed
     with pytest.raises(WorkspaceChatFailed):asyncio.run(service.respond(who,scope,request(),question['id'],operation))
     repo.finish_chat.assert_awaited_once_with(scope,question['id'],operation)

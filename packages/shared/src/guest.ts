@@ -31,7 +31,7 @@ export interface GuestSessionView {
   recap?:{title:string;text:string}|null;
 }
 
-export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean}
+export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean;documents?:import('./context-space').SourceDocument[]}
 export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;original_documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
 
 export interface SharingPolicy {

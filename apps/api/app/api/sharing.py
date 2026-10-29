@@ -113,6 +113,10 @@ async def preview_question(scope:UUID,preview_id:UUID,document:QuestionInput,req
 
 @router.post('/guest/ask')
 async def ask(document:GuestQuestionInput,request:Request):
+    from app.chat.documents import is_original_request, document_reply
+    if is_original_request(document.question):
+        reply=document_reply(document.question,await bound(request).documents(proof(request)))
+        return dict(answer=reply['text'],documents=reply['documents'],insufficient_context=False,simulated=False)
     service=request.app.state.services.guest_chat
     if service is None:raise GuestUnavailable('Snapshot answer unavailable')
     token=proof(request)

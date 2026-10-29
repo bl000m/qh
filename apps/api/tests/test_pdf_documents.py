@@ -93,8 +93,10 @@ def test_long_document_all_parts_are_sent_then_validated_recap():
     packets=[]
     async def generate(request):
         packet=json.loads(request.messages[-1].content)
-        if isinstance(packet,list):
-            out=dict(title='Document',text='Proposed document information.',supporting_statements=[packet[0]])
+        if 'statements' in packet:
+            assert packet['evidence'][0]['passages'][0]['speakers']==['unverified PDF']
+            assert packet['evidence'][0]['passages'][0]['quote'] in text
+            out=dict(title='Document',text='Proposed document information.',supporting_statements=[packet['statements'][0]])
         else:
             packets.append(packet)
             out=dict(format='qh.atomic-understanding.refs/1',items=[dict(text='Part '+str(len(packets)),

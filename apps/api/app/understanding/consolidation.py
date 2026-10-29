@@ -153,7 +153,32 @@ class ContextConsolidation:
                 previous_version=batch['current']['id'] if batch['current'] else None,
                 intake_ids=[r['id'] for r in batch['intake']]))
 
+    async def _document_answer(self, subject, scope, repository, question, operation):
+        from app.chat.documents import document_reply
+        claimed=await repository.claim_chat(scope,question,operation)
+        if claimed.get('completed'):
+            return dict(state='completed')
+        try:
+            row=next(r for r in claimed['intake'] if r['id']==question)
+            reply=document_reply(row['text'],await self.documents(subject,scope))
+            await self._allow(subject,scope,verify_graph=False)
+        except Exception:
+            await repository.finish_chat(scope,question,operation)
+            raise
+        await repository.finish_chat(scope,question,operation,dict(kind='message',role='assistant',
+            text=reply['text'],documents=reply['documents'],name=None,context=None,reply_to=question))
+        return dict(state='completed')
+
     async def respond(self, identity, scope, request, question, operation):
+        from app.chat.documents import is_original_request, document_selection, scoped_revision_ids
+        await self._allow(identity.subject_id,scope,verify_graph=False)
+        repository=self.repository_for(identity.subject_id)
+        intake=await repository.read(scope)
+        asked=next((r for r in intake['intake'] if r['id']==question and r['kind']=='message' and r['role']=='user'),None)
+        if asked is None:
+            raise ValueError('Persisted question required')
+        if is_original_request(asked['text']):
+            return await self._document_answer(identity.subject_id,scope,repository,question,operation)
         if self.ai is None:
             raise EnrichmentUnavailable('AI unavailable')
         state = await self.read(identity.subject_id, scope)
@@ -163,8 +188,25 @@ class ContextConsolidation:
         if claimed.get('completed'):
             return dict(state='completed')
         try:
-            result = await self.ai.respond(identity, replace(request, messages=self._dialogue(claimed['intake'], question),
-                include_proposed=True, consolidated_revision_ids=tuple(r['revision_id'] for r in state.get('understanding', [])) if 'understanding' in state else tuple(state['current']['revision_ids']) if state['current'] else ()))
+            documents=[dict(source_revision_id=r['source_revision_id'],filename=r['name']) for r in claimed['intake'] if r.get('source_revision_id')]
+            selected,ambiguous=document_selection(asked['text'],documents)
+            if selected is not None and ambiguous:
+                await repository.finish_chat(scope,question,operation,dict(kind='message',role='assistant',
+                    text='De quel document parles-tu ? Précise son nom pour conserver le bon périmètre.',name=None,context=None,reply_to=question))
+                return dict(state='completed')
+            ids=tuple(r['revision_id'] for r in state.get('understanding', [])) if 'understanding' in state else tuple(state['current']['revision_ids']) if state['current'] else ()
+            messages=self._dialogue(claimed['intake'],question)
+            if selected is not None:
+                ids=scoped_revision_ids(state.get('understanding',[]),selected,documents)
+                if not ids:
+                    await repository.finish_chat(scope,question,operation,dict(kind='message',role='assistant',
+                        text='Aucune information mémorisée attribuée à ce document ne permet de répondre. Tu peux consulter l’original.',
+                        documents=selected,name=None,context=None,reply_to=question))
+                    return dict(state='completed')
+                # Prior assistant responses can contain facts from other PDFs.
+                messages=(Message(role=MessageRole.USER,content=asked['text']),)
+            result = await self.ai.respond(identity, replace(request, messages=messages,
+                include_proposed=True, consolidated_revision_ids=ids))
             after = await repository.read(scope)
             if after['current'] != state['current'] or after.get('understanding_ids') != state.get('understanding_ids'):
                 raise EnrichmentUnavailable('Understanding changed during answer')

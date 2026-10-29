@@ -3,7 +3,7 @@ import type {QhApi} from './api';
 import {apiMessage} from './api';
 import type {AnswerAttribution} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
-import {recognizedCitations} from './understanding';
+import {recognizedCitations,sourceCitationLabel} from './understanding';
 const labels={general:'Connaissances générales',dialogue:'Conversation',canonical:'Informations de ce Space',mixed:'Informations de ce Space et conseils généraux',insufficient:'Informations disponibles'};
 
 export default function WorkspaceAnswerSources({api,scope,attribution,showReferences=true}:{api:QhApi;scope:string;attribution:AnswerAttribution;showReferences?:boolean}){
@@ -22,7 +22,7 @@ export default function WorkspaceAnswerSources({api,scope,attribution,showRefere
   {attribution.partial_coverage&&<p className="small muted">Seule une partie de la compréhension a été utilisée.</p>}
   {showReferences&&attribution.reference_ids.length>0&&<details onToggle={event=>{if(event.currentTarget.open)void load();else setRows(null);}}><summary>Sources du contexte</summary>
    <p className="small">{labels[attribution.support_basis]}.</p>
-   {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><blockquote key={index}>{citation.quote}</blockquote>)}</section>)}
+   {!attribution.reference_ids.length?<p className="small muted">Aucun élément de compréhension cité.</p>:error?<p role="alert">{error}</p>:rows===null?<p role="status">Vérification des sources…</p>:rows.map(row=><section key={row.revision_id}><p>{String(row.content.text??'')}</p>{recognizedCitations(row).map((citation,index)=><div key={index}><p className="small muted">{sourceCitationLabel(row.provenance.find(s=>s.source_revision_id===citation.source_revision_id),citation)}</p><blockquote>{citation.quote}</blockquote></div>)}</section>)}
   </details>}
  </div>;
 }

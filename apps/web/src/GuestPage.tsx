@@ -5,6 +5,7 @@ import {guestRequest,recipientAnswer,sessionView,sharingError,guestChatError} fr
 import AnswerMarkdown from './AnswerMarkdown';
 import qhLogo from './brand/qh-logo.png';
 import SharedRecap from './SharedRecap';
+import DocumentDownload,{isOriginalRequest} from './DocumentDownload';
 import './sharing.css';
 
 interface Turn {question:string;answer?:RecipientAnswer;failed?:string}
@@ -56,7 +57,7 @@ export default function GuestPage(){
   catch{clear();setError('Vérification impossible. Vérifiez le code et la boîte invitée.');}finally{lock.current=false;setBusy(false);}}
  useEffect(()=>{const log=bottom.current?.parentElement;if(log)log.scrollTop=log.scrollHeight;},[turns,busy]);
  async function askQuestion(text:string,retry?:number){
-  if(!session||!enabled||!text.trim()||lock.current)return;
+  if(!session||(!enabled&&!isOriginalRequest(text))||!text.trim()||lock.current)return;
   lock.current=true;setBusy(true);setError('');const ticket=epoch.current;
   const index=retry??turns.length;
   const body:RecipientQuestion={question:text,history:recentHistory(turns.slice(0,index))};
@@ -98,15 +99,15 @@ export default function GuestPage(){
  {!turns.length&&<div className="guest-conversation-empty"><span className="guest-chat-symbol" aria-hidden="true">•••</span><h2>Explorez ce contexte</h2><p>Posez votre première question sur les informations partagées.</p></div>}
  {turns.map((turn,index)=><div className="guest-turn" key={index}>
   <div className="guest-question"><span className="small muted">Vous</span><p>{turn.question}</p></div>
-  {turn.answer&&<div className="guest-answer"><span className="small muted">QH</span>{turn.answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={turn.answer.answer}/></div>}
+  {turn.answer&&<div className="guest-answer"><span className="small muted">QH</span>{turn.answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={turn.answer.answer}/>{turn.answer.documents?.map(doc=><p key={doc.source_revision_id}>{doc.filename} <DocumentDownload document={doc}/></p>)}</div>}
   {turn.failed&&<div role="alert" className="notice error">{turn.failed} <button className="secondary" disabled={busy||!enabled} onClick={()=>{void askQuestion(turn.question,index);}}>Réessayer</button></div>}
  </div>)}
  {busy&&<p role="status">Réponse en cours…</p>}<div ref={bottom}/>
  </div>
- {session.can_ask?<form className="guest-composer" onSubmit={ask}><label className="sr-only" htmlFor="guest-question">Votre question</label><textarea id="guest-question" placeholder="Posez votre question sur ce contexte…" required maxLength={2000} value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();if(!busy)void askQuestion(question);}}}/>
- <div className="guest-composer-actions"><button type="button" className="secondary" disabled aria-describedby="guest-proposals-help">Proposer une mise à jour</button><button disabled={busy||!question.trim()||!enabled}>Envoyer</button></div>
+ {<form className="guest-composer" onSubmit={ask}><label className="sr-only" htmlFor="guest-question">Votre question</label><textarea id="guest-question" placeholder="Posez votre question sur ce contexte…" required maxLength={2000} value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();if(!busy)void askQuestion(question);}}}/>
+ <div className="guest-composer-actions"><button type="button" className="secondary" disabled aria-describedby="guest-proposals-help">Proposer une mise à jour</button><button disabled={busy||!question.trim()||(!enabled&&!isOriginalRequest(question))}>Envoyer</button></div>
  <p id="guest-proposals-help" className="small muted">Les contributions externes sont indisponibles dans cette démo : leur réception et leur validation par le propriétaire ne sont pas encore implémentées.</p>
- {!enabled&&<p>Les réponses sont temporairement indisponibles.</p>}</form>:<p>Demandez une nouvelle invitation pour pouvoir poser des questions.</p>}
+ {!enabled&&<p>Les réponses sont temporairement indisponibles.</p>}</form>}
  </section></>}
  </main></div>;
 }

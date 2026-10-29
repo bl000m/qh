@@ -1,4 +1,4 @@
-import {ApiError} from './transport';
+import {ApiError,isUuid} from './transport';
 import type {GuestSessionView,SharedPayload,GuestAnswer,GuestProviderStatus,RecipientAnswer} from '@qh/shared';
 export const sharingEnabled=import.meta.env.VITE_QH_SHARING==='1';
 
@@ -31,6 +31,7 @@ export function sharedPayload(value:unknown):SharedPayload{
 export function recipientAnswer(value:unknown):RecipientAnswer{
  const v=value as RecipientAnswer;
  if(!v||typeof v.answer!=='string'||!v.answer.trim()||typeof v.insufficient_context!=='boolean'||typeof v.simulated!=='boolean')throw new ApiError(502);
+ if(v.documents&&(!Array.isArray(v.documents)||v.documents.some(d=>!isUuid(d.source_revision_id)||typeof d.filename!=='string'||!d.filename||d.filename.length>256)))throw new ApiError(502);
  return v;
 }
 export function guestAnswer(value:unknown):GuestAnswer{

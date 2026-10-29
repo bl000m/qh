@@ -44,6 +44,15 @@ question or unresolved uncertainty that affects the result MUST still be retaine
 For procedural/reference knowledge, describe the available guidelines, steps,
 methods and tools directly. Authorship of a proposed guide is normally incidental;
 its availability does not mean anyone adopted, scheduled or carried it out.
+When the Context Space is clearly about one identified person and multiple coherent
+source-backed statements establish the same identity, preserve that person's verified
+name and identity in recap.title or recap.text. This identity IS indispensable to
+meaning: a CV, employment contract and professional interview concern that person,
+not an anonymous generic career category. Distinguish the CV's reported experience,
+the contract's documented terms and the professional interview's wishes/path.
+Use only a name established by the supplied source-backed understanding; never
+infer it from the account, filename alone, examples or a name mentioned incidentally.
+Keep abstraction for impersonal contexts or unresolved identity. No person is required.
 Keep personal identity/attribution in the recap ONLY when indispensable to meaning:
 a personal opinion/preference, an individual's commitment, an attributed decision,
 a disputed claim or a view that must not be presented as shared or established.
