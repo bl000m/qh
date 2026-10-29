@@ -102,7 +102,7 @@ def create_runtime_app(*, guest_settings=None):
             running["runtime"] = runtime
         if guest_settings is not None:
             try:
-                if runtime is None or runtime.schema_version not in ('0009_guest_invitations','0010_context_consolidation'):
+                if runtime is None or runtime.schema_version not in ('0009_guest_invitations','0010_context_consolidation','0011_source_documents'):
                     raise RuntimeError('Explicit sharing bindings require reviewed schema 0009')
                 from adapters.sharing import bind_sharing
                 application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings,factory=factory)

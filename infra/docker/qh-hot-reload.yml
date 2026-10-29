@@ -17,7 +17,7 @@ services:
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
     volumes:
       - ../../.local-archive/qh45-runtime:/run/qh-chat
-    image: qh12-api:d70626bbe50c070c428b02564d22dec42b3b22b0
+    image: qh-api:pdf-685f005
     build: !reset null
   # MCP stays on its existing image-only runtime, never targeted by dev commands.
   mcp:

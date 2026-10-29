@@ -125,6 +125,11 @@ def main():
     if args.action in ('up', 'restart'):
         config = json.loads(output(compose + ['config', '--format', 'json']))
         manifest = json.loads((ROOT / 'docs/evidence/qh12-demo-a-20261017/candidate-images.json').read_text())
+        # Retain historical evidence; only the explicitly activated backend pin changes.
+        backend_pin = json.loads((ROOT / 'infra/docker/qh-backend-image.json').read_text())
+        if backend_pin.get('component') != 'api':
+            raise ValueError('Explicit backend image pin required')
+        manifest['images'] = [backend_pin if pin['component']=='api' else pin for pin in manifest['images']]
         validate(config, containers, manifest)
         for pin in manifest['images']:
             if pin['component'] not in ('api', 'web'):
