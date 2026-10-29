@@ -74,7 +74,7 @@ def test_guest_can_ask_but_cannot_read_snapshot_items_or_internal_metadata_and_e
     with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test'}) as c:
         c.cookies.set(COOKIE,'synthetic-verified-cookie')
         session=c.get('/guest/session');assert session.status_code==200
-        assert set(session.json())=={'name','can_ask','expires_at','verification'}
+        assert set(session.json())=={'name','can_ask','expires_at','verification','recap'}
         assert session.json()['name']=='Atelier informatique'
         assert c.get('/guest/snapshots/'+snapshot).status_code==404
         assert c.get('/context-spaces/'+scope+'/workspace/export').status_code==401
@@ -100,7 +100,7 @@ def test_three_field_share_automatically_uses_current_knowledge_and_owner_previe
             json=dict(recipient_email='invite@example.test',purpose='Préparer un atelier',expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()))
         assert prepared.status_code==201
         policy=sharing.prepare.call_args.args[2]
-        assert policy.rights==('ASK_AI',) and policy.include_proposed and not policy.include_quotes
+        assert policy.rights==('ASK_AI','READ') and policy.include_proposed and not policy.include_quotes
         preview_id=prepared.json()['id']
         response=c.post(f'/context-spaces/{scope}/sharing/previews/{preview_id}/ask',json=dict(question='Quels outils sont disponibles ?'))
         assert response.status_code==200 and 'Jupyter Notebook' in response.json()['answer']
@@ -148,3 +148,42 @@ def test_model_input_preserves_hypothesis_qualification_without_review_or_source
     assert value['items'][0]['qualification']=='Hypothèse ou incertitude à préserver.'
     assert value['items'][0]['text']==payload['items'][0]['text']
     assert 'review_state' not in json.dumps(value) and 'sources' not in json.dumps(value)
+
+
+@pytest.mark.parametrize('read', [False, True])
+def test_guest_recap_requires_read_and_only_comes_from_authorized_snapshot(read):
+    app, _, _, snapshot, _, _, _, payload = setup()
+    guest = app.state.services.guest
+    grant = guest.repository.authenticate.return_value
+    if read:
+        grant = replace(grant, rights=('READ', 'ASK_AI'))
+        guest.repository.authenticate.return_value = grant
+        app.state.services.policy._guest_for.return_value = grant
+    payload['recap'] = dict(title='Présentation autorisée', text='Résumé limité aux informations autorisées.')
+    guest.repository.payload.return_value = GuestSnapshot(context_id=grant.context_id,
+        snapshot_id=snapshot, payload_json=json.dumps(payload), include_quotes=True)
+    with TestClient(app, base_url='https://qh.example.test') as client:
+        assert client.get('/guest/session').status_code == 401
+        client.cookies.set(COOKIE, 'synthetic-verified-cookie')
+        result = client.get('/guest/session')
+        assert result.status_code == 200
+        assert result.json()['recap'] == (payload['recap'] if read else None)
+        assert 'ORIGINAL-QUOTE-CANARY' not in result.text and 'items' not in result.json()
+
+
+@pytest.mark.parametrize('allowed', [False, True])
+def test_update_permission_roundtrips_without_granting_guest_write_access(allowed):
+    app, _, scope, _, _, _, sharing, _ = setup()
+    with TestClient(app, base_url='https://qh.example.test', headers={'Origin':'https://qh.example.test'}) as client:
+        result = client.post(f'/context-spaces/{scope}/sharing/previews', headers={'Authorization':'Bearer owner'},
+            json=dict(recipient_email='invite@example.test', purpose='Consultation', allow_update_proposals=allowed,
+                expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()))
+        assert result.status_code == 201
+        policy = sharing.prepare.call_args.args[2]
+        assert policy.allow_update_proposals is allowed
+        assert AccessPolicy.from_wire(json.loads(json.dumps(policy.wire()))) == policy
+        assert policy.rights == ('ASK_AI', 'READ')
+        if not allowed:
+            assert 'allow_update_proposals' not in policy.wire()  # Retained fingerprint compatibility.
+        client.cookies.set(COOKIE, 'synthetic-verified-cookie')
+        assert client.post('/guest/proposals', json=dict(conversation='Untrusted guest contribution')).status_code == 404

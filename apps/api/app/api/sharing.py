@@ -4,7 +4,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter,Depends,Request
-from pydantic import BaseModel,ConfigDict,Field,StrictStr
+from pydantic import BaseModel,ConfigDict,Field,StrictBool,StrictStr
 
 from app.api.guest import GuestRoute,bound,proof
 from app.api.security import authenticated_subject, authenticated_chat_identity
@@ -27,6 +27,7 @@ class PolicyInput(BaseModel):
     recipient_email:StrictStr=Field(min_length=3,max_length=254)
     purpose:StrictStr=Field(min_length=1,max_length=1024)
     expires_at:datetime
+    allow_update_proposals:StrictBool=False
     excluded:list[ExclusionInput]=Field(default_factory=list,max_length=100)
 
 
@@ -65,7 +66,8 @@ async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depend
     if chat.live is not None and not chat.live.allowed(subject,str(scope)):
         raise GuestUnavailable('Sharing unavailable')
     policy=AccessPolicy(recipient_email=document.recipient_email,purpose=document.purpose,
-        expires_at=document.expires_at,rights=('ASK_AI',),provider=provider,
+        expires_at=document.expires_at,rights=('READ','ASK_AI'),provider=provider,
+        allow_update_proposals=document.allow_update_proposals,
         include_proposed=True,include_quotes=False,
         excluded=tuple(RevisionKey(item_id=str(k.item_id),revision_id=str(k.revision_id)) for k in document.excluded))
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))

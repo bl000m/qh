@@ -4,6 +4,8 @@ import type {GuestSessionView,GuestCodeReceipt,RecipientAnswer,RecipientMessage,
 import {guestRequest,recipientAnswer,sessionView,sharingError,guestChatError} from './sharing';
 import AnswerMarkdown from './AnswerMarkdown';
 import qhLogo from './brand/qh-logo.png';
+import SharedRecap from './SharedRecap';
+import './sharing.css';
 
 interface Turn {question:string;answer?:RecipientAnswer;failed?:string}
 
@@ -24,10 +26,13 @@ export default function GuestPage(){
  const [email,setEmail]=useState(''),[code,setCode]=useState(''),[receipt,setReceipt]=useState<GuestCodeReceipt|null>(null);
  const [session,setSession]=useState<GuestSessionView|null>(null),[turns,setTurns]=useState<Turn[]>([]);
  const [question,setQuestion]=useState(''),[error,setError]=useState(''),[enabled,setEnabled]=useState(false);
+ const [resendAfter,setResendAfter]=useState(0);
+ const resendDeadline=useRef(0);
+ const codeInput=useRef<HTMLInputElement>(null);
  const [busy,setBusy]=useState(false),[ready,setReady]=useState(false);const epoch=useRef(0),lock=useRef(false),bottom=useRef<HTMLDivElement>(null);
  function clear(){epoch.current++;setSession(null);setTurns([]);setQuestion('');setEnabled(false);setCode('');}
  async function accept(value:unknown){const next=sessionView(value);setSession(next);setCode('');
-  if(next.can_ask){const status=await guestRequest('/provider') as {enabled:boolean};setEnabled(status.enabled===true);}}
+  setEnabled(false);if(next.can_ask){try{const status=await guestRequest('/provider') as {enabled:boolean};setEnabled(status.enabled===true);}catch{setEnabled(false);}}}
  useEffect(()=>{let active=true;if(invitation)history.replaceState(null,'','/guest');
   if(invitation){setReady(true);return()=>{active=false;};}
   void guestRequest('/session').then(v=>{if(active)return accept(v);}).catch(()=>{if(active)setError('Rouvrez votre invitation pour vérifier votre boîte email.');}).finally(()=>{if(active)setReady(true);});
@@ -39,8 +44,10 @@ export default function GuestPage(){
    if(next.can_ask)void guestRequest('/provider').then(v=>{if(active)setEnabled((v as {enabled:boolean}).enabled===true);}).catch(()=>{if(active)setEnabled(false);});
   }).catch(()=>{if(active){clear();setError('Cet accès a expiré ou a été révoqué.');}});},3000);
   return()=>{active=false;clearInterval(timer);};},[session?.expires_at]);
- async function requestCode(event:FormEvent){event.preventDefault();if(lock.current)return;lock.current=true;setBusy(true);setError('');
-  try{setReceipt(await guestRequest('/code',{invitation_token:invitation,email}) as GuestCodeReceipt);setCode('');}
+ useEffect(()=>{if(receipt)codeInput.current?.focus();},[receipt]);
+ useEffect(()=>{if(resendAfter<=0)return;const timer=setTimeout(()=>setResendAfter(Math.max(0,Math.ceil((resendDeadline.current-Date.now())/1000))),1000);return()=>clearTimeout(timer);},[resendAfter]);
+ async function requestCode(event?:FormEvent){event?.preventDefault();if(lock.current)return;lock.current=true;setBusy(true);setError('');
+  try{setReceipt(await guestRequest('/code',{invitation_token:invitation,email}) as GuestCodeReceipt);setCode('');resendDeadline.current=Date.now()+60000;setResendAfter(60);}
   catch(e){setError(sharingError(e));}finally{lock.current=false;setBusy(false);}}
  async function verify(event:FormEvent){event.preventDefault();if(!receipt||lock.current)return;lock.current=true;setBusy(true);setError('');
   try{await accept(await guestRequest('/verify',{invitation_token:invitation,challenge_id:receipt.challenge_id,code}));setReceipt(null);}
@@ -60,15 +67,32 @@ export default function GuestPage(){
  }
  function ask(event:FormEvent){event.preventDefault();void askQuestion(question);}
  async function logout(){clear();setError('Accès fermé.');await guestRequest('/logout',{}).catch(()=>{});}
- return <div className="app-shell guest-shell"><header className="topbar"><a href="/" className="brand"><img src={qhLogo} width={100} alt="QH"/></a><span>Contexte partagé</span></header>
- <main id="main-content" className="guest-content"><h1>{session?.name??'Ouvrir un contexte partagé'}</h1>
+ return <div className={'app-shell guest-shell'+(session?' guest-chat-shell':' guest-access-shell')}>
+ <header className="topbar"><a href="/" className="brand"><img src={qhLogo} width={100} alt="QH"/></a>
+ {session&&<span className="guest-breadcrumb">Contexte partagé <span aria-hidden="true">/</span> {session.name}</span>}
+ <span className="guest-header-label">Contexte partagé</span>{session&&<button className="secondary" onClick={()=>{void logout();}}>Fermer mon accès</button>}</header>
+ <main id="main-content" className="guest-content">
+ {!session?<div className="guest-access-layout"><section className="guest-access-intro"><h1>Ouvrir un contexte partagé</h1><p>Accédez aux informations autorisées de ce contexte partagé en toute sécurité.</p>
+ <div className="guest-access-art" aria-hidden="true"><div><span className="guest-red-orb"/><i/><i/></div><div><span className="guest-person">●</span><i/><i/></div></div></section>
+ <section className="guest-access-card" aria-labelledby="guest-access-title"><span className="guest-chat-symbol" aria-hidden="true">•••</span><h2 id="guest-access-title">Accès sécurisé à un contexte partagé</h2>
+ <p className="muted">Entrez votre email pour recevoir un code d’accès. Vous pourrez ensuite consulter les informations autorisées de ce contexte partagé.</p>
  {!ready&&<p role="status">Vérification de l’accès…</p>}{error&&<p role="alert" className="notice error">{error}</p>}
- {ready&&!session&&!receipt&&invitation&&<form onSubmit={e=>{void requestCode(e);}}><label>Votre email<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label><button disabled={busy}>Recevoir mon code</button></form>}
- {!session&&receipt&&<form onSubmit={e=>{void verify(e);}}><p>{receipt.message}</p><label>Code reçu par email<input required inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={e=>setCode(e.target.value)} disabled={busy}/></label><button disabled={busy||code.length!==8}>Vérifier le code</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setReceipt(null);setCode('');}}>Modifier l’email</button></form>}
- {session&&<><div className="actions"><p className="small muted">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p><button className="secondary" onClick={()=>{void logout();}}>Fermer mon accès</button></div>
- <p>Posez vos questions sur les informations autorisées. Les sources et la structure interne restent privées.</p>
+ {ready&&invitation&&<form onSubmit={e=>{void (receipt?verify(e):requestCode(e));}}>
+ <label>Votre email<input type="email" required autoComplete="email" placeholder="votre@email.com" value={email} onChange={e=>setEmail(e.target.value)} disabled={busy} readOnly={!!receipt}/></label>
+ {receipt&&<div className="guest-code-panel"><div className="guest-code-heading"><label htmlFor="guest-code">Insérez ici le code reçu par mail</label><button type="button" className="guest-text-button" disabled={busy} onClick={()=>{setReceipt(null);setCode('');setError('');}}>Modifier l’email</button></div>
+ <p className="small muted" role="status">{receipt.message}</p>
+ <input ref={codeInput} id="guest-code" className="guest-code-input" aria-describedby="guest-code-help" required pattern="[0-9]{8}" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code} onChange={e=>setCode(e.target.value.replace(/[^0-9]/g,''))} disabled={busy}/>
+ <p id="guest-code-help" className="small muted">Code de sécurité à 8 chiffres.</p><button type="button" className="guest-text-button" disabled={busy||resendAfter>0} onClick={()=>{void requestCode();}}>Renvoyer le code{resendAfter>0?` (${resendAfter}s)`:''}</button></div>}
+ <button disabled={busy||!!receipt&&code.length!==8}>{busy?'Vérification en cours…':receipt?'Accéder au contexte':'Recevoir mon code'}</button></form>}
+ <p className="guest-access-privacy">Vous ne verrez que les informations spécifiquement autorisées par le propriétaire de ce contexte. Les sources et la structure interne restent privées.</p></section></div>
+ :<><aside className="guest-context"><h1>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Aucun résumé communicable pour cet accès.</p>}</details>
+ <p className="guest-context-info">Posez vos questions sur les informations autorisées. Les sources et la structure interne du contexte restent privées.</p>
+ <p className="small muted">Le résumé présente le contexte dans ses grandes lignes. Vos questions peuvent porter sur l’ensemble des informations autorisées.</p>
+ <p className="guest-expiry">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p></aside>
  <section className="guest-conversation" aria-label="Conversation">
+ {error&&<p role="alert" className="notice error">{error}</p>}
  <div className="guest-messages" role="log" aria-label="Messages" aria-live="polite" aria-busy={busy}>
+ {!turns.length&&<div className="guest-conversation-empty"><span className="guest-chat-symbol" aria-hidden="true">•••</span><h2>Explorez ce contexte</h2><p>Posez votre première question sur les informations partagées.</p></div>}
  {turns.map((turn,index)=><div className="guest-turn" key={index}>
   <div className="guest-question"><span className="small muted">Vous</span><p>{turn.question}</p></div>
   {turn.answer&&<div className="guest-answer"><span className="small muted">QH</span>{turn.answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={turn.answer.answer}/></div>}
@@ -76,8 +100,10 @@ export default function GuestPage(){
  </div>)}
  {busy&&<p role="status">Réponse en cours…</p>}<div ref={bottom}/>
  </div>
- {session.can_ask?<form className="guest-composer" onSubmit={ask}><label htmlFor="guest-question">Votre question</label><textarea id="guest-question" required maxLength={2000} value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();if(!busy)void askQuestion(question);}}}/><button disabled={busy||!question.trim()||!enabled}>Envoyer</button>{!enabled&&<p>Les réponses sont temporairement indisponibles.</p>}</form>:<p>Demandez une nouvelle invitation pour pouvoir poser des questions.</p>}
- </section>
- </>}
+ {session.can_ask?<form className="guest-composer" onSubmit={ask}><label className="sr-only" htmlFor="guest-question">Votre question</label><textarea id="guest-question" placeholder="Posez votre question sur ce contexte…" required maxLength={2000} value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();if(!busy)void askQuestion(question);}}}/>
+ <div className="guest-composer-actions"><button type="button" className="secondary" disabled aria-describedby="guest-proposals-help">Proposer une mise à jour</button><button disabled={busy||!question.trim()||!enabled}>Envoyer</button></div>
+ <p id="guest-proposals-help" className="small muted">Les contributions externes sont indisponibles dans cette démo : leur réception et leur validation par le propriétaire ne sont pas encore implémentées.</p>
+ {!enabled&&<p>Les réponses sont temporairement indisponibles.</p>}</form>:<p>Demandez une nouvelle invitation pour pouvoir poser des questions.</p>}
+ </section></>}
  </main></div>;
 }

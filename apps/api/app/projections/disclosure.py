@@ -27,6 +27,7 @@ class AccessPolicy:
     expires_at: datetime
     include_proposed: bool = True
     include_quotes: bool = False
+    allow_update_proposals: bool = False
     provider: str | None = None
     excluded: tuple[RevisionKey, ...] = ()
 
@@ -42,7 +43,8 @@ class AccessPolicy:
             raise ValueError('Explicit READ/ASK_AI rights required')
         if not isinstance(self.expires_at, datetime) or self.expires_at.utcoffset() is None:
             raise ValueError('Explicit timezone-aware expiry required')
-        if type(self.include_proposed) is not bool or type(self.include_quotes) is not bool:
+        if (type(self.include_proposed) is not bool or type(self.include_quotes) is not bool
+                or type(self.allow_update_proposals) is not bool):
             raise ValueError('Explicit inclusion choices required')
         if (self.provider not in (None, 'offline',LIVE_PROVIDER) or ('ASK_AI' in self.rights) != (self.provider is not None)):
             raise ValueError('ASK_AI requires an explicitly authorized QH-controlled provider')
@@ -54,7 +56,11 @@ class AccessPolicy:
         object.__setattr__(self, 'excluded', tuple(sorted(self.excluded)))
 
     def wire(self):
-        return {**asdict(self), 'expires_at': self.expires_at.isoformat()}
+        data = {**asdict(self), 'expires_at': self.expires_at.isoformat()}
+        # Preserve fingerprints of retained policies predating this optional choice.
+        if not self.allow_update_proposals:
+            data.pop('allow_update_proposals')
+        return data
 
     @classmethod
     def from_wire(cls, value):

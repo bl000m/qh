@@ -123,10 +123,11 @@ def proof(request):
 
 
 async def session_view(request, access, token):
-    right='ASK_AI' if 'ASK_AI' in access.rights else 'READ'
+    right='READ' if 'READ' in access.rights else 'ASK_AI'
     payload=await bound(request).snapshot(token, access.snapshot_id, right)
     return dict(name=payload.get('name','Contexte partagé'),can_ask='ASK_AI' in access.rights,
-        expires_at=access.expires_at,verification='mailbox_control')
+        expires_at=access.expires_at,verification='mailbox_control',
+        recap=payload.get('recap') if 'READ' in access.rights else None)
 
 
 @router.post('/context-spaces/{scope}/snapshots/{snapshot_id}/invitations', status_code=201)
