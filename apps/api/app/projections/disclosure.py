@@ -30,6 +30,7 @@ class AccessPolicy:
     allow_update_proposals: bool = False
     provider: str | None = None
     excluded: tuple[RevisionKey, ...] = ()
+    original_documents: tuple[str, ...] = ()
 
     def __post_init__(self):
         email = self.recipient_email
@@ -52,6 +53,10 @@ class AccessPolicy:
                 or any(not isinstance(k, RevisionKey) for k in self.excluded)
                 or len(set(self.excluded)) != len(self.excluded)):
             raise ValueError('Bounded exact restrictions required')
+        if not isinstance(self.original_documents, tuple) or len(self.original_documents)>100 or len(set(self.original_documents))!=len(self.original_documents):
+            raise ValueError('Bounded explicit original document permissions required')
+        for revision in self.original_documents:
+            identifier(revision)
         object.__setattr__(self, 'rights', tuple(sorted(self.rights)))
         object.__setattr__(self, 'excluded', tuple(sorted(self.excluded)))
 
@@ -60,6 +65,8 @@ class AccessPolicy:
         # Preserve fingerprints of retained policies predating this optional choice.
         if not self.allow_update_proposals:
             data.pop('allow_update_proposals')
+        if not self.original_documents:
+            data.pop('original_documents')
         return data
 
     @classmethod
@@ -67,6 +74,7 @@ class AccessPolicy:
         data = dict(value)
         data['expires_at'] = datetime.fromisoformat(data['expires_at'])
         data['rights'] = tuple(data['rights'])
+        data['original_documents'] = tuple(data.get('original_documents', ()))
         data['excluded'] = tuple(RevisionKey(**k) for k in data['excluded'])
         return cls(**data)
 

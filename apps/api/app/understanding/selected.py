@@ -41,6 +41,8 @@ def selected_source(context_id, conversation):
     keeps the established source identity/text/turn-locator representation, without
     inventing extra turns to satisfy that old importer or mutating its sealed file.
     """
+    if not 1 <= len(conversation['turns']) <= 1000:
+        raise ValueError('Selected source exceeds 1000 identified passages')
     chunks, turns, offset = [], [], 0
     for turn in conversation['turns']:
         prefix = turn['speaker'] + ': '

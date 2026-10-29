@@ -40,6 +40,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  const availabilityRead=useRef<{api:QhApi;scope:string;promise:Promise<SessionCapabilities>}|null>(null);
  const panel=useRef<HTMLElement>(null);
  const appendAttempt=useRef<ContextIntake|null>(null),lock=useRef(false);
+ const pdfAttempt=useRef<{key:string;operation:string}|null>(null);
  const documentInput=useRef<HTMLInputElement>(null),contextInput=useRef<HTMLInputElement>(null),log=useRef<HTMLDivElement>(null);
  const reload=useCallback(async(expectedVersion?:string)=>{const value=await api.workspace(scope,true);if(expectedVersion&&value.current?.id!==expectedVersion||(value.current?.version??0)<latestVersion.current)throw new ApiError(503);latestVersion.current=value.current?.version??0;setState(value);setLoadStatus(value.current?'ready':'empty');return value;},[api,scope]);
  useEffect(()=>{
@@ -132,16 +133,24 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  }
  async function addFile(file:File|undefined,context:boolean){
   if(!file||lock.current)return;
-  if(file.size>500000){setError('Ce fichier dépasse la limite de 500 Ko.');return;}
-  if(!context&&!/\.(txt|md|markdown)$/i.test(file.name)){setError('L’extraction PDF n’est pas encore disponible. Utilise un fichier TXT ou Markdown ; aucun document n’a été ajouté.');return;}
+  if(file.size>(!context&&/\.pdf$/i.test(file.name)?3*1024*1024:500000)){setError(!context&&/\.pdf$/i.test(file.name)?'Le PDF dépasse 3 MiB (3 145 728 octets).':'Ce fichier dépasse la limite de 500 Ko.');return;}
+  if(!context&&!/\.(txt|md|markdown|pdf)$/i.test(file.name)){setError('Choisis un PDF, TXT ou Markdown.');return;}
   lock.current=true;setBusy('file');setError('');setNotice('');
   try{
+   if(!context&&/\.pdf$/i.test(file.name)){
+    setNotice('Import et extraction de '+file.name+'…');
+    const key=scope+':'+file.name+':'+file.size+':'+file.lastModified;
+    if(pdfAttempt.current?.key!==key)pdfAttempt.current={key,operation:crypto.randomUUID()};
+    const saved=await api.importPdf(scope,file,pdfAttempt.current.operation);accept(saved);pdfAttempt.current=null;
+    const blank=saved.intake.find(item=>item.name===file.name)?.document_turns?.filter(turn=>!turn.text.trim()).length??0;
+    setNotice((blank?blank+' page(s) sans texte extractible, sans OCR. ':'')+file.name+' conservé. Clique sur Mémoriser pour autoriser son analyse et actualiser la compréhension.');return;
+   }
    const text=await file.text();
    const input=intake(context?'context':'document',context?null:text,file.name);
    if(context)input.context=JSON.parse(text);
    accept(await api.addIntake(scope,input));
    setNotice(context?'Contexte importé. Clique sur Mémoriser pour l’intégrer.':'Document ajouté. Clique sur Mémoriser pour l’intégrer.');
-  }catch(e){setError(e instanceof SyntaxError?'Le fichier ne contient pas un contexte JSON valide.':failure(e));}finally{lock.current=false;setBusy(null);}
+  }catch(e){setError(e instanceof SyntaxError?'Le fichier ne contient pas un contexte JSON valide.':e instanceof Error&&!(e instanceof ApiError)?e.message:failure(e));}finally{lock.current=false;setBusy(null);}
  }
  async function download(){
   setError('');
@@ -199,6 +208,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     {loadingSources&&<Loading label="Chargement des sources…"/>}
     {sourceError&&<><p role="alert">{sourceError}</p><button type="button" className="secondary" disabled={loadingSources} onClick={()=>{void showSources();}}>Réessayer les sources</button></>}
     {!state?.current&&<p>Aucune compréhension mémorisée dans ce Space.</p>}
+    {state?.intake.filter(item=>item.source_revision_id).map(item=><section key={item.id}><h4>{item.name}</h4><button type="button" className="secondary" onClick={()=>{void api.downloadDocument(scope,item.source_revision_id!,item.name!).catch(()=>setSourceError('Document indisponible ou accès refusé.'));}}>Télécharger l’original</button><details><summary>Consulter le texte extrait</summary>{item.document_turns?.map((turn,i)=><div key={turn.id}><p>Page {i+1}</p><pre style={{whiteSpace:'pre-wrap'}}>{turn.text||'Aucun texte extractible sur cette page (sans OCR).'}</pre></div>)}</details></section>)}
     {sourcesVisited&&<WorkspaceUnderstandingSources rows={sources}/>}
     {items.filter(item=>item.role==='assistant'&&item.attribution).map((item,index)=><section key={item.id}>
      <h3>Réponse {index+1}</h3>
@@ -227,7 +237,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
     <div className="workspace-feedback">{(busy==='memory'||busy==='regenerate')&&<p role="status">Mémorisation en cours : analyse et enregistrement de tes apports…</p>}{availabilityMessage&&<div className="workspace-availability"><p role="status">{availabilityMessage}</p>{!checkingAvailability&&<button type="button" className="secondary" onClick={()=>{void refreshAvailability();}}>Actualiser la disponibilité</button>}</div>}{error&&<p role="alert" className="notice error">{error}</p>}{notice&&<p role="status">{notice}</p>}{error&&<button type="button" className="secondary" disabled={!!busy} onClick={()=>{void synchronize().then(()=>setError('')).catch(e=>setError(failure(e)));}}>Actualiser l’état</button>}</div>
     <form className="workspace-composer" onSubmit={event=>{event.preventDefault();void send();}}>
      <label className="sr-only" htmlFor="context-message">Ton message</label><textarea id="context-message" rows={3} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoute une information ou pose une question…"/>
-     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{memoryStatus&&<span className="workspace-unsaved small muted" role="status">{memoryStatus}</span>}</div></div>
+     <div className="workspace-composer-actions"><div className="actions"><button type="button" className="secondary" disabled={disabled||!state} title="PDF jusqu’à 3 MiB ; TXT et Markdown jusqu’à 500 Ko. Sans OCR." onClick={()=>documentInput.current?.click()}>Joindre un document</button><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button></div><div className="actions"><button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||!caps?.enabled}>Envoyer</button><button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button>{memoryStatus&&<span className="workspace-unsaved small muted" role="status">{memoryStatus}</span>}</div></div>
      <input ref={documentInput} type="file" accept=".txt,.md,.markdown,.pdf" hidden onChange={event=>{void addFile(event.target.files?.[0],false);event.target.value='';}}/>
      <input ref={contextInput} type="file" accept=".json,application/json" hidden onChange={event=>{void addFile(event.target.files?.[0],true);event.target.value='';}}/>
     </form>

@@ -28,6 +28,7 @@ class PolicyInput(BaseModel):
     purpose:StrictStr=Field(min_length=1,max_length=1024)
     expires_at:datetime
     allow_update_proposals:StrictBool=False
+    original_documents:list[UUID]=Field(default_factory=list,max_length=100)
     excluded:list[ExclusionInput]=Field(default_factory=list,max_length=100)
 
 
@@ -65,9 +66,14 @@ async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depend
     provider=LIVE_PROVIDER if chat.live is not None else 'offline'
     if chat.live is not None and not chat.live.allowed(subject,str(scope)):
         raise GuestUnavailable('Sharing unavailable')
+    if document.original_documents:
+        available=await request.app.state.services.consolidation.documents(subject,str(scope))
+        if not set(map(str,document.original_documents)) <= {row['source_revision_id'] for row in available}:
+            raise GuestUnavailable('Document unavailable')
     policy=AccessPolicy(recipient_email=document.recipient_email,purpose=document.purpose,
         expires_at=document.expires_at,rights=('READ','ASK_AI'),provider=provider,
         allow_update_proposals=document.allow_update_proposals,
+        original_documents=tuple(map(str,document.original_documents)),
         include_proposed=True,include_quotes=False,
         excluded=tuple(RevisionKey(item_id=str(k.item_id),revision_id=str(k.revision_id)) for k in document.excluded))
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))

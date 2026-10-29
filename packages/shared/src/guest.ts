@@ -32,12 +32,13 @@ export interface GuestSessionView {
 }
 
 export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean}
-export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;excluded?:{item_id:string;revision_id:string}[]}
+export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;original_documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
 
 export interface SharingPolicy {
   recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
   /** Recorded owner permission; external contribution workflow is not yet available. */
   allow_update_proposals?:boolean;
+  original_documents?:string[];
   include_proposed:boolean; include_quotes:boolean; provider:'offline'|'mistral-small-2603'|null;
 }
 export interface SharedItem {

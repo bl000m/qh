@@ -177,3 +177,23 @@ class PostgresGuestRepository:
         def revoke(repository, c, now):
             c.execute('UPDATE guest_sessions SET revoked_at=COALESCE(revoked_at,%s) WHERE token_hash=%s', (now, session_hash))
         return await asyncio.to_thread(self._run, None, revoke)
+
+    async def documents(self, grant, revision=None):
+        def read(repository, c, now):
+            current=self._active(c,now,session_id=grant.session_id)
+            if current!=grant or 'READ' not in current.rights:
+                raise GuestDenied('Vérification impossible.')
+            policy=c.execute('SELECT policy FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
+                (current.snapshot_id,current.context_id)).fetchone()['policy']
+            allowed=policy.get('original_documents',[])
+            if revision is not None and revision not in allowed:
+                raise GuestDenied('Vérification impossible.')
+            fields='source_revision_id,filename' if revision is None else 'filename,media_type,original'
+            rows=c.execute('SELECT '+fields+' FROM source_documents WHERE context_space_id=%s AND source_revision_id=ANY(%s::uuid[]) ORDER BY source_revision_id',
+                (current.context_id,allowed if revision is None else [revision])).fetchall()
+            if revision is not None:
+                if not rows:
+                    raise GuestDenied('Vérification impossible.')
+                return rows[0]
+            return [dict(row,source_revision_id=str(row['source_revision_id'])) for row in rows]
+        return await asyncio.to_thread(self._run,None,read)

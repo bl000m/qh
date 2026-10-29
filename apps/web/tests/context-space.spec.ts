@@ -13,6 +13,7 @@ for(const width of [1440,375])test('Context Space discussion, pending intake, fa
   else if(p==='/environment')value={version:1,domains:[{id:domain,name:'Travail',description:''}],memberships:{[scope]:[domain]},primary_domains:{[scope]:domain},space_descriptions:{},usage:{}};
   else if(p.endsWith('/open'))value={};
   else if(p.endsWith('/chat-sessions'))value={automatic:true,enabled:true,model:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:Date.now()/1000+3600,remaining_calls:null,remaining_usd:'4.9'};
+  else if(p.includes('/workspace/documents/')&&route.request().method()==='PUT')return route.fulfill({status:422,json:{detail:'PDF corrompu ou non pris en charge.'}});
   else if(p.endsWith('/workspace'))value=state();
   else if(p.endsWith('/workspace/intake')){const input=route.request().postDataJSON();if(!inputs.some(i=>i.id===input.id))inputs.push(input);value=state();}
   else if(p.endsWith('/workspace/messages')){
@@ -47,7 +48,7 @@ for(const width of [1440,375])test('Context Space discussion, pending intake, fa
  await panel.getByRole('button',{name:width>850?'Fermer':'Fermer la fenêtre',exact:true}).click();
  await expect(page.getByText('Compréhension mise à jour',{exact:true})).toBeVisible();
  await expect(page.getByRole('complementary',{name:'Compréhension'})).toHaveCount(0);
- await page.locator('input[type=file]').first().setInputFiles({name:'not-supported.pdf',mimeType:'application/pdf',buffer:Buffer.from('offline')});await expect(page.locator('.workspace-feedback').getByRole('alert')).toContainText('PDF n’est pas encore disponible');expect(inputs).toHaveLength(2);
+ await page.locator('input[type=file]').first().setInputFiles({name:'not-supported.pdf',mimeType:'application/pdf',buffer:Buffer.from('offline')});await expect(page.locator('.workspace-feedback').getByRole('alert')).toContainText('PDF corrompu');expect(inputs).toHaveLength(2);
  const portable={schema_version:'qh.context-space/1',logical_id:domain,name:'Import',version:1,consolidated_at:'2026-10-26T12:00:00Z',understanding:[{id:revision,text:'Préparer le projet.',primary_dimension:'objectives_intentions',certainty:'tentative',validation_state:'proposed',evidence:[{source_revision_id:domain,quote:'Préparer le projet.',turn_id:null}]}]};
  await page.locator('input[type=file]').nth(1).setInputFiles({name:'context.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(portable))});
  await expect(page.getByRole('status').filter({hasText:'Contexte importé'})).toBeVisible();expect(inputs[2].context).toEqual(portable);expect(consolidations).toBe(2);

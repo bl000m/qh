@@ -25,6 +25,8 @@ export default function GuestPage(){
  const [invitation]=useState(()=>new URLSearchParams(location.hash.slice(1)).get('invite')??'');
  const [email,setEmail]=useState(''),[code,setCode]=useState(''),[receipt,setReceipt]=useState<GuestCodeReceipt|null>(null);
  const [session,setSession]=useState<GuestSessionView|null>(null),[turns,setTurns]=useState<Turn[]>([]);
+ const [documents,setDocuments]=useState<import('../../../packages/shared/src/context-space').SourceDocument[]>([]);
+ useEffect(()=>{setDocuments([]);if(session)void guestRequest('/documents').then(v=>setDocuments(v as import('../../../packages/shared/src/context-space').SourceDocument[])).catch(()=>{});},[session?.expires_at]);
  const [question,setQuestion]=useState(''),[error,setError]=useState(''),[enabled,setEnabled]=useState(false);
  const [resendAfter,setResendAfter]=useState(0);
  const resendDeadline=useRef(0);
@@ -88,6 +90,7 @@ export default function GuestPage(){
  :<><aside className="guest-context"><h1>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Aucun résumé communicable pour cet accès.</p>}</details>
  <p className="guest-context-info">Posez vos questions sur les informations autorisées. Les sources et la structure interne du contexte restent privées.</p>
  <p className="small muted">Le résumé présente le contexte dans ses grandes lignes. Vos questions peuvent porter sur l’ensemble des informations autorisées.</p>
+ {documents.length>0&&<details><summary>Documents autorisés</summary>{documents.map(doc=><p key={doc.source_revision_id}><a href={'/api/guest/documents/'+doc.source_revision_id} download>{doc.filename}</a></p>)}</details>}
  <p className="guest-expiry">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p></aside>
  <section className="guest-conversation" aria-label="Conversation">
  {error&&<p role="alert" className="notice error">{error}</p>}

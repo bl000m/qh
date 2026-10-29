@@ -148,7 +148,8 @@ def create_runtime_app(*, guest_settings=None):
     automatic = DevelopmentAI(chat=chat, enrichment=enrichment, factory=factory, clock=time.time) if factory and factory.development_account else None
     from app.understanding.consolidation import ContextConsolidation
     from adapters.postgres.consolidation import PostgresConsolidationRepository
-    consolidation = ContextConsolidation(context=context, policy=policy, ai=automatic,
+    from adapters.pdf import extract_pdf
+    consolidation = ContextConsolidation(context=context, policy=policy, ai=automatic, pdf_parser=extract_pdf,
         repository_for=lambda subject: PostgresConsolidationRepository(url=database_url(), subject_id=subject,
             connection_options='-c statement_timeout=5000 -c lock_timeout=5000'))
     return create_app(

@@ -54,6 +54,17 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
             with self.connect() as c:
                 self._authorize(c, (scope,), lock=True)
                 c.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))', ('qh-context:'+scope,))
+                if action=='document':
+                    intake, original, data = document
+                    old = c.execute('SELECT sha256,filename FROM source_documents WHERE source_revision_id=%s AND context_space_id=%s', (original['id'],scope)).fetchone()
+                    if old:
+                        if old['sha256']!=original['origin']['metadata']['sha256'] or old['filename']!=intake['name']:
+                            raise EnrichmentConflict('Original document changed')
+                        return self._read(c, scope)
+                    self._save_on(c, sources=(original,))
+                    c.execute('INSERT INTO source_documents VALUES (%s,%s,%s,%s,%s,%s)',
+                        (original['id'],scope,intake['name'],'application/pdf',original['origin']['metadata']['sha256'],data))
+                    self._append_on(c, scope, intake)
                 if action=='append':
                     self._append_on(c, scope, document)
                 if action=='claim':
@@ -135,3 +146,30 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
     async def publish(self, scope, operation, intake_ids, source, revisions):
         return await asyncio.to_thread(self._operation, 'publish', scope,
             dict(operation_id=operation, intake_ids=intake_ids), source, revisions)
+
+    async def import_document(self, scope, document, source, data):
+        return await asyncio.to_thread(self._operation, 'document', scope, (document,source,data))
+
+    async def document(self, scope, revision):
+        def read():
+            with self.connect() as c:
+                self._authorize(c, (scope,), lock=True)
+                row=c.execute('SELECT filename,media_type,original FROM source_documents WHERE context_space_id=%s AND source_revision_id=%s', (scope,revision)).fetchone()
+                if row is None:
+                    raise ContextSpaceNotFound('Source not found')
+                return row
+        try:
+            return await asyncio.to_thread(read)
+        except PermissionError:
+            raise ContextSpaceNotFound('Source not found') from None
+
+    async def documents(self, scope):
+        def read():
+            with self.connect() as c:
+                self._authorize(c, (scope,), lock=True)
+                return [dict(row,source_revision_id=str(row['source_revision_id'])) for row in c.execute(
+                    'SELECT source_revision_id,filename FROM source_documents WHERE context_space_id=%s ORDER BY source_revision_id', (scope,)).fetchall()]
+        try:
+            return await asyncio.to_thread(read)
+        except PermissionError:
+            raise ContextSpaceNotFound('Source not found') from None

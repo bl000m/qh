@@ -15,6 +15,8 @@ const maskLabels:Record<string,string>={email:'Adresses email masquées',url:'Li
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('Consulter et interroger le contexte partagé');
  const [allowUpdates,setAllowUpdates]=useState(false);
+ const [documents,setDocuments]=useState<import('../../../packages/shared/src/context-space').SourceDocument[]>([]),[originals,setOriginals]=useState<string[]>([]);
+ useEffect(()=>{void api.sharing<import('../../../packages/shared/src/context-space').SourceDocument[]>(scope,'workspace/documents').then(setDocuments).catch(()=>{});},[api,scope]);
  const [expiry,setExpiry]=useState(()=>{const d=new Date(Date.now()+3600000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,19);});
  const [excluded,setExcluded]=useState<NonNullable<SharingInput['excluded']>>([]);
  const [previewRefresh,setPreviewRefresh]=useState(0);
@@ -30,14 +32,14 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!purpose.trim()||!Number.isFinite(expires)||expires<=Date.now()){setPreparing(false);return;}
   setPreparing(true);
   const timer=setTimeout(()=>{
-   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),excluded,allow_update_proposals:allowUpdates};
+   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),excluded,allow_update_proposals:allowUpdates,original_documents:originals};
    void api.sharing<SharingPreview>(scope,'sharing/previews','POST',body)
     .then(value=>{if(current===generation.current)setPreview(value);})
     .catch(e=>{if(current===generation.current)setError(sharingError(e));})
     .finally(()=>{if(current===generation.current)setPreparing(false);});
   },400);
   return()=>{clearTimeout(timer);generation.current++;};
- },[api,scope,email,purpose,expiry,excluded,allowUpdates,previewRefresh]);
+ },[api,scope,email,purpose,expiry,excluded,allowUpdates,originals,previewRefresh]);
  function exclude(reference:string){const key=preview?.report.anchors?.find(a=>a.reference===reference);if(!key)return;
   setExcluded(previous=>[...previous,{item_id:key.item_id,revision_id:key.revision_id}]);}
  function fail(error:unknown){setError(sharingError(error));if(error instanceof ApiError&&error.status===409){setPreview(null);setSnapshot('');}}
@@ -53,6 +55,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   try{await api.sharing(scope,'invitations/'+id+'/revoke','POST',{});await refresh();setLink('');}
   catch(e){setError(sharingError(e));}finally{lock.current=false;setBusy(false);}}
  const matches=preview&&preview.policy.recipient_email===email&&preview.policy.purpose===purpose
+  &&JSON.stringify(preview.policy.original_documents??[])===JSON.stringify(originals)
   &&(preview.policy.allow_update_proposals??false)===allowUpdates
   &&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime()
   &&!excluded.some(k=>preview.report.anchors?.some(a=>a.item_id===k.item_id&&a.revision_id===k.revision_id));
@@ -79,6 +82,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  {error&&<div role="alert"><p className="notice error">{error}</p>{!preview&&<button type="button" className="secondary" disabled={busy||preparing} onClick={()=>setPreviewRefresh(n=>n+1)}>Réessayer</button>}</div>}
  <p className="sharing-hint">Créer l’invitation approuve la divulgation des informations communicables. Vérifiez les exclusions, masquages et risques dans Confidentialité avancée ; le masquage ne garantit pas l’anonymat.</p>
  <details className="sharing-advanced"><summary>Confidentialité avancée</summary>
+ <section><h3>Documents originaux</h3><p>Privés par défaut. Un original peut contenir des informations exclues ou masquées dans le partage. L’autorisation porte sur chaque document, expire avec l’invitation et se révoque avec l’accès. Ces documents ne sont pas envoyés à l’IA du destinataire.</p>{documents.map(doc=><label key={doc.source_revision_id}><input type="checkbox" disabled={busy||!!link} checked={originals.includes(doc.source_revision_id)} onChange={e=>setOriginals(ids=>e.target.checked?[...ids,doc.source_revision_id]:ids.filter(id=>id!==doc.source_revision_id))}/>Autoriser le téléchargement de {doc.filename}</label>)}</section>
  <label>Finalité du partage<textarea required maxLength={1024} value={purpose} disabled={busy||!!link} onChange={e=>setPurpose(e.target.value)}/></label>
  {preview&&<section aria-label="Prévisualisation du partage"><h3>Informations communicables</h3>
  {preview.payload.name&&<p>Nom partagé : {preview.payload.name}</p>}

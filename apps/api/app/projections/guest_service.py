@@ -90,3 +90,11 @@ class GuestInvitationService:
 
     async def logout(self, token):
         await self.repository.logout(self.proofs.token_hash(token, 'session'))
+
+    async def documents(self, token, revision=None):
+        grant=await self.session(token)
+        if not await self.authorize(grant,'READ'):
+            raise GuestDenied('Vérification impossible.')
+        result=await self.repository.documents(grant,revision)
+        await self.session(token)
+        return result

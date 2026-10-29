@@ -84,6 +84,27 @@ export class QhApi {
     if(!Array.isArray(state.understanding))throw new ApiError(502);
     return state;
   }
+  async importPdf(scope:string,file:File,operation:string):Promise<WorkspaceState>{
+    this.navigationReads.clear();
+    const response=await fetch('/api/context-spaces/'+scope+'/workspace/documents/'+operation,{
+      method:'PUT',headers:{Authorization:'Bearer '+await this.token(),'Content-Type':'application/pdf','X-Document-Name':encodeURIComponent(file.name)},
+      body:file,credentials:'omit',cache:'no-store',redirect:'error'});
+    if(!response.ok){
+      if(response.status===401)this.expired();
+      const detail=await response.json().catch(()=>null);
+      if([413,422].includes(response.status)&&typeof detail?.detail==='string')throw new Error(detail.detail);
+      throw new ApiError(response.status);
+    }
+    return workspaceState(await response.json(),scope);
+  }
+  async downloadDocument(scope:string,revision:string,name:string):Promise<void>{
+    const response=await fetch('/api/context-spaces/'+scope+'/workspace/documents/'+revision,{
+      headers:{Authorization:'Bearer '+await this.token()},credentials:'omit',cache:'no-store',redirect:'error'});
+    if(response.status===401)this.expired();
+    if(!response.ok)throw new ApiError(response.status);
+    const url=URL.createObjectURL(await response.blob()),anchor=document.createElement('a');
+    anchor.href=url;anchor.download=name;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
   async consolidate(scope:string):Promise<WorkspaceState>{return workspaceState(await this.sharing(scope,'workspace/consolidate','POST'),scope);}
   async exportContext(scope:string):Promise<PortableContext>{return this.sharing(scope,'workspace/export');}

@@ -44,6 +44,7 @@ def service(request, response):
 
 
 async def execute(operation):
+    from app.understanding.documents import DocumentInvalid
     try:
         return await call(operation)
     except ProviderBudgetExceeded:
@@ -52,6 +53,8 @@ async def execute(operation):
         raise HTTPException(409, 'Conflicting operation; no automatic retry') from None
     except (ChatProviderUnavailable, ChatContextUnavailable, EnrichmentUnavailable):
         raise HTTPException(503, 'AI unavailable; no automatic retry') from None
+    except DocumentInvalid as exc:
+        raise HTTPException(422,str(exc)) from None
     except (ChatInputInvalid, ValueError):
         raise HTTPException(422, 'Invalid AI input or output') from None
     except HTTPException:

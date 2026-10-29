@@ -22,9 +22,10 @@ class WorkspaceChatFailed(ChatProviderUnavailable):
 
 
 class ContextConsolidation:
-    def __init__(self, *, context, policy, ai, repository_for):
+    def __init__(self, *, context, policy, ai, repository_for, pdf_parser=None):
         self.context, self.policy, self.ai = context, policy, ai
         self.repository_for = repository_for
+        self.pdf_parser = pdf_parser
 
     async def _allow(self, subject, scope, *, verify_graph=True):
         decision = await self.policy.evaluate(PolicyRequest(subject_id=subject,
@@ -54,6 +55,24 @@ class ContextConsolidation:
         await self._allow(subject, scope)
         return await self.repository_for(subject).append(scope, document)
 
+    async def import_pdf(self, subject, scope, operation, name, data):
+        from app.understanding.documents import prepare_document
+        await self._allow(subject, scope)
+        if self.pdf_parser is None:
+            raise EnrichmentUnavailable('PDF parser unavailable')
+        pages=await self.pdf_parser(data)
+        document,source=prepare_document(scope,operation,name,data,pages)
+        await self._allow(subject, scope, verify_graph=False)
+        return await self.repository_for(subject).import_document(scope,document,source,data)
+
+    async def documents(self, subject, scope):
+        await self._allow(subject, scope, verify_graph=False)
+        return await self.repository_for(subject).documents(scope)
+
+    async def document(self, subject, scope, revision):
+        await self._allow(subject, scope, verify_graph=False)
+        return await self.repository_for(subject).document(scope,revision)
+
     async def consolidate(self, identity, scope, regeneration=None):
         started_at = time.perf_counter()
         await self._allow(identity.subject_id, scope)
@@ -75,7 +94,7 @@ class ContextConsolidation:
                     primary_dimension=row['content'].get('primary_dimension'),
                     validation_state=row['validation_state']) for row in current['understanding'])
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True, observer=diagnostic.check, measure=diagnostic.measure)
+                consolidate=True, previous=previous, with_recap=True, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure)
             original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
@@ -85,7 +104,17 @@ class ContextConsolidation:
                 provider=provider,
                 observer=diagnostic.check)
             if not revisions:
+                if any(row.get('source_revision_id') for row in batch['intake']):
+                    from app.understanding.documents import DocumentInvalid
+                    raise DocumentInvalid('Aucune proposition produite. Les originaux restent conservés ; la compréhension n’a pas été mise à jour.')
                 raise ValueError('No structured understanding produced')
+            documents=[await repository.original(scope,row['source_revision_id']) for row in batch['intake'] if row.get('source_revision_id')]
+            if documents:
+                from app.understanding.documents import original_citations
+                revisions=original_citations(revisions,documents)
+            if provider.parts:
+                for revision in revisions:
+                    revision['content']['extraction']['parts']=provider.parts
             revisions = recap_output.bind(provider.recap, revisions, operation)
             await self.ai._authorize(identity, request)
             await self._allow(identity.subject_id, scope)
@@ -109,6 +138,9 @@ class ContextConsolidation:
     def _conversation(self, subject, batch):
         turns = []
         for row in batch['intake']:
+            if row.get('document_turns'):
+                turns.extend(t for t in row['document_turns'] if t['text'].strip())
+                continue
             imported = row['kind']=='context'
             text = json.dumps(row['context'], ensure_ascii=False, sort_keys=True) if imported else row['text']
             speaker = 'imported unverified machine understanding' if imported else 'assistant (unverified dialogue)' if row.get('role')=='assistant' else 'user (owner-declared)'

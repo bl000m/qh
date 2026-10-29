@@ -158,3 +158,41 @@ async def messages(context_id: UUID, payload: WorkspaceMessageInput, request: Re
         except WorkspaceChatFailed:
             raise HTTPException(502, 'La réponse n’a pas pu être générée.') from None
     return await execute(respond())
+
+
+@router.put('/documents/{operation_id}')
+async def upload_pdf(context_id: UUID, operation_id: UUID, request: Request, response: Response,
+                     subject=Depends(authenticated_subject)):
+    from app.understanding.documents import MAX_PDF_BYTES
+    from urllib.parse import unquote
+    application=service(request,response)
+    await execute(application._allow(subject,str(context_id)))
+    if request.headers.get('content-type')!='application/pdf':
+        raise HTTPException(415,'Un fichier PDF est requis.')
+    data=bytearray()
+    async for chunk in request.stream():
+        if len(data)+len(chunk)>MAX_PDF_BYTES:
+            raise HTTPException(413,'Le PDF dépasse 3 MiB (3 145 728 octets).')
+        data.extend(chunk)
+    return await execute(application.import_pdf(subject,str(context_id),str(operation_id),
+        unquote(request.headers.get('x-document-name','document.pdf')),bytes(data)))
+
+
+def document_response(row):
+    from urllib.parse import quote
+    return Response(content=bytes(row['original']),media_type='application/pdf',headers={
+        'Content-Disposition':"attachment; filename*=UTF-8''"+quote(row['filename'],safe=''),
+        'Cache-Control':'private, no-store','Vary':'Authorization, Cookie',
+        'X-Content-Type-Options':'nosniff','Content-Security-Policy':"sandbox; default-src 'none'"})
+
+
+@router.get('/documents/{revision_id}')
+async def download_pdf(context_id: UUID, revision_id: UUID, request: Request, response: Response,
+                       subject=Depends(authenticated_subject)):
+    row=await execute(service(request,response).document(subject,str(context_id),str(revision_id)))
+    return document_response(row)
+
+
+@router.get('/documents')
+async def documents(context_id: UUID, request: Request, response: Response, subject=Depends(authenticated_subject)):
+    return await execute(service(request,response).documents(subject,str(context_id)))

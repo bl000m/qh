@@ -173,3 +173,14 @@ async def logout(document: EmptyRequest, request: Request, response: Response):
     response.delete_cookie(COOKIE, path='/', secure=True, httponly=True, samesite='strict')
     response.status_code = 204
     return response
+
+
+@router.get('/guest/documents')
+async def documents(request: Request):
+    return await bound(request).documents(proof(request))
+
+
+@router.get('/guest/documents/{revision_id}')
+async def document(revision_id: UUID, request: Request):
+    from app.api.consolidation import document_response
+    return document_response(await bound(request).documents(proof(request),str(revision_id)))
