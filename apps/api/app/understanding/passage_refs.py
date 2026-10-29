@@ -33,8 +33,9 @@ class PassageReferences:
         # Nonoverlapping segments show references beside their original words.
         # Joining segment.text reconstructs the entire original source exactly once.
         return dict(**{k:deepcopy(v) for k,v in self.packet.items() if k!='text'}, segments=self._segments(),
-            passages=[dict(ref=ref, start=p['start'], end=p['end'],
-            turn_id=next(t['turn_id'] for t in self.packet['turns'] if t['start']<=p['start']<p['end']<=t['end']))
+            # Turn identity and speaker are already given by the enclosing turn's
+            # offsets; repeating a turn UUID for every passage adds no evidence.
+            passages=[dict(ref=ref, start=p['start'], end=p['end'])
             for ref, p in self.passages.items()])
 
     def _segments(self):

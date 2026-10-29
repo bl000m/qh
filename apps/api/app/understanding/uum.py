@@ -37,7 +37,8 @@ Use ONLY distinct references from the authorized packet's passages catalogue. Ea
 belongs to that packet's source_revision_id; start/end are Unicode code-point
 offsets into the concatenation of segments[].text, which is the exact original text.
 Each segment labels the passages covering its words, without duplicating source text.
-A passage may span several segments. The enclosing turn preserves speaker attribution.
+A passage may span several segments. Match its start/end to the enclosing entry
+in turns to recover turn_id and speaker attribution.
 Do not return evidence, quotes, source text, source IDs or offsets in the output.
 A valid reference locates evidence; it does NOT establish semantic support or
 turn assistant suggestions into user declarations. Verify support and attribution.
@@ -112,6 +113,19 @@ explanations as unverified informational content with their original assistant
 citations. For a requested guide, omitting generic advice does not mean dropping
 substantive recipe/procedure/reference information. This exception does not turn
 unsolicited generic advice in a personal question's answer into personal understanding.
+Select atomic content for its durable relevance to the subject, current situation
+and evolution of this Context Space, not to exhaustively retain each AI answer.
+Ground the user's question, requested scope and later corrections in user passages;
+an answer about a conditional scenario does not establish personal circumstances.
+Requested general rules can be useful reusable knowledge: retain the substantive
+rules that answer the current request, explicitly attributed as unverified assistant
+information. A request for general rules does not make every surrounding example,
+tool list or generic recommendation a durable reference procedure. Omit incidental
+advice and illustrative scenarios unless they materially explain the subject or
+remain relevant options; label retained examples as hypothetical, never adopted.
+Keep estimates tied to superseded assumptions historical only when their distinction
+from the current scope helps understanding; do not carry them forward as current
+facts. Preserve meaningful contradictions and uncertainty explicitly.
 If an assistant suggestion is essential to understanding the context, explicitly
 describe it as an unverified assistant suggestion in item.text; its citation alone
 does not convey that distinction to readers. Never present
@@ -128,6 +142,13 @@ Choose the shortest listed unique passage sufficient to support each item,
 including its conditions, uncertainty and speaker context. Prefer a sufficient
 original line over repeating a full assistant answer for every item. Use multiple
 passages when necessary; never remove qualifications just to shorten evidence.
+Choose a sufficient nonredundant set of references for each item. Do not cite both
+a whole turn and lines it already contains for the same support. Prefer the lines
+that establish the meaning together with any necessary attribution, qualifications,
+negations or contradictory passages. If only a whole turn preserves that context,
+cite it without also listing its contained lines. Related topic headings, adjacent
+examples and other advice are not evidence merely because they occur in the same
+answer. Reuse a passage across items when each needs it; there is no target count.
 Use SEPARATE evidence_refs entries for separate passages: never join nonconsecutive
 lines, reorder lines, add ellipses or rewrite a quote. For example, to combine
 steps 6, 8 and 10, emit three passage references, not a fabricated passage with those lines

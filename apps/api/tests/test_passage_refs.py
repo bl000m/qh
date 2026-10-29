@@ -63,6 +63,37 @@ def test_unicode_offsets_speaker_and_canonical_provenance_are_unchanged():
     assert evidence['source_revision_id'] == source['id']  # A same-shaped label never resolves via another request.
 
 
+def test_catalogue_recovers_every_original_quote_and_author_without_repeated_turn_metadata():
+    conversation = dict(id='qualified-dialogue', acquired_at='2026-10-29T10:00:00Z', metadata={},
+        turns=[dict(id='question', speaker='user (owner-declared)',
+                    text='Si je gagne 2000 € 🧭, combien épargner ?\r\nJe ne confirme aucun budget.'),
+               dict(id='answer', speaker='assistant (unverified dialogue)',
+                    text='**Exemple hypothétique**, pas une décision.\n100 € si les dépenses le permettent.\nSinon, aucun surplus.')])
+    source = selected_source('00000000-0000-0000-0000-000000000001', conversation)
+    packet = dict(source_revision_id=source['id'], input_sha256='synthetic-snapshot',
+        text=source['content'], turns=source['origin']['turns'])
+    refs = PassageReferences(packet, OUTPUT_SCHEMA)
+    disclosure = refs.disclosure()
+    assert disclosure['turns'] == packet['turns']
+    for passage in disclosure['passages']:
+        assert set(passage) == {'ref', 'start', 'end'}
+        enclosing = [t for t in disclosure['turns']
+            if t['start'] <= passage['start'] < passage['end'] <= t['end']]
+        assert len(enclosing) == 1
+        turn, = enclosing
+        original = next(t for t in conversation['turns'] if t['id'] == turn['turn_id'])
+        assert turn['speaker'] == original['speaker']
+        quote = source['content'][passage['start']:passage['end']]
+        assert quote in original['text']
+        assert ''.join(s['text'] for s in disclosure['segments']
+            if passage['ref'] in s['passage_refs']) == quote
+        expanded = refs.expand(output([passage['ref']]))
+        canonical = dict(format='qh.atomic-understanding/1', items=[dict(
+            text=expanded['items'][0]['text'], primary_dimension='hypotheses_uncertainties',
+            assignment_certainty='tentative', evidence=[dict(quote=quote)])])
+        assert normalize_output(expanded, source) == normalize_output(canonical, source)
+
+
 @pytest.mark.parametrize('invalid', ['unknown', 'empty', 'type', 'duplicate', 'fabricated', 'foreign', 'legacy'])
 def test_invalid_or_foreign_reference_output_is_rejected_without_repair(invalid):
     _, _, refs = catalogue()
