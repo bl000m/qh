@@ -980,3 +980,14 @@ Structured sections supply their own authorized citations; global references and
 conversation referents are derived by the server rather than independently repeated
 by the provider. Extraction preserves contextual actors, roles, periods and explicit
 links in item.text with exact evidence; the UUM wire schema remains unchanged.
+
+### Authorized evidence fidelity — owner, 2026-10-30
+
+When an approved snapshot explicitly includes minimized source quotations, the
+private chat request retains those exact, already guarded quotations under their
+item alias (deduplicated within each item). The question serializer must not discard
+available evidence that qualifies dates, contractual conditions or attribution.
+Absence of quote approval still means no quotation in model input. No original PDF
+read, canonical hydration, new snapshot enrichment, inference on load or automatic
+confirmation follows from this correction. Fresh document scope, revocation and
+expiry checks continue to restrict both item text and its approved quotations.

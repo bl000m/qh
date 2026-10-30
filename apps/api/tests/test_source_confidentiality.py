@@ -52,6 +52,34 @@ def test_retained_snapshot_is_restricted_without_mutation_and_relations_close():
     assert is_empty_projection(restrict_snapshot(original,set())) and original==frozen
 
 
+def test_only_explicitly_approved_scoped_quotes_reach_the_model():
+    import json
+    from app.projections.disclosure_guard import OutboundDisclosureGuard
+    from app.projections.guest_payload import recipient_payload
+    from app.core.models import SourceRevisionRef
+    base=projected_documents()[0]
+    documents=(str(uuid4()),str(uuid4()))
+    rows=[replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),
+        provenance=(SourceRevisionRef(source_id=str(uuid4()),revision_id=source),),
+        content=dict(text=text,citations=[dict(source_revision_id=source,quote=quote)]*2))
+        for source,text,quote in zip(documents,('Parcours déclaré.','Conditions proposées.'),
+            ('Freelance - janvier 2022 a aout 2023.','Clause Neptune : prime de 900 euros sur justificatifs.'))]
+    frozen=deepcopy(rows)
+    for include_quotes in (False,True):
+        access=policy(include_proposed=True,include_quotes=include_quotes,
+            semantic_documents=documents[:1],original_documents=documents[:1])
+        selected,_=document_scope(rows,access,documents)
+        payload,_=OutboundDisclosureGuard().apply(selected,access)
+        recipient_payload(payload,include_quotes=include_quotes)
+        packet=json.loads(projection_request(payload,'Quels détails ?').messages[1].content)
+        item=packet['snapshot']['items'][0]
+        assert item.get('evidence_quotes',[])==(['Freelance - janvier 2022 a aout 2023.'] if include_quotes else [])
+        assert 'Neptune' not in str(packet) and 'source_revision_id' not in str(packet)
+        assert 'citations' not in item and 'sources' not in item and rows==frozen
+        revoked=restrict_snapshot(payload,set())
+        assert json.loads(projection_request(revoked,'?').messages[1].content)['snapshot']['items']==[]
+
+
 def test_actual_model_request_contains_no_client_history_or_empty_notice_knowledge():
     import json
     history=[{'role':'user','content':'EXCLUDED-CONTRACT-CANARY'}, {'role':'assistant','content':'Revoked salary: 999999'}]

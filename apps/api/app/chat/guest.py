@@ -22,6 +22,11 @@ def question_payload(payload):
     items=[]
     for item in ([] if is_empty_projection(payload) else payload['items']):
         value=dict(reference=item['reference'],text=item['text'])
+        # Only quotes already included in the approved, freshly restricted
+        # snapshot. Never hydrate sources or infer quote permission here.
+        quotes=list(dict.fromkeys(citation['quote'] for citation in item.get('citations',[])))
+        if quotes:
+            value['evidence_quotes']=quotes
         if item.get('primary_dimension',{}).get('value')=='hypotheses_uncertainties':
             value['qualification']='Hypothèse ou incertitude à préserver.'
         items.append(value)
