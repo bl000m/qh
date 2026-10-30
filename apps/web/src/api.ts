@@ -21,7 +21,7 @@ export interface ContextSpace {
 }
 export interface SpacePage { items: ContextSpace[]; next_after_id: string | null }
 export { ApiError, isUuid } from './transport';
-import { ApiError, isUuid } from './transport';
+import { ApiError, isUuid, saveDownload } from './transport';
 export const validName = (v: string) => v.trim().length > 0 && [...v].length <= 256 && !v.includes('\0');
 function space(value: unknown): ContextSpace {
   const v = value as ContextSpace | null;
@@ -102,8 +102,7 @@ export class QhApi {
       headers:{Authorization:'Bearer '+await this.token()},credentials:'omit',cache:'no-store',redirect:'error'});
     if(response.status===401)this.expired();
     if(!response.ok)throw new ApiError(response.status);
-    const url=URL.createObjectURL(await response.blob()),anchor=document.createElement('a');
-    anchor.href=url;anchor.download=name;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    await saveDownload(response,name);
   }
   async addIntake(scope:string,input:ContextIntake):Promise<WorkspaceState>{return this.sharing(scope,'workspace/intake','POST',input);}
   async consolidate(scope:string):Promise<WorkspaceState>{return workspaceState(await this.sharing(scope,'workspace/consolidate','POST'),scope);}

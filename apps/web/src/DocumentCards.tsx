@@ -5,6 +5,8 @@ import logo from './brand/qh-logo.png';
 import './documents.css';
 
 export const documentName=(doc:SourceDocument)=>doc.display_name||doc.filename;
+const normalized=(text:string)=>text.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[_-]/g,' ');
+export const documentMatches=(doc:SourceDocument,query:string)=>normalized(documentName(doc)+' '+doc.filename).includes(normalized(query).trim());
 export const readableDocumentName=(name:string)=>name.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()||'Document';
 export function documentSize(bytes?:number){
  if(bytes===undefined)return 'PDF';

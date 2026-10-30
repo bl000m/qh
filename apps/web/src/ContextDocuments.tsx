@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import type {SourceDocument} from '../../../packages/shared/src/context-space';
 import type {QhApi} from './api';
-import {DocumentFileCard,documentName} from './DocumentCards';
+import {DocumentFileCard,documentMatches} from './DocumentCards';
 import {Modal} from './SpaceActions';
 
 export function NameDocumentDialog({file,value,onChange,onClose,onContinue,busy,error}:{file:File;value:string;onChange:(value:string)=>void;onClose:()=>void;onContinue:()=>void;busy:boolean;error:string}){
@@ -14,11 +14,10 @@ export function NameDocumentDialog({file,value,onChange,onClose,onContinue,busy,
   </form>
  </Modal>;
 }
-const normalized=(text:string)=>text.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[_-]/g,' ');
 export default function ContextDocuments({documents,api,scope,onClose,error,onRetry}:{documents:SourceDocument[];api:QhApi;scope:string;onClose:()=>void;error:string;onRetry:()=>void}){
  const [query,setQuery]=useState(''),[canLeft,setCanLeft]=useState(false),[canRight,setCanRight]=useState(false);
  const track=useRef<HTMLDivElement>(null);
- const found=documents.filter(doc=>normalized(documentName(doc)+' '+doc.filename).includes(normalized(query).trim()));
+ const found=documents.filter(doc=>documentMatches(doc,query));
  function measure(){const n=track.current;if(n){setCanLeft(n.scrollLeft>2);setCanRight(n.scrollLeft+n.clientWidth<n.scrollWidth-2);}}
  useEffect(()=>{measure();const observer=new ResizeObserver(measure);if(track.current)observer.observe(track.current);return()=>observer.disconnect();},[documents,query]);
  function scroll(direction:number){track.current?.scrollBy({left:direction*(track.current.clientWidth*.85),behavior:'smooth'});}

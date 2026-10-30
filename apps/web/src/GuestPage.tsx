@@ -8,6 +8,8 @@ import SharedRecap from './SharedRecap';
 import {isOriginalRequest} from './DocumentDownload';
 import {DocumentFileCard} from './DocumentCards';
 import './sharing.css';
+import {GuestDocuments} from './SharingDocuments';
+import {Icon} from './Ui';
 
 interface Turn {question:string;answer?:RecipientAnswer;failed?:string}
 
@@ -28,13 +30,13 @@ export default function GuestPage(){
  const [email,setEmail]=useState(''),[code,setCode]=useState(''),[receipt,setReceipt]=useState<GuestCodeReceipt|null>(null);
  const [session,setSession]=useState<GuestSessionView|null>(null),[turns,setTurns]=useState<Turn[]>([]);
  const [documents,setDocuments]=useState<import('../../../packages/shared/src/context-space').SourceDocument[]>([]);
- useEffect(()=>{setDocuments([]);if(session)void guestRequest('/documents').then(v=>setDocuments(v as import('../../../packages/shared/src/context-space').SourceDocument[])).catch(()=>{});},[session?.expires_at]);
+ useEffect(()=>{let active=true;setDocuments([]);if(session)void guestRequest('/documents').then(v=>{if(active)setDocuments(v as import('../../../packages/shared/src/context-space').SourceDocument[]);}).catch(()=>{});return()=>{active=false;};},[session?.expires_at]);
  const [question,setQuestion]=useState(''),[error,setError]=useState(''),[enabled,setEnabled]=useState(false);
  const [resendAfter,setResendAfter]=useState(0);
  const resendDeadline=useRef(0);
  const codeInput=useRef<HTMLInputElement>(null);
  const [busy,setBusy]=useState(false),[ready,setReady]=useState(false);const epoch=useRef(0),lock=useRef(false),bottom=useRef<HTMLDivElement>(null);
- function clear(){epoch.current++;setSession(null);setTurns([]);setQuestion('');setEnabled(false);setCode('');}
+ function clear(){epoch.current++;setSession(null);setDocuments([]);setTurns([]);setQuestion('');setEnabled(false);setCode('');}
  async function accept(value:unknown){const next=sessionView(value);setSession(next);setCode('');
   setEnabled(false);if(next.can_ask){try{const status=await guestRequest('/provider') as {enabled:boolean};setEnabled(status.enabled===true);}catch{setEnabled(false);}}}
  useEffect(()=>{let active=true;if(invitation)history.replaceState(null,'','/guest');
@@ -89,10 +91,8 @@ export default function GuestPage(){
  <p id="guest-code-help" className="small muted">Code de sécurité à 8 chiffres.</p><button type="button" className="guest-text-button" disabled={busy||resendAfter>0} onClick={()=>{void requestCode();}}>Renvoyer le code{resendAfter>0?` (${resendAfter}s)`:''}</button></div>}
  <button disabled={busy||!!receipt&&code.length!==8}>{busy?'Vérification en cours…':receipt?'Accéder au contexte':'Recevoir mon code'}</button></form>}
  <p className="guest-access-privacy">Vous ne verrez que les informations spécifiquement autorisées par le propriétaire de ce contexte. Les sources et la structure interne restent privées.</p></section></div>
- :<><aside className="guest-context"><h1>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Aucun résumé communicable pour cet accès.</p>}</details>
- <p className="guest-context-info">Posez vos questions sur les informations autorisées. Les sources et la structure interne du contexte restent privées.</p>
- <p className="small muted">Le résumé présente le contexte dans ses grandes lignes. Vos questions peuvent porter sur l’ensemble des informations autorisées.</p>
- {documents.length>0&&<details><summary>Documents autorisés</summary>{documents.map(doc=><p key={doc.source_revision_id}><a href={'/api/guest/documents/'+doc.source_revision_id} download>{doc.display_name??doc.filename}</a></p>)}</details>}
+ :<><aside className="guest-context"><h1><span className="guest-context-icon"><Icon name="sources"/></span>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Aucun résumé communicable pour cet accès.</p>}</details>
+ {documents.length>0&&<GuestDocuments documents={documents}/>}
  <p className="guest-expiry">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p></aside>
  <section className="guest-conversation" aria-label="Conversation">
  {error&&<p role="alert" className="notice error">{error}</p>}

@@ -8,6 +8,8 @@ import {sharingEnabled,sharingError,recipientAnswer} from './sharing';
 import SharedRecap from './SharedRecap';
 import AnswerMarkdown from './AnswerMarkdown';
 import './sharing.css';
+import {OriginalDocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
+import {Icon} from './Ui';
 
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
 const reasonLabels:Record<string,string>={owner_restriction:'Informations retirées à ta demande',recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
@@ -16,7 +18,9 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('Consulter et interroger le contexte partagé');
  const [allowUpdates,setAllowUpdates]=useState(false);
  const [documents,setDocuments]=useState<import('../../../packages/shared/src/context-space').SourceDocument[]>([]),[originals,setOriginals]=useState<string[]>([]);
- useEffect(()=>{void api.sharing<import('../../../packages/shared/src/context-space').SourceDocument[]>(scope,'workspace/documents').then(setDocuments).catch(()=>{});},[api,scope]);
+ const [documentStatus,setDocumentStatus]=useState('loading');
+ function loadDocuments(){setDocumentStatus('loading');void api.sharing<import('../../../packages/shared/src/context-space').SourceDocument[]>(scope,'workspace/documents').then(rows=>{setDocuments(rows);setDocumentStatus('ready');}).catch(()=>setDocumentStatus('error'));}
+ useEffect(()=>{loadDocuments();},[api,scope]);
  const [expiry,setExpiry]=useState(()=>{const d=new Date(Date.now()+3600000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,19);});
  const [excluded,setExcluded]=useState<NonNullable<SharingInput['excluded']>>([]);
  const [previewRefresh,setPreviewRefresh]=useState(0);
@@ -62,7 +66,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  const exclusions=[...new Set(preview?.report.exclusions.map(x=>reasonLabels[x.reason]??'Informations exclues par les règles de protection'))];
  const masks=[...new Set(preview?.report.masks.flatMap(x=>x.rules.map(r=>maskLabels[r]??'Informations masquées')))];
  return <Modal title="Partager ce contexte" onClose={onClose} className="sharing-dialog" closeOnBackdrop>
- <p className="sharing-intro">Invitez une personne à accéder aux informations autorisées de ce contexte partagé.</p>
+ <p className="sharing-intro">Choisissez ce que votre destinataire pourra consulter.</p>
  <form onSubmit={(event:FormEvent)=>{event.preventDefault();void approve();}}>
  <div className="sharing-columns"><div className="sharing-settings"><fieldset disabled={busy||!!link}>
  <label>Email du destinataire<input type="email" required maxLength={254} placeholder="votre@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></label>
@@ -70,19 +74,21 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <h3>Droits accordés</h3>
  <div className="sharing-permission included"><span className="permission-tick" aria-hidden="true">✓</span><div><strong>Consulter et interroger le contexte</strong><span className="permission-badge">Toujours inclus</span><p>Le destinataire peut lire le résumé autorisé et poser des questions, sans modifier le contenu.</p></div></div>
  <label className="sharing-permission check"><input type="checkbox" checked={allowUpdates} onChange={e=>setAllowUpdates(e.target.checked)}/><span><strong>Autoriser les propositions de mise à jour</strong><span className="permission-description">Vous conservez le contrôle et la validation finale de toute modification.</span></span></label>
- <p className="sharing-hint">L’autorisation est enregistrée avec l’invitation. L’envoi de propositions reste indisponible dans cette démo : le parcours de réception et de validation des contributions externes n’est pas encore implémenté.</p>
+ <OriginalDocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
+
  </fieldset></div>
- <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Présentation générale des informations autorisées, sans les sources ni la structure interne.</p>
+ <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Voici ce que verra votre destinataire après vérification de son accès.</p>
  <div className="sharing-preview-card"><strong>{preview?.payload.name??name}</strong>
  <SharedRecap recap={matches?preview?.payload.recap:undefined}/>
  {(!matches||!preview?.payload.recap)&&<p className="muted">{preparing?'Préparation de l’aperçu autorisé…':matches?'Aucun résumé communicable pour ce partage. Les questions porteront sur les informations autorisées.':'Indiquez le destinataire pour préparer l’aperçu autorisé.'}</p>}
  <p className="small muted">Contenu filtré selon les règles de confidentialité</p></div>
- <div className="sharing-chat-art" aria-hidden="true"><span>•••</span><p>Un contexte à explorer,<br/>un partage maîtrisé.</p></div>
+ <SharedDocumentsPreview documents={documents} selected={originals}/>
+ <p className="sharing-original-warning"><Icon name="info"/>Un PDF original peut contenir des informations absentes de l’aperçu ou exclues du partage. Vérifiez chaque autorisation avant l’envoi.</p>
  </aside></div><div className="sharing-supplement">
  {error&&<div role="alert"><p className="notice error">{error}</p>{!preview&&<button type="button" className="secondary" disabled={busy||preparing} onClick={()=>setPreviewRefresh(n=>n+1)}>Réessayer</button>}</div>}
  <p className="sharing-hint">Créer l’invitation approuve la divulgation des informations communicables. Vérifiez les exclusions, masquages et risques dans Confidentialité avancée ; le masquage ne garantit pas l’anonymat.</p>
- <details className="sharing-advanced"><summary>Confidentialité avancée</summary>
- <section><h3>Documents originaux</h3><p>Privés par défaut. Un original peut contenir des informations exclues ou masquées dans le partage. L’autorisation porte sur chaque document, expire avec l’invitation et se révoque avec l’accès. Ces documents ne sont pas envoyés à l’IA du destinataire.</p>{documents.map(doc=><label key={doc.source_revision_id}><input type="checkbox" disabled={busy||!!link} checked={originals.includes(doc.source_revision_id)} onChange={e=>setOriginals(ids=>e.target.checked?[...ids,doc.source_revision_id]:ids.filter(id=>id!==doc.source_revision_id))}/>Autoriser le téléchargement de {doc.display_name??doc.filename}</label>)}</section>
+ <details className="sharing-advanced"><summary>Confidentialité avancée</summary> <p className="sharing-hint">L’autorisation est enregistrée avec l’invitation. L’envoi de propositions reste indisponible dans cette démo : le parcours de réception et de validation des contributions externes n’est pas encore implémenté.</p>
+
  <label>Finalité du partage<textarea required maxLength={1024} value={purpose} disabled={busy||!!link} onChange={e=>setPurpose(e.target.value)}/></label>
  {preview&&<section aria-label="Prévisualisation du partage"><h3>Informations communicables</h3>
  {preview.payload.name&&<p>Nom partagé : {preview.payload.name}</p>}
@@ -96,7 +102,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <section><h3>Invitations</h3>{rows.map(row=><p key={row.id}>{row.recipient_email} · {row.revoked_at?'Révoquée':'Expire le '+new Date(row.expires_at).toLocaleString('fr-FR')} <button type="button" className="secondary" disabled={busy||!!row.revoked_at} onClick={()=>{void revoke(row.id);}}>Révoquer l’accès</button></p>)}</section>
  </details>
  {link&&<section aria-label="Invitation créée"><h3>Invitation prête</h3><p>Le destinataire devra vérifier sa boîte email.</p><label>Lien d’invitation<input readOnly value={link} onFocus={e=>e.target.select()}/></label></section>}
- </div><footer className="sharing-footer"><button className="secondary" type="button" onClick={onClose}>Annuler</button>
+ </div><footer className="sharing-footer"><span className="sharing-footer-note"><Icon name="lock"/>Accès nominatif · expiration et révocation conservées</span><button className="secondary" type="button" onClick={onClose}>Annuler</button>
  {!link&&<button disabled={busy||preparing||!matches||!preview?.payload.items.length}>{busy?'En cours…':preparing?'Préparation du partage…':'Créer l’invitation'}</button>}
  </footer></form></Modal>;
 }

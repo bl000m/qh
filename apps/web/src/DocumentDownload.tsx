@@ -3,6 +3,7 @@ import type {SourceDocument} from '../../../packages/shared/src/context-space';
 import type {QhApi} from './api';
 import {guestRequest} from './sharing';
 import {Icon} from './Ui';
+import {saveDownload} from './transport';
 
 /** UI availability only. Backend independently resolves and authorizes each document. */
 export function isOriginalRequest(text:string):boolean{
@@ -23,7 +24,9 @@ export default function DocumentDownload({document,api,scope,label='Télécharge
     // Recheck the guest session and exact permission before even offering navigation.
     const current=await guestRequest('/documents') as SourceDocument[];
     if(!current.some(d=>d.source_revision_id===document.source_revision_id))throw Error('denied');
-    const link=window.document.createElement('a');link.href='/api/guest/documents/'+document.source_revision_id;link.download=document.filename;link.click();
+    const response=await fetch('/api/guest/documents/'+document.source_revision_id,{credentials:'same-origin',cache:'no-store',redirect:'error'});
+    if(!response.ok)throw Error('denied');
+    await saveDownload(response,document.filename);
    }
   }catch{setError('Document indisponible ou accès refusé.');}finally{setBusy(false);}
  }
