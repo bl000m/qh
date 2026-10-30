@@ -31,7 +31,7 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
   await dialog.getByRole('checkbox').check();await expect.poll(()=>bodies.at(-1).allow_update_proposals).toBe(true);
   await dialog.getByText('Confidentialité avancée',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
   await dialog.getByRole('button',{name:'Exclure cette information',exact:true}).first().click();
-  await expect(dialog.getByText('Informations retirées à ta demande',{exact:true})).toBeVisible();await expect(dialog.getByText('Aucun résumé communicable pour ce partage. Les questions porteront sur les informations autorisées.',{exact:true})).toBeVisible();expect(bodies.at(-1).excluded).toEqual([{item_id:id,revision_id:revision}]);
+  await expect(dialog.getByText('Informations retirées à ta demande',{exact:true})).toBeVisible();await expect(dialog.getByText('Aucun résumé vérifiable n’est disponible pour cette sélection. Les questions porteront sur les informations autorisées.',{exact:true})).toBeVisible();expect(bodies.at(-1).excluded).toEqual([{item_id:id,revision_id:revision}]);
   await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
   await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);
  }

@@ -49,7 +49,7 @@ export interface SharedItem {
 export interface SharedPayload {format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string}}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
-  report:{status:string;message:string;warning:string;risks:string[];
+  report:{status:string;message:string;warning:string;risks:string[];recap_status?:'available'|'restricted'|'unavailable';
     anchors?:{reference:string;item_id:string;revision_id:string}[];exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
 }
 export interface GuestProviderStatus {model:'offline'|'mistral-small-2603';enabled:boolean;simulated:boolean;remaining_usd?:string|null;plafond_reached?:boolean;authorized_total_eur?:string;budget_scope?:'development_global'}
