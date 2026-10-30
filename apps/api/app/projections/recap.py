@@ -86,7 +86,7 @@ def _component_valid(row, c, indexed, safe, redact, high_risk, version):
         or not _safe_summary(title,text,redact,high_risk)):
         return False
     if c['kind']=='general':
-        return c.get('source_revision_id') is None
+        return c.get('source_revision_id') is None and set(basis)<=safe
     source = c.get('source_revision_id')
     return isinstance(source,str) and all(any(quote.get('source_revision_id')==source
         for quote in indexed[ref].content.get('citations',[])) for ref in support)

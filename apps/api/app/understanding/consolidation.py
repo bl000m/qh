@@ -181,6 +181,17 @@ class ContextConsolidation:
         asked=next((r for r in intake['intake'] if r['id']==question and r['kind']=='message' and r['role']=='user'),None)
         if asked is None:
             raise ValueError('Persisted question required')
+        from app.chat.conversation import conversational_reply
+        quick = conversational_reply(asked['text'])
+        if quick is not None:
+            documents = await repository.documents(scope)
+            quick = conversational_reply(asked['text'], documents)
+            claimed = await repository.claim_chat(scope, question, operation)
+            if not claimed.get('completed'):
+                await self._allow(identity.subject_id, scope, verify_graph=False)
+                await repository.finish_chat(scope,question,operation,dict(kind='message',role='assistant',
+                    text=quick,name=None,context=None,reply_to=question))
+            return dict(state='completed')
         if is_original_request(asked['text']):
             return await self._document_answer(identity.subject_id,scope,repository,question,operation)
         if self.ai is None:

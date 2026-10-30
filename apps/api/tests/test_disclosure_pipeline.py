@@ -47,13 +47,14 @@ def count(p,table):
     with p['repo'].connect() as c:return c.execute('SELECT count(*) AS n FROM '+table).fetchone()['n']
 
 
-def test_empty_current_no_false_empty_snapshot_and_single_bulk_proposal_inclusion(disclosure):
+def test_empty_projection_notice_and_single_bulk_proposal_inclusion(disclosure):
     p=disclosure;before=p['repo'].read_snapshot((p['scope'],))
     preview=prepare(p)
-    assert preview.report['status']=='no_disclosable_items' and not preview.payload['items']
+    from app.projections.document_scope import is_empty_projection
+    assert preview.report['status']=='no_disclosable_items' and is_empty_projection(preview.payload)
     assert len(preview.report['exclusions'])==2
-    with pytest.raises(ProjectionNotFound):approve(p,preview)
-    assert count(p,'approved_snapshots')==0
+    notice=approve(p,preview,exceptions=())
+    assert is_empty_projection(notice.payload) and count(p,'approved_snapshot_revisions')==0
     preview=prepare(p,include_proposed=True)
     assert len(preview.payload['items'])==2
     with pytest.raises(DisclosureDecisionRequired):approve(p,preview,exceptions=())

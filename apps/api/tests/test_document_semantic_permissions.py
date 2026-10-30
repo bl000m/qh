@@ -12,6 +12,7 @@ from app.chat.guest import GuestSnapshotChat, question_payload
 from app.core.models import SourceRevisionRef
 from app.projections.disclosure import AccessPolicy, ApprovedSnapshot, Candidate, Selection
 from app.projections.disclosure_service import DisclosureService
+from app.projections.document_scope import is_empty_projection
 from app.projections.drafts import ProjectionNotFound, RevisionKey
 from app.projections.guest_payload import recipient_payload
 from tests.test_disclosure import policy
@@ -41,7 +42,7 @@ def fixture():
 @pytest.mark.parametrize('selected,expected',[((),[3]),((0,),[0,3]),((0,1,2),[0,1,2,3,4])])
 def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_canonical(selected,expected):
     service,rows,documents,scope=fixture();frozen=deepcopy(rows)
-    access=policy(semantic_documents=tuple(documents[i] for i in selected))
+    access=policy(semantic_documents=tuple(documents[i] for i in selected),original_documents=tuple(documents[i] for i in selected))
     preview=run(service.prepare(str(uuid4()),scope,access))
     assert [i['text'] for i in preview.payload['items']]==[rows[i].content['text'] for i in expected]
     assert preview.payload['semantic_document_count']==len(selected)
@@ -57,13 +58,13 @@ def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_ca
 
 
 @pytest.mark.parametrize('originals', [False, True])
-def test_introduction_only_approval_preserves_legacy_permissions_and_chat_has_no_document_details(originals):
+def test_empty_notice_approval_does_not_release_document_introduction_or_call_ai(originals):
     service,rows,documents,scope=fixture()
     service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[:3]))
     owner=str(uuid4());access=policy(original_documents=(documents[0],) if originals else ())
     preview=run(service.prepare(owner,scope,access))
-    assert preview.report['introduction_only'] and preview.payload['recap']
-    assert [i['text'] for i in preview.payload['items']]==[preview.payload['recap']['text']]
+    assert is_empty_projection(preview.payload) and 'recap' not in preview.payload
+    assert not preview.report['anchors']
     assert preview.payload['items'][0]['sources']==[]
     service.repository.preview=AsyncMock(return_value=preview)
     snapshot=ApprovedSnapshot(id=str(uuid4()),context_id=scope,owner_id=owner,preview_id=preview.id,
@@ -79,9 +80,10 @@ def test_introduction_only_approval_preserves_legacy_permissions_and_chat_has_no
     answer=run(chat.answer_payload(owner,scope,'offline',snapshot.payload,'Que prévoit le contrat ?',
         AsyncMock(return_value=snapshot.payload)))
     assert answer['insufficient_context'] and rows[1].content['text'] not in answer['answer']
-    assert question_payload(snapshot.payload)['items']==[dict(reference='R1',text=preview.payload['recap']['text'])]
+    assert question_payload(snapshot.payload)['items']==[]
+    provider.generate.assert_not_awaited()
     semantic=run(service.prepare(owner,scope,policy(semantic_documents=(documents[0],))))
-    assert semantic.payload['items'] and semantic.policy.original_documents==()
+    assert is_empty_projection(semantic.payload) and semantic.policy.original_documents==()
     assert semantic.policy.semantic_documents==(documents[0],)
 
 
@@ -97,12 +99,12 @@ def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
     else:
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
     for selected in ((),documents):
-        preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected)))
+        preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected,original_documents=selected)))
         assert 'recap' not in preview.payload
 
 
 def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
-    service,rows,documents,scope=fixture();access=policy(semantic_documents=documents)
+    service,rows,documents,scope=fixture();access=policy(semantic_documents=documents,original_documents=documents)
     assert AccessPolicy.from_wire(access.wire())==access
     old=policy().wire();assert 'semantic_documents' not in old
     assert AccessPolicy.from_wire(old).wire()==old

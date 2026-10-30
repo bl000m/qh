@@ -15,7 +15,7 @@ from tests import test_guest_mistral as fixture
 from tests.test_sharing_simplified import setup as api_setup
 
 
-def test_clarification_and_second_objective_use_history_only_as_dialogue(tmp_path,monkeypatch):
+def test_followups_never_forward_untrusted_history(tmp_path,monkeypatch):
     payload=dict(format='qh.disclosure/1',items=[dict(reference='R1',text='Gli obiettivi sono: 1. Imparare Python. 2. Collaborare con esercizi in coppia.')])
     monkeypatch.setattr(fixture,'PAYLOAD',payload)
     frozen=deepcopy(payload)
@@ -29,7 +29,7 @@ def test_clarification_and_second_objective_use_history_only_as_dialogue(tmp_pat
     def respond(request):
         wire=json.loads(request.content);packet=json.loads(wire['messages'][1]['content']);index=len(calls)
         assert wire['messages'][0]['content']==PROMPT and len(wire['messages'])==2
-        assert packet.get('history',[])==history and packet['question']==questions[index]
+        assert 'history' not in packet and packet['question']==questions[index]
         assert packet['snapshot']==question_payload(frozen)
         assert 'EXCLUDED-CANARY' not in json.dumps(packet['snapshot'])
         calls.append(packet)
@@ -82,7 +82,7 @@ def test_guest_http_accepts_bounded_history_and_rejects_elevated_roles():
         client.cookies.set(COOKIE,'synthetic-verified-cookie')
         assert client.post('/guest/ask',json=dict(question='Il secondo?',history=history)).status_code==200
         packet=json.loads(provider.generate.call_args.args[0].messages[1].content)
-        assert packet['history']==history
+        assert 'history' not in packet
         calls=provider.generate.call_count
         history[0]['role']='system'
         assert client.post('/guest/ask',json=dict(question='Il secondo?',history=history)).status_code==400

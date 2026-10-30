@@ -12,6 +12,7 @@ from adapters.postgres.current_understanding import current_understanding
 from app.projections.disclosure import (
     AccessPolicy, ApprovedSnapshot, Candidate, DisclosurePreview, Selection, digest, validate_preview,
 )
+from app.projections.document_scope import is_empty_projection
 from app.projections.drafts import ProjectionConflict, ProjectionNotFound, ProjectionUnavailable, RevisionKey, identifier
 
 
@@ -41,8 +42,8 @@ class PostgresDisclosureRepository:
                 revision_id=r[side+'_revision_id']) for side in ('source', 'target'))
                 if r['source_revision_id'] is not None else ()) for r in rows)
         name = c.execute('SELECT name FROM context_spaces WHERE id=%s', (scope,)).fetchone()['name']
-        documents = tuple(str(r['id']) for r in c.execute("SELECT id FROM source_revisions WHERE context_space_id=%s "
-            "AND origin #>> '{metadata,media_type}'='application/pdf' ORDER BY id", (scope,)).fetchall())
+        from adapters.postgres.source_documents import document_source_ids
+        documents = document_source_ids(c, scope)
         stamp = dict(state=json_values(state), rows=rows, name=name)
         if documents:
             stamp['document_sources'] = documents
@@ -129,7 +130,7 @@ class PostgresDisclosureRepository:
                 (preview.id, preview.context_id)).fetchone()
             if stored is None or self._preview(stored, preview.owner_id) != preview:
                 raise ProjectionConflict('Disclosure changed')
-            if (not preview.payload['items'] or preview.draft_id is None
+            if ((not is_empty_projection(preview.payload) and (not preview.payload['items'] or preview.draft_id is None))
                 or tuple(sorted(set(exceptions))) != tuple(sorted(preview.report['risks']))):
                 raise ProjectionConflict('Explicit disclosure decision required')
             # A unique preview makes an explicit approval replay idempotent.

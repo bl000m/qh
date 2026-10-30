@@ -933,3 +933,22 @@ returns success. A minimal owner-bound receipt (IDs, confirmation hash, timestam
 supports safe retry after ambiguous responses and contains no Space content.
 Other Spaces, account identities and aggregate financial ledgers are preserved.
 Migration 0012 must be explicitly authorized and backed up before VPS activation.
+
+### Source confidentiality correction — owner, 2026-10-30
+
+This later owner decision supersedes the introduction exception above: every
+PDF-derived item and recap requires all supporting PDF revisions to be authorized.
+Filter before recap selection and close relations over retained endpoints. Retained
+snapshots remain immutable; access-time checks may only restrict their frozen
+contents using support/permission metadata, never add live canonical knowledge.
+Untrusted guest history is validated but not forwarded to generation. Follow-ups
+requiring an old exchange may need the recipient to restate their question.
+
+When no communicable knowledge remains, Projection emits only the shared name and
+its fixed insufficient-access notice. The existing nonempty snapshot envelope
+stores that notice as an unanchored `projection_notice` presentation entry; it is
+never a canonical item, knowledge, citation or model input. Sharing and answering
+that empty projection perform no inference. No schema change is required.
+Exact owner acknowledgements and attachment notifications get short deterministic
+replies; attachment presence must first be checked against the authorized original
+metadata. Questions, compound instructions and ambiguous messages retain normal AI.

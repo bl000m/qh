@@ -128,6 +128,7 @@ async def session_view(request, access, token):
     return dict(name=payload.get('name','Contexte partagé'),can_ask='ASK_AI' in access.rights,
         expires_at=access.expires_at,verification='mailbox_control',
         recap=payload.get('recap') if 'READ' in access.rights else None,
+        **({'notice':payload['notice']} if 'notice' in payload else {}),
         **({'semantic_document_count':payload['semantic_document_count']} if 'READ' in access.rights
             and 'semantic_document_count' in payload else {}))
 

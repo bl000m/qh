@@ -91,7 +91,7 @@ export default function GuestPage(){
  <p id="guest-code-help" className="small muted">Code de sécurité à 8 chiffres.</p><button type="button" className="guest-text-button" disabled={busy||resendAfter>0} onClick={()=>{void requestCode();}}>Renvoyer le code{resendAfter>0?` (${resendAfter}s)`:''}</button></div>}
  <button disabled={busy||!!receipt&&code.length!==8}>{busy?'Vérification en cours…':receipt?'Accéder au contexte':'Recevoir mon code'}</button></form>}
  <p className="guest-access-privacy">Vous ne verrez que les informations spécifiquement autorisées par le propriétaire de ce contexte. Les sources et la structure interne restent privées.</p></section></div>
- :<><aside className="guest-context"><h1><span className="guest-context-icon"><Icon name="sources"/></span>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Le résumé général n’est pas disponible dans ce périmètre.</p>}</details>
+ :<><aside className="guest-context"><h1><span className="guest-context-icon"><Icon name="sources"/></span>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">{session.notice??'Le résumé général n’est pas disponible dans ce périmètre.'}</p>}</details>
  {session.semantic_document_count!==undefined&&<p className="small muted">{session.semantic_document_count} document(s) autorisé(s) pour les questions</p>}
  {documents.length>0&&<GuestDocuments documents={documents}/>}
  <p className="guest-expiry">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p></aside>

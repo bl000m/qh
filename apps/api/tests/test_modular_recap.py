@@ -120,7 +120,10 @@ def test_independent_projection_never_hydrates_or_grants_originals(restriction):
         rows[1].content['extraction']['recap_components'][0]['text']='Diagnostic médical privé.'
     frozen=deepcopy(rows)
     payload,report=guard.apply(rows,policy(original_documents=()))
-    assert payload['recap']==complete['recap']
+    # The general prose requires its complete unmasked basis as well.
+    assert ('recap' in payload)==(restriction=='sensitive-summary')
+    if 'recap' in payload:
+        assert payload['recap']==complete['recap']
     assert [c['title'] for c in payload['document_recaps']]==['Expérience déclarée','Orientation envisagée']
     assert 'contractuelle' in payload['document_recaps'][1]['text']
     assert report['recap_status']=='available' and rows==frozen

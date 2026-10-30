@@ -17,3 +17,13 @@ def document_metadata(connection, scope, allowed=None):
             AND i.document->>'kind'='document'
         WHERE d.context_space_id=%s"""+restriction+" ORDER BY created_at DESC,d.source_revision_id DESC",values).fetchall()
     return json_values(rows)
+
+
+def document_source_ids(connection, scope):
+    """Immutable source classification, including original rows with older metadata."""
+    ids = {str(r['id']) for r in connection.execute("SELECT id FROM source_revisions WHERE context_space_id=%s "
+        "AND origin #>> '{metadata,media_type}'='application/pdf'", (scope,)).fetchall()}
+    if connection.execute("SELECT to_regclass('source_documents') AS name").fetchone()['name']:
+        ids.update(str(r['source_revision_id']) for r in connection.execute(
+            'SELECT source_revision_id FROM source_documents WHERE context_space_id=%s', (scope,)).fetchall())
+    return tuple(sorted(ids))

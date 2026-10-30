@@ -28,6 +28,7 @@ export interface GuestVerifyRequest {
 export interface GuestSessionView {
   name:string;can_ask:boolean;expires_at:string;verification:'mailbox_control';
   /** Authorized snapshot recap only; absent when unavailable or READ is denied. */
+  notice?:string;
   recap?:{title:string;text:string}|null;
   document_recaps?:{title:string;text:string}[];
   semantic_document_count?:number;
@@ -49,7 +50,7 @@ export interface SharedItem {
   sources:string[]; citations?:{source:string;quote:string;redacted:boolean}[];
   primary_dimension?:{value:string;certainty:string;review_state:string};
 }
-export interface SharedPayload {format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[];semantic_document_count?:number}
+export interface SharedPayload {notice?:string;format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[];semantic_document_count?:number}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
   report:{status:string;message:string;warning:string;risks:string[];introduction_only?:boolean;recap_status?:'available'|'restricted'|'unavailable';

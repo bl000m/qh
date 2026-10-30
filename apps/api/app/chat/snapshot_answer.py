@@ -70,7 +70,7 @@ Ne crée aucune confirmation humaine. Aucun URL, coordonnées ou contenu sensibl
 def projection_request(payload,question,history=None):
     packet=dict(snapshot=question_payload(payload),question=question)
     history=bounded_history(history)
-    if history:packet['history']=history
+    # Validate the wire history but never forward untrusted/revoked past facts.
     return GenerationRequest(messages=(Message(role=MessageRole.SYSTEM,content=PROMPT),
         Message(role=MessageRole.USER,content=json.dumps(packet,ensure_ascii=False))),
         output_schema=answer_schema(payload))

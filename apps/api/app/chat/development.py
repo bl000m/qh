@@ -102,6 +102,11 @@ class DevelopmentAI:
     async def answer_projection(self, identity, scope, payload, question, recheck):
         from app.chat.snapshot_answer import projection_request, decode_snapshot_answer
         request = ChatRequest(subject_id=identity.subject_id, context_id=scope, messages=())
+        from app.projections.document_scope import is_empty_projection, EMPTY_NOTICE
+        if is_empty_projection(payload):
+            await self._authorize(identity, request)
+            await recheck()
+            return dict(answer=EMPTY_NOTICE,insufficient_context=True,reference_aliases=[],simulated=False)
         await self._authorize(identity, request, reserve=True)
         diagnostic = self.factory.diagnostic_call(identity.subject_id, scope, 'projection_preview')
         try:

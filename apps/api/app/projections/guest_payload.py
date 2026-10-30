@@ -2,10 +2,15 @@
 import re
 
 from app.core.uum import PRIMARY_DIMENSIONS
+from app.projections.document_scope import is_empty_projection
 from app.projections.guest import GuestUnavailable
 
 
 def recipient_payload(payload, *, include_quotes=False):
+    if isinstance(payload,dict) and 'notice' in payload:
+        if not is_empty_projection(payload) or set(payload)-{'format','name','items','notice'}:
+            raise GuestUnavailable('Guest access unavailable')
+        return payload
     try:
         if (not isinstance(payload, dict) or set(payload)-{'format', 'items', 'recap', 'document_recaps', 'name', 'semantic_document_count'}
                 or payload.get('format') != 'qh.disclosure/1'
