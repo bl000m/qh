@@ -2,6 +2,7 @@ import {useState} from 'react';
 import type {SourceDocument} from '../../../packages/shared/src/context-space';
 import type {QhApi} from './api';
 import {guestRequest} from './sharing';
+import {Icon} from './Ui';
 
 /** UI availability only. Backend independently resolves and authorizes each document. */
 export function isOriginalRequest(text:string):boolean{
@@ -13,7 +14,7 @@ export function isOriginalRequest(text:string):boolean{
   &&/\b(recuper\w*|retrieve\w*|renvo\w*|rimand\w*|restitui\w*|invi\w*|envoi\w*|donne\w*|donn\w*|dammi|darmi|mostr\w*|vedere|voir|consulter|get|give|show|send|open)\b/.test(value);
 }
 
-export default function DocumentDownload({document,api,scope}:{document:SourceDocument;api?:QhApi;scope?:string}){
+export default function DocumentDownload({document,api,scope,label='Télécharger l’original',iconOnly=false}:{document:SourceDocument;api?:QhApi;scope?:string;label?:string;iconOnly?:boolean}){
  const [busy,setBusy]=useState(false),[error,setError]=useState('');
  async function download(){setBusy(true);setError('');
   try{
@@ -26,5 +27,5 @@ export default function DocumentDownload({document,api,scope}:{document:SourceDo
    }
   }catch{setError('Document indisponible ou accès refusé.');}finally{setBusy(false);}
  }
- return <span><button type="button" className="secondary" disabled={busy} onClick={()=>{void download();}}>Télécharger l’original</button>{error&&<span role="alert">{error}</span>}</span>;
+ return <span className="document-download-control"><button type="button" className={'secondary'+(iconOnly?' document-download-icon':'')} aria-label={iconOnly?'Télécharger '+(document.display_name??document.filename):undefined} title={iconOnly?'Télécharger '+(document.display_name??document.filename):undefined} disabled={busy} onClick={()=>{void download();}}>{iconOnly?<Icon name="import"/>:label}</button>{error&&<span role="alert">{error}</span>}</span>;
 }

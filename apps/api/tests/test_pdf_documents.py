@@ -58,12 +58,12 @@ def test_upload_auth_precedes_parsing_and_private_download():
         security=SecurityBindings(authenticate=authenticate,policy=service.policy))
     with TestClient(app) as client:
         path=f'/context-spaces/{scope}/workspace/documents/{uuid4()}'
-        headers={'Authorization':'Bearer owner','Content-Type':'application/pdf','X-Document-Name':'test.pdf'}
+        headers={'Authorization':'Bearer owner','Content-Type':'application/pdf','X-Document-Name':'test.pdf','X-Document-Display-Name':'Profil%20technique'}
         assert client.put(path,headers=headers,content=b'%PDF-test').status_code==200
         _,doc,source,data=repo.import_document.call_args.args
         assert data==b'%PDF-test' and doc['source_revision_id']==source['id']
         assert source['origin']['turns'][1]['turn_id'].endswith(':page:2')
-        assert source['source_name']=='test.pdf'
+        assert source['source_name']=='test.pdf' and doc['display_name']=='Profil technique'
         assert client.put(path,headers=headers,content=b'x'*(MAX_PDF_BYTES+1)).status_code==413
         service.pdf_parser.assert_awaited_once()
         assert client.put(path,headers={**headers,'Content-Type':'text/plain'},content=b'abc').status_code==415

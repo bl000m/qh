@@ -36,19 +36,23 @@ def document_selection(question, documents):
     if not documents:
         return None,False
     query=words(question)
+    aliases=lambda d: (d.get('display_name',d['filename']),d['filename'])
+    named=[d for d in documents if any((tokens:=words(name)-{'pdf'}) and len(tokens)>1 and tokens<=query for name in aliases(d))]
+    if named:
+        return named,len(named)!=1
     families=[set(f) for f in _FAMILIES if query & set(f)]
     if not families and query & {'compare','confronta','synthese','sintesi','synthesis','ensemble'}:
         return None,False
     if families:
-        groups=[[d for d in documents if words(d['filename']) & family] for family in families]
+        groups=[[d for d in documents if any(words(name) & family for name in aliases(d))] for family in families]
         selected={d['source_revision_id']:d for group in groups for d in group}
         return list(selected.values()), any(len(group)!=1 for group in groups)
-    named=[d for d in documents if (tokens:=words(d['filename'])-{'pdf'}) and tokens<=query]
+    named=[d for d in documents if any((tokens:=words(name)-{'pdf'}) and tokens<=query for name in aliases(d))]
     if named:
         return named,len(named)!=1
     if not query & {'pdf','document','documento','fichier','fonte','source'}:
         return None,False
-    matches=[d for d in documents if (words(d['filename'])-_STOP)&query]
+    matches=[d for d in documents if any((words(name)-_STOP)&query for name in aliases(d))]
     return matches,len(matches)!=1
 
 

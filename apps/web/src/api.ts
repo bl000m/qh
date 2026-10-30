@@ -84,10 +84,10 @@ export class QhApi {
     if(!Array.isArray(state.understanding))throw new ApiError(502);
     return state;
   }
-  async importPdf(scope:string,file:File,operation:string):Promise<WorkspaceState>{
+  async importPdf(scope:string,file:File,operation:string,displayName?:string):Promise<WorkspaceState>{
     this.navigationReads.clear();
     const response=await fetch('/api/context-spaces/'+scope+'/workspace/documents/'+operation,{
-      method:'PUT',headers:{Authorization:'Bearer '+await this.token(),'Content-Type':'application/pdf','X-Document-Name':encodeURIComponent(file.name)},
+      method:'PUT',headers:{Authorization:'Bearer '+await this.token(),'Content-Type':'application/pdf','X-Document-Name':encodeURIComponent(file.name),...(displayName!==undefined?{'X-Document-Display-Name':encodeURIComponent(displayName)}:{})},
       body:file,credentials:'omit',cache:'no-store',redirect:'error'});
     if(!response.ok){
       if(response.status===401)this.expired();

@@ -96,7 +96,9 @@ def test_original_atomic_source_provenance_owner_and_specific_guest_access(discl
     assert run(guest.documents(denied.token))==[]
     with pytest.raises(GuestDenied):run(guest.documents(denied.token,original))
     allowed,invite,snapshot=session((original,))
-    assert run(guest.documents(allowed.token))==[dict(source_revision_id=original,filename='source.pdf')]
+    listed=run(guest.documents(allowed.token))
+    assert len(listed)==1 and listed[0]['source_revision_id']==original and listed[0]['filename']=='source.pdf'
+    assert listed[0]['display_name']=='source.pdf' and listed[0]['size_bytes']==len(data)
     assert bytes(run(guest.documents(allowed.token,original))['original'])==data
     assert original not in str(snapshot.payload) and 'source.pdf' not in str(snapshot.payload)
     with pytest.raises(GuestDenied):run(guest.documents(allowed.token,str(uuid4())))

@@ -175,7 +175,8 @@ async def upload_pdf(context_id: UUID, operation_id: UUID, request: Request, res
             raise HTTPException(413,'Le PDF dépasse 3 MiB (3 145 728 octets).')
         data.extend(chunk)
     return await execute(application.import_pdf(subject,str(context_id),str(operation_id),
-        unquote(request.headers.get('x-document-name','document.pdf')),bytes(data)))
+        unquote(request.headers.get('x-document-name','document.pdf')),bytes(data),
+        unquote(request.headers['x-document-display-name']) if 'x-document-display-name' in request.headers else None))
 
 
 def document_response(row):

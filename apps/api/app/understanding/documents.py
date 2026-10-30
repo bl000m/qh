@@ -12,9 +12,13 @@ class DocumentInvalid(ValueError):
     pass
 
 
-def prepare_document(scope, operation, name, data, pages):
+def prepare_document(scope, operation, name, data, pages, display_name=None):
     if not name.lower().endswith('.pdf') or len(name)>256 or any(c in name for c in ('/', '\\', '\r', '\n', '\0')):
         raise DocumentInvalid('Nom de fichier PDF invalide.')
+    if display_name is not None:
+        display_name=display_name.strip()
+        if not 1<=len(display_name)<=256 or any(ord(c)<32 for c in display_name):
+            raise DocumentInvalid('Le nom du document doit contenir entre 1 et 256 caractères, sans caractères de contrôle.')
     turns=[dict(id=f'{operation}:page:{i}', speaker=f'document {name}, page {i} (unverified source)', text=text)
            for i,text in enumerate(pages,1)]
     source=selected_source(scope, dict(id='document:'+operation, revision_no=1,
@@ -24,7 +28,9 @@ def prepare_document(scope, operation, name, data, pages):
     source['source_name']=name
     document=dict(id=operation, kind='document', role='user', name=name,
         text=None, context=None, source_revision_id=source['id'],
-        document_turns=turns)
+        document_turns=turns,size_bytes=len(data))
+    if display_name is not None:
+        document['display_name']=display_name
     return document,source
 
 

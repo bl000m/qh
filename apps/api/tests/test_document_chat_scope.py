@@ -28,6 +28,9 @@ def test_document_selection_scopes_contract_and_interview_without_reclassifying_
         selected,ambiguous=document_selection(question,DOCS)
         assert not ambiguous
         assert scoped_revision_ids(ROWS,selected,DOCS)==(expected,)
+    custom=[dict(DOCS[0],display_name='Mon profil technique'),*DOCS[1:]]
+    assert document_reply('Télécharge mon profil technique',custom)['documents']==[custom[0]]
+    assert document_reply('Télécharge CV Mathia_Pagani.pdf',custom)['documents']==[custom[0]]
     assert ROWS==before
     assert document_selection('Fais un résumé de ce contexte',DOCS)==(None,False)
     assert document_selection('Synthèse des trois PDF',DOCS)==(None,False)

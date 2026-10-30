@@ -24,7 +24,7 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
 
     def _read(self, c, scope):
         latest = self._latest(c, scope)
-        rows = c.execute('SELECT id,document FROM context_intake WHERE context_space_id=%s '
+        rows = c.execute('SELECT id,document,created_at FROM context_intake WHERE context_space_id=%s '
                          "AND document->>'kind' NOT IN ('chat_attempt','regeneration_attempt') ORDER BY created_at,id LIMIT 501", (scope,)).fetchall()
         if len(rows) > 500:
             raise ValueError('Context intake exceeds supported limit')
@@ -36,7 +36,7 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
         if len(knowledge)>100:
             raise EnrichmentUnavailable('Current understanding exceeds supported item bound')
         return dict(understanding_ids=[r['id'] for r in knowledge], context_id=scope, current=latest, pending_count=len(pending), state=state,
-                    intake=[dict(id=str(r['id']), **r['document']) for r in rows],
+                    intake=[dict(id=str(r['id']), **r['document'],created_at=r['created_at'].isoformat()) for r in rows],
                     chat_attempts=self._chat_states(c, scope))
 
     def _append_on(self, c, scope, document):
@@ -58,6 +58,10 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
                     intake, original, data = document
                     old = c.execute('SELECT sha256,filename FROM source_documents WHERE source_revision_id=%s AND context_space_id=%s', (original['id'],scope)).fetchone()
                     if old:
+                        saved=c.execute('SELECT document FROM context_intake WHERE id=%s AND context_space_id=%s',(intake['id'],scope)).fetchone()
+                        old_name=saved['document'].get('display_name',old['filename']) if saved else old['filename']
+                        if old_name!=intake.get('display_name',intake['name']):
+                            raise EnrichmentConflict('Document display name changed')
                         if old['sha256']!=original['origin']['metadata']['sha256'] or old['filename']!=intake['name']:
                             raise EnrichmentConflict('Original document changed')
                         return self._read(c, scope)
@@ -167,8 +171,8 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
         def read():
             with self.connect() as c:
                 self._authorize(c, (scope,), lock=True)
-                return [dict(row,source_revision_id=str(row['source_revision_id'])) for row in c.execute(
-                    'SELECT source_revision_id,filename FROM source_documents WHERE context_space_id=%s ORDER BY source_revision_id', (scope,)).fetchall()]
+                from adapters.postgres.source_documents import document_metadata
+                return document_metadata(c,scope)
         try:
             return await asyncio.to_thread(read)
         except PermissionError:

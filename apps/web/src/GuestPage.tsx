@@ -5,7 +5,8 @@ import {guestRequest,recipientAnswer,sessionView,sharingError,guestChatError} fr
 import AnswerMarkdown from './AnswerMarkdown';
 import qhLogo from './brand/qh-logo.png';
 import SharedRecap from './SharedRecap';
-import DocumentDownload,{isOriginalRequest} from './DocumentDownload';
+import {isOriginalRequest} from './DocumentDownload';
+import {DocumentFileCard} from './DocumentCards';
 import './sharing.css';
 
 interface Turn {question:string;answer?:RecipientAnswer;failed?:string}
@@ -91,7 +92,7 @@ export default function GuestPage(){
  :<><aside className="guest-context"><h1>{session.name}</h1><details open><summary>Résumé du contexte</summary><SharedRecap recap={session.recap??undefined}/>{!session.recap&&<p className="muted">Aucun résumé communicable pour cet accès.</p>}</details>
  <p className="guest-context-info">Posez vos questions sur les informations autorisées. Les sources et la structure interne du contexte restent privées.</p>
  <p className="small muted">Le résumé présente le contexte dans ses grandes lignes. Vos questions peuvent porter sur l’ensemble des informations autorisées.</p>
- {documents.length>0&&<details><summary>Documents autorisés</summary>{documents.map(doc=><p key={doc.source_revision_id}><a href={'/api/guest/documents/'+doc.source_revision_id} download>{doc.filename}</a></p>)}</details>}
+ {documents.length>0&&<details><summary>Documents autorisés</summary>{documents.map(doc=><p key={doc.source_revision_id}><a href={'/api/guest/documents/'+doc.source_revision_id} download>{doc.display_name??doc.filename}</a></p>)}</details>}
  <p className="guest-expiry">Accès jusqu’au {new Date(session.expires_at).toLocaleString('fr-FR')}</p></aside>
  <section className="guest-conversation" aria-label="Conversation">
  {error&&<p role="alert" className="notice error">{error}</p>}
@@ -99,7 +100,7 @@ export default function GuestPage(){
  {!turns.length&&<div className="guest-conversation-empty"><span className="guest-chat-symbol" aria-hidden="true">•••</span><h2>Explorez ce contexte</h2><p>Posez votre première question sur les informations partagées.</p></div>}
  {turns.map((turn,index)=><div className="guest-turn" key={index}>
   <div className="guest-question"><span className="small muted">Vous</span><p>{turn.question}</p></div>
-  {turn.answer&&<div className="guest-answer"><span className="small muted">QH</span>{turn.answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={turn.answer.answer}/>{turn.answer.documents?.map(doc=><p key={doc.source_revision_id}>{doc.filename} <DocumentDownload document={doc}/></p>)}</div>}
+  {turn.answer&&<div className="guest-answer"><span className="small muted">QH</span>{turn.answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={turn.answer.answer}/>{turn.answer.documents?.map(doc=><DocumentFileCard key={doc.source_revision_id} document={doc}/>)}</div>}
   {turn.failed&&<div role="alert" className="notice error">{turn.failed} <button className="secondary" disabled={busy||!enabled} onClick={()=>{void askQuestion(turn.question,index);}}>Réessayer</button></div>}
  </div>)}
  {busy&&<p role="status">Réponse en cours…</p>}<div ref={bottom}/>

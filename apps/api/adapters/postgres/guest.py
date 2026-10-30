@@ -188,7 +188,10 @@ class PostgresGuestRepository:
             allowed=policy.get('original_documents',[])
             if revision is not None and revision not in allowed:
                 raise GuestDenied('Vérification impossible.')
-            fields='source_revision_id,filename' if revision is None else 'filename,media_type,original'
+            if revision is None:
+                from adapters.postgres.source_documents import document_metadata
+                return document_metadata(c,current.context_id,allowed)
+            fields='filename,media_type,original'
             rows=c.execute('SELECT '+fields+' FROM source_documents WHERE context_space_id=%s AND source_revision_id=ANY(%s::uuid[]) ORDER BY source_revision_id',
                 (current.context_id,allowed if revision is None else [revision])).fetchall()
             if revision is not None:

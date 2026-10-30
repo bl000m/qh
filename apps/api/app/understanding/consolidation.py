@@ -55,13 +55,13 @@ class ContextConsolidation:
         await self._allow(subject, scope)
         return await self.repository_for(subject).append(scope, document)
 
-    async def import_pdf(self, subject, scope, operation, name, data):
+    async def import_pdf(self, subject, scope, operation, name, data, display_name=None):
         from app.understanding.documents import prepare_document
         await self._allow(subject, scope)
         if self.pdf_parser is None:
             raise EnrichmentUnavailable('PDF parser unavailable')
         pages=await self.pdf_parser(data)
-        document,source=prepare_document(scope,operation,name,data,pages)
+        document,source=prepare_document(scope,operation,name,data,pages,display_name)
         await self._allow(subject, scope, verify_graph=False)
         return await self.repository_for(subject).import_document(scope,document,source,data)
 
@@ -188,7 +188,7 @@ class ContextConsolidation:
         if claimed.get('completed'):
             return dict(state='completed')
         try:
-            documents=[dict(source_revision_id=r['source_revision_id'],filename=r['name']) for r in claimed['intake'] if r.get('source_revision_id')]
+            documents=[dict(source_revision_id=r['source_revision_id'],filename=r['name'],display_name=r.get('display_name',r['name'])) for r in claimed['intake'] if r.get('source_revision_id')]
             selected,ambiguous=document_selection(asked['text'],documents)
             if selected is not None and ambiguous:
                 await repository.finish_chat(scope,question,operation,dict(kind='message',role='assistant',

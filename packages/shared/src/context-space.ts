@@ -10,7 +10,7 @@ export interface AnswerAttribution {
  model:string;support_basis:OwnerSupportBasis;insufficient_context:boolean;partial_coverage:boolean;reference_ids:string[];
 }
 export interface ContextIntake {
- id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;source_revision_id?:string;document_turns?:{id:string;speaker:string;text:string}[];documents?:SourceDocument[];attribution?:AnswerAttribution;reply_to?:string;
+ id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;source_revision_id?:string;display_name?:string;size_bytes?:number;created_at?:string;document_turns?:{id:string;speaker:string;text:string}[];documents?:SourceDocument[];attribution?:AnswerAttribution;reply_to?:string;
 }
 export interface ContextRecap {
  version_id:string;title:string;text:string;support_revision_ids:string[];
@@ -29,4 +29,4 @@ export interface WorkspaceRegenerationInput {operation_id:string}
 export interface WorkspaceMessageReceipt {state:'completed'}
 
 /** Private originals are distinct from understanding and approved snapshot payloads. */
-export interface SourceDocument {source_revision_id:string;filename:string}
+export interface SourceDocument {source_revision_id:string;filename:string;display_name?:string;size_bytes?:number;created_at?:string;media_type?:'application/pdf'}
