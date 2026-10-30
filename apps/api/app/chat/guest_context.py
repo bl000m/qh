@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from hashlib import sha256
 import json
+import re
 from time import monotonic
 
 
@@ -12,6 +13,25 @@ def checked_referents(groups, allowed):
             or len(set(group))!=len(group) for group in groups)):
         raise ValueError('Invalid conversation references')
     return [[ref for ref in group] for group in groups]
+
+
+def ordinal_focus(question, conversation):
+    """Resolve only whole-message, explicit ordinal follow-ups, never facts."""
+    patterns=(
+        (r'(?:(?:approfondisci|sviluppa|puoi approfondire) )?(?:la|il) (prima|primo|seconda|secondo)',
+            {'prima':0,'primo':0,'seconda':1,'secondo':1}),
+        (r'(?:(?:approfondis|développe|peux-tu approfondir) )?(?:la|le) (première|premier|seconde|second|deuxième)',
+            {'première':0,'premier':0,'seconde':1,'second':1,'deuxième':1}),
+        (r'(?:(?:expand on|elaborate on) )?(?:the )?(first|second)', {'first':0,'second':1}),
+    )
+    value=question.strip().casefold().rstrip(' .!?')
+    for pattern,positions in patterns:
+        match=re.fullmatch(pattern,value)
+        if match:
+            groups=conversation[-1] if conversation else []
+            position=positions[match[1]]
+            return groups[position] if len(groups)>position else []
+    return None
 
 
 class GuestReferenceHistory:

@@ -2,7 +2,7 @@
 import json
 import re
 
-from app.chat.guest_context import checked_referents
+from app.chat.guest_context import checked_referents, ordinal_focus
 from app.core.models import MessageRole,Message,GenerationRequest
 from app.projections.disclosure_guard import HIGH_RISK,redact
 from app.chat.guest import unique_fields,question_payload,bounded_history
@@ -16,6 +16,11 @@ chronologique. Chaque réponse contient des groupes ordonnés d’alias: un grou
 sujet explicitement présenté, dans son ordre de présentation (par exemple les deux
 expériences). Ce sont uniquement des indices pour résoudre « la deuxième »,
 « approfondis » ou « et avant ? », jamais une source de connaissances.
+focus_references, lorsqu’il est présent, résout exactement le sujet ordinal demandé:
+réponds sur ce groupe, jamais sur la position d’un item dans snapshot.items.
+Une liste vide signifie que ce référent ordinal est introuvable: demande une précision.
+Sans focus_references, utilise les groupes pour interpréter les références; leur ordre
+est celui de la réponse antérieure, jamais celui des items du snapshot.
 Tous les faits et précisions doivent provenir des items autorisés courants.
 Si les groupes ne permettent pas de résoudre le référent sans ambiguïté, demande une
 précision courte dans la langue de l’interlocuteur. N’invente pas l’ancien échange.
@@ -79,6 +84,9 @@ def projection_request(payload,question,history=None,*,conversation=None):
             raise ValueError('Bounded reference conversation required')
         allowed={item['reference'] for item in payload['items']}
         packet['conversation_references']=[checked_referents(groups,allowed) for groups in conversation]
+    focus=ordinal_focus(question,packet.get('conversation_references',[]))
+    if focus is not None:
+        packet['focus_references']=focus
     return GenerationRequest(messages=(Message(role=MessageRole.SYSTEM,content=PROMPT),
         Message(role=MessageRole.USER,content=json.dumps(packet,ensure_ascii=False))),
         output_schema=answer_schema(payload))
@@ -97,7 +105,7 @@ def public_answer(value):
 
 def answer_schema(payload):
     return dict(type='object',additionalProperties=False,
-        required=['answer','reference_aliases','insufficient_context','support_basis'],properties=dict(
+        required=['answer','reference_aliases','insufficient_context','support_basis','referents'],properties=dict(
         answer=dict(type='string',minLength=1,maxLength=1_000_000,description='Public natural-language answer. Never include reference aliases, bracket citations, internal identifiers or JSON.'),
         reference_aliases=dict(type='array',maxItems=100,description='Exact authorized references supporting facts in answer. Nonempty requires canonical or mixed, never dialogue. Clarification without context facts uses [].',items=dict(type='string',enum=[i['reference'] for i in payload['items']])),
         referents=dict(type='array',maxItems=8,description='Ordered subjects in the answer; one group of supporting aliases per list entry or subject, [] if uncertain.',

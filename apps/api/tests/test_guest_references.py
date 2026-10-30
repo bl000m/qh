@@ -48,6 +48,7 @@ def test_second_experience_resolves_from_ordered_current_references_without_old_
     asyncio.run(run())
     assert 'conversation_references' not in packets[0]
     assert packets[1]['conversation_references']==[[['R2'],['R1']]]
+    assert packets[1]['focus_references']==['R1']
     assert packets[2]['conversation_references']==[[['R2'],['R1']],[['R1']]]
     wire=json.dumps(packets[1])
     assert 'EXCLUDED' not in wire and '999999' not in wire and 'history' not in packets[1]
@@ -71,6 +72,7 @@ def test_stale_or_other_conversation_references_are_not_reused(tmp_path,monkeypa
         await chat.ask('token',snapshot,'Approfondisci la seconda')
     asyncio.run(run())
     assert 'conversation_references' not in packets[1]
+    assert packets[1]['focus_references']==[]
 
 
 @pytest.mark.parametrize('reason',['revoked','expired'])
