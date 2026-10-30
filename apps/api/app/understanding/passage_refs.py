@@ -9,11 +9,11 @@ FORMAT = 'qh.atomic-understanding.refs/1'
 
 
 class PassageReferences:
-    def __init__(self, packet, atomic_schema):
+    def __init__(self, packet, atomic_schema, *, validation_source=None):
         self.packet = deepcopy(packet)
         self.canonical_format = atomic_schema['properties']['format']['enum'][0]
         source = dict(id=packet['source_revision_id'], content=packet['text'], origin=dict(turns=packet['turns']))
-        quotes = exact_quotes(packet)
+        quotes = exact_quotes(packet, validation_source=validation_source)
         passages = []
         for offset in range(0, len(quotes), 100):
             evidence = [dict(source_revision_id=source['id'], quote=q) for q in quotes[offset:offset+100]]

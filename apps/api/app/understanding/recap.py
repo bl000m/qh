@@ -155,6 +155,71 @@ def _statement_choices(component, statements):
     support['items']['enum'] = list(dict.fromkeys(statements))
 
 
+class FinalRecapReferences:
+    """Provider-only references; canonical recaps retain exact statement text."""
+    instructions = '''For this final request, return supporting_refs, NOT supporting_statements.
+Use only the supplied statement refs (s001 etc.), never text or invented references.
+documents is an object keyed by the required document refs, not an array.
+Each component contains title, text, supporting_refs. Every component must be fully
+supported by its own eligible statements; preserve uncertainty and attribution.
+Do not copy private document details into the general overview. No new atomic items.'''
+    instructions += '''
+Write a short synopsis, aiming for 40-60 whitespace-separated words per component.
+The absolute maximum is 100 words per text, including dates and list entries.
+Do not enumerate every fact: details remain in the atomic items. Check each text's
+word count before returning. For the general overview select only the minimal
+statements actually needed for its subject/scope; never list all refs by default.'''
+
+    def __init__(self, packet):
+        self.statements = {f's{i+1:03d}': text for i, text in enumerate(packet['statements'])}
+        identifiers = {text: ref for ref, text in self.statements.items()}
+        self.packet = deepcopy(packet)
+        self.packet['statements'] = [dict(ref=ref, text=text) for ref, text in self.statements.items()]
+        for item in self.packet['evidence']:
+            item['statement_ref'] = identifiers[item.pop('statement')]
+        self.schema = final_summary_schema(packet)
+        self._references(self.schema, identifiers)
+        self.documents = {}
+        if packet['documents']:
+            for component in self.schema['properties']['documents']['items'].get('anyOf', []):
+                ref = component['properties'].pop('document_ref')['enum'][0]
+                component['required'].remove('document_ref')
+                self._references(component, identifiers)
+                self.documents[ref] = component
+            self.schema['properties']['documents'] = dict(type='object', additionalProperties=False,
+                properties=self.documents, required=list(self.documents))
+
+    @staticmethod
+    def _references(component, identifiers):
+        component['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,99}\s*$'
+        support = component['properties'].pop('supporting_statements')
+        support.pop('uniqueItems', None)  # Distinctness remains enforced below.
+        support['items']['enum'] = [identifiers[text] for text in support['items']['enum']]
+        component['properties']['supporting_refs'] = support
+        component['required'] = ['supporting_refs' if k=='supporting_statements' else k for k in component['required']]
+
+    def _expand_component(self, value, schema):
+        object_fields(value, ('title', 'text', 'supporting_refs'))
+        refs = value['supporting_refs']
+        allowed = schema['properties']['supporting_refs']['items']['enum']
+        if (not isinstance(refs, list) or not 1<=len(refs)<=100
+            or any(not isinstance(ref, str) or ref not in allowed for ref in refs)
+            or len(set(refs))!=len(refs)):
+            raise ValueError('Exact unambiguous detailed recap support required')
+        return dict(title=value['title'], text=value['text'],
+            supporting_statements=[self.statements[ref] for ref in refs])
+
+    def expand(self, content):
+        value = decode_output(content)
+        object_fields(value, self.schema['required'])
+        result = self._expand_component({k:v for k,v in value.items() if k!='documents'}, self.schema)
+        if 'documents' in self.schema['properties']:
+            object_fields(value['documents'], self.documents)
+            result['documents'] = [dict(document_ref=ref,
+                **self._expand_component(value['documents'][ref], schema)) for ref,schema in self.documents.items()]
+        return result
+
+
 def schema(atomic_schema, documents=()):
     return dict(type='object', additionalProperties=False,
         required=['format', 'understanding', 'recap'], properties=dict(

@@ -42,15 +42,19 @@ def generate_documents(long=False, invalid_support=False):
         if 'statements' in packet:
             assert packet['documents'][0]['turn_ids']
             schema = request.output_schema
-            assert schema['properties']['supporting_statements']['items']['enum'] == TEXTS
+            assert schema['properties']['supporting_refs']['items']['enum'] == ['s001','s002','s003']
             documents_schema = schema['properties']['documents']
-            assert documents_schema['minItems'] == documents_schema['maxItems'] == 3
-            for index, component in enumerate(documents_schema['items']['anyOf']):
-                assert component['properties']['document_ref']['enum'] == [f'd{index+1}']
-                assert component['properties']['supporting_statements']['items']['enum'] == [TEXTS[index]]
+            assert documents_schema['required'] == ['d1','d2','d3']
+            for index, component in enumerate(documents_schema['properties'].values()):
+                assert component['properties']['supporting_refs']['items']['enum'] == [f's{index+1:03d}']
             if invalid_support:
                 summary['documents'][0]['supporting_statements'] = [TEXTS[0].replace('décrit', 'decrit')]
-            return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(summary)))
+            refs = {item['text']:item['ref'] for item in packet['statements']}
+            def component(value):
+                return dict(title=value['title'],text=value['text'],
+                    supporting_refs=[refs.get(text,text) for text in value['supporting_statements']])
+            wire = dict(component(summary), documents={d['document_ref']:component(d) for d in summary['documents']})
+            return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(wire)))
         available=''.join(segment['text'] for segment in packet['segments'])
         atomic=dict(format='qh.atomic-understanding/1',items=[dict(text=text,primary_dimension=None,evidence=[dict(quote=text)]) for text in TEXTS if text in available])
         envelope=dict(format=recap.FORMAT,understanding=atomic,recap=summary) if 'understanding' in request.output_schema['properties'] else atomic
@@ -164,6 +168,29 @@ def test_final_schema_excludes_foreign_and_mixed_document_supports():
         for c in documents['items']['anyOf']] == [['CV meaning.'], ['Contract meaning.']]
     packet['documents'] = []
     assert 'documents' not in recap.final_summary_schema(packet)['properties']
+
+
+def test_final_recap_references_preserve_exact_text_and_reject_foreign_support():
+    packet = dict(documents=[dict(document_ref='d1',turn_ids=['cv']),
+        dict(document_ref='d2',turn_ids=['contract'])], statements=['CV **exact**.', 'Contract é.'],
+        evidence=[dict(statement=text,passages=[dict(turn_ids=[turn])])
+            for text,turn in [('CV **exact**.','cv'),('Contract é.','contract')]])
+    protocol = recap.FinalRecapReferences(packet)
+    def component(ref):
+        return dict(title='Proposed',text='Proposed synopsis.',supporting_refs=[ref])
+    wire = dict(component('s001'),documents=dict(d1=component('s001'),d2=component('s002')))
+    result = protocol.expand(json.dumps(wire))
+    assert result['supporting_statements'] == ['CV **exact**.']
+    assert result['documents'][1]['supporting_statements'] == ['Contract é.']
+    frozen = deepcopy(wire)
+    for refs in [['s002'], ['s001','s001'], ['unknown'], ['CV **exact**.']]:
+        wire['documents']['d1']['supporting_refs'] = refs
+        with pytest.raises(ValueError,match='Exact unambiguous'):
+            protocol.expand(json.dumps(wire))
+    wire = deepcopy(frozen)
+    del wire['documents']['d2']
+    with pytest.raises(ValueError,match='Invalid extraction object fields'):
+        protocol.expand(json.dumps(wire))
 
 
 def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():

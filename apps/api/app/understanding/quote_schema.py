@@ -12,7 +12,7 @@ def exact_quote_schema(atomic_schema, packet):
     return schema
 
 
-def exact_quotes(packet):
+def exact_quotes(packet, *, validation_source=None):
     # The Engine has already authorized this exact source packet. Retain full
     # turns for qualifications across lines, plus individual original lines for
     # concise multi-part evidence. No source edits, semantic splitting or repairs.
@@ -25,6 +25,10 @@ def exact_quotes(packet):
             if quote.strip():
                 candidates[quote] = None
     quotes = _unique_quotes(list(candidates), source)
+    if validation_source is not None:
+        if validation_source['id'] != source['id']:
+            raise ValueError('Same original source required for chunk evidence')
+        quotes = _unique_quotes(quotes, validation_source)
     if not quotes:
         raise ValueError('No unique original quotation available for consolidation')
     return quotes

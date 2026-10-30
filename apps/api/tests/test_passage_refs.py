@@ -24,6 +24,27 @@ def output(refs):
         primary_dimension='hypotheses_uncertainties', assignment_certainty='tentative', evidence_refs=refs)])
 
 
+def test_chunk_catalogue_excludes_quotes_ambiguous_in_complete_source():
+    source, packet, _ = catalogue('Shared heading.\nFirst page unique qualification.')
+    source = deepcopy(source)
+    first_end = len(packet['text'])
+    other = 'Shared heading.\nSecond page independent qualification.'
+    source['content'] += other
+    source['origin']['turns'].append(dict(turn_id='second', speaker='user',
+        start=first_end, end=first_end+len(other)))
+    local = PassageReferences(packet, OUTPUT_SCHEMA)
+    ref = next(key for key, p in local.passages.items() if p['quote']=='Shared heading.')
+    with pytest.raises(ValueError, match='Citation resolution rejected'):
+        normalize_output(local.expand(output([ref])), source)
+    scoped = PassageReferences(packet, OUTPUT_SCHEMA, validation_source=source)
+    assert 'Shared heading.' not in {p['quote'] for p in scoped.passages.values()}
+    assert ''.join(s['text'] for s in scoped.disclosure()['segments']) == packet['text']
+    for key in scoped.passages:
+        normalize_output(scoped.expand(output([key])), source)
+    with pytest.raises(ValueError, match='Same original source'):
+        PassageReferences(packet, OUTPUT_SCHEMA, validation_source=dict(source, id='foreign'))
+
+
 def test_shared_evidence_is_referenced_without_source_text_in_provider_output():
     source, packet, refs = catalogue()
     frozen = deepcopy(packet)
