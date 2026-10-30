@@ -23,10 +23,13 @@ def setup(tmp_path,monkeypatch):
     def respond(request):
         packet=json.loads(json.loads(request.content)['messages'][1]['content']);packets.append(packet)
         second=len(packets)>1
-        value=dict(answer='Développement Python chez Alpha.' if second else
+        selected=packet.get('focus_references',['R1'])
+        detail='Responsable technique chez Beta.' if selected==['R2'] else 'Développement Python chez Alpha.'
+        value=dict(answer=detail if second else
             '1. Responsable technique chez Beta.\n2. Développement Python chez Alpha.',
-            reference_aliases=['R1'] if second else ['R2','R1'],
-            referents=[['R1']] if second else [['R2'],['R1']],
+            reference_aliases=selected if second else ['R2','R1'],
+            referents=[selected] if second else [['R1'],['R2']],
+            subjects=[] if second else [dict(text='Responsable technique chez Beta.',reference_aliases=['R2']),dict(text='Développement Python chez Alpha.',reference_aliases=['R1'])],
             insufficient_context=False,support_basis='canonical')
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=30),
             choices=[dict(finish_reason='stop',message=dict(content=json.dumps(value)))]))
@@ -53,7 +56,7 @@ def test_second_experience_resolves_from_ordered_current_references_without_old_
     wire=json.dumps(packets[1])
     assert 'EXCLUDED' not in wire and '999999' not in wire and 'history' not in packets[1]
     assert '1. Responsable' not in wire  # Old response prose is absent.
-    assert packets[1]['snapshot']['items']==PAYLOAD['items']
+    assert packets[1]['snapshot']['items']==[PAYLOAD['items'][0]]
 
 
 @pytest.mark.parametrize('change',['payload','snapshot','session','ttl'])
@@ -69,10 +72,10 @@ def test_stale_or_other_conversation_references_are_not_reused(tmp_path,monkeypa
             snapshot='new-snapshot';chat.guest.session.return_value=replace(grant,snapshot_id=snapshot)
         if change=='session':chat.guest.session.return_value=replace(grant,session_id='other-session')
         if change=='ttl':clock[0]=901
-        await chat.ask('token',snapshot,'Approfondisci la seconda')
+        value=await chat.ask('token',snapshot,'Approfondisci la seconda')
+        assert value['support_basis']=='dialogue' and value['reference_aliases']==[]
     asyncio.run(run())
-    assert 'conversation_references' not in packets[1]
-    assert packets[1]['focus_references']==[]
+    assert len(packets)==1  # Stale ordinal is clarified without paid inference.
 
 
 @pytest.mark.parametrize('reason',['revoked','expired'])
@@ -94,3 +97,42 @@ def test_referents_cannot_contain_excluded_or_uncited_aliases(tmp_path,monkeypat
     chat,_,_,grant=fixture.setup(tmp_path,monkeypatch,value)
     with pytest.raises(GuestUnavailable):asyncio.run(chat.ask('token',grant.snapshot_id,'Question'))
     assert not chat.references.entries
+
+
+def test_french_second_then_first_stay_bound_to_original_rendered_list(tmp_path,monkeypatch):
+    from app.chat.guest_context import ordinal_focus
+    chat,grant,packets=setup(tmp_path,monkeypatch)
+    async def run():
+        first=await chat.ask('token',grant.snapshot_id,'Deux expériences ?')
+        assert first['answer'].startswith('1. Responsable technique chez Beta.')
+        assert first['referents']==[['R2'],['R1']]  # Raw model referents were reversed.
+        await chat.ask('token',grant.snapshot_id,'Peux-tu détailler la deuxième ?')
+        await chat.ask('token',grant.snapshot_id,'Et la première ?')
+    asyncio.run(run())
+    assert packets[1]['focus_references']==['R1']
+    assert packets[2]['focus_references']==['R2']
+    assert ordinal_focus('Peux-tu détailler la deuxième ?',[])==[]
+    assert ordinal_focus('Peux-tu détailler la deuxième ?',[[['R1'],['R1']]])==[]
+    assert ordinal_focus('Et la première ?',[[['R1']]])==[]  # Original list was lost, not renumbered.
+
+
+@pytest.mark.parametrize('question,insufficient',[
+    ('Quelles sont les deux dernières expériences professionnelles ?',True),
+    ('Pourquoi as-tu confondu Alpha et Beta dans ta réponse précédente ?',False),
+    ('Tu as confondu Alpha et Beta, explique.',False),
+])
+def test_missing_career_periods_and_previous_wording_do_not_call_model(tmp_path,monkeypatch,question,insufficient):
+    monkeypatch.setattr(fixture,'PAYLOAD',dict(format='qh.disclosure/1',items=[dict(reference='R1',text='Activité CRM sans période ni employeur.')]))
+    chat,calls,_,grant=fixture.setup(tmp_path,monkeypatch)
+    value=asyncio.run(chat.ask('token',grant.snapshot_id,question))
+    assert value['insufficient_context'] is insufficient and value['reference_aliases']==[]
+    assert not calls and not chat.references.entries
+    assert ('chronologie' in value['answer']) if insufficient else ('nommer' in value['answer'])
+
+
+def test_empty_projection_keeps_privacy_notice_even_for_ordinal_question(tmp_path,monkeypatch):
+    from app.projections.document_scope import empty_projection, EMPTY_NOTICE
+    monkeypatch.setattr(fixture,'PAYLOAD',empty_projection('RH'))
+    chat,calls,_,grant=fixture.setup(tmp_path,monkeypatch)
+    value=asyncio.run(chat.ask('token',grant.snapshot_id,'Peux-tu détailler la deuxième ?'))
+    assert value['answer']==EMPTY_NOTICE and value['insufficient_context'] and not calls

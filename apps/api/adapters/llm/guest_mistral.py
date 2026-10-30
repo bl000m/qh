@@ -6,6 +6,7 @@ from app.projections.disclosure import LIVE_PROVIDER
 from app.projections.guest import GuestDenied,GuestUnavailable
 from app.chat.snapshot_answer import decode_snapshot_answer, projection_request, SnapshotAnswerError
 from adapters.llm.mistral import MODEL
+from app.chat.guest_context import clarification
 
 AUTHORIZATION=dict(owner_authorized=True,environment='private-development',model=MODEL,
     scope='owned-approved-snapshots',verification='otp')
@@ -57,4 +58,8 @@ class MistralSnapshotAnswers:
         except Exception as exc:
             diagnostic.check('guest.snapshot_answer_return',False,exc.code if isinstance(exc,SnapshotAnswerError) else type(exc).__name__)
             diagnostic.finish('rejected','guest_snapshot_return')
+            if isinstance(exc,SnapshotAnswerError) and exc.code in ('guest.internal_structure_in_answer','guest.unbound_list'):
+                await recheck()
+                diagnostic.finish('rejected','guest_safe_clarification')
+                return dict(clarification(question),model=MODEL,accounting=diagnostic.accounting_summary)
             raise GuestUnavailable('Snapshot answer unavailable') from None

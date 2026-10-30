@@ -1,7 +1,7 @@
 """Guest questions have only a frozen safe snapshot; offline excerpt demonstration."""
 import json
 
-from app.chat.guest_context import GuestReferenceHistory
+from app.chat.guest_context import GuestReferenceHistory, ordinal_focus, clarification, context_clarification
 from app.core.models import GenerationRequest, Message, MessageRole
 from app.projections.guest import GuestDenied, GuestUnavailable
 from app.projections.disclosure import LIVE_PROVIDER
@@ -85,9 +85,18 @@ class GuestSnapshotChat:
             if current!=payload:raise GuestUnavailable('Snapshot changed')
             return current
         conversation=self.references.read(grant.session_id,snapshot_id,payload)
+        focus=ordinal_focus(question,conversation)
+        local=context_clarification(question,payload) if not is_empty_projection(payload) else None
+        if not is_empty_projection(payload) and (focus==[] or local):
+            await recheck()
+            return local or clarification(question)
         result=await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,
             history=history,conversation=conversation)
-        self.references.append(grant.session_id,snapshot_id,payload,result.get('referents',[]))
+        if focus and not set(result['reference_aliases'])<=set(focus):
+            await recheck()
+            return clarification(question)
+        groups=([focus] if result['reference_aliases'] else []) if focus else result.get('referents',[])
+        self.references.append(grant.session_id,snapshot_id,payload,groups)
         return result
 
     async def answer_payload(self,owner,scope,provider,payload,question,recheck,history=None,conversation=None):

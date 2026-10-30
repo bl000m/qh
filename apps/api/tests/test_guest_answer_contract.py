@@ -19,7 +19,12 @@ def test_real_failure_patterns_stay_rejected_with_precise_private_codes(tmp_path
         decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(answer)),PAYLOAD)
     assert error.value.code==code
     chat,calls,_,grant=setup(tmp_path,monkeypatch,answer)
-    with pytest.raises(GuestUnavailable):asyncio.run(chat.ask('token',grant.snapshot_id,'Quale contenuto?'))
+    if code=='guest.internal_structure_in_answer':
+        result=asyncio.run(chat.ask('token',grant.snapshot_id,'Pourquoi cette confusion ?'))
+        assert result['support_basis']=='dialogue' and result['reference_aliases']==[]
+        assert 'R1' not in result['answer']
+    else:
+        with pytest.raises(GuestUnavailable):asyncio.run(chat.ask('token',grant.snapshot_id,'Quale contenuto?'))
     diagnostics=[json.loads(p.read_text()) for p in chat.live.factory.diagnostics.path.glob('*.json')]
     assert len(calls)==1 and diagnostics[0]['outcome']=='rejected'
     assert diagnostics[0]['checks'][-1]['reason']==code

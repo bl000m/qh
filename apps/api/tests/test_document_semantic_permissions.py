@@ -100,7 +100,8 @@ def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
     for selected in ((),documents):
         preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected,original_documents=selected)))
-        assert 'recap' not in preview.payload
+        assert preview.payload['recap']['title']=='Aperçu · extraits autorisés'
+        assert all(text in {item['text'] for item in preview.payload['items']} for text in preview.payload['recap']['text'].split('\n\n'))
 
 
 def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():

@@ -51,4 +51,23 @@ def restrict_snapshot(payload, allowed_references, *, verified_recap=False):
     if not verified_recap or len(items) != len(payload['items']):
         result.pop('recap', None)
         result.pop('document_recaps', None)
-    return result
+    return accessible_introduction(result)
+
+
+def accessible_introduction(payload):
+    """Whole authorized excerpts, not a new semantic or canonical summary."""
+    if payload.get('recap') or is_empty_projection(payload):
+        return payload
+    texts=[]
+    for item in payload['items']:
+        dimension=item.get('primary_dimension',{})
+        if dimension.get('value')=='hypotheses_uncertainties' or dimension.get('certainty')=='tentative':
+            continue
+        text=item['text']
+        if len('\n\n'.join(texts+[text]).split())<=100 and len('\n\n'.join(texts+[text]))<=1500:
+            texts.append(text)
+        if len(texts)==3:
+            break
+    if not texts:
+        return payload
+    return dict(payload,recap=dict(title='Aperçu · extraits autorisés',text='\n\n'.join(texts)))

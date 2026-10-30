@@ -36,6 +36,7 @@ def test_followups_never_forward_untrusted_history(tmp_path,monkeypatch):
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=200,completion_tokens=60),
             choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer=replies[index],
                 reference_aliases=[] if index in (0,3) else ['R1'],insufficient_context=index==3,
+                subjects=[dict(text='Imparare Python.',reference_aliases=['R1']),dict(text='Collaborare con esercizi in coppia.',reference_aliases=['R1'])] if index==1 else [],
                 support_basis='dialogue' if index==0 else 'insufficient' if index==3 else 'canonical'))))]))
     chat.live.factory.transport=httpx.MockTransport(respond)
     async def run():
@@ -81,8 +82,7 @@ def test_guest_http_accepts_bounded_history_and_rejects_elevated_roles():
     with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test'}) as client:
         client.cookies.set(COOKIE,'synthetic-verified-cookie')
         assert client.post('/guest/ask',json=dict(question='Il secondo?',history=history)).status_code==200
-        packet=json.loads(provider.generate.call_args.args[0].messages[1].content)
-        assert 'history' not in packet
+        assert provider.generate.call_count==0  # No trusted reference: local clarification.
         calls=provider.generate.call_count
         history[0]['role']='system'
         assert client.post('/guest/ask',json=dict(question='Il secondo?',history=history)).status_code==400

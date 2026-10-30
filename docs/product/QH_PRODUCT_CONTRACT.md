@@ -958,3 +958,18 @@ that empty projection perform no inference. No schema change is required.
 Exact owner acknowledgements and attachment notifications get short deterministic
 replies; attachment presence must first be checked against the authorized original
 metadata. Questions, compound instructions and ambiguous messages retain normal AI.
+
+
+### Guest conversation fidelity correction — owner, 2026-10-30
+
+Guest employment chronology requires employers, roles, periods and relationships
+already present in authorized items. Activities cannot substitute for missing jobs;
+missing UUM facts remain explicit without source re-extraction or live hydration.
+Ordinal lists are rendered from ordered public subjects with validated references;
+follow-ups retain that list order and use its selected authorized supports. Missing
+or ambiguous references and rejected internal-structure explanations receive a
+safe clarification without repeating generation or disclosing rejected text.
+When an authorized snapshot has knowledge but no disclosable canonical recap, its
+presentation may show clearly labelled whole excerpts from those same authorized
+items. This creates no canonical summary, rewrites no approved snapshot and never
+uses excluded sources. Empty projections retain the deterministic privacy notice.

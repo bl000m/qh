@@ -11,7 +11,7 @@ from app.projections.disclosure import (
 from app.projections.disclosure_guard import OutboundDisclosureGuard, redact, HIGH_RISK
 from app.projections.drafts import DraftSpec, ProjectionConflict, ProjectionNotFound, ProjectionUnavailable
 from app.projections.recap import recap_status
-from app.projections.document_scope import document_scope, empty_projection, is_empty_projection
+from app.projections.document_scope import document_scope, empty_projection, is_empty_projection, accessible_introduction
 
 
 class DisclosureService:
@@ -64,6 +64,7 @@ class DisclosureService:
         rows, document_exclusions = document_scope(rows, policy, selection.document_sources)
         payload, report = self.guard.apply(rows, policy)
         payload.pop('document_recaps', None)
+        payload=accessible_introduction(payload)
         payload['semantic_document_count'] = len(policy.semantic_documents)
         report['document_scope_version'] = 2
         report['recap_status'] = recap_status(rows, payload.get('recap'))
