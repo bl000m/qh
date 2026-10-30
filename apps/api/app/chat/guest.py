@@ -1,6 +1,7 @@
 """Guest questions have only a frozen safe snapshot; offline excerpt demonstration."""
 import json
 
+from app.chat.guest_context import GuestReferenceHistory
 from app.core.models import GenerationRequest, Message, MessageRole
 from app.projections.guest import GuestDenied, GuestUnavailable
 from app.projections.disclosure import LIVE_PROVIDER
@@ -55,6 +56,7 @@ class GuestSnapshotChat:
             raise ValueError('Only the offline snapshot demonstration is enabled')
         self.guest,self.provider=guest,provider
         self.live=live
+        self.references=GuestReferenceHistory()
 
     async def providers(self,owner,scope):
         result=[dict(model='offline',enabled=True,simulated=True)]
@@ -82,9 +84,13 @@ class GuestSnapshotChat:
             current=await self.guest.snapshot(token,snapshot_id,'ASK_AI')
             if current!=payload:raise GuestUnavailable('Snapshot changed')
             return current
-        return await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,history=history)
+        conversation=self.references.read(grant.session_id,snapshot_id,payload)
+        result=await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,
+            history=history,conversation=conversation)
+        self.references.append(grant.session_id,snapshot_id,payload,result.get('referents',[]))
+        return result
 
-    async def answer_payload(self,owner,scope,provider,payload,question,recheck,history=None):
+    async def answer_payload(self,owner,scope,provider,payload,question,recheck,history=None,conversation=None):
         history=bounded_history(history)
         if not isinstance(question,str) or not 1<=len(question.strip())<=2000:
             raise ValueError('Bounded question required')
@@ -93,7 +99,7 @@ class GuestSnapshotChat:
             return dict(simulated=False, answer=EMPTY_NOTICE,
                 reference_aliases=[], insufficient_context=True)
         if provider==LIVE_PROVIDER and self.live:
-            return await self.live.answer_payload(owner,scope,payload,question,recheck,history=history)
+            return await self.live.answer_payload(owner,scope,payload,question,recheck,history=history,conversation=conversation)
         if provider!='offline':raise GuestDenied('Vérification impossible.')
         await recheck()
         try:

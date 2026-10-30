@@ -941,8 +941,14 @@ PDF-derived item and recap requires all supporting PDF revisions to be authorize
 Filter before recap selection and close relations over retained endpoints. Retained
 snapshots remain immutable; access-time checks may only restrict their frozen
 contents using support/permission metadata, never add live canonical knowledge.
-Untrusted guest history is validated but not forwarded to generation. Follow-ups
-requiring an old exchange may need the recipient to restate their question.
+Untrusted guest history is validated but not forwarded to generation. Guest
+follow-ups use only ordered groups of validated current item aliases from prior
+answers, never prior prose or questions. This process-local memory retains at most
+six turns for 15 minutes across at most 128 sessions, bound to the exact session,
+snapshot ID and authorized payload fingerprint. A changed payload clears the
+references; fresh access checks still fence revocation and expiry. Missing or
+ambiguous referents require clarification; process restart loses this temporary
+continuity. Current authorized items remain the only factual knowledge.
 
 When no communicable knowledge remains, Projection emits only the shared name and
 its fixed insufficient-access notice. The existing nonempty snapshot envelope
