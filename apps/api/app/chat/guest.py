@@ -87,6 +87,10 @@ class GuestSnapshotChat:
         history=bounded_history(history)
         if not isinstance(question,str) or not 1<=len(question.strip())<=2000:
             raise ValueError('Bounded question required')
+        if not payload['items']:
+            await recheck()
+            return dict(simulated=True, answer='Aucune information du contexte n’est autorisée pour répondre à cette question.',
+                reference_aliases=[], insufficient_context=True)
         if provider==LIVE_PROVIDER and self.live:
             return await self.live.answer_payload(owner,scope,payload,question,recheck,history=history)
         if provider!='offline':raise GuestDenied('Vérification impossible.')

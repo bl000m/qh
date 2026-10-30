@@ -29,6 +29,7 @@ class PolicyInput(BaseModel):
     expires_at:datetime
     allow_update_proposals:StrictBool=False
     original_documents:list[UUID]=Field(default_factory=list,max_length=100)
+    semantic_documents:list[UUID]=Field(default_factory=list,max_length=100)
     excluded:list[ExclusionInput]=Field(default_factory=list,max_length=100)
 
 
@@ -74,6 +75,7 @@ async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depend
         expires_at=document.expires_at,rights=('READ','ASK_AI'),provider=provider,
         allow_update_proposals=document.allow_update_proposals,
         original_documents=tuple(map(str,document.original_documents)),
+        semantic_documents=tuple(map(str,document.semantic_documents)),
         include_proposed=True,include_quotes=False,
         excluded=tuple(RevisionKey(item_id=str(k.item_id),revision_id=str(k.revision_id)) for k in document.excluded))
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))

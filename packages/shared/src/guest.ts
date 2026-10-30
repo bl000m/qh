@@ -30,16 +30,18 @@ export interface GuestSessionView {
   /** Authorized snapshot recap only; absent when unavailable or READ is denied. */
   recap?:{title:string;text:string}|null;
   document_recaps?:{title:string;text:string}[];
+  semantic_document_count?:number;
 }
 
 export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean;documents?:import('./context-space').SourceDocument[]}
-export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;original_documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
+export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;original_documents?:string[];semantic_documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
 
 export interface SharingPolicy {
   recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
   /** Recorded owner permission; external contribution workflow is not yet available. */
   allow_update_proposals?:boolean;
   original_documents?:string[];
+  semantic_documents?:string[];
   include_proposed:boolean; include_quotes:boolean; provider:'offline'|'mistral-small-2603'|null;
 }
 export interface SharedItem {
@@ -47,7 +49,7 @@ export interface SharedItem {
   sources:string[]; citations?:{source:string;quote:string;redacted:boolean}[];
   primary_dimension?:{value:string;certainty:string;review_state:string};
 }
-export interface SharedPayload {format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[]}
+export interface SharedPayload {format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[];semantic_document_count?:number}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
   report:{status:string;message:string;warning:string;risks:string[];recap_status?:'available'|'restricted'|'unavailable';

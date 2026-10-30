@@ -31,6 +31,7 @@ class AccessPolicy:
     provider: str | None = None
     excluded: tuple[RevisionKey, ...] = ()
     original_documents: tuple[str, ...] = ()
+    semantic_documents: tuple[str, ...] = ()
 
     def __post_init__(self):
         email = self.recipient_email
@@ -57,6 +58,11 @@ class AccessPolicy:
             raise ValueError('Bounded explicit original document permissions required')
         for revision in self.original_documents:
             identifier(revision)
+        if (not isinstance(self.semantic_documents, tuple) or len(self.semantic_documents)>100
+            or len(set(self.semantic_documents))!=len(self.semantic_documents)):
+            raise ValueError('Bounded explicit document information permissions required')
+        for revision in self.semantic_documents:
+            identifier(revision)
         object.__setattr__(self, 'rights', tuple(sorted(self.rights)))
         object.__setattr__(self, 'excluded', tuple(sorted(self.excluded)))
 
@@ -67,6 +73,8 @@ class AccessPolicy:
             data.pop('allow_update_proposals')
         if not self.original_documents:
             data.pop('original_documents')
+        if not self.semantic_documents:
+            data.pop('semantic_documents')
         return data
 
     @classmethod
@@ -75,6 +83,7 @@ class AccessPolicy:
         data['expires_at'] = datetime.fromisoformat(data['expires_at'])
         data['rights'] = tuple(data['rights'])
         data['original_documents'] = tuple(data.get('original_documents', ()))
+        data['semantic_documents'] = tuple(data.get('semantic_documents', ()))
         data['excluded'] = tuple(RevisionKey(**k) for k in data['excluded'])
         return cls(**data)
 
@@ -92,6 +101,7 @@ class Selection:
     stamp: str
     candidates: tuple[Candidate, ...]
     name: str = 'Contexte partagé'
+    document_sources: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

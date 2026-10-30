@@ -17,10 +17,10 @@ test('approved recap is identical in preview and sidebar; restricted recap has a
  });
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
  await page.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');
- const preview=page.getByLabel('Aperçu du contexte partagé');await expect(preview).toContainText(summary.title);await expect(preview).toContainText(summary.text);for(const doc of documents)await expect(preview).toContainText(doc.text);await expect(preview).not.toContainText('Conditions du contrat');
+ const preview=page.getByLabel('Aperçu du contexte partagé');await expect(preview).toContainText(summary.title);await expect(preview).toContainText(summary.text);for(const doc of documents)await expect(preview).not.toContainText(doc.text);await expect(preview).not.toContainText('Conditions du contrat');
  await page.getByRole('button',{name:'Créer l’invitation',exact:true}).click();await expect(page.getByLabel('Lien d’invitation')).toBeVisible();
- await page.goto('/tests/fixtures/guest-understanding.html');await expect(page.locator('.guest-context')).toContainText(summary.title);await expect(page.locator('.guest-context')).toContainText(summary.text);for(const doc of snapshot.document_recaps)await expect(page.locator('.guest-context')).toContainText(doc.text);await expect(page.locator('.guest-context')).not.toContainText('Conditions du contrat');
+ await page.goto('/tests/fixtures/guest-understanding.html');await expect(page.locator('.guest-context')).toContainText(summary.title);await expect(page.locator('.guest-context')).toContainText(summary.text);for(const doc of snapshot.document_recaps)await expect(page.locator('.guest-context')).not.toContainText(doc.text);await expect(page.locator('.guest-context')).not.toContainText('Conditions du contrat');
  restricted=true;await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();await page.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');
- await expect(preview).toContainText('Aucun résumé partiel vérifiable n’est disponible sans nouvelle analyse.');await expect(preview).not.toContainText(summary.text);
- await page.goto('/tests/fixtures/guest-understanding.html');await expect(page.locator('.guest-context')).toContainText('Aucun résumé n’a été autorisé pour cet accès.');await expect(page.locator('.guest-context')).not.toContainText(summary.title);
+ await expect(preview).toContainText('Le résumé général n’est pas disponible dans ce périmètre.');await expect(preview).not.toContainText(summary.text);
+ await page.goto('/tests/fixtures/guest-understanding.html');await expect(page.locator('.guest-context')).toContainText('Le résumé général n’est pas disponible dans ce périmètre.');await expect(page.locator('.guest-context')).not.toContainText(summary.title);
 });

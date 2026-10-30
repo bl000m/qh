@@ -29,7 +29,7 @@ test('original sharing default, exact selection, preview and authorized recipien
  await expect(toggle).toHaveAttribute('aria-checked','false');await expect(dialog.locator('.originals-choice')).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('destinataire@example.test');await expect(create).toBeEnabled();expect(lastBody.original_documents).toEqual([]);
  const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('Aucun');await capture('01-private');
- await toggle.click();await dialog.getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
+ await toggle.click();await dialog.getByRole('region',{name:'Documents originaux',exact:true}).getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
  await dialog.getByRole('button',{name:'Choisir les documents',exact:true}).click();holdPreview=true;await dialog.locator('.originals-choice').filter({hasText:'Contrat de travail'}).getByRole('checkbox').uncheck();
  await expect(create).toBeDisabled();await expect(preview).toContainText('2 sur 3');await expect(preview).not.toContainText('Contrat de travail');
  await expect.poll(()=>selected.length).toBe(2);holdPreview=false;releasePreview?.();await expect(create).toBeEnabled();expect(selected).toEqual([docs[0].source_revision_id,docs[2].source_revision_id]);await capture('02-selection');

@@ -1,0 +1,99 @@
+"""Offline sharing service/Guard/snapshot checks; no SQL or paid provider."""
+from copy import deepcopy
+from dataclasses import replace
+import json
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
+from uuid import uuid4
+
+import pytest
+
+from app.chat.guest import GuestSnapshotChat, question_payload
+from app.core.models import SourceRevisionRef
+from app.projections.disclosure import AccessPolicy, ApprovedSnapshot, Candidate, Selection
+from app.projections.disclosure_service import DisclosureService
+from app.projections.drafts import ProjectionNotFound, RevisionKey
+from app.projections.guest_payload import recipient_payload
+from tests.test_disclosure import policy
+from tests.test_modular_recap import generate_documents, projected
+from tests.test_projection_drafts import run
+
+
+def fixture():
+    bound, _, originals, _ = generate_documents()
+    documents = tuple(s['id'] for s in originals)
+    base = projected()[0]
+    rows = [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
+        provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in r['provenance'])) for r in bound]
+    rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Dialogue independent.'),provenance=()))
+    rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Mixed CV and contract.'),
+        provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in documents[:2])))
+    rows.append(replace(rows[0],revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Diagnostic médical privé.')))
+    selection = Selection(context_id=base.context_id,stamp='offline-current',name='RH synthetic',document_sources=documents,
+        candidates=tuple(Candidate(key=RevisionKey(item_id=r.item_id,revision_id=r.revision_id),state='proposed') for r in rows))
+    drafts = Mock(_allow=AsyncMock(),create=AsyncMock(return_value=SimpleNamespace(id=str(uuid4()),version=1)),
+        resolve=AsyncMock(return_value=SimpleNamespace(revisions=tuple(rows))))
+    repository = Mock(select=AsyncMock(return_value=selection),prepare=AsyncMock(side_effect=lambda p:p))
+    service = DisclosureService(drafts=drafts,repository=repository)
+    return service, rows, documents, base.context_id
+
+
+@pytest.mark.parametrize('selected,expected',[((),[3]),((0,),[0,3]),((0,1,2),[0,1,2,3,4])])
+def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_canonical(selected,expected):
+    service,rows,documents,scope=fixture();frozen=deepcopy(rows)
+    access=policy(semantic_documents=tuple(documents[i] for i in selected))
+    preview=run(service.prepare(str(uuid4()),scope,access))
+    assert [i['text'] for i in preview.payload['items']]==[rows[i].content['text'] for i in expected]
+    assert preview.payload['semantic_document_count']==len(selected)
+    assert 'document_recaps' not in preview.payload and rows==frozen
+    assert recipient_payload(preview.payload)==preview.payload
+    assert any(e['reason']=='recognised_high_risk' for e in preview.report['exclusions'])==bool(selected)
+    # This exact minimized packet is the only knowledge available to snapshot chat.
+    packet=question_payload(preview.payload)
+    if len(selected)<3:
+        assert rows[1].content['text'] not in json.dumps(packet)
+        assert rows[2].content['text'] not in json.dumps(packet)
+        assert 'Mixed CV and contract.' not in json.dumps(packet)
+
+
+def test_original_only_snapshot_approval_is_independent_and_chat_does_not_infer():
+    service,rows,documents,scope=fixture()
+    service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[:3]))
+    owner=str(uuid4());access=policy(original_documents=(documents[0],))
+    preview=run(service.prepare(owner,scope,access))
+    assert preview.payload['items']==[] and 'recap' not in preview.payload
+    service.repository.preview=AsyncMock(return_value=preview)
+    snapshot=ApprovedSnapshot(id=str(uuid4()),context_id=scope,owner_id=owner,preview_id=preview.id,
+        fingerprint=preview.fingerprint,payload_json=preview.payload_json,policy=access,
+        approved_at=service.clock(),exceptions=())
+    service.repository.approve=AsyncMock(return_value=snapshot)
+    assert run(service.approve(owner,scope,preview.id,preview.fingerprint))==snapshot
+    assert recipient_payload(snapshot.payload)==snapshot.payload
+    provider=Mock(id='offline',generate=AsyncMock())
+    chat=GuestSnapshotChat(guest=Mock(),provider=provider)
+    answer=run(chat.answer_payload(owner,scope,'offline',snapshot.payload,'Que prévoit le contrat ?',
+        AsyncMock(return_value=snapshot.payload)))
+    assert answer['insufficient_context'] and not answer['reference_aliases']
+    provider.generate.assert_not_awaited()
+    semantic=run(service.prepare(owner,scope,policy(semantic_documents=(documents[0],))))
+    assert semantic.payload['items'] and semantic.policy.original_documents==()
+    assert semantic.policy.semantic_documents==(documents[0],)
+
+
+def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
+    service,rows,documents,scope=fixture();access=policy(semantic_documents=documents)
+    assert AccessPolicy.from_wire(access.wire())==access
+    old=policy().wire();assert 'semantic_documents' not in old
+    assert AccessPolicy.from_wire(old).wire()==old
+    with pytest.raises(ProjectionNotFound):
+        run(service.prepare(str(uuid4()),scope,policy(semantic_documents=(str(uuid4()),))))
+    service.drafts.create.assert_not_awaited()
+    first=run(service.prepare(str(uuid4()),scope,access));frozen=deepcopy(first.payload)
+    later=str(uuid4())
+    service.repository.select.return_value=replace(service.repository.select.return_value,document_sources=documents+(later,))
+    new=replace(rows[0],revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Later private PDF.'),
+        provenance=(SourceRevisionRef(source_id=str(uuid4()),revision_id=later),))
+    service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows)+(new,))
+    subsequent=run(service.prepare(str(uuid4()),scope,access))
+    assert 'Later private PDF.' not in json.dumps(subsequent.payload)
+    assert first.payload==frozen and first.policy.semantic_documents==documents

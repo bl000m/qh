@@ -897,3 +897,15 @@ and restrictive by default. A recap may enter a newly approved snapshot only whe
 its complete basis survives the disclosure scope without masking; otherwise omit
 it rather than disclose excluded knowledge. Existing approved snapshots remain
 immutable. Guest chat uses only the authorized materialized projection.
+
+### Document information permissions — owner, 2026-10-30
+
+New sharing previews authorize PDF-derived knowledge only for the explicitly selected
+SourceRevision IDs (`semantic_documents`, empty by default). All document sources
+supporting a mixed item must be authorized; original PDF download permissions remain
+independent. Selection of all current documents freezes those exact IDs and never
+includes later uploads. Existing approved snapshots remain immutable.
+Preview and guest sidebar show only the communicable general recap, never automatic
+document synopses. Owner document recaps remain canonical. Sharing performs no inference.
+An original-only snapshot may contain zero semantic items; it cannot answer from PDFs
+whose information was not authorized. The existing Guard, OTP, expiry and revocation apply.

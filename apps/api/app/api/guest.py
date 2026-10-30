@@ -128,7 +128,8 @@ async def session_view(request, access, token):
     return dict(name=payload.get('name','Contexte partagé'),can_ask='ASK_AI' in access.rights,
         expires_at=access.expires_at,verification='mailbox_control',
         recap=payload.get('recap') if 'READ' in access.rights else None,
-        document_recaps=payload.get('document_recaps',[]) if 'READ' in access.rights else [])
+        **({'semantic_document_count':payload['semantic_document_count']} if 'READ' in access.rights
+            and 'semantic_document_count' in payload else {}))
 
 
 @router.post('/context-spaces/{scope}/snapshots/{snapshot_id}/invitations', status_code=201)

@@ -10,6 +10,7 @@ from app.projections.disclosure import (
 )
 from app.projections.disclosure_guard import OutboundDisclosureGuard, redact, HIGH_RISK
 from app.projections.drafts import DraftSpec, ProjectionConflict, ProjectionNotFound, ProjectionUnavailable
+from app.projections.recap import recap_status
 
 
 class DisclosureService:
@@ -50,6 +51,8 @@ class DisclosureService:
         selection = await self.repository.select(subject, scope)
         if selection.context_id != scope:
             raise ProjectionUnavailable('Disclosure unavailable')
+        if not set(policy.semantic_documents + policy.original_documents)<=set(selection.document_sources):
+            raise ProjectionNotFound('Document unavailable')
         keys, excluded = self._scope(selection, policy)
         draft, rows = None, ()
         if keys:
@@ -57,10 +60,14 @@ class DisclosureService:
                 recipient=policy.recipient_email, purpose=policy.purpose, included=keys,
                 expires_at=policy.expires_at))
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
+        rows, document_exclusions = self._document_scope(rows, policy, selection.document_sources)
         payload, report = self.guard.apply(rows, policy)
+        payload.pop('document_recaps', None)
+        payload['semantic_document_count'] = len(policy.semantic_documents)
+        report['recap_status'] = recap_status(rows, payload.get('recap'))
         title = redact(selection.name)[0]
         payload['name'] = title if not HIGH_RISK.search(title) else 'Contexte partagé'
-        report['exclusions'] = excluded + report['exclusions']
+        report['exclusions'] = excluded + document_exclusions + report['exclusions']
         report['status'] = 'review_required' if payload['items'] else 'no_disclosable_items'
         report['message'] = ('Examinez la divulgation proposée.' if payload['items'] else
             'Aucune information communicable dans ce périmètre.')
@@ -77,6 +84,19 @@ class DisclosureService:
         await self.drafts._allow(subject, scope)
         return prepared
 
+    @staticmethod
+    def _document_scope(rows, policy, document_sources):
+        selected, excluded = [], []
+        unauthorized = set(document_sources) - set(policy.semantic_documents)
+        for row in rows:
+            sources = {p.revision_id for p in row.provenance}
+            sources.update(c.get('source_revision_id') for c in row.content.get('citations', []))
+            if sources & unauthorized:
+                excluded.append(dict(revision_id=row.revision_id, reason='document_information_not_authorized'))
+            else:
+                selected.append(row)
+        return tuple(selected), excluded
+
     async def preview(self, subject, scope, preview_id):
         await self.drafts._allow(subject, scope)
         result = await self.repository.preview(subject, scope, preview_id)
@@ -89,14 +109,16 @@ class DisclosureService:
         self._fresh(preview.policy, preview.created_at)
         if preview.fingerprint != fingerprint:
             raise ProjectionConflict('Disclosure changed')
-        if not preview.payload['items'] or preview.draft_id is None:
+        if (not preview.payload['items'] and not preview.policy.original_documents
+            or preview.payload['items'] and preview.draft_id is None):
             raise ProjectionNotFound('No disclosable items')
         risks = set(preview.report['risks'])
         if (not isinstance(exceptions, tuple) or len(set(exceptions)) != len(exceptions)
                 or set(exceptions) != risks or not risks <= {TEXT_REVIEW}):
             raise DisclosureDecisionRequired('Explicit decision on the named preview risks required')
         # Revalidate graph, pinned draft and canonical selection before approval.
-        await self.drafts.resolve(subject, scope, preview.draft_id, 1)
+        if preview.draft_id is not None:
+            await self.drafts.resolve(subject, scope, preview.draft_id, 1)
         current = await self.repository.select(subject, scope)
         if current.stamp != preview.selection_stamp:
             raise ProjectionConflict('Context changed; prepare a new preview')

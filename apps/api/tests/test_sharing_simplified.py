@@ -169,7 +169,8 @@ def test_guest_recap_requires_read_and_only_comes_from_authorized_snapshot(read)
         result = client.get('/guest/session')
         assert result.status_code == 200
         assert result.json()['recap'] == (payload['recap'] if read else None)
-        assert result.json()['document_recaps'] == (payload['document_recaps'] if read else [])
+        assert 'document_recaps' not in result.json()
+        assert payload['document_recaps']  # Retained approved snapshots are unchanged.
         assert 'ORIGINAL-QUOTE-CANARY' not in result.text and 'items' not in result.json()
 
 

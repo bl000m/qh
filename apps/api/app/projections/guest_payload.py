@@ -7,9 +7,12 @@ from app.projections.guest import GuestUnavailable
 
 def recipient_payload(payload, *, include_quotes=False):
     try:
-        if (not isinstance(payload, dict) or set(payload)-{'format', 'items', 'recap', 'document_recaps', 'name'}
+        if (not isinstance(payload, dict) or set(payload)-{'format', 'items', 'recap', 'document_recaps', 'name', 'semantic_document_count'}
                 or payload.get('format') != 'qh.disclosure/1'
-                or not isinstance(payload.get('items'), list) or not 1 <= len(payload['items']) <= 100):
+                or not isinstance(payload.get('items'), list) or not 0 <= len(payload['items']) <= 100):
+            raise ValueError()
+        if 'semantic_document_count' in payload and (type(payload['semantic_document_count']) is not int
+            or not 0<=payload['semantic_document_count']<=100):
             raise ValueError()
         if 'name' in payload and (not isinstance(payload['name'], str) or not 1<=len(payload['name'])<=256):
             raise ValueError()

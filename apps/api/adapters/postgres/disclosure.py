@@ -41,7 +41,12 @@ class PostgresDisclosureRepository:
                 revision_id=r[side+'_revision_id']) for side in ('source', 'target'))
                 if r['source_revision_id'] is not None else ()) for r in rows)
         name = c.execute('SELECT name FROM context_spaces WHERE id=%s', (scope,)).fetchone()['name']
-        return Selection(context_id=scope, stamp=digest(dict(state=json_values(state), rows=rows, name=name)), candidates=candidates, name=name)
+        documents = tuple(str(r['id']) for r in c.execute("SELECT id FROM source_revisions WHERE context_space_id=%s "
+            "AND origin #>> '{metadata,media_type}'='application/pdf' ORDER BY id", (scope,)).fetchall())
+        stamp = dict(state=json_values(state), rows=rows, name=name)
+        if documents:
+            stamp['document_sources'] = documents
+        return Selection(context_id=scope, stamp=digest(stamp), candidates=candidates, name=name, document_sources=documents)
 
     def _with_owner(self, subject, scope, operation):
         identifier(scope)
@@ -124,7 +129,9 @@ class PostgresDisclosureRepository:
                 (preview.id, preview.context_id)).fetchone()
             if stored is None or self._preview(stored, preview.owner_id) != preview:
                 raise ProjectionConflict('Disclosure changed')
-            if not preview.payload['items'] or tuple(sorted(set(exceptions))) != tuple(sorted(preview.report['risks'])):
+            if (not preview.payload['items'] and not preview.policy.original_documents
+                or preview.payload['items'] and preview.draft_id is None
+                or tuple(sorted(set(exceptions))) != tuple(sorted(preview.report['risks']))):
                 raise ProjectionConflict('Explicit disclosure decision required')
             # A unique preview makes an explicit approval replay idempotent.
             c.execute('SELECT pg_advisory_xact_lock(hashtextextended(%s,0))', (preview.id,))

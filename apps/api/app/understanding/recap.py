@@ -93,6 +93,11 @@ If no useful understanding is supported, return empty items and recap=null.
 
 
 MODULAR_INSTRUCTIONS = """
+The general overview is a brief introduction to the subject and scope, ideally
+one or two short sentences. Keep it independent of PDF-specific dates, terms,
+qualifications and individual facts. Select only the minimal exact statements
+needed to support that introduction; document details belong in their own recaps.
+This does not make it public: privacy and authorized support are still required.
 When a documents catalogue is supplied, recap is modular. Its title/text/supporting_statements
 are ONLY the general subject, identity when essential, scope and available knowledge.
 Do not copy private document details into this general overview. Choose the minimal exact

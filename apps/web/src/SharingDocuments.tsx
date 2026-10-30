@@ -4,6 +4,24 @@ import {documentName,documentMatches,PdfMark} from './DocumentCards';
 import DocumentDownload from './DocumentDownload';
 import {Icon} from './Ui';
 
+type DocumentSelectionProps={documents:SourceDocument[];selected:string[];onChange:(ids:string[])=>void;status:string;onRetry:()=>void};
+
+export function SemanticDocumentPermission({documents,selected,onChange,status,onRetry}:DocumentSelectionProps){
+ const [search,setSearch]=useState('');
+ return <section className="sharing-originals sharing-semantic" aria-label="Informations des documents">
+  <div className="sharing-originals-heading"><Icon name="sources"/><strong>Informations des documents</strong></div>
+  <p>Choisissez les documents dont les informations pourront être interrogées dans le contexte partagé.</p>
+  {status==='loading'?<p role="status">Chargement des documents…</p>:status==='error'?<p role="alert">Documents indisponibles. <button type="button" onClick={onRetry}>Réessayer</button></p>:!documents.length?<p>Aucun document dans ce contexte.</p>:<>
+   <div className="originals-modes"><button type="button" onClick={()=>onChange(documents.map(doc=>doc.source_revision_id))}>Tous les documents actuels</button><button type="button" onClick={()=>onChange([])}>Aucun document</button></div>
+   {documents.length>5&&<input type="search" aria-label="Rechercher les informations des documents" placeholder="Rechercher un document" value={search} onChange={e=>setSearch(e.target.value)}/>}
+   <div className="originals-selection">{documents.filter(doc=>documentMatches(doc,search)).map(doc=><label className="semantic-document-choice" key={doc.source_revision_id}>
+    <input type="checkbox" checked={selected.includes(doc.source_revision_id)} onChange={e=>onChange(e.target.checked?[...selected,doc.source_revision_id]:selected.filter(id=>id!==doc.source_revision_id))}/>
+    <span>{documentName(doc)}</span>
+   </label>)}</div><p className="originals-future">Les documents ajoutés après cette invitation resteront privés.</p>
+  </>}
+ </section>;
+}
+
 export function OriginalDocumentPermission({documents,selected,onChange,status,onRetry}:{documents:SourceDocument[];selected:string[];onChange:(ids:string[])=>void;status:string;onRetry:()=>void}){
  const [enabled,setEnabled]=useState(false),[mode,setMode]=useState<'choose'|'all'>('choose'),[search,setSearch]=useState('');
  function toggle(){setEnabled(!enabled);setMode('choose');onChange([]);}
