@@ -9,6 +9,7 @@ from app.understanding.citations import resolve_output_citations
 from app.understanding.extractor import canonical_json, decode_output, object_fields, nonempty
 from app.understanding import recap as recap_output
 from app.understanding.passage_refs import PassageReferences
+from app.understanding.timing import measured_phase
 
 FORMAT = 'qh.atomic-understanding/1'
 MAX_ITEMS, MAX_TEXT, MAX_EVIDENCE = 100, 16000, 100
@@ -207,7 +208,8 @@ class UumExtractionProvider:
             atomic=decode_output(result.message.content)
             # Same UUM contract validation, then the Engine revalidates the whole batch.
             if atomic['items']:
-                normalize_output(atomic,dict(id=source['source_revision_id'],content=part['text'],origin=dict(turns=part['turns'])), self.observer)
+                with measured_phase(self.measure,'validation_ms'):
+                    normalize_output(atomic,dict(id=source['source_revision_id'],content=part['text'],origin=dict(turns=part['turns'])), self.observer)
             items.extend(atomic['items'])
             if len(items)>MAX_ITEMS:
                 from app.understanding.documents import DocumentInvalid
@@ -216,8 +218,9 @@ class UumExtractionProvider:
             start=end
         output=dict(format=FORMAT,items=items)
         if items:
-            normalize_output(output, dict(id=source['source_revision_id'], content=source['text'],
-                origin=dict(turns=source['turns'])), self.observer)
+            with measured_phase(self.measure,'validation_ms'):
+                normalize_output(output, dict(id=source['source_revision_id'], content=source['text'],
+                    origin=dict(turns=source['turns'])), self.observer)
         if self.with_recap and items:
             # Overview only: it cannot drop or rewrite the extracted detailed items.
             packet = self._recap_packet(items, source)
@@ -229,7 +232,8 @@ class UumExtractionProvider:
                 output_schema=references.schema))
             if summary.message.role!=MessageRole.ASSISTANT:
                 raise ValueError('Assistant recap required')
-            self._decode_recap(summary.message.content, atomic=output, references=references)
+            with measured_phase(self.measure,'validation_ms'):
+                self._decode_recap(summary.message.content, atomic=output, references=references)
         return replace(result,message=Message(role=MessageRole.ASSISTANT,content=canonical_json(output)))
 
     def _document_catalogue(self):

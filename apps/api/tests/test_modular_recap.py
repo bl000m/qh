@@ -263,3 +263,31 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
     repository.publish.assert_not_awaited()
     repository.fail.assert_awaited_once()
     assert batch == frozen and delegate.generate.await_count == 2
+
+
+def test_compact_summary_removes_only_source_quotes_and_duplicate_provenance(monkeypatch):
+    from app.understanding.extractor import canonical_json
+    original='ORIGINAL-PDF-ONLY '+('Long source paragraph with exact evidence. '*200)
+    packet=dict(documents=[dict(document_ref='d1',turn_ids=['cv']),dict(document_ref='d2',turn_ids=['contract'])],
+        statements=['Camille maîtrise Python.','Camille envisage Rust, sans décision.','Le contrat est proposé, pas signé.'],
+        evidence=[dict(statement=text,passages=[dict(quote=original,speakers=[speaker],turn_ids=[turn])]*3)
+            for text,speaker,turn in [('Camille maîtrise Python.','CV non vérifié','cv'),
+                ('Camille envisage Rust, sans décision.','CV non vérifié','cv'),
+                ('Le contrat est proposé, pas signé.','Projet de contrat','contract')]])
+    frozen=deepcopy(packet);compact=recap.FinalRecapReferences(packet)
+    def legacy(payload,identifiers):
+        result=deepcopy(payload)
+        for item in result['evidence']:item['statement_ref']=identifiers[item.pop('statement')]
+        return result
+    with monkeypatch.context() as patch:
+        patch.setattr(recap,'compact_summary_provenance',legacy)
+        before=recap.FinalRecapReferences(packet)
+    assert compact.schema==before.schema and packet==frozen
+    assert compact.packet['statements']==before.packet['statements']
+    assert len(compact.packet['provenance'])==2
+    assert [row['provenance_refs'] for row in compact.packet['evidence']]==[['e001'],['e001'],['e002']]
+    assert 'ORIGINAL-PDF-ONLY' not in canonical_json(compact.packet)
+    assert len(canonical_json(compact.packet))<len(canonical_json(before.packet))/10
+    def component(ref):return dict(title='Contexte proposé',text='Compréhension proposée, incertitude préservée.',supporting_refs=[ref])
+    wire=dict(component('s001'),documents=dict(d1=component('s002'),d2=component('s003')))
+    assert compact.expand(json.dumps(wire))==before.expand(json.dumps(wire))

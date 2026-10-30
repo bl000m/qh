@@ -47,6 +47,9 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
     assert record['outcome']=='accepted' and result['recap'] and repo.publish.await_count==1
     assert metrics['input_tokens']==1000 and metrics['output_tokens']==5000
     assert metrics['provider_ms']==125 and metrics['consolidation_ms']>=0
+    assert record['operation']['totals']['validation_ms']>0
+    assert record['operation']['totals']['persistence_ms']>=0
+    assert record['operation']['totals']['combined_ms']==125
     assert metrics['atomic_items']==metrics['passage_references']==1
     assert metrics['source_chars']==metrics['source_disclosed_chars']>0
     assert metrics['source_tokens'] is None and metrics['request_schema_chars']>0
@@ -146,3 +149,14 @@ def test_operation_records_separate_each_call_and_never_inherit_summary_counts(t
     assert final['operation']['totals']['atomic_items']==32
     assert final['operation']['totals']['input_tokens']==3000
     assert len({r['operation']['id'] for r in records})==1
+
+
+def test_phase_durations_accumulate_only_in_operation_and_never_double_count_http(tmp_path):
+    from app.chat.diagnostic_summary import operation_totals
+    diagnostic=DiagnosticCall(PrivateDiagnostics(tmp_path/'private'),'owner','space','uum')
+    diagnostic.measure(validation_ms=12);diagnostic.measure(validation_ms=7,persistence_ms=4)
+    assert diagnostic.durations==dict(validation_ms=19,persistence_ms=4)
+    assert 'validation_ms' not in diagnostic.metrics
+    calls=[dict(phase=phase,metrics={'provider_ms':ms}) for phase,ms in [('extraction',100),('extraction',200),('summary',50)]]
+    totals=operation_totals(calls)
+    assert totals['extraction_ms']==300 and totals['summary_ms']==50 and totals['combined_ms']==0

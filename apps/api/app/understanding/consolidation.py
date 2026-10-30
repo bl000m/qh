@@ -12,6 +12,7 @@ from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound,
 from app.chat.context import ChatProviderUnavailable
 from app.policy.models import PolicyAction, PolicyRequest
 from app.understanding.selected import propose_selected_conversation
+from app.understanding.timing import measured_phase
 from app.understanding.uum import UumExtractionProvider
 from app.understanding.enrichment import EnrichmentUnavailable
 from app.understanding import recap as recap_output
@@ -106,7 +107,7 @@ class ContextConsolidation:
                 extraction_key='qh-context-uum/3'+(':'+operation if original else ''), original_source=original,
                 policy=self.policy, descriptor_version=3,
                 provider=provider,
-                observer=diagnostic.check)
+                observer=diagnostic.check, measure=diagnostic.measure)
             if not revisions:
                 if any(row.get('source_revision_id') for row in batch['intake']):
                     from app.understanding.documents import DocumentInvalid
@@ -115,15 +116,18 @@ class ContextConsolidation:
             documents=[await repository.original(scope,row['source_revision_id']) for row in batch['intake'] if row.get('source_revision_id')]
             if documents:
                 from app.understanding.documents import original_citations
-                revisions=original_citations(revisions,documents)
+                with measured_phase(diagnostic.measure,'validation_ms'):
+                    revisions=original_citations(revisions,documents)
             if provider.parts:
                 for revision in revisions:
                     revision['content']['extraction']['parts']=provider.parts
-            revisions = recap_output.bind(provider.recap, revisions, operation, documents)
+            with measured_phase(diagnostic.measure,'validation_ms'):
+                revisions = recap_output.bind(provider.recap, revisions, operation, documents)
             await self.ai._authorize(identity, request)
             await self._allow(identity.subject_id, scope)
-            result = await repository.publish(scope, operation,
-                [row['id'] for row in batch['intake']], source, revisions)
+            with measured_phase(diagnostic.measure,'persistence_ms'):
+                result = await repository.publish(scope, operation,
+                    [row['id'] for row in batch['intake']], source, revisions)
             await self._allow(identity.subject_id, scope, verify_graph=False)
             # This is the committed write receipt, not a graph retrieval. Reuse
             # its validated recap; detailed reads retain the graph readiness gate.

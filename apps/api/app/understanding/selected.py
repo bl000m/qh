@@ -60,7 +60,7 @@ def selected_source(context_id, conversation):
     return source
 
 
-async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None, original_source=None):
+async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None, original_source=None, measure=None):
     def observed(rule, operation):
         try:
             result = operation()
@@ -91,7 +91,7 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(derived)))
 
-    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider(), descriptor_version=descriptor_version, observer=observer)
+    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider(), descriptor_version=descriptor_version, observer=observer, measure=measure)
     try:
         checkpoint = await engine.extract(subject_id=subject_id,context_id=context_id,
             source_revision_id=source['id'],extraction_key=extraction_key)

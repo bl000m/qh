@@ -1,7 +1,7 @@
 """Version-bound presentation metadata; detailed UUM statements remain authoritative."""
 from copy import deepcopy
 
-from app.understanding.extractor import decode_output, digest, nonempty, object_fields
+from app.understanding.extractor import canonical_json, decode_output, digest, nonempty, object_fields
 
 FORMAT = 'qh.context-consolidation/1'
 PRESENTATION_VERSION = 3
@@ -162,6 +162,26 @@ def _statement_choices(component, statements):
     support['items']['enum'] = list(dict.fromkeys(statements))
 
 
+def compact_summary_provenance(packet, identifiers):
+    """Keep every statement and attribution; original quotes stay in local validators."""
+    provenance, indexed, evidence = [], {}, []
+    for item in packet['evidence']:
+        refs=[]
+        for passage in item['passages']:
+            metadata={key:deepcopy(value) for key,value in passage.items() if key!='quote'}
+            key=canonical_json(metadata)
+            if key not in indexed:
+                ref='e'+str(len(provenance)+1).zfill(3)
+                indexed[key]=ref
+                provenance.append(dict(ref=ref,**metadata))
+            if indexed[key] not in refs:
+                refs.append(indexed[key])
+        evidence.append(dict(statement_ref=identifiers[item['statement']],provenance_refs=refs))
+    return dict(documents=deepcopy(packet['documents']),
+        statements=[dict(ref=ref,text=text) for text,ref in identifiers.items()],
+        provenance=provenance,evidence=evidence)
+
+
 class FinalRecapReferences:
     """Provider-only references; canonical recaps retain exact statement text."""
     instructions = '''For this final request, return supporting_refs, NOT supporting_statements.
@@ -176,6 +196,11 @@ other topical scope, in one or two short sentences and at most 40 words. Do not
 list document contents, salaries, contractual terms, dates or personal details.
 Choose AT MOST TWO exact statement refs that alone fully support this introduction.
 All other statements belong in the detailed understanding, not in general support.
+The evidence entries link statement_ref to provenance_refs in the shared provenance
+catalogue. Preserve its speakers and turn_ids: they describe attribution, not extra
+facts. Original quotations were validated locally and are not sent again here.
+Use only the complete validated statements for semantic content; do not invent
+missing details from document names or provenance metadata.
 For DOCUMENT synopses aim for 40-60 whitespace-separated words; the general
 introduction has no minimum length.
 The absolute maximum is 100 words per text, including dates and list entries.
@@ -186,10 +211,9 @@ statements actually needed for its subject/scope; never list all refs by default
     def __init__(self, packet, *, general_support_allowed=None):
         self.statements = {f's{i+1:03d}': text for i, text in enumerate(packet['statements'])}
         identifiers = {text: ref for ref, text in self.statements.items()}
-        self.packet = deepcopy(packet)
-        self.packet['statements'] = [dict(ref=ref, text=text) for ref, text in self.statements.items()]
-        for item in self.packet['evidence']:
-            item['statement_ref'] = identifiers[item.pop('statement')]
+        self.packet = compact_summary_provenance(packet,identifiers)
+        # Preserve duplicate statements and their exact occurrence references too.
+        self.packet['statements'] = [dict(ref=ref,text=text) for ref,text in self.statements.items()]
         self.schema = final_summary_schema(packet)
         self._references(self.schema, identifiers)
         self.schema['properties']['supporting_refs']['maxItems'] = min(2, len(self.statements))

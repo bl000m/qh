@@ -76,6 +76,9 @@ def operation_totals(calls):
         selected=extraction if key in ('atomic_items','source_chars') else calls
         values=[call['metrics'].get(key) for call in selected]
         result[key]=sum(values) if values and all(v is not None for v in values) else None
+    for name,phase in (('extraction_ms','extraction'),('summary_ms','summary'),('combined_ms','extraction_summary')):
+        values=[call['metrics'].get('provider_ms') for call in calls if call['phase']==phase]
+        result[name]=sum(values) if all(v is not None for v in values) else None
     return result
 
 

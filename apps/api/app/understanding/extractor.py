@@ -7,6 +7,7 @@ No SQL transaction spans generation. The source commits first, the proposals in
 one later repository transaction. Offline checkpoints are revalidated, not trusted.
 """
 
+from app.understanding.timing import measured_phase
 from copy import deepcopy
 from datetime import datetime
 import hashlib
@@ -112,12 +113,13 @@ def literal_timestamp(value, quote):
 
 
 class UnderstandingExtractor:
-    def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1, observer=None):
+    def __init__(self, *, repository, policy, provider: LLMProvider, descriptor_version=1, observer=None, measure=None):
         if type(descriptor_version) is not int or descriptor_version not in (1, 2, 3):
             raise ValueError('Trusted descriptor profile version required')
         self.repository, self.policy, self.provider = repository, policy, provider
         self.descriptor_version = descriptor_version
         self.observer = observer
+        self.measure = measure
 
     async def _authorize(self, subject_id, context_id):
         if str(subject_id) != self.repository.subject_id:
@@ -313,7 +315,8 @@ class UnderstandingExtractor:
 
     def _resolve(self, checkpoint, source):
         try:
-            rows = self._resolve_checked(checkpoint, source)
+            with measured_phase(self.measure,'validation_ms'):
+                rows = self._resolve_checked(checkpoint, source)
         except ValueError as exc:
             if self.observer:
                 self.observer('uum.canonical_batch_profile_provenance', False, str(exc))

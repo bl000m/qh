@@ -136,10 +136,19 @@ class DiagnosticCall:
         self.metrics = {}
         self.operation_id = str(uuid4())
         self.calls = []
+        self.durations = {}
 
     def measure(self, **values):
         # Callers supply numeric metadata only, never prompt/source content.
-        self.metrics.update(values)
+        for key,value in values.items():
+            if key in ('validation_ms','persistence_ms'):
+                self.durations[key]=self.durations.get(key,0)+value
+            else:
+                self.metrics[key]=value
+
+    def _operation(self):
+        return dict(id=self.operation_id,calls=list(self.calls),
+            totals=dict(operation_totals(self.calls),**self.durations))
 
     def begin(self):
         self.identity = self.store.begin(subject=self.subject, scope=self.scope, kind=self.kind)
@@ -182,8 +191,7 @@ class DiagnosticCall:
                     request_schema_chars=len(json.dumps(request.output_schema, ensure_ascii=False, separators=(',', ':'))))
         if self.kind=='uum':
             self.calls.append(dict(attempt_index=index,phase=output_phase(response),metrics=dict(self.metrics)))
-        self.store.update(self.identity, **({'operation':dict(id=self.operation_id,calls=list(self.calls),
-            totals=operation_totals(self.calls))} if self.kind=='uum' else {}), raw_response=response, secret_redacted=redacted,
+        self.store.update(self.identity, **({'operation':self._operation()} if self.kind=='uum' else {}), raw_response=response, secret_redacted=redacted,
             attempt_index=index, accounting=row, http_status=exchange.get('http_status',
                 (raw.last_failure or {}).get('http_status')), latency_seconds=latency,
             metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))
@@ -192,5 +200,5 @@ class DiagnosticCall:
         if started_at is not None:
             self.measure(consolidation_ms=round((time.perf_counter()-started_at)*1000, 3))
         if self.identity:
-            self.store.update(self.identity, outcome=outcome, phase=phase,
+            self.store.update(self.identity, **({'operation':self._operation()} if self.kind=='uum' else {}), outcome=outcome, phase=phase,
                 metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))
