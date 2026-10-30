@@ -8,7 +8,7 @@ from time import monotonic
 
 def checked_referents(groups, allowed):
     if (not isinstance(groups, list) or len(groups)>8
-        or any(not isinstance(group,list) or not 1<=len(group)<=16
+        or any(not isinstance(group,list) or not 1<=len(group)<=100
             or any(not isinstance(ref,str) or ref not in allowed for ref in group)
             or len(set(group))!=len(group) for group in groups)):
         raise ValueError('Invalid conversation references')

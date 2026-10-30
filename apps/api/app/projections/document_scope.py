@@ -55,19 +55,13 @@ def restrict_snapshot(payload, allowed_references, *, verified_recap=False):
 
 
 def accessible_introduction(payload):
-    """Whole authorized excerpts, not a new semantic or canonical summary."""
-    if payload.get('recap') or is_empty_projection(payload):
+    """Reuse one already scoped canonical synopsis; never synthesize random excerpts."""
+    if is_empty_projection(payload):
         return payload
-    texts=[]
-    for item in payload['items']:
-        dimension=item.get('primary_dimension',{})
-        if dimension.get('value')=='hypotheses_uncertainties' or dimension.get('certainty')=='tentative':
-            continue
-        text=item['text']
-        if len('\n\n'.join(texts+[text]).split())<=100 and len('\n\n'.join(texts+[text]))<=1500:
-            texts.append(text)
-        if len(texts)==3:
-            break
-    if not texts:
-        return payload
-    return dict(payload,recap=dict(title='Aperçu · extraits autorisés',text='\n\n'.join(texts)))
+    result=dict(payload)
+    if result.get('recap',{}).get('title')=='Aperçu · extraits autorisés':
+        result.pop('recap')  # Withdraw the old presentation, never rewrite its snapshot.
+    summaries=result.pop('document_recaps',[])
+    if not result.get('recap') and len(summaries)==1:
+        result['recap']=dict(summaries[0])
+    return result

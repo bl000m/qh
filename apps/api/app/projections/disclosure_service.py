@@ -63,7 +63,6 @@ class DisclosureService:
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
         rows, document_exclusions = document_scope(rows, policy, selection.document_sources)
         payload, report = self.guard.apply(rows, policy)
-        payload.pop('document_recaps', None)
         payload=accessible_introduction(payload)
         payload['semantic_document_count'] = len(policy.semantic_documents)
         report['document_scope_version'] = 2

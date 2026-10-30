@@ -41,3 +41,16 @@ def test_contract_explains_and_accepts_valid_knowledge_or_clarification(basis,re
     value=decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(dict(
         answer=text,reference_aliases=refs,support_basis=basis,insufficient_context=False))),PAYLOAD)
     assert value['answer']==text
+
+
+def test_structured_subjects_are_the_single_authorized_citation_authority():
+    payload=dict(format='qh.disclosure/1',items=[dict(reference=f'R{i}',text=f'Authorized fact {i}') for i in range(1,21)])
+    refs=[item['reference'] for item in payload['items']]
+    value=dict(answer='Unused draft.',reference_aliases=['R1'],support_basis='canonical',insufficient_context=False,
+        subjects=[dict(text='A complete authorized overview.',reference_aliases=refs)])
+    result=decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(value)),payload)
+    assert result['reference_aliases']==refs and result['referents']==[refs]
+    assert result['answer']=='1. A complete authorized overview.'
+    value['subjects'][0]['reference_aliases']=['OUTSIDE']
+    with pytest.raises(SnapshotAnswerError,match='guest.invalid_subject_support'):
+        decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(value)),payload)

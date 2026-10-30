@@ -1,6 +1,7 @@
 """Guest questions have only a frozen safe snapshot; offline excerpt demonstration."""
 import json
 
+from app.chat.conversation import social_reply
 from app.chat.guest_context import GuestReferenceHistory, ordinal_focus, clarification, context_clarification
 from app.core.models import GenerationRequest, Message, MessageRole
 from app.projections.guest import GuestDenied, GuestUnavailable
@@ -87,6 +88,9 @@ class GuestSnapshotChat:
         conversation=self.references.read(grant.session_id,snapshot_id,payload)
         focus=ordinal_focus(question,conversation)
         local=context_clarification(question,payload) if not is_empty_projection(payload) else None
+        social=social_reply(question)
+        if social and not is_empty_projection(payload):
+            local=dict(answer=social,reference_aliases=[],referents=[],support_basis='dialogue',insufficient_context=False,simulated=False)
         if not is_empty_projection(payload) and (focus==[] or local):
             await recheck()
             return local or clarification(question)

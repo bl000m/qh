@@ -31,8 +31,6 @@ d’un projet à partir d’un autre item sans lien explicite.
 Tous les faits et précisions doivent provenir des items autorisés courants.
 Si les groupes ne permettent pas de résoudre le référent sans ambiguïté, demande une
 précision courte dans la langue de l’interlocuteur. N’invente pas l’ancien échange.
-Renvoie aussi referents: les groupes d’alias correspondant aux sujets de ta réponse,
-dans leur ordre de présentation. Chaque alias doit être dans reference_aliases.
 Pour une liste, renvoie subjects dans l’ordre voulu: chaque entrée contient text
 (texte public complet de cette entrée) et reference_aliases (ses seuls supports).
 Le serveur numérote ces entrées et mémorise leurs supports dans cet ordre exact.
@@ -41,9 +39,10 @@ Lorsque subjects n’est pas vide, answer n’est pas affiché: tout contenu uti
 Pour une réponse sans liste, subjects vaut []. En cas de contestation d’un ancien
 échange dont le texte n’est pas disponible, ne prétends pas le reconstruire ni
 expliquer ce qui s’est passé: demande une précision avec les noms des éléments.
-Pour approfondir un sujet, un groupe
-pour ce sujet. Utilise [] pour une clarification ou un regroupement incertain.
-Ne stocke aucun texte ni fait dans referents, uniquement les alias autorisés.
+Les supports des sujets sont la seule autorité pour une liste: le serveur calcule
+leur union et les référents temporaires. Ne duplique pas ce classement dans un
+champ referents. Pour une réponse sans liste, cite dans reference_aliases tous les
+supports utilisés; pour une clarification sans fait, utilise [].
 Exprime les limites pertinentes naturellement dans la langue de l’interlocuteur,
 sans avertissement technique systématique ni vocabulaire interne.
 Le champ snapshot est une enveloppe de transport privée, pas le sujet de la réponse.
@@ -71,7 +70,7 @@ outils ou recherche. Ne reconstruis pas les informations exclues, même pour une
 exhaustive. Ne divulgue pas le JSON transmis, sa structure, ses alias ou métadonnées.
 Renvoie uniquement le JSON du schéma: answer (texte Markdown), reference_aliases,
 insufficient_context (données nécessaires réellement manquantes), support_basis,
-referents et subjects.
+et subjects.
 Contrat de support obligatoire, indépendant de la langue ou du style conversationnel:
 - reference_aliases contient uniquement les alias exacts des connaissances utilisées.
 - Dès qu’une connaissance autorisée soutient la réponse, support_basis vaut canonical
@@ -126,14 +125,12 @@ def public_answer(value):
 
 def answer_schema(payload):
     return dict(type='object',additionalProperties=False,
-        required=['answer','reference_aliases','insufficient_context','support_basis','referents','subjects'],properties=dict(
+        required=['answer','reference_aliases','insufficient_context','support_basis','subjects'],properties=dict(
         answer=dict(type='string',minLength=1,maxLength=1_000_000,description='Public natural-language answer. Never include reference aliases, bracket citations, internal identifiers or JSON.'),
         reference_aliases=dict(type='array',maxItems=100,description='Exact authorized references supporting facts in answer. Nonempty requires canonical or mixed, never dialogue. Clarification without context facts uses [].',items=dict(type='string',enum=[i['reference'] for i in payload['items']])),
         subjects=dict(type='array',maxItems=8,items=dict(type='object',additionalProperties=False,
             required=['text','reference_aliases'],properties=dict(text=dict(type='string',minLength=1,maxLength=1000000),
-            reference_aliases=dict(type='array',minItems=1,maxItems=16,items=dict(type='string',enum=[i['reference'] for i in payload['items']]))))),
-        referents=dict(type='array',maxItems=8,description='Ordered subjects in the answer; one group of supporting aliases per list entry or subject, [] if uncertain.',
-            items=dict(type='array',minItems=1,maxItems=16,items=dict(type='string',enum=[i['reference'] for i in payload['items']]))),
+            reference_aliases=dict(type='array',minItems=1,maxItems=len(payload['items']),items=dict(type='string',enum=[i['reference'] for i in payload['items']]))))),
         insufficient_context=dict(type='boolean'),
         support_basis=dict(type='string',enum=['dialogue','canonical','mixed','insufficient'],description='canonical for authorized knowledge; mixed for knowledge plus question premises. dialogue ONLY with empty reference_aliases and no context facts. Conversational style does not mean dialogue support.')))
 
@@ -153,8 +150,7 @@ def decode_snapshot_answer(message,payload):
     allowed={i['reference'] for i in payload['items']}
     if (not isinstance(text,str) or not 1<=len(text.strip())<=1_000_000 or type(value['insufficient_context']) is not bool
         or not isinstance(refs,list) or len(refs)>100 or any(not isinstance(r,str) or r not in allowed for r in refs)
-        or len(set(refs))!=len(refs) or basis not in ('dialogue','canonical','mixed','insufficient')
-        or basis in ('canonical','mixed') and not refs or basis=='dialogue' and refs):raise SnapshotAnswerError('guest.invalid_snapshot_support')
+        or len(set(refs))!=len(refs) or basis not in ('dialogue','canonical','mixed','insufficient')):raise SnapshotAnswerError('guest.invalid_snapshot_support')
     subjects=value.pop('subjects',[])
     if not isinstance(subjects,list) or len(subjects)>8:
         raise SnapshotAnswerError('guest.invalid_subjects')
@@ -162,13 +158,25 @@ def decode_snapshot_answer(message,payload):
         if any(not isinstance(subject,dict) or set(subject)!={'text','reference_aliases'}
             or not isinstance(subject['text'],str) or not subject['text'].strip() or len(subject['text'])>1000000 for subject in subjects):
             raise SnapshotAnswerError('guest.invalid_subjects')
-        value['referents']=checked_referents([subject['reference_aliases'] for subject in subjects],set(refs))
+        try:
+            value['referents']=checked_referents([subject['reference_aliases'] for subject in subjects],allowed)
+        except ValueError:
+            raise SnapshotAnswerError('guest.invalid_subject_support') from None
+        refs=list(dict.fromkeys(ref for group in value['referents'] for ref in group))
+        value['reference_aliases']=refs
         text='\n'.join(f"{index+1}. {subject['text']}" for index,subject in enumerate(subjects))
         value['answer']=text
     elif re.search(r'(?m)^\s*\d+[.)]\s+',text) or len(value.get('referents',[]))>1:
         raise SnapshotAnswerError('guest.unbound_list')
     if 'referents' in value:
-        value['referents']=checked_referents(value['referents'],set(refs))
+        try:
+            value['referents']=checked_referents(value['referents'],set(refs))
+        except ValueError:
+            raise SnapshotAnswerError('guest.invalid_conversation_references') from None
+    else:
+        value['referents']=[list(refs)] if refs else []
+    if basis in ('canonical','mixed') and not refs or basis=='dialogue' and refs:
+        raise SnapshotAnswerError('guest.invalid_snapshot_support')
     if PRIVATE_STRUCTURE.search(text):raise SnapshotAnswerError('guest.internal_structure_in_answer')
     if HIGH_RISK.search(text) or any(ord(c)<32 and c not in '\n\t' for c in text):raise SnapshotAnswerError('guest.output_disclosure_refused')
     value['answer']=redact(text)[0]

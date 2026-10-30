@@ -136,3 +136,12 @@ def test_empty_projection_keeps_privacy_notice_even_for_ordinal_question(tmp_pat
     chat,calls,_,grant=fixture.setup(tmp_path,monkeypatch)
     value=asyncio.run(chat.ask('token',grant.snapshot_id,'Peux-tu détailler la deuxième ?'))
     assert value['answer']==EMPTY_NOTICE and value['insufficient_context'] and not calls
+
+
+@pytest.mark.parametrize('question,language_word',[('ciao','Ciao!'),('bonjour','Bonjour'),('hello','Hello!')])
+def test_social_language_is_shared_and_never_paid(tmp_path,monkeypatch,question,language_word):
+    from app.chat.conversation import conversational_reply
+    chat,calls,_,grant=fixture.setup(tmp_path,monkeypatch)
+    value=asyncio.run(chat.ask('token',grant.snapshot_id,question))
+    assert value['answer'].startswith(language_word) and value['answer']==conversational_reply(question)
+    assert value['reference_aliases']==[] and not calls

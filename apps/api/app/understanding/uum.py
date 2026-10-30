@@ -85,6 +85,21 @@ An assistant example or suggested budget remains an unverified illustration,
 never an actual expense, preference or decision. External claims keep their
 reported origin; an assistant citing a source does not verify that source.
 Empty items remains correct when no meaningful supported proposition exists.'''
+SEMANTIC_INSTRUCTIONS += """
+Concise means removing redundant wording, never removing the facts that structure
+meaning. Preserve explicit actors/organizations, roles, periods and status (such as
+draft/unsigned versus effective), including
+facts expressed in headings, tables or labels. An atomic statement must remain
+understandable independently of the source layout. When a heading explicitly scopes
+activities, keep that actor/organization, role and period in their semantic context;
+do not leave disconnected tools or tasks. Employment, freelance assignments, projects
+and training remain distinct, including their documented dates and uncertainty.
+Keep the employment/assignment facts themselves, not only their associated activities.
+Only link an activity to an organization/period when the source explicitly supports
+that association; cite both the contextual heading and activity when necessary.
+Never infer a missing employer/date or merge work across different roles or periods.
+Use the existing item.text and exact evidence references; add no new schema fields.
+"""
 QUOTE_INSTRUCTIONS = '''
 Before returning, verify the required format field, every dimension and certainty,
 and that each quotation occurs exactly once in the original authorized turns.

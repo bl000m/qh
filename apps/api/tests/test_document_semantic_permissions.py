@@ -100,8 +100,7 @@ def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
     for selected in ((),documents):
         preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected,original_documents=selected)))
-        assert preview.payload['recap']['title']=='Aperçu · extraits autorisés'
-        assert all(text in {item['text'] for item in preview.payload['items']} for text in preview.payload['recap']['text'].split('\n\n'))
+        assert 'recap' not in preview.payload
 
 
 def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
@@ -121,3 +120,15 @@ def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
     subsequent=run(service.prepare(str(uuid4()),scope,access))
     assert 'Later private PDF.' not in json.dumps(subsequent.payload)
     assert first.payload==frozen and first.policy.semantic_documents==documents
+
+
+def test_single_safe_document_synopsis_survives_scope_without_random_excerpts():
+    service,rows,documents,scope=fixture()
+    access=policy(semantic_documents=(documents[0],),original_documents=(documents[0],))
+    frozen=deepcopy(rows)
+    preview=run(service.prepare(str(uuid4()),scope,access))
+    component=next(c for row in rows for c in row.content.get('extraction',{}).get('recap_components',[])
+        if c['kind']=='document' and c['source_revision_id']==documents[0])
+    assert preview.payload['recap']=={key:component[key] for key in ('title','text')}
+    assert rows==frozen and 'document_recaps' not in preview.payload
+    assert rows[1].content['text'] not in json.dumps(question_payload(preview.payload))

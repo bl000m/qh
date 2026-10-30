@@ -3,13 +3,25 @@ import re
 import unicodedata
 
 
+def normalized(text):
+    value=unicodedata.normalize('NFKC',text).strip().casefold()
+    return re.sub(r'[.!…]+$', '', value).strip()
+
+
+def social_reply(text):
+    replies={'grazie':'Prego!', 'merci':'Avec plaisir !', 'thank you':"You're welcome!",
+        'thanks':"You're welcome!", 'ok':'OK !', 'okay':'OK !', "d'accord":'D’accord !', 'va bene':'Va bene!',
+        'ciao':'Ciao! Come posso aiutarti?', 'salve':'Salve! Come posso aiutarti?',
+        'buongiorno':'Buongiorno! Come posso aiutarti?', 'bonjour':'Bonjour ! Comment puis-je vous aider ?',
+        'salut':'Salut ! Comment puis-je t’aider ?', 'hello':'Hello! How can I help?', 'hi':'Hi! How can I help?'}
+    return replies.get(normalized(text))
+
+
 def conversational_reply(text, documents=()):
-    value = unicodedata.normalize('NFKC', text).strip().casefold()
-    value = re.sub(r'[.!…]+$', '', value).strip()
-    replies = {'grazie':'Prego!', 'merci':'Avec plaisir !', 'thank you':"You're welcome!",
-        'thanks':"You're welcome!", 'ok':'OK !', 'okay':'OK !', "d'accord":'D’accord !', 'va bene':'Va bene!'}
-    if value in replies:
-        return replies[value]
+    quick=social_reply(text)
+    if quick is not None:
+        return quick
+    value=normalized(text)
     # Deliberately whole-message matching: no compound requests or ambiguity.
     patterns = (
         ('it', r'ho (?:allegato|caricato) (?:il )?(contratto|cv)(?: e (?:il )?(contratto|cv))?'),

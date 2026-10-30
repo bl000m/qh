@@ -225,3 +225,29 @@ def test_recap_final_content_and_essential_attribution_offline(attributed):
     citation = rows[0]['content']['citations'][0]
     assert citation['quote'] == source['content'][citation['start']:citation['end']] == original
     assert output == frozen and conversation == conversation_before and delegate.generate.await_count == 1
+
+
+def test_heading_context_survives_as_employment_and_explicit_project_links():
+    headings=['Orbite — Ingénieur de recherche — septembre 2023 à aujourd’hui.',
+        'Mission freelance — Développeur full-stack — 2022 à 2023.',
+        'Amarante — Coordinateur data/digital — 2018 à 2021.']
+    activities=['Projet Atlas : déploiement Matomo.', 'Projet Lumen : portail Ruby on Rails.',
+        'Mission CRM : migration Sendinblue.']
+    items=[]
+    for heading,activity in zip(headings,activities):
+        items.append(dict(text=heading,primary_dimension=None,evidence=[dict(quote=heading)]))
+        items.append(dict(text=heading+' '+activity,primary_dimension=None,
+            evidence=[dict(quote=heading),dict(quote=activity)]))
+    output=consolidation_output(dict(format='qh.atomic-understanding/1',items=items))
+    delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(output)))))
+    reference_replay(delegate);provider=UumExtractionProvider(delegate,consolidate=True,with_recap=True)
+    turns=[dict(id=str(i),speaker='CV non vérifié',text=text) for i,text in enumerate([value for pair in zip(headings,activities) for value in pair])]
+    source,rows=asyncio.run(propose_selected_conversation(subject_id=str(uuid4()),context_id=str(uuid4()),
+        conversation=dict(id='employment-context',revision_no=1,acquired_at='2026-10-30T10:00:00Z',turns=turns,metadata={}),
+        extraction_key='employment-context',policy=Mock(evaluate=AsyncMock(return_value=type('Decision',(),dict(allowed=True))())),
+        provider=provider,descriptor_version=3))
+    assert [row['content']['text'] for row in rows]==[item['text'] for item in items]
+    for index,row in enumerate(rows):
+        assert row['validation_state']=='proposed'
+        assert len(row['content']['citations'])==(1 if index%2==0 else 2)
+        assert all(source['content'][c['start']:c['end']]==c['quote'] for c in row['content']['citations'])

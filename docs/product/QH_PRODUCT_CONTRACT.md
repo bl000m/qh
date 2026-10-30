@@ -969,7 +969,14 @@ Ordinal lists are rendered from ordered public subjects with validated reference
 follow-ups retain that list order and use its selected authorized supports. Missing
 or ambiguous references and rejected internal-structure explanations receive a
 safe clarification without repeating generation or disclosing rejected text.
-When an authorized snapshot has knowledge but no disclosable canonical recap, its
-presentation may show clearly labelled whole excerpts from those same authorized
-items. This creates no canonical summary, rewrites no approved snapshot and never
-uses excluded sources. Empty projections retain the deterministic privacy notice.
+The later owner regression correction withdraws the automatic three-excerpt
+fallback: unrelated facts are not a semantic recap. New previews may reuse the
+single canonical document synopsis that survives the existing scoped Guard when
+the general recap cannot be disclosed. No arbitrary choice between several safe
+synopses, new inference on sharing, source hydration into old grants or snapshot
+rewrite. Existing grants without such an approved synopsis need a new owner
+approval to acquire one. Empty projections retain the deterministic privacy notice.
+Structured sections supply their own authorized citations; global references and
+conversation referents are derived by the server rather than independently repeated
+by the provider. Extraction preserves contextual actors, roles, periods and explicit
+links in item.text with exact evidence; the UUM wire schema remains unchanged.

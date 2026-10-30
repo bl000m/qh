@@ -47,7 +47,7 @@ def test_retained_snapshot_is_restricted_without_mutation_and_relations_close():
         {'reference':'R3','text':'Mixed','relation':{'source':'R1','target':'R2'}}])
     frozen=deepcopy(original)
     safe=restrict_snapshot(original,{'R1','R3'})
-    assert safe['items']==[original['items'][0]] and safe['recap']['text']=='CV'
+    assert safe['items']==[original['items'][0]] and 'recap' not in safe
     assert 'Private' not in str(safe)
     assert is_empty_projection(restrict_snapshot(original,set())) and original==frozen
 
