@@ -6,29 +6,8 @@ from pathlib import Path
 import time
 from uuid import UUID, uuid4
 
-
-def uum_output_metrics(response):
-    """Lengths/counts only. Malformed output remains the Engine's responsibility."""
-    sizes = {}
-    try:
-        content = response['choices'][0]['message']['content']
-        if not isinstance(content, str):
-            return {}
-        sizes = dict(output_json_chars=len(content), output_json_bytes=len(content.encode()))
-        output = json.loads(content)
-        items = output.get('understanding', output)['items']
-        if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
-            return sizes
-        sizes['atomic_items'] = len(items)
-        if all(isinstance(item.get('text'), str) for item in items):
-            sizes['atomic_text_chars'] = sum(len(item['text']) for item in items)
-        evidence = [item.get('evidence_refs', item.get('evidence')) for item in items]
-        if any(not isinstance(refs, list) for refs in evidence):
-            return sizes
-        return dict(**sizes, passage_references=sum(map(len, evidence)),
-            evidence_json_chars=sum(len(json.dumps(refs, ensure_ascii=False, separators=(',', ':'))) for refs in evidence))
-    except (KeyError, IndexError, TypeError, ValueError, AttributeError):
-        return sizes
+from app.chat.diagnostic_summary import uum_output_metrics as uum_output_metrics
+from app.chat.diagnostic_summary import call_metrics, output_phase, operation_totals
 
 
 def performance_warnings(metrics):
@@ -155,6 +134,8 @@ class DiagnosticCall:
         self.accounting_summary = None
         self.pending_checks = []
         self.metrics = {}
+        self.operation_id = str(uuid4())
+        self.calls = []
 
     def measure(self, **values):
         # Callers supply numeric metadata only, never prompt/source content.
@@ -191,13 +172,18 @@ class DiagnosticCall:
         if self.kind == 'uum':
             usage = (row or {}).get('usage') or {}
             self.measure(input_tokens=usage.get('prompt_tokens'), output_tokens=usage.get('completion_tokens'),
-                provider_ms=round(latency*1000, 3) if latency is not None else None,
-                **uum_output_metrics(exchange.get('response')))
+                provider_ms=round(latency*1000, 3) if latency is not None else None)
+            self.metrics = call_metrics(self.metrics, exchange.get('response'))
             request = raw.last_request
             if request is not None:
                 self.measure(request_message_chars=sum(len(m.content) for m in request.messages),
+                    request_instruction_chars=sum(len(m.content) for m in request.messages if m.role.value=='system'),
+                    request_data_chars=sum(len(m.content) for m in request.messages if m.role.value!='system'),
                     request_schema_chars=len(json.dumps(request.output_schema, ensure_ascii=False, separators=(',', ':'))))
-        self.store.update(self.identity, raw_response=response, secret_redacted=redacted,
+        if self.kind=='uum':
+            self.calls.append(dict(attempt_index=index,phase=output_phase(response),metrics=dict(self.metrics)))
+        self.store.update(self.identity, **({'operation':dict(id=self.operation_id,calls=list(self.calls),
+            totals=operation_totals(self.calls))} if self.kind=='uum' else {}), raw_response=response, secret_redacted=redacted,
             attempt_index=index, accounting=row, http_status=exchange.get('http_status',
                 (raw.last_failure or {}).get('http_status')), latency_seconds=latency,
             metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))

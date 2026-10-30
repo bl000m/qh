@@ -103,3 +103,46 @@ def test_payload_preserves_source_once_and_labels_previous_machine_state(tmp_pat
     assert metrics['source_chars']==metrics['source_disclosed_chars']==len(source['content'])
     assert metrics['previous_machine_chars']>0 and metrics['catalogue_passages']>0
     assert json.loads(result.message.content)==dict(format='qh.atomic-understanding/1', items=[])
+
+
+def test_observed_164_166_counter_replay_separates_summary_and_repeated_validation():
+    # Numeric observations from the owner's private diagnostic, read before expiry.
+    # No private response/source is retained in this fixture.
+    from app.chat.diagnostic_summary import diagnostic_view, operation_totals
+    views=[]
+    for index,(count,source,tokens,chars) in enumerate([(15,11998,15091,40955),(17,10110,13616,37544),(0,10110,19077,58877)]):
+        output={'items':[{'text':'Synthetic','evidence_refs':['p001']}] * count} if count else {'title':'Synthetic','text':'Summary'}
+        checks=[]
+        if not count:
+            for _ in range(2):
+                checks.append(dict(rule='uum.envelope_format_and_item_count',result='PASS'))
+                checks.extend(dict(rule=f'uum.item.{i}.fields',result='PASS') for i in range(32))
+        record=dict(kind='uum',raw_response=dict(choices=[dict(message=dict(content=json.dumps(output)))]),
+            checks=checks,metrics=dict(atomic_items=count or 17,source_chars=source,input_tokens=tokens,request_message_chars=chars))
+        frozen=json.dumps(record,sort_keys=True)
+        views.append(diagnostic_view(record))
+        assert json.dumps(record,sort_keys=True)==frozen
+    assert [v['metrics']['atomic_items'] for v in views]==[15,17,0]
+    assert 'source_chars' not in views[-1]['metrics']
+    assert views[-1]['validation_rounds']==[dict(items=32),dict(items=32)]
+    totals=operation_totals([dict(phase=v['call_phase'],metrics=v['metrics']) for v in views])
+    assert totals['atomic_items']==32 and totals['source_chars']==22108
+    assert totals['input_tokens']==47784 and totals['request_message_chars']==137376
+
+
+def test_operation_records_separate_each_call_and_never_inherit_summary_counts(tmp_path):
+    from app.chat.diagnostic_summary import diagnostic_view
+    store=PrivateDiagnostics(tmp_path/'private');diagnostic=DiagnosticCall(store,'owner','space','uum')
+    request=SimpleNamespace(messages=(Message(role=MessageRole.SYSTEM,content='Instructions'),),output_schema={})
+    for count in (15,17,0):
+        if count:diagnostic.measure(source_chars=100)
+        content=json.dumps({'items':[{'text':'Synthetic','evidence_refs':['p001']}] * count} if count else {'title':'Synthetic','text':'Summary'})
+        diagnostic.begin();diagnostic.capture(raw_call(request,content))
+    diagnostic.finish('accepted','context_consolidation')
+    records=store.records(subject='owner',scope='space')
+    final=next(diagnostic_view(r) for r in records if len(r['operation']['calls'])==3)
+    assert final['metrics']['atomic_items']==0 and 'source_chars' not in final['metrics']
+    assert [c['metrics']['atomic_items'] for c in final['operation']['calls']]==[15,17,0]
+    assert final['operation']['totals']['atomic_items']==32
+    assert final['operation']['totals']['input_tokens']==3000
+    assert len({r['operation']['id'] for r in records})==1

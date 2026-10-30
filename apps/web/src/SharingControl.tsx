@@ -28,6 +28,14 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  const [preview,setPreview]=useState<SharingPreview|null>(null),[link,setLink]=useState(''),[snapshot,setSnapshot]=useState('');
  const [question,setQuestion]=useState(''),[answer,setAnswer]=useState<RecipientAnswer|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[rows,setRows]=useState<InvitationRow[]>([]);const lock=useRef(false);
+ const invitationLink=useRef<HTMLInputElement>(null);
+ useEffect(()=>{
+  if(!link||busy)return;
+  const input=invitationLink.current,dialog=input?.closest('dialog');
+  if(!input||!dialog)return;
+  input.focus({preventScroll:true});
+  dialog.scrollTo({top:dialog.scrollTop+input.getBoundingClientRect().top-dialog.getBoundingClientRect().top-dialog.clientHeight/2,behavior:'instant'});
+ },[link,busy]);
  const refresh=()=>api.sharing<{items:InvitationRow[]}>(scope,'invitations').then(v=>setRows(v.items));
  useEffect(()=>{void refresh().catch(e=>setError(sharingError(e)));},[]);
  useEffect(()=>{
@@ -103,7 +111,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  </section>}
  <section><h3>Invitations</h3>{rows.map(row=><p key={row.id}>{row.recipient_email} · {row.revoked_at?'Révoquée':'Expire le '+new Date(row.expires_at).toLocaleString('fr-FR')} <button type="button" className="secondary" disabled={busy||!!row.revoked_at} onClick={()=>{void revoke(row.id);}}>Révoquer l’accès</button></p>)}</section>
  </details>
- {link&&<section aria-label="Invitation créée"><h3>Invitation prête</h3><p>Le destinataire devra vérifier sa boîte email.</p><label>Lien d’invitation<input readOnly value={link} onFocus={e=>e.target.select()}/></label></section>}
+ {link&&<section aria-label="Invitation créée"><h3>Invitation prête</h3><p>Le destinataire devra vérifier sa boîte email.</p><label>Lien d’invitation<input ref={invitationLink} readOnly value={link} onFocus={e=>e.target.select()}/></label></section>}
  </div><footer className="sharing-footer"><span className="sharing-footer-note"><Icon name="lock"/>Accès nominatif · expiration et révocation conservées</span><button className="secondary" type="button" onClick={onClose}>Annuler</button>
  {!link&&<button disabled={busy||preparing||!matches||!preview?.payload.items.length}>{busy?'En cours…':preparing?'Préparation du partage…':'Créer l’invitation'}</button>}
  </footer></form></Modal>;

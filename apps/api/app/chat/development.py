@@ -76,8 +76,9 @@ class DevelopmentAI:
         if delete_id is not None:
             store.delete(subject=identity.subject_id, scope=request.context_id, identity=delete_id)
             return dict(deleted=True)
+        from app.chat.diagnostic_summary import diagnostic_view
         return dict(retention_seconds=store.retention,
-            items=store.records(subject=identity.subject_id, scope=request.context_id))
+            items=[diagnostic_view(row) for row in store.records(subject=identity.subject_id, scope=request.context_id)])
 
     async def respond(self, identity, request):
         request = replace(request, extended_dialogue=True)
