@@ -920,3 +920,16 @@ snapshot opening perform no inference. No persistent migration is required.
 An introduction-only projection represents the exact verified synopsis as its
 sole minimized item, anchored to its existing canonical support. It creates no
 canonical Understanding Item and releases no underlying document details.
+
+### Confirmed owner erasure — owner, 2026-10-30
+
+The owner may irreversibly delete one Space after exact-name confirmation. This
+explicit erasure is the sole scoped exception to immutable history retention;
+ordinary updates/deletes/truncation remain forbidden. A durable deleting state
+revokes invitations/sessions and blocks reads/writes before graph cleanup. An
+idempotent fenced graph purge precedes transactional SQL erasure. Failures retain
+the revoked pending operation for worker recovery; only complete graph/SQL erasure
+returns success. A minimal owner-bound receipt (IDs, confirmation hash, timestamps)
+supports safe retry after ambiguous responses and contains no Space content.
+Other Spaces, account identities and aggregate financial ledgers are preserved.
+Migration 0012 must be explicitly authorized and backed up before VPS activation.

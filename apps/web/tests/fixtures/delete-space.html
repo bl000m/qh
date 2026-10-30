@@ -1,0 +1,7 @@
+<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Delete Space offline</title></head><body><div id="root"></div><script type="module">
+import React,{useEffect,useState} from 'react';import {createRoot} from 'react-dom/client';import DeleteSpace from '../../src/DeleteSpace';import {QhApi} from '../../src/api';import {usePath} from '../../src/navigation';import '../../src/styles.css';
+const api=new QhApi(async()=> 'offline-owner',()=>{}),space={id:'00000000-0000-0000-0000-000000000001',name:'Space à supprimer'};
+function Home(){const [items,setItems]=useState([]);useEffect(()=>{api.list().then(p=>setItems(p.items));},[]);return React.createElement('section',null,React.createElement('h1',null,'Mon environnement'),...items.map(i=>React.createElement('p',{key:i.id},i.name)));}
+function App(){const path=usePath();return path==='/'?React.createElement(Home):React.createElement('section',null,React.createElement('h2',null,'Paramètres'),React.createElement('h3',null,'Actions'),React.createElement(DeleteSpace,{api,space}));}
+createRoot(document.getElementById('root')).render(React.createElement(App));
+</script></body></html>

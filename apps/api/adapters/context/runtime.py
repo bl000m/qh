@@ -15,7 +15,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NativeRuntime:
-    def __init__(self, *, url, driver, policy, namespace, poll_seconds=0.5):
+    def __init__(self, *, url, driver, policy, namespace, poll_seconds=0.5, purge_private=None):
         self.url, self.driver, self.policy = url, driver, policy
         self.projector = IncrementalProjector(driver, namespace=namespace)
         self.poll_seconds = poll_seconds
@@ -23,6 +23,7 @@ class NativeRuntime:
         self.thread = None
         self.last_error_type = None
         self.schema_version = None
+        self.purge_private = purge_private or (lambda owner, scope: None)
 
     def repository(self, subject):
         return CanonicalRepository(
@@ -44,7 +45,7 @@ class NativeRuntime:
                 self.schema_version = c.execute("SELECT version_num FROM alembic_version").fetchone()[
                     "version_num"
                 ]
-                if self.schema_version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization", "0009_guest_invitations", "0010_context_consolidation", "0011_source_documents"):
+                if self.schema_version not in ("0004_projection_outbox", "0005_retire_legacy_category", "0006_owner_organization", "0009_guest_invitations", "0010_context_consolidation", "0011_source_documents", "0012_space_deletion"):
                     raise RuntimeError("Native runtime requires migration 0004")
             self.driver.verify_connectivity()
             self.projector.initialize()
@@ -57,6 +58,8 @@ class NativeRuntime:
         LOG.info("native_worker_started")
 
     def tick(self):
+        if self.schema_version=='0012_space_deletion':
+            self._resume_deletions()
         # Trusted maintenance discovery reads queue/scope metadata only. Payload
         # access still goes through an owner-bound repository and SQL scope guard.
         with self.repository("").connect() as c:
@@ -84,6 +87,19 @@ class NativeRuntime:
                 self.last_error_type = type(worker.last_error).__name__
                 LOG.warning("native_projection_failed error_type=%s", self.last_error_type)
         return len(work)
+
+    def _resume_deletions(self):
+        from adapters.postgres.space_deletion import PostgresSpaceDeletion
+        with self.repository('').connect() as c:
+            jobs=c.execute("SELECT d.context_space_id,d.owner_id FROM context_space_deletions d "
+                "JOIN users u ON u.id=d.owner_id WHERE d.state='deleting' AND u.status='active' LIMIT 8").fetchall()
+        for job in jobs:
+            try:
+                PostgresSpaceDeletion(url=self.url).complete_sync(str(job['owner_id']),str(job['context_space_id']),
+                    self.projector.purge,self.purge_private)
+            except Exception as exc:
+                self.last_error_type=type(exc).__name__
+                LOG.warning('native_space_deletion_pending error_type=%s',self.last_error_type)
 
     def _run(self):
         while not self.stop_event.is_set():

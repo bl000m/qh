@@ -26,6 +26,8 @@ export interface WorkspaceState {
 
 export interface WorkspaceMessageInput {question_id:string;operation_id:string}
 export interface WorkspaceRegenerationInput {operation_id:string}
+/** Exact current name required; HTTP 204 means SQL and graph erasure completed. */
+export interface SpaceDeletionInput {name:string}
 export interface WorkspaceMessageReceipt {state:'completed'}
 
 /** Private originals are distinct from understanding and approved snapshot payloads. */

@@ -101,3 +101,18 @@ async def rename_space(context_id: UUID, payload: SpaceName, request: Request,
     return await call(service(request).rename_space(
         subject_id=subject, context_id=ContextId(str(context_id)), name=payload.name,
     ))
+
+
+@router.delete('/{context_id}',status_code=204)
+async def delete_space(context_id:UUID,payload:SpaceName,request:Request,
+                       subject:SubjectId=Depends(authenticated_subject)):
+    from app.core.spaces import SpaceConfirmationMismatch
+    allowed_query(request,set())
+    deletion=request.app.state.services.space_deletion if request.app.state.services else None
+    if deletion is None:
+        raise HTTPException(503,'Space deletion activation required')
+    try:
+        await call(deletion.delete(subject,str(context_id),payload.name))
+    except SpaceConfirmationMismatch:
+        raise HTTPException(409,'Exact Space name confirmation required') from None
+    return Response(status_code=204,headers={'Cache-Control':'private, no-store'})

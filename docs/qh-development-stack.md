@@ -1,5 +1,25 @@
 # QH VPS POC — sviluppo live nel checkout unico
 
+## Owner Space erasure — activation pending, 2026-10-30
+
+The delete action requires migration `0012_space_deletion`. Before activation,
+requests fail closed with 503 and do not change Space data. No migration or real
+Space deletion was performed while implementing the feature.
+
+Activation is a separate explicitly authorized operation: obtain and verify a
+private PostgreSQL backup/restore safeguard, apply only the reviewed forward
+migration, then use `sudo -n make dev-restart DEV_SERVICE=backend` so the native
+worker recognizes schema 0012 and resumes durable pending deletions. Preserve
+all existing realm/configuration/volumes. Never use generic `make migrate` or
+Compose lifecycle commands against this POC. Verify first with a disposable,
+explicitly designated Space; no existing Space is a smoke-test target.
+
+Deletion revokes access before graph work. On partial failure, retry the same
+confirmed action or let the worker resume; do not reset jobs, disable triggers,
+or restore old canonical data over a live database. Completed erasure keeps only
+an owner-bound completion receipt; graph assertions, PDFs, history and shares
+are removed for that Space. Aggregate cost/account records are preserved.
+
 Decisione esplicita del proprietario, **2026-10-17**, durante QH-12 / [PR #13](https://github.com/bl000m/qh/pull/13).
 Sostituisce per questa fase POC la gestione image-only di frontend/backend.
 La PR resta aperta per la prova personale del proprietario; Jira QH-12 resta aperto.

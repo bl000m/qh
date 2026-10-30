@@ -179,6 +179,16 @@ class IncrementalProjector:
                 ).data()
             }
 
+    def purge(self, scope):
+        """All retained generations and edges for this exact namespace/Space."""
+        key=self.key(scope)
+        with self.driver.session() as session:
+            session.execute_write(lambda tx: tx.run('''MATCH (n) WHERE
+                n.slice_id=$key OR (n:QH30Sync AND n.key=$key) OR (n:QH30Slice AND n.id=$key)
+                OR (n:QH30Generation AND n.key STARTS WITH $prefix)
+                OR (n:QH30Item AND n.context_id=$scope AND n.key STARTS WITH $prefix)
+                DETACH DELETE n''',key=key,prefix=key+':',scope=str(scope)).consume())
+
 
 class ProjectionWorker:
     """Bounded retry with expiring, token-fenced leases; run inside backend process."""
@@ -227,7 +237,7 @@ class ProjectionWorker:
                 "SELECT * FROM context_projection_state WHERE context_space_id=%s FOR UPDATE",
                 (event["context_space_id"],),
             ).fetchone()
-            if state["epoch"] != event["epoch"]:
+            if state is None or state["epoch"] != event["epoch"]:
                 return False
             if error:
                 result = c.execute(
@@ -269,6 +279,7 @@ class ProjectionWorker:
                 r["id"] for r in snapshot["understanding_item_revisions"]
             )
             with repo.connect() as c:
+                c.execute("SELECT pg_advisory_xact_lock(hashtextextended('qh-delete:'||%s,0))",(str(event['context_space_id']),))
                 repo._authorize(c, (event["context_space_id"],))
                 head = c.execute(
                     """SELECT r.id,r.revision_no,i.current_revision_id FROM understanding_items i
@@ -276,7 +287,7 @@ class ProjectionWorker:
                     ORDER BY r.revision_no DESC LIMIT 1""",
                     (event["item_id"],),
                 ).fetchone()
-            self.last_applied_rows = self.projector.apply(event, snapshot, head)
+                self.last_applied_rows = self.projector.apply(event, snapshot, head)
             return self._finish(event)
         except Exception as exc:
             self.last_error = exc
@@ -313,6 +324,7 @@ class ProjectionWorker:
         """
         repo = self.repository
         with repo.connect() as c:
+            c.execute("SELECT pg_advisory_xact_lock(hashtextextended('qh-delete:'||%s,0))",(str(scope),))
             repo._authorize(c, (scope,))
             state = c.execute(
                 "SELECT * FROM context_projection_state WHERE context_space_id=%s FOR UPDATE",

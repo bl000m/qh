@@ -1,6 +1,6 @@
 """Scoped metadata persistence port; no driver, transport or graph dependencies."""
 
-from typing import Protocol
+from typing import Protocol, Callable
 
 from app.core.models import ContextId, ContextSpace, SubjectId
 
@@ -15,3 +15,15 @@ class ContextSpaceRepository(Protocol):
 
     async def rename(self, *, subject_id: SubjectId, context_id: ContextId,
                      name: str) -> ContextSpace | None: ...
+
+
+class SpaceConfirmationMismatch(ValueError):
+    """Confirmation must equal the current name, without normalization."""
+
+
+class SpaceDeletionRepository(Protocol):
+    async def owner_for(self, scope: ContextId) -> SubjectId | None: ...
+    async def prepare(self, subject: SubjectId, scope: ContextId, name: str) -> bool: ...
+    async def complete(self, subject: SubjectId, scope: ContextId,
+                       purge_graph: Callable[[str], None],
+                       purge_private: Callable[[str, str], None]) -> None: ...

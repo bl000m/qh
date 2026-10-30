@@ -14,6 +14,7 @@ from app.projections.services import ProjectionService
 from app.projections.disclosure_service import DisclosureService
 from app.chat.guest import GuestSnapshotChat
 from app.understanding.consolidation import ContextConsolidation
+from app.context.deletion import SpaceDeletion
 
 
 class EnvironmentApplication(Protocol):
@@ -80,3 +81,4 @@ class ApplicationServices:
     sharing: DisclosureService | None = None
     guest_chat: GuestSnapshotChat | None = None
     consolidation: "ContextConsolidation | None" = None
+    space_deletion: "SpaceDeletion | None" = None

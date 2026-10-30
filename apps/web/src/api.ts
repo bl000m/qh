@@ -36,6 +36,9 @@ function workspaceState(state:WorkspaceState,scope:string):WorkspaceState {
     return state;
 }
 export class QhApi {
+  async deleteSpace(scope:string,confirmation:import('../../../packages/shared/src/context-space').SpaceDeletionInput):Promise<void>{
+    await this.request('/context-spaces/'+scope,'DELETE',confirmation);
+  }
   private readonly navigationReads=new NavigationReads();
   private readonly prefetching=new Set<string>();
   private navigationOwner:string|null=null;
