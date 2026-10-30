@@ -122,6 +122,39 @@ def summary_schema(documents=()):
     return result
 
 
+def final_summary_schema(packet):
+    """Constrain the overview call to complete, already extracted statements."""
+    result = summary_schema(packet['documents'])
+    _statement_choices(result, packet['statements'])
+    if not packet['documents']:
+        return result
+    choices = []
+    for document in packet['documents']:
+        eligible = []
+        for item in packet['evidence']:
+            turns = {turn for passage in item['passages'] for turn in passage['turn_ids']}
+            supporting_documents = {d['document_ref'] for d in packet['documents'] if turns.intersection(d['turn_ids'])}
+            if supporting_documents == {document['document_ref']}:
+                eligible.append(item['statement'])
+        if eligible:
+            component = deepcopy(RECAP_SCHEMA)
+            component['properties']['document_ref'] = dict(type='string', enum=[document['document_ref']])
+            component['required'].append('document_ref')
+            _statement_choices(component, eligible)
+            choices.append(component)
+    documents = result['properties']['documents']
+    documents.update(minItems=len(choices), maxItems=len(choices))
+    if choices:
+        documents['items'] = dict(anyOf=choices)
+    return result
+
+
+def _statement_choices(component, statements):
+    support = component['properties']['supporting_statements']
+    support.update(uniqueItems=True, maxItems=min(100, len(set(statements))))
+    support['items']['enum'] = list(dict.fromkeys(statements))
+
+
 def schema(atomic_schema, documents=()):
     return dict(type='object', additionalProperties=False,
         required=['format', 'understanding', 'recap'], properties=dict(

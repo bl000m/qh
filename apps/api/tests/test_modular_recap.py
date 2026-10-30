@@ -25,7 +25,7 @@ TEXTS=['Giulia Rossi décrit son expérience en développement dans son CV.',
     'Giulia souhaiterait devenir architecte, sans décision contractuelle.']
 
 
-def generate_documents(long=False):
+def generate_documents(long=False, invalid_support=False):
     scope,version=str(uuid4()),str(uuid4())
     originals,turns,catalogue=[],[],[]
     for i,text in enumerate(TEXTS):
@@ -41,6 +41,15 @@ def generate_documents(long=False):
         packet=json.loads(request.messages[-1].content);packets.append(packet)
         if 'statements' in packet:
             assert packet['documents'][0]['turn_ids']
+            schema = request.output_schema
+            assert schema['properties']['supporting_statements']['items']['enum'] == TEXTS
+            documents_schema = schema['properties']['documents']
+            assert documents_schema['minItems'] == documents_schema['maxItems'] == 3
+            for index, component in enumerate(documents_schema['items']['anyOf']):
+                assert component['properties']['document_ref']['enum'] == [f'd{index+1}']
+                assert component['properties']['supporting_statements']['items']['enum'] == [TEXTS[index]]
+            if invalid_support:
+                summary['documents'][0]['supporting_statements'] = [TEXTS[0].replace('décrit', 'decrit')]
             return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(summary)))
         available=''.join(segment['text'] for segment in packet['segments'])
         atomic=dict(format='qh.atomic-understanding/1',items=[dict(text=text,primary_dimension=None,evidence=[dict(quote=text)]) for text in TEXTS if text in available])
@@ -48,10 +57,19 @@ def generate_documents(long=False):
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(reference_output(envelope,packet))))
 
     delegate=Mock(generate=AsyncMock(side_effect=respond))
-    provider=UumExtractionProvider(delegate,consolidate=True,with_recap=True,chunked=True,documents=catalogue)
-    source,rows=asyncio.run(propose_selected_conversation(subject_id=str(uuid4()),context_id=scope,
-        conversation=dict(id='modular',revision_no=1,acquired_at='2026-10-30T10:00:00Z',metadata={},turns=turns),
-        extraction_key='modular-test',policy=Mock(evaluate=AsyncMock(return_value=SimpleNamespace(allowed=True))),provider=provider,descriptor_version=3))
+    checks=[]
+    provider=UumExtractionProvider(delegate,consolidate=True,with_recap=True,chunked=True,documents=catalogue,
+        observer=lambda rule, passed, *reason: checks.append((rule,passed)))
+    try:
+        source,rows=asyncio.run(propose_selected_conversation(subject_id=str(uuid4()),context_id=scope,
+            conversation=dict(id='modular',revision_no=1,acquired_at='2026-10-30T10:00:00Z',metadata={},turns=turns),
+            extraction_key='modular-test',policy=Mock(evaluate=AsyncMock(return_value=SimpleNamespace(allowed=True))),provider=provider,descriptor_version=3))
+    except ValueError:
+        assert invalid_support
+        assert checks[-1] == ('uum.recap_exact_statement_support', False)
+        assert delegate.generate.await_count == len(provider.parts)+1
+        raise
+    assert checks.count(('uum.recap_exact_statement_support', True)) == 1
     rows=original_citations(rows,originals)
     before=deepcopy(rows)
     bound=recap.bind(provider.recap,rows,version,originals)
@@ -123,3 +141,81 @@ def test_compatible_legacy_recap_still_reads_without_modular_backfill():
     rows=projected();rows[0].content['extraction']['recap']['presentation_version']=2
     value=OutboundDisclosureGuard().apply(rows,policy())[0]
     assert value['recap'] and 'document_recaps' not in value
+
+
+def test_chunked_final_recap_rejects_altered_support_without_retry():
+    # Real failure pattern: one altered accent invalidates an otherwise valid summary.
+    with pytest.raises(ValueError, match='Exact unambiguous detailed recap support'):
+        generate_documents(long=True, invalid_support=True)
+
+
+def test_final_schema_excludes_foreign_and_mixed_document_supports():
+    packet = dict(documents=[dict(document_ref='d1',turn_ids=['cv']),
+        dict(document_ref='d2',turn_ids=['contract']),dict(document_ref='d3',turn_ids=['empty'])],
+        statements=['CV meaning.', 'Contract meaning.', 'Combined meaning.', 'Dialogue meaning.'],
+        evidence=[dict(statement=text, passages=[dict(turn_ids=turns)]) for text,turns in [
+            ('CV meaning.', ['cv']), ('Contract meaning.', ['contract']),
+            ('Combined meaning.', ['cv','contract']), ('Dialogue meaning.', ['chat'])]])
+    schema = recap.final_summary_schema(packet)
+    assert schema['properties']['supporting_statements']['items']['enum'] == packet['statements']
+    documents = schema['properties']['documents']
+    assert documents['minItems'] == documents['maxItems'] == 2
+    assert [c['properties']['supporting_statements']['items']['enum']
+        for c in documents['items']['anyOf']] == [['CV meaning.'], ['Contract meaning.']]
+    packet['documents'] = []
+    assert 'documents' not in recap.final_summary_schema(packet)['properties']
+
+
+def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
+    from app.understanding.selected import selected_source
+    from tests.test_consolidation import fixture
+
+    service, who, scope, repository, ai, batch = fixture()
+    intake, originals, turns = [], [], []
+    for index, text in enumerate(TEXTS):
+        document, source = prepare_document(scope, str(uuid4()), f'doc-{index}.pdf', b'%PDF-offline', [text])
+        intake.append(document)
+        originals.append(source)
+        turns.extend(document['document_turns'])
+    retained = selected_source(scope, dict(id='retained', acquired_at='2026-10-30T10:00:00Z', metadata={}, turns=turns))
+    current = dict(id=str(uuid4()), source_revision_id=retained['id'], revision_ids=[str(uuid4()) for _ in TEXTS])
+    batch.update(intake=intake, current=current, regenerating=True, pending_count=0)
+    frozen = deepcopy(batch)
+    service.read = AsyncMock(return_value=dict(understanding=[dict(content=dict(text=t), validation_state='proposed') for t in TEXTS]))
+    sources = {r['id']: r for r in [retained, *originals]}
+    repository.original = AsyncMock(side_effect=lambda context, revision: deepcopy(sources[revision]))
+    summary = dict(title='Parcours professionnel', text='Expérience, contrat et orientation envisagée.',
+        supporting_statements=[TEXTS[0]], documents=[dict(document_ref=f'd{i+1}', title=f'Document {i+1}',
+            text=text, supporting_statements=[text]) for i, text in enumerate(TEXTS)])
+
+    async def respond(request):
+        packet = json.loads(request.messages[-1].content)
+        atomic = dict(format='qh.atomic-understanding/1', items=[dict(text=t, primary_dimension=None,
+            evidence=[dict(quote=t)]) for t in TEXTS])
+        output = dict(format=recap.FORMAT, understanding=atomic, recap=summary)
+        return GenerationResult(message=Message(role=MessageRole.ASSISTANT, content=json.dumps(reference_output(output, packet))))
+
+    delegate = Mock(generate=AsyncMock(side_effect=respond))
+    ai._provider.return_value = delegate
+
+    async def publish(context, operation, intake_ids, source, revisions):
+        assert source == retained and intake_ids == [r['id'] for r in intake]
+        assert [r['content']['text'] for r in revisions] == TEXTS
+        assert len({r['item_id'] for r in revisions}) == len(TEXTS)
+        for row, original in zip(revisions, originals):
+            assert any(c['source_revision_id'] == original['id'] for c in row['content']['citations'])
+        return dict(current=dict(id=operation, revision_ids=[r['id'] for r in revisions]))
+
+    repository.publish.side_effect = publish
+    result = asyncio.run(service.consolidate(who, scope, str(uuid4())))
+    assert len(result['recap']['documents']) == 3 and delegate.generate.await_count == 1
+    repository.import_document.assert_not_called()
+    assert batch == frozen and sources[retained['id']] == retained
+    # A failed explicit regeneration must never publish an unvalidated replacement.
+    repository.publish.reset_mock()
+    summary['documents'][0]['supporting_statements'] = [TEXTS[0] + ' Invented.']
+    with pytest.raises(ValueError, match='Exact unambiguous'):
+        asyncio.run(service.consolidate(who, scope, str(uuid4())))
+    repository.publish.assert_not_awaited()
+    repository.fail.assert_awaited_once()
+    assert batch == frozen and delegate.generate.await_count == 2

@@ -203,7 +203,7 @@ class UumExtractionProvider:
             atomic=decode_output(result.message.content)
             # Same UUM contract validation, then the Engine revalidates the whole batch.
             if atomic['items']:
-                normalize_output(atomic,dict(id=source['source_revision_id'],content=part['text'],origin=dict(turns=part['turns'])))
+                normalize_output(atomic,dict(id=source['source_revision_id'],content=part['text'],origin=dict(turns=part['turns'])), self.observer)
             items.extend(atomic['items'])
             if len(items)>MAX_ITEMS:
                 from app.understanding.documents import DocumentInvalid
@@ -211,19 +211,22 @@ class UumExtractionProvider:
             self.parts.append(dict(start=start,end=end,turn_ids=[t['turn_id'] for t in part['turns']]))
             start=end
         output=dict(format=FORMAT,items=items)
+        if items:
+            normalize_output(output, dict(id=source['source_revision_id'], content=source['text'],
+                origin=dict(turns=source['turns'])), self.observer)
         if self.with_recap and items:
             # Overview only: it cannot drop or rewrite the extracted detailed items.
+            packet = self._recap_packet(items, source)
             summary=await self.delegate.generate(GenerationRequest(messages=(
                 Message(role=MessageRole.SYSTEM,content=recap_output.INSTRUCTIONS+(recap_output.MODULAR_INSTRUCTIONS if self.documents else '')+
                     '\nReturn ONLY the recap object for these complete proposed statements. '
                     'Copy supporting_statements exactly. Statements may conflict; preserve uncertainty. '
                     'All source parts were processed; do not describe a partial overview as exhaustive.'),
-                Message(role=MessageRole.USER,content=canonical_json(self._recap_packet(items, source)))),
-                output_schema=recap_output.summary_schema(self.documents)))
+                Message(role=MessageRole.USER,content=canonical_json(packet))),
+                output_schema=recap_output.final_summary_schema(packet)))
             if summary.message.role!=MessageRole.ASSISTANT:
                 raise ValueError('Assistant recap required')
-            _,self.recap=recap_output.decode(canonical_json(dict(format=recap_output.FORMAT,
-                understanding=output,recap=decode_output(summary.message.content))), self.documents)
+            self._decode_recap(summary.message.content, atomic=output)
         return replace(result,message=Message(role=MessageRole.ASSISTANT,content=canonical_json(output)))
 
     def _document_catalogue(self):
@@ -281,8 +284,17 @@ class UumExtractionProvider:
             return result
         if result.message.role != MessageRole.ASSISTANT:
             raise ValueError('Consolidation must return an assistant envelope')
+        atomic = self._decode_recap(result.message.content)
+        # Explicit envelope adapter, not a heuristic repair. The unchanged Engine
+        # validates the exact atomic payload; diagnostics retain the raw envelope.
+        return replace(result, message=Message(role=MessageRole.ASSISTANT, content=canonical_json(atomic)))
+
+    def _decode_recap(self, content, atomic=None):
         try:
-            atomic, self.recap = recap_output.decode(result.message.content, self.documents)
+            if atomic is not None:
+                content = canonical_json(dict(format=recap_output.FORMAT, understanding=atomic,
+                    recap=decode_output(content)))
+            atomic, self.recap = recap_output.decode(content, self.documents)
         except ValueError:
             if self.observer:
                 self.observer('uum.recap_exact_statement_support', False,
@@ -290,9 +302,7 @@ class UumExtractionProvider:
             raise
         if self.observer:
             self.observer('uum.recap_exact_statement_support', True)
-        # Explicit envelope adapter, not a heuristic repair. The unchanged Engine
-        # validates the exact atomic payload; diagnostics retain the raw envelope.
-        return replace(result, message=Message(role=MessageRole.ASSISTANT, content=canonical_json(atomic)))
+        return atomic
 
     def _expand_references(self, result, references):
         if result.message.role != MessageRole.ASSISTANT:

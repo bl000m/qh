@@ -123,9 +123,11 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
     output['understanding']['items'][0]['evidence'] = [dict(quote=original_quote)]
     request = build_context(context_id='space', revisions=(), messages=(
         Message(role=MessageRole.USER, content='Recipe?'),)).request
+    # All fixture evidence must belong to the authorized source packet.
+    source_text = '\n'.join([original_quote, *details[1:]])
     # The Engine supplies the authorized source packet; no provider HTTP is used.
     request = replace(request, messages=(request.messages[0], Message(role=MessageRole.USER,
-        content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=original_quote, turns=[dict(turn_id='turn', start=0, end=len(original_quote))])))))
+        content=json.dumps(dict(source_revision_id='source', input_sha256='hash', text=source_text, turns=[dict(turn_id='turn', start=0, end=len(source_text))])))))
     delegate = Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))))
     reference_replay(delegate)
