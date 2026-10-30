@@ -7,7 +7,7 @@ from app.projections.guest import GuestUnavailable
 
 def recipient_payload(payload, *, include_quotes=False):
     try:
-        if (not isinstance(payload, dict) or set(payload)-{'format', 'items', 'recap', 'name'}
+        if (not isinstance(payload, dict) or set(payload)-{'format', 'items', 'recap', 'document_recaps', 'name'}
                 or payload.get('format') != 'qh.disclosure/1'
                 or not isinstance(payload.get('items'), list) or not 1 <= len(payload['items']) <= 100):
             raise ValueError()
@@ -19,12 +19,13 @@ def recipient_payload(payload, *, include_quotes=False):
         for item in payload['items']:
             _item(item, refs, include_quotes)
         if 'recap' in payload:
-            recap = payload['recap']
-            if (not isinstance(recap, dict) or set(recap) != {'title', 'text'}
-                    or not isinstance(recap['title'], str) or not 1 <= len(recap['title'].strip()) <= 120
-                    or not isinstance(recap['text'], str) or not 1 <= len(recap['text'].strip()) <= 1500
-                    or len(recap['text'].split()) > 100):
+            _recap(payload['recap'])
+        if 'document_recaps' in payload:
+            components = payload['document_recaps']
+            if not isinstance(components,list) or not 1<=len(components)<=100:
                 raise ValueError()
+            for component in components:
+                _recap(component)
     except (ValueError, KeyError, TypeError):
         raise GuestUnavailable('Guest access unavailable') from None
     return payload
@@ -57,3 +58,11 @@ def _item(item, refs, include_quotes):
                 or not isinstance(quote['quote'], str) or not 1 <= len(quote['quote']) <= 16000
                 or type(quote['redacted']) is not bool):
             raise ValueError()
+
+
+def _recap(recap):
+    if (not isinstance(recap,dict) or set(recap)!={'title','text'}
+        or not isinstance(recap['title'],str) or not 1<=len(recap['title'].strip())<=120
+        or not isinstance(recap['text'],str) or not 1<=len(recap['text'].strip())<=1500
+        or len(recap['text'].split())>100):
+        raise ValueError()

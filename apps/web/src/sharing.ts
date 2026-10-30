@@ -14,6 +14,7 @@ export function sessionView(value:unknown):GuestSessionView{
  const v=value as GuestSessionView;
  if(!v||typeof v.name!=='string'||!v.name.trim()||typeof v.can_ask!=='boolean'||v.verification!=='mailbox_control'||!Number.isFinite(Date.parse(v.expires_at)))throw new ApiError(502);
  if(v.recap&&!validRecap(v.recap))throw new ApiError(502);
+ if(v.document_recaps&&(!Array.isArray(v.document_recaps)||v.document_recaps.length>100||v.document_recaps.some(c=>!validRecap(c))))throw new ApiError(502);
  return v;
 }
 function validRecap(recap:NonNullable<GuestSessionView['recap']>):boolean{
@@ -26,6 +27,7 @@ export function sharedPayload(value:unknown):SharedPayload{
    !i||typeof i.reference!=='string'||typeof i.text!=='string'||i.text.length>16000||
    !['proposed','confirmed'].includes(i.validation_state)||!Array.isArray(i.sources)))throw new ApiError(502);
  if(v.recap&&!validRecap(v.recap))throw new ApiError(502);
+ if(v.document_recaps&&(!Array.isArray(v.document_recaps)||v.document_recaps.length>100||v.document_recaps.some(c=>!validRecap(c))))throw new ApiError(502);
  return v;
 }
 export function recipientAnswer(value:unknown):RecipientAnswer{

@@ -184,3 +184,5 @@
 .sharing-dialog.space-action-dialog input:not([type=checkbox]){margin:0;}
 .sharing-dialog.space-action-dialog input:focus-visible{outline:2px solid #cbd1dd;outline-offset:2px;}
 .sharing-dialog.space-action-dialog>header>button{min-width:36px;}
+
+.sharing-preview-card .shared-recap-component{margin:12px 0 0;}.shared-recap-component+.shared-recap-component{padding-top:10px;border-top:1px solid #e4e6ec;}

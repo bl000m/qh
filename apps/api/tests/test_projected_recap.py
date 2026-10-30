@@ -50,7 +50,8 @@ def test_partial_basis_and_masked_summary_stay_closed_without_invented_fallback(
     assert 'recap' not in payload and 'private@example.test' not in str(payload)
 
 
-def test_exact_preview_is_approved_then_returned_by_guest_session_without_inference():
+@pytest.mark.parametrize('modular',[False,True])
+def test_exact_preview_is_approved_then_returned_by_guest_session_without_inference(modular):
     import asyncio
     from dataclasses import replace
     from datetime import datetime, timezone
@@ -67,7 +68,11 @@ def test_exact_preview_is_approved_then_returned_by_guest_session_without_infere
     from tests.test_projection_drafts import uid
     from tests.test_sharing_simplified import setup
 
-    rows=projected();owner,scope=uid(),uid()
+    rows=projected()
+    if modular:
+        from tests.test_modular_recap import projected_documents
+        rows=projected_documents()
+    owner,scope=uid(),uid()
     keys=tuple(Candidate(key=RevisionKey(item_id=r.item_id,revision_id=r.revision_id),state=r.validation_state,endpoints=()) for r in rows)
     repository=Mock(select=AsyncMock(return_value=Selection(context_id=scope,stamp='stable',candidates=keys,name='Atelier')),
         prepare=AsyncMock(side_effect=lambda value:value),preview=AsyncMock(),approve=AsyncMock())
@@ -92,4 +97,5 @@ def test_exact_preview_is_approved_then_returned_by_guest_session_without_infere
         response=client.get('/guest/session')
         assert response.status_code==200
         assert response.json()['recap']==preview.payload['recap']
+        assert response.json()['document_recaps']==preview.payload.get('document_recaps',[])
     provider.generate.assert_not_awaited()

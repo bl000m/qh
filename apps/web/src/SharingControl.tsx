@@ -79,8 +79,8 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  </fieldset></div>
  <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Voici ce que verra votre destinataire après vérification de son accès.</p>
  <div className="sharing-preview-card"><strong>{preview?.payload.name??name}</strong>
- <SharedRecap recap={matches?preview?.payload.recap:undefined}/>
- {(!matches||!preview?.payload.recap)&&<p className="muted">{preparing?'Préparation de l’aperçu autorisé…':matches?(preview?.report.recap_status==='restricted'?'La compréhension complète ne peut pas être partagée dans ce périmètre. Aucun résumé partiel vérifiable n’est disponible sans nouvelle analyse.':'Aucun résumé vérifiable n’est disponible pour cette sélection. Les questions porteront sur les informations autorisées.'):'Indiquez le destinataire pour préparer l’aperçu autorisé.'}</p>}
+ <SharedRecap recap={matches?preview?.payload.recap:undefined} documentRecaps={matches?preview?.payload.document_recaps:undefined}/>
+ {(!matches||!preview?.payload.recap&&!preview?.payload.document_recaps?.length)&&<p className="muted">{preparing?'Préparation de l’aperçu autorisé…':matches?(preview?.report.recap_status==='restricted'?'La compréhension complète ne peut pas être partagée dans ce périmètre. Aucun résumé partiel vérifiable n’est disponible sans nouvelle analyse.':'Aucun résumé vérifiable n’est disponible pour cette sélection. Les questions porteront sur les informations autorisées.'):'Indiquez le destinataire pour préparer l’aperçu autorisé.'}</p>}
  <p className="small muted">Contenu filtré selon les règles de confidentialité</p></div>
  <SharedDocumentsPreview documents={documents} selected={originals}/>
  <p className="sharing-original-warning"><Icon name="info"/>Un PDF original peut contenir des informations absentes de l’aperçu ou exclues du partage. Vérifiez chaque autorisation avant l’envoi.</p>

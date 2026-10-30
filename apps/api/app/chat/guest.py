@@ -25,6 +25,8 @@ def question_payload(payload):
     context=dict(format=payload['format'], name=payload.get('name', 'Contexte partagé'))
     if payload.get('recap'):
         context['recap']=dict(payload['recap'])  # Already part of this authorized projection only.
+    if payload.get('document_recaps'):
+        context['document_recaps']=[dict(c) for c in payload['document_recaps']]
     context['items']=items
     return context
 

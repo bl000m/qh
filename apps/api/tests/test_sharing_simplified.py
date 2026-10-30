@@ -160,6 +160,7 @@ def test_guest_recap_requires_read_and_only_comes_from_authorized_snapshot(read)
         guest.repository.authenticate.return_value = grant
         app.state.services.policy._guest_for.return_value = grant
     payload['recap'] = dict(title='Présentation autorisée', text='Résumé limité aux informations autorisées.')
+    payload['document_recaps'] = [dict(title='CV autorisé',text='Expérience déclarée dans le CV.')]
     guest.repository.payload.return_value = GuestSnapshot(context_id=grant.context_id,
         snapshot_id=snapshot, payload_json=json.dumps(payload), include_quotes=True)
     with TestClient(app, base_url='https://qh.example.test') as client:
@@ -168,6 +169,7 @@ def test_guest_recap_requires_read_and_only_comes_from_authorized_snapshot(read)
         result = client.get('/guest/session')
         assert result.status_code == 200
         assert result.json()['recap'] == (payload['recap'] if read else None)
+        assert result.json()['document_recaps'] == (payload['document_recaps'] if read else [])
         assert 'ORIGINAL-QUOTE-CANARY' not in result.text and 'items' not in result.json()
 
 

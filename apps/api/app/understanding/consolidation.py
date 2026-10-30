@@ -93,8 +93,10 @@ class ContextConsolidation:
                 previous = tuple(dict(text=row['content']['text'],
                     primary_dimension=row['content'].get('primary_dimension'),
                     validation_state=row['validation_state']) for row in current['understanding'])
+            document_catalogue = [dict(source_revision_id=r['source_revision_id'],name=r.get('display_name',r['name']),
+                turn_ids=[t['id'] for t in r['document_turns']]) for r in batch['intake'] if r.get('source_revision_id')]
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure)
+                consolidate=True, previous=previous, with_recap=True, documents=document_catalogue, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure)
             original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
@@ -115,7 +117,7 @@ class ContextConsolidation:
             if provider.parts:
                 for revision in revisions:
                     revision['content']['extraction']['parts']=provider.parts
-            revisions = recap_output.bind(provider.recap, revisions, operation)
+            revisions = recap_output.bind(provider.recap, revisions, operation, documents)
             await self.ai._authorize(identity, request)
             await self._allow(identity.subject_id, scope)
             result = await repository.publish(scope, operation,
