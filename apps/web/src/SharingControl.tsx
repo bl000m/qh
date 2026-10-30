@@ -8,7 +8,7 @@ import {sharingEnabled,sharingError,recipientAnswer} from './sharing';
 import SharedRecap from './SharedRecap';
 import AnswerMarkdown from './AnswerMarkdown';
 import './sharing.css';
-import {OriginalDocumentPermission,SemanticDocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
+import {DocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
 import {Icon} from './Ui';
 
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
@@ -17,7 +17,6 @@ const maskLabels:Record<string,string>={email:'Adresses email masquées',url:'Li
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('Consulter et interroger le contexte partagé');
  const [allowUpdates,setAllowUpdates]=useState(false);
- const [semanticDocuments,setSemanticDocuments]=useState<string[]>([]);
  const [documents,setDocuments]=useState<import('../../../packages/shared/src/context-space').SourceDocument[]>([]),[originals,setOriginals]=useState<string[]>([]);
  const [documentStatus,setDocumentStatus]=useState('loading');
  function loadDocuments(){setDocumentStatus('loading');void api.sharing<import('../../../packages/shared/src/context-space').SourceDocument[]>(scope,'workspace/documents').then(rows=>{setDocuments(rows);setDocumentStatus('ready');}).catch(()=>setDocumentStatus('error'));}
@@ -37,14 +36,14 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!purpose.trim()||!Number.isFinite(expires)||expires<=Date.now()){setPreparing(false);return;}
   setPreparing(true);
   const timer=setTimeout(()=>{
-   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),excluded,allow_update_proposals:allowUpdates,original_documents:originals,semantic_documents:semanticDocuments};
+   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),excluded,allow_update_proposals:allowUpdates,documents:originals};
    void api.sharing<SharingPreview>(scope,'sharing/previews','POST',body)
     .then(value=>{if(current===generation.current)setPreview(value);})
     .catch(e=>{if(current===generation.current)setError(sharingError(e));})
     .finally(()=>{if(current===generation.current)setPreparing(false);});
   },400);
   return()=>{clearTimeout(timer);generation.current++;};
- },[api,scope,email,purpose,expiry,excluded,allowUpdates,originals,semanticDocuments,previewRefresh]);
+ },[api,scope,email,purpose,expiry,excluded,allowUpdates,originals,previewRefresh]);
  function exclude(reference:string){const key=preview?.report.anchors?.find(a=>a.reference===reference);if(!key)return;
   setExcluded(previous=>[...previous,{item_id:key.item_id,revision_id:key.revision_id}]);}
  function fail(error:unknown){setError(sharingError(error));if(error instanceof ApiError&&error.status===409){setPreview(null);setSnapshot('');}}
@@ -61,7 +60,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   catch(e){setError(sharingError(e));}finally{lock.current=false;setBusy(false);}}
  const matches=preview&&preview.policy.recipient_email===email&&preview.policy.purpose===purpose
   &&JSON.stringify(preview.policy.original_documents??[])===JSON.stringify(originals)
-  &&JSON.stringify(preview.policy.semantic_documents??[])===JSON.stringify(semanticDocuments)
+  &&JSON.stringify(preview.policy.semantic_documents??[])===JSON.stringify(originals)
   &&(preview.policy.allow_update_proposals??false)===allowUpdates
   &&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime()
   &&!excluded.some(k=>preview.report.anchors?.some(a=>a.item_id===k.item_id&&a.revision_id===k.revision_id));
@@ -76,8 +75,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <h3>Droits accordés</h3>
  <div className="sharing-permission included"><span className="permission-tick" aria-hidden="true">✓</span><div><strong>Consulter et interroger le contexte</strong><span className="permission-badge">Toujours inclus</span><p>Le destinataire peut lire le résumé autorisé et poser des questions, sans modifier le contenu.</p></div></div>
  <label className="sharing-permission check"><input type="checkbox" checked={allowUpdates} onChange={e=>setAllowUpdates(e.target.checked)}/><span><strong>Autoriser les propositions de mise à jour</strong><span className="permission-description">Vous conservez le contrôle et la validation finale de toute modification.</span></span></label>
- <SemanticDocumentPermission documents={documents} selected={semanticDocuments} onChange={setSemanticDocuments} status={documentStatus} onRetry={loadDocuments}/>
- <OriginalDocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
+ <DocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
 
  </fieldset></div>
  <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Voici ce que verra votre destinataire après vérification de son accès.</p>
@@ -107,7 +105,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  </details>
  {link&&<section aria-label="Invitation créée"><h3>Invitation prête</h3><p>Le destinataire devra vérifier sa boîte email.</p><label>Lien d’invitation<input readOnly value={link} onFocus={e=>e.target.select()}/></label></section>}
  </div><footer className="sharing-footer"><span className="sharing-footer-note"><Icon name="lock"/>Accès nominatif · expiration et révocation conservées</span><button className="secondary" type="button" onClick={onClose}>Annuler</button>
- {!link&&<button disabled={busy||preparing||!matches||!preview?.payload.items.length&&!originals.length}>{busy?'En cours…':preparing?'Préparation du partage…':'Créer l’invitation'}</button>}
+ {!link&&<button disabled={busy||preparing||!matches||!preview?.payload.items.length}>{busy?'En cours…':preparing?'Préparation du partage…':'Créer l’invitation'}</button>}
  </footer></form></Modal>;
 }
 export default function SharingControl({api,scope,name,label='Partager ce contexte',primary=false}:{api:QhApi;scope:string;name:string;label?:string;primary?:boolean}){

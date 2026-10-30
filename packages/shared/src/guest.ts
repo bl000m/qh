@@ -34,7 +34,7 @@ export interface GuestSessionView {
 }
 
 export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean;documents?:import('./context-space').SourceDocument[]}
-export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;original_documents?:string[];semantic_documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
+export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;documents?:string[];excluded?:{item_id:string;revision_id:string}[]}
 
 export interface SharingPolicy {
   recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
@@ -52,7 +52,7 @@ export interface SharedItem {
 export interface SharedPayload {format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[];semantic_document_count?:number}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
-  report:{status:string;message:string;warning:string;risks:string[];recap_status?:'available'|'restricted'|'unavailable';
+  report:{status:string;message:string;warning:string;risks:string[];introduction_only?:boolean;recap_status?:'available'|'restricted'|'unavailable';
     anchors?:{reference:string;item_id:string;revision_id:string}[];exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
 }
 export interface GuestProviderStatus {model:'offline'|'mistral-small-2603';enabled:boolean;simulated:boolean;remaining_usd?:string|null;plafond_reached?:boolean;authorized_total_eur?:string;budget_scope?:'development_global'}

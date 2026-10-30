@@ -193,6 +193,20 @@ def test_final_recap_references_preserve_exact_text_and_reject_foreign_support()
         protocol.expand(json.dumps(wire))
 
 
+def test_general_generation_cannot_select_a_support_that_the_guard_would_mask():
+    from app.projections.disclosure_guard import introductory_support
+    statements=['Parcours professionnel déclaré.', 'Contact au +33 6 12 34 56 78.']
+    packet=dict(documents=[],statements=statements,evidence=[])
+    protocol=recap.FinalRecapReferences(packet,general_support_allowed=introductory_support)
+    assert protocol.schema['properties']['supporting_refs']['items']['enum']==['s001']
+    assert [s['text'] for s in protocol.packet['statements']]==statements
+    value=dict(title='Parcours',text='Présentation du parcours professionnel.',supporting_refs=['s002'])
+    with pytest.raises(ValueError,match='Exact unambiguous'):
+        protocol.expand(json.dumps(value))
+    value['supporting_refs']=['s001']
+    assert protocol.expand(json.dumps(value))['supporting_statements']==[statements[0]]
+
+
 def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
     from app.understanding.selected import selected_source
     from tests.test_consolidation import fixture

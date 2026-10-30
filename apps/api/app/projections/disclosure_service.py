@@ -60,8 +60,19 @@ class DisclosureService:
                 recipient=policy.recipient_email, purpose=policy.purpose, included=keys,
                 expires_at=policy.expires_at))
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
+        # The independently approved Space introduction retains ALL its exact
+        # supports and Guard checks. PDF selection restricts detailed knowledge,
+        # never re-summarizes or repairs an unsafe introduction.
+        general, general_report = self.guard.apply(rows, policy)
+        draft_rows = rows
         rows, document_exclusions = self._document_scope(rows, policy, selection.document_sources)
         payload, report = self.guard.apply(rows, policy)
+        payload.pop('recap', None)
+        if general.get('recap'):
+            payload['recap'] = general['recap']
+            report['risks'] = sorted(set(report['risks']) | set(general_report['risks']))
+            if not payload['items']:
+                self._introduction_only(draft_rows, payload, report, general_report)
         payload.pop('document_recaps', None)
         payload['semantic_document_count'] = len(policy.semantic_documents)
         report['recap_status'] = recap_status(rows, payload.get('recap'))
@@ -69,7 +80,7 @@ class DisclosureService:
         payload['name'] = title if not HIGH_RISK.search(title) else 'Contexte partagé'
         report['exclusions'] = excluded + document_exclusions + report['exclusions']
         report['status'] = 'review_required' if payload['items'] else 'no_disclosable_items'
-        report['message'] = ('Examinez la divulgation proposée.' if payload['items'] else
+        report['message'] = ('Examinez la divulgation proposée.' if report['status']=='review_required' else
             'Aucune information communicable dans ce périmètre.')
         if len(json.dumps(payload).encode()) > 262144:
             raise ProjectionUnavailable('Disclosure exceeds bounded preview size')
@@ -83,6 +94,29 @@ class DisclosureService:
         validate_preview(prepared, subject, scope)
         await self.drafts._allow(subject, scope)
         return prepared
+
+    @staticmethod
+    def _introduction_only(rows, payload, report, general_report):
+        """Snapshot representation of the exact recap; never a new canonical item."""
+        masked = {m['reference'] for m in general_report['masks']}
+        safe = {a['revision_id']:a for a in general_report['anchors'] if a['reference'] not in masked}
+        for row in rows:
+            extraction = row.content.get('extraction', {})
+            components = [c for c in extraction.get('recap_components', []) if c.get('kind')=='general']
+            root = extraction.get('recap', {})
+            if root and not root.get('modular'):
+                components.append(root)
+            for component in components:
+                if any(component.get(k)!=payload['recap'][k] for k in ('title','text')):
+                    continue
+                anchor = next((safe[ref] for ref in component.get('support_revision_ids', []) if ref in safe), None)
+                if anchor:
+                    payload['items'] = [dict(reference='R1', text=payload['recap']['text'],
+                        validation_state='proposed', origin_kind='ai', sources=[])]
+                    report['anchors'] = [dict(anchor, reference='R1')]
+                    report['introduction_only'] = True
+                    return
+        raise ProjectionUnavailable('Verified introduction support unavailable')
 
     @staticmethod
     def _document_scope(rows, policy, document_sources):
@@ -109,8 +143,7 @@ class DisclosureService:
         self._fresh(preview.policy, preview.created_at)
         if preview.fingerprint != fingerprint:
             raise ProjectionConflict('Disclosure changed')
-        if (not preview.payload['items'] and not preview.policy.original_documents
-            or preview.payload['items'] and preview.draft_id is None):
+        if not preview.payload['items'] or preview.draft_id is None:
             raise ProjectionNotFound('No disclosable items')
         risks = set(preview.report['risks'])
         if (not isinstance(exceptions, tuple) or len(set(exceptions)) != len(exceptions)

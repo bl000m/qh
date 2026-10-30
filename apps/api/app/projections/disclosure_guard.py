@@ -26,6 +26,12 @@ def redact(text):
     return text, masked
 
 
+def introductory_support(text):
+    """Only unmasked, non-sensitive statements may support an introduction."""
+    return (not HIGH_RISK.search(text) and not redact(text)[1]
+        and not any(ord(c)<32 and c not in '\n\t' for c in text))
+
+
 class OutboundDisclosureGuard:
     def apply(self, revisions, policy):
         items, exclusions, masks, anchors = [], [], [], []

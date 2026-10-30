@@ -208,7 +208,6 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
    <p className="small muted">Mis à jour le {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
    <h3>{summary?.title??name??'Ce contexte'}</h3>
    {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
-   {summary?.documents?.map(doc=><section key={doc.source_revision_id}><h4>{doc.title}</h4><p className="context-recap">{doc.text}</p></section>)}
    {state.current.has_recap===false&&<p className="small muted">Mémoriser actualisera le récapitulatif, sans ajouter de message.</p>}
    <div className="actions"><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void memorize(true);}}>Régénérer</button></div>
 

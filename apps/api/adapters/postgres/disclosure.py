@@ -129,8 +129,7 @@ class PostgresDisclosureRepository:
                 (preview.id, preview.context_id)).fetchone()
             if stored is None or self._preview(stored, preview.owner_id) != preview:
                 raise ProjectionConflict('Disclosure changed')
-            if (not preview.payload['items'] and not preview.policy.original_documents
-                or preview.payload['items'] and preview.draft_id is None
+            if (not preview.payload['items'] or preview.draft_id is None
                 or tuple(sorted(set(exceptions))) != tuple(sorted(preview.report['risks']))):
                 raise ProjectionConflict('Explicit disclosure decision required')
             # A unique preview makes an explicit approval replay idempotent.

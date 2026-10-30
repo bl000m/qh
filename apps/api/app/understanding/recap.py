@@ -118,6 +118,8 @@ labels, not evidence. A document's existence/name alone does not establish its c
 
 def summary_schema(documents=()):
     result = deepcopy(RECAP_SCHEMA)
+    result['properties']['supporting_statements']['maxItems'] = 2
+    result['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,39}\s*$'
     if documents:
         component = deepcopy(RECAP_SCHEMA)
         component['properties']['document_ref'] = dict(type='string', enum=[d['document_ref'] for d in documents])
@@ -169,13 +171,19 @@ Each component contains title, text, supporting_refs. Every component must be fu
 supported by its own eligible statements; preserve uncertainty and attribution.
 Do not copy private document details into the general overview. No new atomic items.'''
     instructions += '''
-Write a short synopsis, aiming for 40-60 whitespace-separated words per component.
+For the GENERAL title/text, introduce ONLY the subject and broad professional or
+other topical scope, in one or two short sentences and at most 40 words. Do not
+list document contents, salaries, contractual terms, dates or personal details.
+Choose AT MOST TWO exact statement refs that alone fully support this introduction.
+All other statements belong in the detailed understanding, not in general support.
+For DOCUMENT synopses aim for 40-60 whitespace-separated words; the general
+introduction has no minimum length.
 The absolute maximum is 100 words per text, including dates and list entries.
 Do not enumerate every fact: details remain in the atomic items. Check each text's
 word count before returning. For the general overview select only the minimal
 statements actually needed for its subject/scope; never list all refs by default.'''
 
-    def __init__(self, packet):
+    def __init__(self, packet, *, general_support_allowed=None):
         self.statements = {f's{i+1:03d}': text for i, text in enumerate(packet['statements'])}
         identifiers = {text: ref for ref, text in self.statements.items()}
         self.packet = deepcopy(packet)
@@ -184,6 +192,12 @@ statements actually needed for its subject/scope; never list all refs by default
             item['statement_ref'] = identifiers[item.pop('statement')]
         self.schema = final_summary_schema(packet)
         self._references(self.schema, identifiers)
+        self.schema['properties']['supporting_refs']['maxItems'] = min(2, len(self.statements))
+        if general_support_allowed is not None:
+            eligible = [ref for ref,text in self.statements.items() if general_support_allowed(text)]
+            if eligible:
+                self.schema['properties']['supporting_refs']['items']['enum'] = eligible
+        self.schema['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,39}\s*$'
         self.documents = {}
         if packet['documents']:
             for component in self.schema['properties']['documents']['items'].get('anyOf', []):
@@ -205,9 +219,12 @@ statements actually needed for its subject/scope; never list all refs by default
 
     def _expand_component(self, value, schema):
         object_fields(value, ('title', 'text', 'supporting_refs'))
+        if schema is self.schema and isinstance(value['text'], str) and len(value['text'].split())>40:
+            raise ValueError('Bounded introductory recap required')
         refs = value['supporting_refs']
         allowed = schema['properties']['supporting_refs']['items']['enum']
-        if (not isinstance(refs, list) or not 1<=len(refs)<=100
+        maximum = schema['properties']['supporting_refs']['maxItems']
+        if (not isinstance(refs, list) or not 1<=len(refs)<=maximum
             or any(not isinstance(ref, str) or ref not in allowed for ref in refs)
             or len(set(refs))!=len(refs)):
             raise ValueError('Exact unambiguous detailed recap support required')

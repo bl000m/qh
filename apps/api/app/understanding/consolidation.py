@@ -15,6 +15,7 @@ from app.understanding.selected import propose_selected_conversation
 from app.understanding.uum import UumExtractionProvider
 from app.understanding.enrichment import EnrichmentUnavailable
 from app.understanding import recap as recap_output
+from app.projections.disclosure_guard import introductory_support
 
 
 class WorkspaceChatFailed(ChatProviderUnavailable):
@@ -96,7 +97,8 @@ class ContextConsolidation:
             document_catalogue = [dict(source_revision_id=r['source_revision_id'],name=r.get('display_name',r['name']),
                 turn_ids=[t['id'] for t in r['document_turns']]) for r in batch['intake'] if r.get('source_revision_id')]
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True, documents=document_catalogue, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure)
+                consolidate=True, previous=previous, with_recap=True, documents=document_catalogue, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure,
+                general_support_allowed=introductory_support)
             original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,

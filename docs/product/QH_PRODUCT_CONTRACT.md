@@ -898,14 +898,25 @@ its complete basis survives the disclosure scope without masking; otherwise omit
 it rather than disclose excluded knowledge. Existing approved snapshots remain
 immutable. Guest chat uses only the authorized materialized projection.
 
-### Document information permissions — owner, 2026-10-30
+### Unified document sharing and Space introduction — owner, 2026-10-30
 
-New sharing previews authorize PDF-derived knowledge only for the explicitly selected
-SourceRevision IDs (`semantic_documents`, empty by default). All document sources
-supporting a mixed item must be authorized; original PDF download permissions remain
-independent. Selection of all current documents freezes those exact IDs and never
-includes later uploads. Existing approved snapshots remain immutable.
-Preview and guest sidebar show only the communicable general recap, never automatic
-document synopses. Owner document recaps remain canonical. Sharing performs no inference.
-An original-only snapshot may contain zero semantic items; it cannot answer from PDFs
-whose information was not authorized. The existing Guard, OTP, expiry and revocation apply.
+The later owner decision supersedes separate semantic/download choices. New sharing
+requests select exact SourceRevision IDs once (`documents`, empty by default),
+granting both document-derived knowledge and original PDF access. Mixed items require
+all supporting document sources. All-current selection freezes the current IDs;
+later uploads remain private. Retained policies/snapshots/invitations are unchanged.
+
+Owner Understanding, preview and guest show one general title/introduction only.
+Existing document synopses remain immutable metadata, without automatic presentation.
+New introductions describe the subject and broad scope, using minimal exact UUM
+support rather than a catalogue of private document details. The independently
+reviewed introduction may be approved without releasing its detailed supporting
+items or PDFs. The complete canonical supports still pass graph/citation checks and
+the unchanged Disclosure Guard: excluded/masked supports or an unsafe introduction
+prevent its release. A general label alone grants nothing. The general synopsis is
+stable across document selections; document items and downloads follow the selected
+IDs. Summary-only snapshots are allowed with exact owner approval. Sharing and
+snapshot opening perform no inference. No persistent migration is required.
+An introduction-only projection represents the exact verified synopsis as its
+sole minimized item, anchored to its existing canonical support. It creates no
+canonical Understanding Item and releases no underlying document details.

@@ -112,6 +112,22 @@ def test_three_field_share_automatically_uses_current_knowledge_and_owner_previe
     sharing.drafts._allow.assert_any_await(owner,scope)
 
 
+@pytest.mark.parametrize('count', [0,1,3])
+def test_one_document_selection_grants_both_knowledge_and_original_download(count):
+    app,owner,scope,_,_,provider,sharing,_=setup()
+    documents=[uid() for _ in range(3)]
+    app.state.services=replace(app.state.services,consolidation=Mock(documents=AsyncMock(return_value=[dict(source_revision_id=d) for d in documents])))
+    request=dict(recipient_email='invite@example.test',purpose='Consultation',documents=documents[:count],
+        expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat())
+    with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test','Authorization':'Bearer owner'}) as client:
+        assert client.post(f'/context-spaces/{scope}/sharing/previews',json=request).status_code==201
+        policy=sharing.prepare.call_args.args[2]
+        assert policy.original_documents==policy.semantic_documents==tuple(documents[:count])
+        assert client.post(f'/context-spaces/{scope}/sharing/previews',json=dict(request,original_documents=[])).status_code==400
+        assert client.post(f'/context-spaces/{scope}/sharing/previews',json=dict(request,documents=[uid()])).status_code!=201
+    provider.generate.assert_not_awaited()
+
+
 @pytest.mark.parametrize('text',['Référence R1','Source S2','{"items": []}','validation_state: proposed'])
 def test_public_answer_refuses_structure_even_if_a_model_attempts_to_echo_it(text):
     with pytest.raises(ValueError): public_answer(dict(answer=text,insufficient_context=False,simulated=False))

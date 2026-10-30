@@ -56,28 +56,49 @@ def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_ca
         assert 'Mixed CV and contract.' not in json.dumps(packet)
 
 
-def test_original_only_snapshot_approval_is_independent_and_chat_does_not_infer():
+@pytest.mark.parametrize('originals', [False, True])
+def test_introduction_only_approval_preserves_legacy_permissions_and_chat_has_no_document_details(originals):
     service,rows,documents,scope=fixture()
     service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[:3]))
-    owner=str(uuid4());access=policy(original_documents=(documents[0],))
+    owner=str(uuid4());access=policy(original_documents=(documents[0],) if originals else ())
     preview=run(service.prepare(owner,scope,access))
-    assert preview.payload['items']==[] and 'recap' not in preview.payload
+    assert preview.report['introduction_only'] and preview.payload['recap']
+    assert [i['text'] for i in preview.payload['items']]==[preview.payload['recap']['text']]
+    assert preview.payload['items'][0]['sources']==[]
     service.repository.preview=AsyncMock(return_value=preview)
     snapshot=ApprovedSnapshot(id=str(uuid4()),context_id=scope,owner_id=owner,preview_id=preview.id,
         fingerprint=preview.fingerprint,payload_json=preview.payload_json,policy=access,
-        approved_at=service.clock(),exceptions=())
+        approved_at=service.clock(),exceptions=tuple(preview.report['risks']))
     service.repository.approve=AsyncMock(return_value=snapshot)
-    assert run(service.approve(owner,scope,preview.id,preview.fingerprint))==snapshot
+    assert run(service.approve(owner,scope,preview.id,preview.fingerprint,exceptions=snapshot.exceptions))==snapshot
     assert recipient_payload(snapshot.payload)==snapshot.payload
-    provider=Mock(id='offline',generate=AsyncMock())
+    from adapters.llm.guest_offline import OfflineSnapshotProvider
+    provider=OfflineSnapshotProvider()
+    provider.generate=AsyncMock(wraps=provider.generate)
     chat=GuestSnapshotChat(guest=Mock(),provider=provider)
     answer=run(chat.answer_payload(owner,scope,'offline',snapshot.payload,'Que prévoit le contrat ?',
         AsyncMock(return_value=snapshot.payload)))
-    assert answer['insufficient_context'] and not answer['reference_aliases']
-    provider.generate.assert_not_awaited()
+    assert answer['insufficient_context'] and rows[1].content['text'] not in answer['answer']
+    assert question_payload(snapshot.payload)['items']==[dict(reference='R1',text=preview.payload['recap']['text'])]
     semantic=run(service.prepare(owner,scope,policy(semantic_documents=(documents[0],))))
     assert semantic.payload['items'] and semantic.policy.original_documents==()
     assert semantic.policy.semantic_documents==(documents[0],)
+
+
+@pytest.mark.parametrize('failure', ['masked-support','sensitive-introduction','excluded-support'])
+def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
+    service,rows,documents,scope=fixture()
+    if failure=='masked-support':
+        rows[0].content['text']+=' private@example.test'
+    elif failure=='sensitive-introduction':
+        for row in rows:
+            for component in row.content.get('extraction',{}).get('recap_components',[]):
+                if component['kind']=='general':component['text']='Diagnostic médical privé.'
+    else:
+        service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
+    for selected in ((),documents):
+        preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected)))
+        assert 'recap' not in preview.payload
 
 
 def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
