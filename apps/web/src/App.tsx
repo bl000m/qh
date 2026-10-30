@@ -155,7 +155,7 @@ function Detail({id,api,origin,breadcrumbHost,ownerId}:{id:string;api:QhApi;orig
  <ContextSpaceWorkspace key={space.id} api={api} scope={space.id} name={space.name} settingsRequest={renameRequest}
  heading={<div className="space-title"><div className="space-name-line"><h1 ref={heading} tabIndex={-1}>{space.name}</h1><button type="button" className="edit-space-shortcut" aria-label="Renommer le Space" disabled={!organization.value||organization.busy} onClick={()=>setRenameRequest(n=>n+1)}><Icon name="edit"/></button></div></div>}
  sharingContent={<SharingControl key={space.id} api={api} scope={space.id} name={space.name} label="Partager" primary/>}
- settingsContent={<ContextSettings visible renameRequest={renameRequest} space={space} api={api} state={organization} onChanged={setSpace}/>}/>
+ settingsContent={<ContextSettings visible parentDomainId={from?.id} renameRequest={renameRequest} space={space} api={api} state={organization} onChanged={setSpace}/>}/>
 
  </article>}</section>;
 }
