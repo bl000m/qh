@@ -12,6 +12,23 @@ MASKS = (
     ('number', re.compile(r'(?<!\w)\+?\d[\d .()/\-]{5,}\d(?!\w)')),
     ('identifier', re.compile(r'\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){10,30}\b')),
 )
+YEAR_INTERVAL = re.compile(r'((?:19|20)\d{2})\s*-\s*((?:19|20)\d{2})')
+NUMBER_LABEL = re.compile(r'\b(?:t[eé]l(?:[eé]phone|efono)?|phone|mobile|fax|contact|'
+    r'id|identifiant|identifier|identificativo|numero|numéro|number|référence|reference|'
+    r'compte|account|iban|siret|siren|code|naissance|nascita|birth|birthday)\b', re.I)
+CURRENCY = re.compile(r'\s*(?:€|\$|eur(?:os)?\b|usd\b|dollars?\b)', re.I)
+
+
+def _year_interval(match):
+    interval = YEAR_INTERVAL.fullmatch(match[0])
+    # Only a complete ascending calendar-year interval is exempt. Telephone and
+    # identifier-labelled values, dates of birth and longer digit strings stay masked.
+    prefix = match.string[max(0,match.start()-80):match.start()]
+    suffix=match.string[match.end():]
+    return bool(interval and int(interval[1])<=int(interval[2]) and not NUMBER_LABEL.search(prefix)
+        and not CURRENCY.match(suffix) and not re.search(r'[€$]\s*$',prefix))
+
+
 # These deny recognisable fixture hazards; absence of a match is NEVER a safety proof.
 HIGH_RISK = re.compile(r'\b(cancer|diab[eè]te|diagnosti\w*|m[eé]dica\w*|password|mot de passe|'
     r'secret|api[_ -]?key|sexualit\w*|suicid\w*)\b', re.I)
@@ -20,10 +37,13 @@ HIGH_RISK = re.compile(r'\b(cancer|diab[eè]te|diagnosti\w*|m[eé]dica\w*|passwo
 def redact(text):
     masked = []
     for name, pattern in MASKS:
-        text, count = pattern.subn('[MASQUÉ]', text)
-        if count:
+        def replacement(match):
+            if name=='number' and _year_interval(match):
+                return match[0]
             masked.append(name)
-    return text, masked
+            return '[MASQUÉ]'
+        text = pattern.sub(replacement, text)
+    return text, list(dict.fromkeys(masked))
 
 
 def introductory_support(text):

@@ -118,7 +118,7 @@ Diagnosi successiva, senza HTTP Mistral o scritture canoniche:
   generale nel perimetro parziale. Nessuna modifica alla selezione dei recap è
   giustificata dai soli screenshot; non vengono assemblati estratti.
 
-**Limite della diagnosi reale:** la lettura SQL in transazione read-only non trova
+**Stato al commit `5053fdf`, superato dalla conferma qui sotto:** la lettura SQL in transazione read-only non trova
 un Context Space chiamato « RH propre » nel database attivo. È stata richiesta
 conferma dell'eventuale rinomina in « RH nuovo »; non sono stati assunti equivalenti
 né esaminati al suo posto altri Space. Non è quindi verificata qui la cronologia
@@ -131,3 +131,53 @@ dell'indice PASS. Nessuna Full Verification, chiamata Mistral o nuova lettura PD
 I test esercitano citazioni come unica evidenza temporale, assenza effettiva di date,
 ordinali composti in tre lingue, interruzione della lista e conservazione dei dettagli
 « deuxième » → « première », oltre a revoca/scadenza e isolamento esistenti.
+
+
+## Diagnosi confermata su RH nuovo — 2026-10-31
+
+Il proprietario ha identificato **RH nuovo** come nuovo riferimento. Letture SQL
+read-only e simulazione in memoria dello stesso `document_scope` → Guard →
+`accessible_introduction`, senza creare preview o approvazioni:
+
+- Versione canonica 1: **46 item**, di cui **17 CV e 29 contratto**; zero relazioni
+  strutturate. Le preview recenti sono effettivamente create (`review_required`),
+  ma non contengono recap: il problema osservato è il résumé assente, non un
+  fallimento della creazione della preview.
+- Il Guard applicava la regola generica `number` a due intervalli di anni del CV.
+  Sono periodi formativi, non due impieghi. Questo mascheramento rendeva non sicuri
+  due supporti del recap documentale e ne impediva la selezione. Il generale ha
+  invece tutta la base autorizzata soltanto con entrambi i documenti; anche lì
+  rimangono supporti mascherati per identificativi e date personali.
+- Correttivo limitato alla redazione numerica: preservare intervalli calendariali
+  completi e crescenti, mantenendo mascherati valori etichettati come telefono,
+  identificativo, nascita, importi, date personali e sequenze numeriche più lunghe.
+  Nessuna modifica ai requisiti di supporto/basis dei recap, a UUM o ai documenti.
+- Simulazione sui dati reali **prima → dopo**: solo CV, 17 item, **nessun recap →
+  recap canonico del CV**, zero supporti mascherati. Entrambi, 46 item, **nessun
+  recap → stesso recap del CV**, con tre item ancora mascherati. Il secondo
+  documento resta nel payload autorizzato; il suo recap e il globale restano
+  esclusi, non vengono sostituiti da estratti o sbloccati indebolendo il controllo.
+  Il résumé identico nei due perimetri è ora una restrizione dimostrata, non una
+  selezione arbitraria del CV al posto di un globale interamente comunicabile.
+- Le due date formative non dimostrano due esperienze professionali ordinate.
+  Negli item relativi ad attività/esperienza CNRS e attività indipendente non ci
+  sono periodi sufficienti per ricostruire due incarichi. Una citazione CNRS contiene
+  un anno, ma **le preview esaminate hanno `include_quotes=false`**: non costituisce
+  un'evidenza disponibile alla chat di quegli snapshot. Nessun recupero fuori payload.
+  Il requisito « ultime due esperienze » resta impossibile con questa Compréhension
+  e questo perimetro; non si dichiarano risolte le lacune semantiche.
+
+Verifica finale della Projection sul dato reale: **PASS read-only**, confrontando
+anche il contenuto prima/dopo di revisioni, consolidamenti, preview e approvazioni:
+immutato. I nuovi risultati sono simulazioni, non snapshot salvati. Gli inviti già
+approvati conservano i propri payload; per un nuovo résumé serve una nuova preview
+approvata dal proprietario nel normale flusso.
+
+Verifiche offline: **149 PASS, 1 FAIL preesistente**
+(`test_disclosure.py::test_proposed_inclusion_is_separate_and_does_not_confirm`).
+Lo stesso FAIL è riprodotto con il Guard originale del commit `5053fdf`: riguarda
+`include_proposed=false`, non la redazione degli intervalli, e non viene corretto
+implicitamente in questo intervento. I nuovi casi verificano gli intervalli,
+mascheramenti negativi e recap con supporti realmente esclusi. Ruff e whitespace
+PASS; controllo segreti dell'indice PASS. Zero HTTP Mistral, costo aggiuntivo zero,
+nessuna modifica a ledger, budget, dati reali o snapshot; nessuna Full Verification.

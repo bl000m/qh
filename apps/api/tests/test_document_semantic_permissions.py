@@ -144,3 +144,47 @@ def test_fully_authorized_general_recap_wins_over_document_fallback():
     assert full.payload['recap']!=limited.payload['recap']
     assert 'document_recaps' not in full.payload and 'document_recaps' not in limited.payload
     assert rows==frozen
+
+
+@pytest.mark.parametrize('masked_support',[False,True])
+def test_year_intervals_do_not_hide_cv_recap_but_real_identifier_still_blocks_general(masked_support):
+    service,rows,documents,scope=fixture()
+    rows[0].content['text']+=' Période : 2022-2024.'
+    rows[1].content['text']+=' Identifiant : 123456789.' if masked_support else ' Période : 2008-2009.'
+    frozen=deepcopy(rows)
+    cv=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
+    full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
+    assert cv.payload['recap'] and not cv.report['masks']
+    assert '2022-2024' in cv.payload['items'][0]['text']
+    if masked_support:
+        assert 'recap' not in full.payload  # Two safe document synopses cannot be chosen arbitrarily.
+        assert full.report['masks'] and '123456789' not in json.dumps(full.payload)
+    else:
+        assert full.payload['recap']!=cv.payload['recap'] and not full.report['masks']
+    assert rows==frozen
+
+
+@pytest.mark.parametrize('text,masked',[
+    ('Période : 2022-2024.',False),
+    ('Parcours (2008-2009).',False),
+    ('Téléphone : 2022-2024.',True),
+    ('ID : 2022-2024.',True),
+    ('Tél. : 2022-2024.',True),
+    ('Naissance : 1981-1982.',True),
+    ('Budget : 2022-2024 euros.',True),
+    ('Budget : € 2022-2024.',True),
+    ('Référence : 2022-2024.',True),
+    ('Compte : 2022-2024.',True),
+    ('Numéro : 2022-2024.',True),
+    ('Date personnelle : 02/03/1981.',True),
+    ('Identifiant : 123 456 789.',True),
+    ('Contact : +33 6 12 34 56 78.',True),
+    ('Intervalle non valide : 2024-2022.',True),
+    ('Valeur longue : 2022-20241234.',True),
+])
+def test_number_redaction_preserves_only_calendar_year_intervals(text,masked):
+    from app.projections.disclosure_guard import redact
+    result,rules=redact(text)
+    assert bool(rules)==masked
+    assert (result!=text)==masked
+    assert ('[MASQUÉ]' in result)==masked
