@@ -8,7 +8,7 @@ import {sharingEnabled,sharingError,recipientAnswer} from './sharing';
 import SharedRecap from './SharedRecap';
 import AnswerMarkdown from './AnswerMarkdown';
 import './sharing.css';
-import {DocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
+import {OriginalDocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
 import {Icon} from './Ui';
 
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
@@ -97,7 +97,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <SharingPermission title="Autoriser les propositions de mise à jour" description="Vous conservez le contrôle et la validation finale de toute modification." checked={allowUpdates} onChange={setAllowUpdates}/>
  </div>
  <section aria-label="Informations protégées automatiquement"><h3>Informations protégées automatiquement</h3><p>Masquage des emails, URL et formats reconnus de coordonnées, numéros ou identifiants. Exclusion des textes contenant les termes sensibles repérés (santé, sexualité, suicide, mots de passe et clés API).</p><p className="small muted">Ce filtre est limité : il ne garantit ni l’anonymat ni la protection du salaire, des négociations ou du budget. Ne partagez pas ce contexte si ces informations doivent rester privées.</p></section>
- <DocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
+ <OriginalDocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
 
  </fieldset></div>
  <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Voici ce que verra votre destinataire après vérification de son accès.</p>

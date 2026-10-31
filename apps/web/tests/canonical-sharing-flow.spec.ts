@@ -38,11 +38,12 @@ test('persisted owner recap crosses preview and guest UI with unchanged PDF know
  await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
  await page.getByLabel('Email du destinataire',{exact:true}).fill('clement@example.test');
  const preview=page.getByLabel('Aperçu du contexte partagé');
- const originals=page.getByRole('region',{name:'Documents originaux accessibles',exact:true});
+ const originals=page.getByRole('region',{name:'Documents originaux',exact:true});
  for(let selected=0;selected<=2;selected++){
+  if(selected===1)await originals.getByRole('switch',{name:'Autoriser l’accès aux documents originaux',exact:true}).click();
   if(selected)await originals.getByRole('checkbox').nth(selected-1).check();
   await expect.poll(()=>count).toBe(selected);
-  await expect(page.getByRole('region',{name:'Documents accessibles',exact:true})).toContainText(`${selected} sur 2`);
+  await expect(page.getByRole('region',{name:'Documents accessibles',exact:true})).toContainText(selected?`${selected} sur 2`:'Aucun');
   await expect(preview).toContainText(recap.title);await expect(preview).toContainText(recap.text);
   await expect(preview).not.toContainText('Le résumé général n’est pas disponible');
  }

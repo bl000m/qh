@@ -144,9 +144,6 @@
 .sharing-dialog .originals-modes>button{flex:1;min-width:0;min-height:34px;padding:7px 8px;border:0;border-radius:9px;background:transparent;color:#7d8290;font-size:12px;font-weight:600;}
 .sharing-dialog .originals-modes>button[aria-pressed=true]{color:#24262c;background:#fff;box-shadow:0 1px 5px #20212416;}
 .sharing-dialog .originals-selection{display:flex;flex-direction:column;gap:7px;max-height:210px;overflow-y:auto;}
-.sharing-dialog label.semantic-document-choice{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;}
-.sharing-dialog .semantic-document-choice input{width:18px;height:18px;flex:none;margin:0;accent-color:#202124;}
-.semantic-document-choice span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sharing-dialog label.originals-choice{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid #e3e6ee;border-radius:12px;min-height:51px;background:#fff;}
 .sharing-dialog .originals-choice input{width:19px;height:19px;flex:none;margin:0;accent-color:#202124;}
 .originals-file-icon{display:grid;place-items:center;flex:none;width:31px;height:35px;border-radius:9px;background:#f4f5f7;color:#7b8292;}.originals-file-icon .ui-icon{width:18px;height:18px;}

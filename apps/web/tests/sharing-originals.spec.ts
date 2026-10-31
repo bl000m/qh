@@ -25,12 +25,12 @@ test('original sharing default, exact selection, preview and authorized recipien
   return route.fulfill({status:404});
  });
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
- const dialog=page.getByRole('dialog'),selection=dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}),create=dialog.locator('.sharing-footer button').last();
+ const dialog=page.getByRole('dialog'),selection=dialog.getByRole('region',{name:'Documents originaux',exact:true}),create=dialog.locator('.sharing-footer button').last();
  await expect(selection.getByRole('checkbox',{checked:true})).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('destinataire@example.test');await expect(create).toBeEnabled();expect(lastBody.documents).toEqual([]);
- const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('0 sur 3');await capture('01-private');
- await dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}).getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
- holdPreview=true;await dialog.locator('.semantic-document-choice').filter({hasText:'Contrat de travail'}).getByRole('checkbox').uncheck();
+ const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('Aucun');await capture('01-private');
+ await selection.getByRole('switch',{name:'Autoriser l’accès aux documents originaux',exact:true}).click();await selection.getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
+ holdPreview=true;await dialog.locator('.originals-choice').filter({hasText:'Contrat de travail'}).getByRole('checkbox').uncheck();
  await expect(create).toBeDisabled();await expect(preview).toContainText('2 sur 3');await expect(preview).not.toContainText('Contrat de travail');
  await expect.poll(()=>selected.length).toBe(2);holdPreview=false;releasePreview?.();await expect(create).toBeEnabled();expect(selected).toEqual([docs[0].source_revision_id,docs[2].source_revision_id]);await capture('02-selection');
  await create.click();await expect(dialog.getByLabel('Lien d’invitation')).toBeVisible();expect(approved).toEqual(selected);
