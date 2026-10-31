@@ -45,3 +45,18 @@ test('recipient clarifies and follows up in one temporary conversation',async({p
  expect(requests.at(-1).history[0].content).toBe('Gli obiettivi.');
  await page.getByRole('button',{name:'Fermer mon accès',exact:true}).click();await expect(page.locator('.guest-question,.guest-answer')).toHaveCount(0);
 });
+
+test('numbered answers keep their numbering across nested bullet details',async({page})=>{
+ const answer='Les deux dernières :\n\n1. CNRS (2023 – présent) :\n   - Ingénieur de recherche.\n1. Freelance (2022 – 2023) :\n   - Développeur full-stack.\n\nAutre liste :\n\n1. Nouvelle séquence.';
+ await page.route('**/api/guest/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/session'))return route.fulfill({json:{name:'Profil',can_ask:true,expires_at:'2030-01-01T00:00:00Z',verification:'mailbox_control'}});
+  if(path.endsWith('/provider'))return route.fulfill({json:{enabled:true,simulated:false}});
+  if(path.endsWith('/ask'))return route.fulfill({json:{answer,insufficient_context:false,simulated:false}});
+  return route.fulfill({status:404});
+ });
+ await page.goto('/tests/fixtures/guest-understanding.html');
+ const field=page.getByLabel('Votre question',{exact:true});await field.fill('Les deux dernières expériences ?');await field.press('Enter');
+ const lists=page.locator('.guest-answer ol');await expect(lists).toHaveCount(3);
+ expect(await lists.evaluateAll(rows=>rows.map(row=>(row as HTMLOListElement).start))).toEqual([1,2,1]);
+});

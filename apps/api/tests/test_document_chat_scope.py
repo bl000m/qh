@@ -105,8 +105,10 @@ def test_recap_identity_survives_existing_uum_envelope_with_source_evidence():
     generated=asyncio.run(provider.generate(GenerationRequest(messages=(Message(role=MessageRole.SYSTEM,content='Engine'),Message(role=MessageRole.USER,content=json.dumps(packet))))))
     assert 'Mathia Pagani' in provider.recap['title']
     assert [item['text'] for item in json.loads(generated.message.content)['items']]==texts
-    assert 'preserve that person' in captured[0].messages[0].content
-    assert 'No person is required' in captured[0].messages[0].content
+    instructions=captured[0].messages[0].content
+    # Generic naming rule: exact names from the items, never initials expanded or file names.
+    assert 'name it exactly as written in the understanding items' in instructions
+    assert 'never expand' in instructions and 'covering all its documents' in instructions
 
 
 def test_guest_original_download_requires_read_and_exact_permission_without_provider():

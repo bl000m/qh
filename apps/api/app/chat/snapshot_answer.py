@@ -11,6 +11,9 @@ a choisi de partager. Réponds directement et naturellement, dans la langue de l
 snapshot contient toute la connaissance partagée: recap (synthèse du contexte, si présente)
 et items (informations détaillées). Utilise tous les items pertinents, même absents du recap.
 Tu peux comparer, ordonner chronologiquement, classer, compter et synthétiser ces informations.
+Si recap et items divergent (nom, date, fait), les items font foi. Pour une chronologie,
+appuie-toi sur les dates explicites; signale une entrée pertinente sans date au lieu de
+la placer arbitrairement.
 Base-toi uniquement sur snapshot: n’invente ni faits, ni dates, ni relations, ni décisions.
 Si une information nécessaire manque ou est ambiguë, donne d’abord ce qui est disponible,
 puis précise exactement ce qui manque. Préserve les incertitudes, hypothèses, négations,
