@@ -16,7 +16,6 @@ from app.understanding.timing import measured_phase
 from app.understanding.uum import UumExtractionProvider
 from app.understanding.enrichment import EnrichmentUnavailable
 from app.understanding import recap as recap_output
-from app.projections.disclosure_guard import introductory_support
 
 
 class WorkspaceChatFailed(ChatProviderUnavailable):
@@ -98,8 +97,7 @@ class ContextConsolidation:
             document_catalogue = [dict(source_revision_id=r['source_revision_id'],name=r.get('display_name',r['name']),
                 turn_ids=[t['id'] for t in r['document_turns']]) for r in batch['intake'] if r.get('source_revision_id')]
             provider = UumExtractionProvider(self.ai._provider(identity, request, diagnostic),
-                consolidate=True, previous=previous, with_recap=True, documents=document_catalogue, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure,
-                general_support_allowed=introductory_support)
+                consolidate=True, previous=previous, with_recap=True, documents=document_catalogue, chunked=any(row.get('source_revision_id') for row in batch['intake']), observer=diagnostic.check, measure=diagnostic.measure)
             original = await repository.original(scope, batch['current']['source_revision_id']) if batch.get('regenerating') else None
             source, revisions = await propose_selected_conversation(
                 subject_id=identity.subject_id, context_id=scope,
@@ -122,7 +120,10 @@ class ContextConsolidation:
                 for revision in revisions:
                     revision['content']['extraction']['parts']=provider.parts
             with measured_phase(diagnostic.measure,'validation_ms'):
-                revisions = recap_output.bind(provider.recap, revisions, operation, documents)
+                revisions, recap_published = recap_output.bind(provider.recap, revisions, operation)
+            # Validated items are published even when the probabilistic recap is not.
+            diagnostic.check('uum.recap_published', recap_published,
+                None if recap_published else 'Understanding published without recap')
             await self.ai._authorize(identity, request)
             await self._allow(identity.subject_id, scope)
             with measured_phase(diagnostic.measure,'persistence_ms'):

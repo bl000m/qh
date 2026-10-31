@@ -27,7 +27,7 @@ const warningLabels:Record<string,string>={
  evidence_over_half_output:'Les preuves/références représentent plus de la moitié d’une sortie d’au moins 2 000 caractères.',
  catalogue_over_2x_source:'Métadonnées du catalogue supérieures à deux fois la source, avec au moins 4 000 caractères.',
 };
-const phaseLabel=(phase?:string)=>phase==='extraction'?'Extraction UUM · source/bloc':phase==='extraction_summary'?'Extraction et synthèse · même appel':phase==='summary'?'Synthèse finale':phase==='recap_review'?'Revue sémantique du résumé':'Appel non classé';
+const phaseLabel=(phase?:string)=>phase==='extraction'?'Extraction UUM · source/bloc':phase==='extraction_summary'?'Extraction et synthèse · même appel':phase==='summary'?'Synthèse finale':'Appel non classé';
 const number=(value?:number|null)=>value?.toLocaleString('fr-FR')??'—';
 export default function AIDiagnostics({api,scope}:{api:QhApi;scope:string}){
  const [items,setItems]=useState<AIDiagnostic[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false);
@@ -46,13 +46,12 @@ export default function AIDiagnostics({api,scope}:{api:QhApi;scope:string}){
  {item.kind==='uum'&&item.metrics&&<section aria-label="Performances UUM privées">
   <h4>{phaseLabel(item.call_phase)}</h4>
   <p>{number(item.metrics.atomic_items)} éléments atomiques dans cette réponse · {number(item.metrics.input_tokens)} tokens d’entrée · {number(item.metrics.request_message_chars)} caractères transmis.</p>
-  {item.call_phase==='recap_review'&&<p>Cette appréciation probabiliste est informative et non bloquante. Elle ne prouve pas les affirmations et ne constitue pas une confirmation humaine. Les contrôles de structure et de provenance restent obligatoires.</p>}
   {item.call_phase==='summary'&&<p>La synthèse produit un résumé, pas de nouveaux éléments atomiques. Les validations du lot ci-dessous ne comptent pas les éléments de cette réponse.</p>}
   {item.legacy_metrics&&<p className="small">Ancien diagnostic : les compteurs hérités du dernier bloc sont écartés pour la synthèse. Aucun regroupement entre appels n’est déduit ; l’agrégat historique n’était pas enregistré.</p>}
   {!!item.validation_rounds?.length&&<p>Validation des lots : {item.validation_rounds.map((round,index)=>`passage ${index+1} · ${round.items} éléments`).join(' ; ')}. Les passages répétés ne sont pas de nouveaux éléments.</p>}
   {item.operation&&<section aria-label="Consolidation agrégée"><h4>Consolidation agrégée{item.outcome!=='accepted'?' · à ce stade':''}</h4>
-   <p>{number(item.operation.totals.calls)} appel(s) observé(s) · {number(item.operation.totals.atomic_items)} éléments extraits · {number(item.operation.totals.blocks)} bloc(s) · {number(item.operation.totals.summaries)} synthèse(s) · {number(item.operation.totals.reviews)} revue(s) sémantique(s) · {number(item.operation.totals.input_tokens)} tokens d’entrée au total.</p>
-   <p className="small">HTTP extraction : {number(item.operation.totals.extraction_ms)} ms · HTTP synthèse : {number(item.operation.totals.summary_ms)} ms · HTTP combiné : {number(item.operation.totals.combined_ms)} ms · HTTP revue du résumé : {number(item.operation.totals.recap_review_ms)} ms · Validation locale, contrôles inclus : {number(item.operation.totals.validation_ms)} ms · Publication atomique : {number(item.operation.totals.persistence_ms)} ms.</p>
+   <p>{number(item.operation.totals.calls)} appel(s) observé(s) · {number(item.operation.totals.atomic_items)} éléments extraits · {number(item.operation.totals.blocks)} bloc(s) · {number(item.operation.totals.summaries)} synthèse(s) · {number(item.operation.totals.input_tokens)} tokens d’entrée au total.</p>
+   <p className="small">HTTP extraction : {number(item.operation.totals.extraction_ms)} ms · HTTP synthèse : {number(item.operation.totals.summary_ms)} ms · HTTP combiné : {number(item.operation.totals.combined_ms)} ms · Validation locale, contrôles inclus : {number(item.operation.totals.validation_ms)} ms · Publication atomique : {number(item.operation.totals.persistence_ms)} ms.</p>
    <details><summary>Appels de cette opération</summary><table><thead><tr><th>Tentative</th><th>Phase</th><th>Éléments</th><th>Tokens d’entrée</th><th>Caractères transmis</th></tr></thead><tbody>{item.operation.calls.map((call,index)=><tr key={index}><td>{call.attempt_index}</td><td>{phaseLabel(call.phase)}</td><td>{number(call.metrics.atomic_items)}</td><td>{number(call.metrics.input_tokens)}</td><td>{number(call.metrics.request_message_chars)}</td></tr>)}</tbody></table></details>
   </section>}
   <details><summary>Mesures détaillées de cet appel</summary>

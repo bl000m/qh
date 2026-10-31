@@ -27,13 +27,14 @@ isolated-only and is not applied on the persistent VPS.
 ## Canonical recap provenance
 
 UUM generates one free recap with exact statement supports; the existing Engine
-validates original citations/provenance before atomic publication. The extra
-semantic reviewer HTTP and its claims/spans validation have been removed from V1.
-Projection resolves recap supports to authorized canonical revisions of the same
-version, preserving full-basis presence and checking the existing Guard on text,
-supports and original citations even when quotations are hidden in the UI.
-Unrelated basis restrictions do not contaminate a safe recap; restricted actual
-supports still prevent disclosure. No share-time inference, evidence trimming,
+validates original citations/provenance before atomic publication. The recap is
+presentation only: an invalid or missing recap is not persisted and never blocks
+the validated items (owner decision, 2026-10-31). Per-document synopses and the
+extraction-time support filter, inherited from PDF-scoped sharing, are removed;
+understanding no longer imports the Guard. Projection resolves recap supports to the
+canonical revisions of the same version, with full-basis presence; the Guard checks
+the recap's own text and requires every support to be a disclosed item. Undisclosed
+original quotations do not hide a recap; they are guarded per item when shared. No share-time inference, evidence trimming,
 semantic certification, source re-extraction or new synthesis service is added.
 Historical approvals remain frozen; see the current
 [Product Contract](product/QH_PRODUCT_CONTRACT.md).

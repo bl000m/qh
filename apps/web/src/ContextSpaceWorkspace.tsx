@@ -207,8 +207,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
   {state?.current?<>
    <p className="small muted">Mis à jour le {new Date(state.current.created_at).toLocaleString('fr-FR')}</p>
    <h3>{summary?.title??name??'Ce contexte'}</h3>
-   {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Un aperçu synthétique sera préparé lors de la prochaine mémorisation. Les informations détaillées restent conservées.</p>}
-   {state.current.has_recap===false&&<p className="small muted">Mémoriser actualisera le récapitulatif, sans ajouter de message.</p>}
+   {summary?summary.text.split(/\n\s*\n/).map((text,index)=><p className="context-recap" key={index}>{text}</p>):<p>Aucun résumé validé pour cette version. Les informations détaillées ci-dessous sont mémorisées ; « Régénérer » relance explicitement l’analyse complète.</p>}
    <div className="actions"><button type="button" className="secondary" onClick={()=>{void download();}}>Exporter</button><button type="button" className="secondary" disabled={disabled||!caps?.enabled} onClick={()=>{void memorize(true);}}>Régénérer</button></div>
 
    <p className="small muted">Cette compréhension évolue avec tes échanges. Mémorise-les pour l'actualiser.</p>
@@ -264,7 +263,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
      <label className="sr-only" htmlFor="context-message">Ton message</label><textarea id="context-message" rows={1} value={draft} onChange={event=>setDraft(event.target.value)} disabled={disabled||!state} placeholder="Ajoute une information ou pose une question…"/>
      <button type="button" className={'workspace-documents'+(documentsOpen?' active':'')} aria-expanded={documentsOpen} aria-controls="context-documents-panel" disabled={!state} onClick={()=>{setDocumentsOpen(value=>!value);if(!documentsOpen)void loadDocuments();}}><Icon name="sources"/>Documents</button>
      <button type="submit" className="workspace-send" disabled={disabled||!state||!draft.trim()||(!caps?.enabled&&!isOriginalRequest(draft))}><Icon name="send"/>Envoyer</button></div>
-     <div className="workspace-composer-aux"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button><div>{memoryStatus&&<span className="workspace-unsaved small muted" role="status">{memoryStatus}</span>}<button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim()&&(!state.current||!!state.recap&&state.current.has_recap!==false))||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button></div></div>
+     <div className="workspace-composer-aux"><button type="button" className="secondary" disabled={disabled||!state} onClick={()=>contextInput.current?.click()}>Importer un contexte</button><div>{memoryStatus&&<span className="workspace-unsaved small muted" role="status">{memoryStatus}</span>}<button type="button" className="secondary workspace-memory" title="Consolider les informations de ce Space" disabled={disabled||!state||(!state.pending_count&&!draft.trim())||!caps?.enabled} onClick={()=>{void memorize();}}>{busy==='memory'?'Mémorisation…':'Mémoriser'}</button></div></div>
      <input ref={documentInput} type="file" accept=".txt,.md,.markdown,.pdf" hidden onChange={event=>{void addFile(event.target.files?.[0],false);event.target.value='';}}/>
      <input ref={contextInput} type="file" accept=".json,application/json" hidden onChange={event=>{void addFile(event.target.files?.[0],true);event.target.value='';}}/>
     </form>

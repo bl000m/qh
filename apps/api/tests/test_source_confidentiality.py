@@ -12,7 +12,7 @@ from app.projections.document_scope import document_scope, empty_projection, is_
 from app.projections.disclosure import Candidate, Selection
 from app.projections.disclosure_service import DisclosureService
 from tests.test_disclosure import policy
-from tests.test_modular_recap import projected_documents
+from tests.test_unified_recap import projected_documents
 from tests.test_consolidation import fixture, document
 from tests.test_chat_service import request
 

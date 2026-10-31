@@ -55,7 +55,7 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
     assert extraction['metrics']['atomic_items']==extraction['metrics']['passage_references']==1
     assert extraction['metrics']['source_chars']==extraction['metrics']['source_disclosed_chars']>0
     assert metrics['atomic_items']==1 and metrics['source_chars']>0
-    assert record['operation']['totals']['reviews']==0 and record['operation']['totals']['atomic_items']==1
+    assert record['operation']['totals']['atomic_items']==1
     assert metrics['request_schema_chars']>0
     content = record['raw_response']['choices'][0]['message']['content']
     assert metrics['output_json_chars']==len(content) and metrics['output_json_bytes']==len(content.encode())
@@ -165,16 +165,3 @@ def test_phase_durations_accumulate_only_in_operation_and_never_double_count_htt
     totals=operation_totals(calls)
     assert totals['extraction_ms']==300 and totals['summary_ms']==50 and totals['combined_ms']==0
 
-
-
-def test_claim_review_has_separate_phase_and_never_inherits_source_counters():
-    from app.chat.diagnostic_summary import output_phase,call_metrics,operation_totals
-    def response(value):return dict(choices=[dict(message=dict(content=json.dumps(value)))])
-    assert output_phase(response([]))=='unknown'
-    review=response(dict(format='qh.recap-claim-review/1',reviews={}))
-    assert output_phase(review)=='recap_review'
-    metrics=call_metrics(dict(atomic_items=20,source_chars=1000,input_tokens=400,provider_ms=25),review)
-    assert metrics['atomic_items']==0 and 'source_chars' not in metrics
-    totals=operation_totals([dict(phase='recap_review',metrics=metrics)])
-    assert totals['reviews']==1 and totals['blocks']==totals['summaries']==0
-    assert totals['recap_review_ms']==25 and totals['input_tokens']==400

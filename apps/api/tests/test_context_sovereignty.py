@@ -35,7 +35,8 @@ def projected():
     summary = dict(title='Organizzazione di un laboratorio informatico',
         text='Linee guida proposte per un laboratorio informatico: obiettivi, esercizi pratici e strumenti digitali.',
         supporting_statements=[r.content['text'] for r in rows], provider_output_sha256='synthetic')
-    bound = recap.bind(summary, [dict(id=r.revision_id, content=r.content) for r in rows], uid())
+    bound, published = recap.bind(summary, [dict(id=r.revision_id, content=r.content) for r in rows], uid())
+    assert published
     return [replace(r, content=b['content']) for r, b in zip(rows, bound)]
 
 
@@ -53,11 +54,18 @@ def test_recap_is_approved_knowledge_without_implicit_original_quotes_or_interna
     assert 'ORIGINAL-ONLY-CANARY' in json.dumps(explicit)  # Separate explicit grant only.
 
 
-@pytest.mark.parametrize('restriction', ['partial', 'masked', 'unconfirmed', 'risky-recap', 'old-style'])
+def test_masked_support_text_does_not_hide_a_safe_recap():
+    rows = projected()
+    rows[1].content['text'] += ' contact@example.test'
+    payload, report = OutboundDisclosureGuard().apply(rows, policy(include_proposed=True))
+    assert payload['recap']['title'] == 'Organizzazione di un laboratorio informatico'
+    assert 'contact@example.test' not in json.dumps(payload) and report['masks']
+
+
+@pytest.mark.parametrize('restriction', ['partial', 'unconfirmed', 'risky-recap', 'old-style'])
 def test_whole_space_recap_cannot_bypass_a_more_restrictive_projection(restriction):
     rows = projected()
     if restriction == 'partial': rows = rows[:1]
-    elif restriction == 'masked': rows[1].content['text'] += ' contact@example.test'
     elif restriction == 'risky-recap': rows[0].content['extraction']['recap']['text'] += ' contact@example.test'
     elif restriction == 'old-style': rows[0].content['extraction']['recap'].pop('presentation_version')
     payload, _ = OutboundDisclosureGuard().apply(rows, policy(include_proposed=restriction != 'unconfirmed'))

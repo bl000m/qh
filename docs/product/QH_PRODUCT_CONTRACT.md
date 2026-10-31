@@ -15,22 +15,32 @@ strutturato del résumé, i supporti esatti negli item generati, la validazione 
 citazioni originali e della provenance da parte dell'Engine, e la pubblicazione
 atomica. Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
 
+**Decisione owner, 2026-10-31 (semplificazione).** Il résumé è presentazione
+probabilistica: non condiziona più la memorizzazione. Gli Understanding Items con
+citazioni originali esatte e provenance validate vengono pubblicati anche quando il
+résumé è assente o non valido; in quel caso la versione resta senza résumé e lo
+segnala, e solo «Régénérer» avvia esplicitamente una nuova analisi. Citazioni non
+valide negli item restano sempre un rifiuto. L'unica correzione ammessa è la
+deduplicazione deterministica di supporti strettamente identici. Il résumé è unico:
+i riassunti per documento e il filtro dei supporti in estrazione, legati alla vecchia
+condivisione per PDF, sono rimossi; le versioni già persistite restano leggibili.
+
 Owner, aperçu e guest riusano lo stesso résumé persistito. La Projection risolve i
-supporti dichiarati nelle revisioni canoniche autorizzate della medesima versione,
-con base interamente presente. Il Guard verifica titolo/testo, supporti ammessi e
-non mascherati, citazioni originali e appartenenza alla provenance, anche quando le
-citazioni non sono mostrate nell'UI. Un item protetto estraneo ai supporti non blocca
-automaticamente il résumé. Un supporto o una sua citazione protetti continuano a
-bloccarlo: nessuna eliminazione automatica di riferimenti o ritaglio delle prove.
+supporti dichiarati nelle revisioni canoniche della medesima versione, con base
+interamente presente. Il Guard verifica il testo divulgato (titolo e testo, senza
+maschere né termini sensibili riconosciuti) e che ogni supporto sia un item divulgato:
+un supporto escluso (testo sensibile, stato non ammesso, relazione pendente, o
+citazione protetta quando le citazioni sono condivise) blocca il résumé. Le citazioni
+originali non divulgate e le maschere sul testo di un supporto non lo bloccano: non
+lasciano il perimetro e il testo del résumé è controllato direttamente.
 I PDF originali rimangono una scelta esclusiva di consultazione/download.
 
 **Limite esplicito:** la risoluzione esatta dei supporti e delle citazioni non prova
 logicamente l'entailment del testo libero. La sintesi rimane proposta, senza conferma
 umana automatica; non si attribuisce una certificazione semantica al résumé.
 
-Le presentazioni v3 e le v4 già persistite usano gli stessi controlli fondamentali,
-senza esigere un'attestazione del revisore. Le versioni storiche prive di supporti
-risolvibili conservano il comportamento prudente. Snapshot approvati, contenuto
+Le presentazioni v2, v3 e v4 già persistite, incluse le versioni modulari, usano gli
+stessi controlli sul résumé generale, senza esigere un'attestazione del revisore. Snapshot approvati, contenuto
 canonico e documenti rimangono immutati; nessuna migrazione o rigenerazione segue
 dal correttivo. I diagnostici storici della revisione restano leggibili.
 

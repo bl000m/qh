@@ -225,7 +225,7 @@ def test_subject_recap_materializes_without_sources_and_guest_read_keeps_explici
     summary = dict(title='Organizzazione di un laboratorio informatico',
         text='Proposta di laboratorio informatico con obiettivi, esercizi pratici e strumenti digitali.',
         supporting_statements=[r['content']['text'] for r in rows], provider_output_sha256='synthetic')
-    rows = recap.bind(summary, rows, uid())
+    rows, _ = recap.bind(summary, rows, uid())
     p['repo'].save(revisions=rows)
     drain(p['worker'])
     preview = prepare(p, include_proposed=True)

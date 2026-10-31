@@ -14,15 +14,8 @@ from adapters.postgres.current_understanding import current_understanding
 
 class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository):
     def _latest(self, c, scope):
-        row = c.execute("""SELECT v.*, EXISTS(SELECT 1 FROM understanding_item_revisions r
-            WHERE r.id=ANY(v.revision_ids) AND r.context_space_id=v.context_space_id
-            AND r.content #>> '{extraction,recap,version_id}'=v.id::text
-            AND r.content #>> '{extraction,recap,presentation_version}'=ANY(%s::text[])
-            AND (r.content #>> '{extraction,recap,presentation_version}'=ANY(%s::text[]) OR NOT EXISTS(
-                SELECT 1 FROM context_intake i WHERE i.context_space_id=v.context_space_id
-                AND i.document ? 'source_revision_id'))) AS has_recap
-            FROM context_consolidations v WHERE context_space_id=%s
-            ORDER BY version DESC LIMIT 1""", ([str(v) for v in recap_output.COMPATIBLE_VERSIONS],['3','4'],scope)).fetchone()
+        row = c.execute("""SELECT * FROM context_consolidations WHERE context_space_id=%s
+            ORDER BY version DESC LIMIT 1""", (scope,)).fetchone()
         return json_values(row) if row else None
 
     def _read(self, c, scope):
@@ -90,7 +83,9 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
                         # Never expire a running paid operation silently. A process crash
                         # needs an operator to establish that no request remains in flight.
                         raise EnrichmentUnavailable('Consolidation already in progress')
-                    if not regeneration and not state['pending_count'] and (not state['current'] or state['current']['has_recap']):
+                    # Without new intake the current version, with or without its recap, is
+                    # the result. Only an explicit regeneration starts a new paid analysis.
+                    if not regeneration and not state['pending_count']:
                         return dict(replayed=True, **state)
                     ids = [row['id'] for row in state['intake']]
                     if regeneration:

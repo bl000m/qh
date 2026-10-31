@@ -58,14 +58,14 @@ def restrict_snapshot(payload, allowed_references, *, verified_recap=False):
     return accessible_introduction(result)
 
 
-def accessible_introduction(payload, *, allow_document_fallback=True):
-    """Reuse one already scoped canonical synopsis; never synthesize random excerpts."""
+def accessible_introduction(payload):
+    """Read retained snapshots: reuse their one scoped synopsis, never synthesize excerpts."""
     if is_empty_projection(payload):
         return payload
     result=dict(payload)
     if result.get('recap',{}).get('title')=='Aperçu · extraits autorisés':
         result.pop('recap')  # Withdraw the old presentation, never rewrite its snapshot.
     summaries=result.pop('document_recaps',[])
-    if allow_document_fallback and not result.get('recap') and len(summaries)==1:
+    if not result.get('recap') and len(summaries)==1:
         result['recap']=dict(summaries[0])
     return result

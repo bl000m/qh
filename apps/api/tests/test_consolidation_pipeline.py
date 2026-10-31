@@ -56,7 +56,7 @@ def test_atomic_consolidation_persistence_retry_correction_and_owner_isolation(g
     reopened=ContextConsolidation(context=service.context,policy=service.policy,ai=service.ai,repository_for=repositories)
     state=run(reopened.read(who.subject_id,scope))
     assert state['recap']['version_id']==saved['current']['id']
-    assert state['recap']['text'] and saved['current']['has_recap']
+    assert state['recap']['text'] and saved['recap']
     assert state['understanding'][0]['validation_state']=='proposed'
     assert not state['understanding'][0]['is_current_confirmed']
     assert state['understanding'][0]['content']['citations'][0]['quote']==row['text']
@@ -180,26 +180,23 @@ def test_exact_batch_keeps_graph_checks_and_rejects_cross_space_selection(generi
 
 
 @pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
-def test_explicit_recap_style_refresh_preserves_old_version_and_replays_new_version(generic, empty_database, monkeypatch):
+def test_version_without_recap_is_replayed_until_explicit_regeneration(generic, empty_database, monkeypatch):
     from app.understanding import recap
     p = generic
     service, who, repositories, provider = prepare(p, empty_database)
     scope = p['scope']
     run(service.append(who.subject_id, scope, document()))
-    monkeypatch.setattr(recap, 'PRESENTATION_VERSION', 1)
-    old = run(service.consolidate(who, scope))
+    with monkeypatch.context() as patch:
+        patch.setattr(recap, 'bind', lambda value, rows, version: (rows, False))
+        old = run(service.consolidate(who, scope))
     drain(p['worker'])
     old_rows = run(service.read(who.subject_id, scope))['understanding']
-    monkeypatch.setattr(recap, 'PRESENTATION_VERSION', 2)
-    state = run(service.read(who.subject_id, scope))
-    assert state['pending_count'] == 0 and state['recap'] and not state['current']['has_recap']
-    assert provider.generate.await_count == 1  # Reading never infers.
-    new = run(service.consolidate(who, scope))
+    assert old['recap'] is None and old_rows and old['current']['version'] == 1
+    again = run(service.consolidate(who, scope))  # No new intake: no paid call.
+    assert again['current'] == old['current'] and provider.generate.await_count == 1
+    new = run(service.consolidate(who, scope, str(uuid4())))
     drain(p['worker'])
-    assert new['current']['version'] == 2 and new['current']['id'] != old['current']['id']
-    assert new['current']['has_recap'] and provider.generate.await_count == 2
-    again = run(service.consolidate(who, scope))
-    assert again['current'] == new['current'] and provider.generate.await_count == 2
+    assert new['current']['version'] == 2 and new['recap'] and provider.generate.await_count == 2
     with repositories(who.subject_id).connect() as connection:
         retained = connection.execute('SELECT count(*) n FROM context_consolidations WHERE context_space_id=%s', (scope,)).fetchone()
         assert retained['n'] == 2

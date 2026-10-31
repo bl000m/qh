@@ -13,10 +13,10 @@ export interface ContextIntake {
  id:string;kind:'message'|'document'|'context';role:'user'|'assistant';text:string|null;name:string|null;context:PortableContext|null;source_revision_id?:string;display_name?:string;size_bytes?:number;created_at?:string;document_turns?:{id:string;speaker:string;text:string}[];documents?:SourceDocument[];attribution?:AnswerAttribution;reply_to?:string;
 }
 export interface ContextRecap {
- version_id:string;title:string;text:string;support_revision_ids:string[];documents?:{title:string;text:string;source_revision_id:string;support_revision_ids:string[]}[];
+ version_id:string;title:string;text:string;support_revision_ids:string[];
 }
 export interface ConsolidatedVersion {
- id:string;context_space_id:string;version:number;intake_ids:string[];source_revision_id:string;revision_ids:string[];created_at:string;has_recap?:boolean;
+ id:string;context_space_id:string;version:number;intake_ids:string[];source_revision_id:string;revision_ids:string[];created_at:string;
 }
 export interface WorkspaceState {
  context_id:string;state:'empty'|'pending'|'running'|'current'|'failed';pending_count:number;

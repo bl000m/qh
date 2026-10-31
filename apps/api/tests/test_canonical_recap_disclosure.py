@@ -6,35 +6,47 @@ import pytest
 
 from app.projections.disclosure_guard import OutboundDisclosureGuard
 from tests.test_disclosure import policy
-from tests.test_modular_recap import projected_documents
+from tests.test_unified_recap import projected_documents
+
+
+def root(rows):
+    return next(r.content['extraction']['recap'] for r in rows if r.content['extraction'].get('recap'))
 
 
 def test_protected_unrelated_basis_item_does_not_hide_canonical_recap():
     rows=projected_documents()
     before=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context'))[0]['recap']
-    rows[1].content['text']='Diagnostic medical prive.'
+    root(rows)['support_revision_ids']=[rows[0].revision_id]
+    rows[1].content['text']='Diagnostic medical prive.'  # In the basis, not a declared support.
     frozen=deepcopy(rows)
     payload,report=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context'))
     assert payload['recap']==before and report['exclusions']
     assert rows==frozen
 
 
-@pytest.mark.parametrize('failure',['protected-text','protected-support','protected-quote','masked-quote',
-    'foreign-source','missing-citation','missing-support','wrong-version','missing-basis'])
+@pytest.mark.parametrize('quote',['Diagnostic medical prive.','Contact invite@example.test','Tél. 06 12 34 56 78'])
+def test_undisclosed_support_quotations_do_not_hide_the_recap(quote):
+    rows=projected_documents()
+    support=next(r for r in rows if r.revision_id==root(rows)['support_revision_ids'][0])
+    support.content['citations'][0]['quote']=quote
+    payload,_=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context'))
+    assert payload['recap']['title']==root(rows)['title'] and quote not in str(payload)
+
+
+@pytest.mark.parametrize('failure',['protected-text','masked-text','protected-support','shared-protected-quote',
+    'foreign-support','wrong-version','missing-basis'])
 def test_real_restrictions_and_unverified_supports_still_block_recap(failure):
     rows=projected_documents()
-    general=next(c for row in rows for c in row.content['extraction'].get('recap_components',[]) if c['kind']=='general')
-    support=next(r for r in rows if r.revision_id==general['support_revision_ids'][0])
-    if failure=='protected-text':general['text']='Diagnostic medical prive.'
+    recap=root(rows)
+    support=next(r for r in rows if r.revision_id==recap['support_revision_ids'][0])
+    include_quotes=False
+    if failure=='protected-text':recap['text']='Diagnostic medical prive.'
+    elif failure=='masked-text':recap['title']+=' 06 12 34 56 78'
     elif failure=='protected-support':support.content['text']='Diagnostic medical prive.'
-    elif failure=='protected-quote':support.content['citations'][0]['quote']='Diagnostic medical prive.'
-    elif failure=='masked-quote':support.content['citations'][0]['quote']='Contact invite@example.test'
-    elif failure=='foreign-source':support.content['citations'][0]['source_revision_id']=str(uuid4())
-    elif failure=='missing-citation':support.content.pop('citations')
-    elif failure=='missing-support':general['support_revision_ids']=[str(uuid4())]
-    elif failure=='wrong-version':general['version_id']=str(uuid4())
-    else:rows=rows[:2]
-    # Hiding citations in the UI cannot bypass their privacy/provenance checks.
-    for include_quotes in (False,True):
-        payload,_=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context',include_quotes=include_quotes))
-        assert 'recap' not in payload
+    elif failure=='shared-protected-quote':
+        support.content['citations'][0]['quote']='Diagnostic medical prive.';include_quotes=True
+    elif failure=='foreign-support':recap['support_revision_ids']=[str(uuid4())]
+    elif failure=='wrong-version':recap['format']='qh.context-recap/0'
+    else:rows=[rows[0],*rows[2:]]
+    payload,report=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context',include_quotes=include_quotes))
+    assert 'recap' not in payload and report['recap_status']=='restricted'

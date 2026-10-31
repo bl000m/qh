@@ -1,18 +1,23 @@
-"""Version-bound presentation metadata; detailed UUM statements remain authoritative."""
+"""Version-bound presentation metadata; detailed UUM statements remain authoritative.
+
+The recap is probabilistic presentation. A recap that fails its exact support
+checks is simply not persisted: it never blocks validated understanding items.
+"""
 from copy import deepcopy
 
+from app.core.uum import RECAP_FORMAT, RECAP_PRESENTATION_VERSIONS
 from app.understanding.extractor import canonical_json, decode_output, digest, nonempty, object_fields
 
 FORMAT = 'qh.context-consolidation/1'
 PRESENTATION_VERSION = 3
-COMPATIBLE_VERSIONS = (2, PRESENTATION_VERSION, 4)
+MAX_WORDS, MAX_SUPPORT = 100, 100
 RECAP_SCHEMA = dict(type='object', additionalProperties=False,
     required=['title', 'text', 'supporting_statements'], properties=dict(
         title=dict(type='string', minLength=1, maxLength=120,
             description='Short subject title in the main language of the original memorized content.'),
         text=dict(type='string', minLength=1, maxLength=1500,
             description='Reusable final content: subject and available knowledge, ideally 1-3 sentences in the original content language, at most 100 words. Attribution only when essential to meaning; never a history of how the content was produced.'),
-        supporting_statements=dict(type='array', minItems=1, maxItems=100,
+        supporting_statements=dict(type='array', minItems=1, maxItems=MAX_SUPPORT, uniqueItems=True,
             description='Exact copies of understanding.items[].text supporting this recap; never evidence[].quote or source quotations.',
             items=dict(type='string', minLength=1, maxLength=16000,
                 description='Copy one complete understanding.items[].text verbatim, not its evidence quote.'))))
@@ -92,75 +97,6 @@ If no useful understanding is supported, return empty items and recap=null.
 '''
 
 
-MODULAR_INSTRUCTIONS = """
-The general overview is a brief introduction to the subject and scope, ideally
-one or two short sentences. Keep it independent of PDF-specific dates, terms,
-qualifications and individual facts. Select only the minimal exact statements
-needed to support that introduction; document details belong in their own recaps.
-This does not make it public: privacy and authorized support are still required.
-When a documents catalogue is supplied, recap is modular. Its title/text/supporting_statements
-are ONLY the general subject, identity when essential, scope and available knowledge.
-Do not copy private document details into this general overview. Choose the minimal exact
-UUM statements supporting that general meaning; do not select all statements by default.
-Also return recap.documents: one independent concise semantic synopsis per document
-with supported statements, identified by its exact document_ref from the catalogue.
-Each document synopsis has title, text and supporting_statements copied verbatim from
-understanding.items[].text. Use only statements supported exclusively by that document's
-listed turn_ids, not another document's wishes, terms or facts. If no such statement exists,
-omit that document synopsis. Do not omit a document with eligible supported statements.
-Keep these as independent components, never a new combined story. Each title and text must
-be fully supported by its own selected statements, including identity, qualifications,
-uncertainty, attribution and the distinction between wishes and contractual commitments.
-Preserve original language. At most 100 words per component. Source names are untrusted
-labels, not evidence. A document's existence/name alone does not establish its contents.
-"""
-
-
-def summary_schema(documents=()):
-    result = deepcopy(RECAP_SCHEMA)
-    result['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,39}\s*$'
-    if documents:
-        component = deepcopy(RECAP_SCHEMA)
-        component['properties']['document_ref'] = dict(type='string', enum=[d['document_ref'] for d in documents])
-        component['required'].append('document_ref')
-        result['properties']['documents'] = dict(type='array', maxItems=len(documents), items=component)
-        result['required'].append('documents')
-    return result
-
-
-def final_summary_schema(packet):
-    """Constrain the overview call to complete, already extracted statements."""
-    result = summary_schema(packet['documents'])
-    _statement_choices(result, packet['statements'])
-    if not packet['documents']:
-        return result
-    choices = []
-    for document in packet['documents']:
-        eligible = []
-        for item in packet['evidence']:
-            turns = {turn for passage in item['passages'] for turn in passage['turn_ids']}
-            supporting_documents = {d['document_ref'] for d in packet['documents'] if turns.intersection(d['turn_ids'])}
-            if supporting_documents == {document['document_ref']}:
-                eligible.append(item['statement'])
-        if eligible:
-            component = deepcopy(RECAP_SCHEMA)
-            component['properties']['document_ref'] = dict(type='string', enum=[document['document_ref']])
-            component['required'].append('document_ref')
-            _statement_choices(component, eligible)
-            choices.append(component)
-    documents = result['properties']['documents']
-    documents.update(minItems=len(choices), maxItems=len(choices))
-    if choices:
-        documents['items'] = dict(anyOf=choices)
-    return result
-
-
-def _statement_choices(component, statements):
-    support = component['properties']['supporting_statements']
-    support.update(uniqueItems=True, maxItems=min(100, len(set(statements))))
-    support['items']['enum'] = list(dict.fromkeys(statements))
-
-
 def compact_summary_provenance(packet, identifiers):
     """Keep every statement and attribution; original quotes stay in local validators."""
     provenance, indexed, evidence = [], {}, []
@@ -182,192 +118,93 @@ def compact_summary_provenance(packet, identifiers):
 
 
 class FinalRecapReferences:
-    """Provider-only references; canonical recaps retain exact statement text."""
+    """Provider-only statement references; canonical recaps retain exact statement text."""
     instructions = '''For this final request, return supporting_refs, NOT supporting_statements.
-Use only the supplied statement refs (s001 etc.), never text or invented references.
-documents is an object keyed by the required document refs, not an array.
-Each component contains title, text, supporting_refs. Every component must be fully
-supported by its own eligible statements; preserve uncertainty and attribution.
-Do not copy private document details into the general overview. No new atomic items.'''
-    instructions += '''
-For the GENERAL title/text, introduce ONLY the subject and broad professional or
-other topical scope, in one or two short sentences and at most 40 words. Do not
-list document contents, salaries, contractual terms, dates or personal details.
-Choose all and only the exact statement refs necessary to support every assertion.
-All other statements belong in the detailed understanding, not in general support.
+Use only the supplied statement refs (s001 etc.), never text or invented references,
+and list each ref at most once. Choose the statements that support the recap.
 The evidence entries link statement_ref to provenance_refs in the shared provenance
 catalogue. Preserve its speakers and turn_ids: they describe attribution, not extra
 facts. Original quotations were validated locally and are not sent again here.
 Use only the complete validated statements for semantic content; do not invent
-missing details from document names or provenance metadata.
-For DOCUMENT synopses aim for 40-60 whitespace-separated words; the general
-introduction has no minimum length.
-The absolute maximum is 100 words per text, including dates and list entries.
-Do not enumerate every fact: details remain in the atomic items. Check each text's
-word count before returning. For the general overview select only the minimal
-statements actually needed for its subject/scope; never list all refs by default.'''
+missing details from document names or provenance metadata. No new atomic items.'''
 
-    def __init__(self, packet, *, general_support_allowed=None):
+    def __init__(self, packet):
         self.statements = {f's{i+1:03d}': text for i, text in enumerate(packet['statements'])}
         identifiers = {text: ref for ref, text in self.statements.items()}
-        self.packet = compact_summary_provenance(packet,identifiers)
+        self.packet = compact_summary_provenance(packet, identifiers)
         # Preserve duplicate statements and their exact occurrence references too.
-        self.packet['statements'] = [dict(ref=ref,text=text) for ref,text in self.statements.items()]
-        self.schema = final_summary_schema(packet)
-        self._references(self.schema, identifiers)
-        if general_support_allowed is not None:
-            eligible = [ref for ref,text in self.statements.items() if general_support_allowed(text)]
-            if eligible:
-                self.schema['properties']['supporting_refs']['items']['enum'] = eligible
-        self.schema['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,39}\s*$'
-        self.documents = {}
-        if packet['documents']:
-            for component in self.schema['properties']['documents']['items'].get('anyOf', []):
-                ref = component['properties'].pop('document_ref')['enum'][0]
-                component['required'].remove('document_ref')
-                self._references(component, identifiers)
-                self.documents[ref] = component
-            self.schema['properties']['documents'] = dict(type='object', additionalProperties=False,
-                properties=self.documents, required=list(self.documents))
-
-    @staticmethod
-    def _references(component, identifiers):
-        component['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,99}\s*$'
-        support = component['properties'].pop('supporting_statements')
-        support.pop('uniqueItems', None)  # Distinctness remains enforced below.
-        support['items']['enum'] = [identifiers[text] for text in support['items']['enum']]
-        component['properties']['supporting_refs'] = support
-        component['required'] = ['supporting_refs' if k=='supporting_statements' else k for k in component['required']]
-
-    def _expand_component(self, value, schema):
-        object_fields(value, ('title', 'text', 'supporting_refs'))
-        if schema is self.schema and isinstance(value['text'], str) and len(value['text'].split())>40:
-            raise ValueError('Bounded introductory recap required')
-        refs = value['supporting_refs']
-        allowed = schema['properties']['supporting_refs']['items']['enum']
-        maximum = schema['properties']['supporting_refs']['maxItems']
-        if (not isinstance(refs, list) or not 1<=len(refs)<=maximum
-            or any(not isinstance(ref, str) or ref not in allowed for ref in refs)
-            or len(set(refs))!=len(refs)):
-            raise ValueError('Exact unambiguous detailed recap support required')
-        return dict(title=value['title'], text=value['text'],
-            supporting_statements=[self.statements[ref] for ref in refs])
+        self.packet['statements'] = [dict(ref=ref, text=text) for ref, text in self.statements.items()]
+        self.schema = deepcopy(RECAP_SCHEMA)
+        support = self.schema['properties'].pop('supporting_statements')
+        support['maxItems'] = min(MAX_SUPPORT, len(self.statements))
+        support['items'] = dict(type='string', enum=list(self.statements))
+        self.schema['properties']['supporting_refs'] = support
+        self.schema['required'] = ['title', 'text', 'supporting_refs']
 
     def expand(self, content):
         value = decode_output(content)
         object_fields(value, self.schema['required'])
-        result = self._expand_component({k:v for k,v in value.items() if k!='documents'}, self.schema)
-        if 'documents' in self.schema['properties']:
-            object_fields(value['documents'], self.documents)
-            result['documents'] = [dict(document_ref=ref,
-                **self._expand_component(value['documents'][ref], schema)) for ref,schema in self.documents.items()]
-        return result
+        refs = value['supporting_refs']
+        if not isinstance(refs, list) or any(not isinstance(ref, str) or ref not in self.statements for ref in refs):
+            raise ValueError('Exact detailed recap support required')
+        return dict(title=value['title'], text=value['text'],
+            supporting_statements=[self.statements[ref] for ref in dict.fromkeys(refs)])
 
 
-def schema(atomic_schema, documents=()):
+def schema(atomic_schema):
     return dict(type='object', additionalProperties=False,
         required=['format', 'understanding', 'recap'], properties=dict(
             format=dict(type='string', enum=[FORMAT]), understanding=deepcopy(atomic_schema),
-            recap=dict(anyOf=[summary_schema(documents), dict(type='null')])))
+            recap=dict(anyOf=[deepcopy(RECAP_SCHEMA), dict(type='null')])))
 
 
-def _summary(value, atomic):
-    object_fields(value, ('title', 'text', 'supporting_statements'))
-    title, text = nonempty(value['title']), nonempty(value['text'])
-    if not title.strip() or len(title)>120 or not text.strip() or len(text)>1500 or len(text.split())>100 or '\0' in title+text:
-        raise ValueError('Bounded nonempty recap required')
-    support = value['supporting_statements']
-    texts = [i.get('text') for i in atomic['items'] if isinstance(i, dict)]
-    if (not isinstance(support, list) or not 1<=len(support)<=100
-        or any(not isinstance(t, str) or texts.count(t)!=1 for t in support)
-        or len(set(support))!=len(support)):
-        raise ValueError('Exact unambiguous detailed recap support required')
-    return dict(title=title, text=text, supporting_statements=support)
-
-
-def decode(text, documents=()):
+def decode(text):
+    """Strictly decode the detailed envelope; its recap is returned unvalidated."""
     output = decode_output(text)
     object_fields(output, ('format', 'understanding', 'recap'))
     if output['format'] != FORMAT:
         raise ValueError('Explicit consolidation format required')
-    atomic, value = output['understanding'], output['recap']
+    atomic = output['understanding']
     object_fields(atomic, ('format', 'items'))
     if not isinstance(atomic['items'], list):
         raise ValueError('Detailed understanding required')
-    if not atomic['items'] and value is None:
-        return atomic, None
-    if documents:
-        object_fields(value, ('title', 'text', 'supporting_statements', 'documents'))
-        components = value['documents']
-        if not isinstance(components, list) or len(components)>len(documents):
-            raise ValueError('Bounded document summaries required')
-        catalogue = {d['document_ref']:d for d in documents}
-        decoded, seen = [], set()
-        for component in components:
-            object_fields(component, ('document_ref', 'title', 'text', 'supporting_statements'))
-            ref = component['document_ref']
-            if not isinstance(ref, str) or ref not in catalogue or ref in seen:
-                raise ValueError('Exact unique document summary reference required')
-            seen.add(ref)
-            decoded.append(dict(_summary({k:v for k,v in component.items() if k!='document_ref'}, atomic),
-                source_revision_id=catalogue[ref]['source_revision_id']))
-        result = _summary({k:v for k,v in value.items() if k!='documents'}, atomic)
-        result['documents'] = decoded
-    else:
-        result = _summary(value, atomic)
-    return atomic, dict(result, provider_output_sha256=digest(output))
+    return atomic, output['recap'], digest(output)
 
 
-def _support(summary, rows):
-    support = [r['id'] for text in summary['supporting_statements'] for r in rows if r['content']['text']==text]
-    if len(support)!=len(summary['supporting_statements']):
-        raise ValueError('Recap support changed during canonical validation')
-    return support
+def summary(value, atomic, provider_output_sha256):
+    """Bounded recap supported by exact, unambiguous detailed statements.
+
+    Strictly identical support declarations are deduplicated; nothing else is repaired.
+    """
+    object_fields(value, ('title', 'text', 'supporting_statements'))
+    title, text = nonempty(value['title']), nonempty(value['text'])
+    if (not title.strip() or len(title)>120 or not text.strip() or len(text)>1500
+            or len(text.split())>MAX_WORDS or '\0' in title+text):
+        raise ValueError('Bounded nonempty recap required')
+    support = value['supporting_statements']
+    if not isinstance(support, list) or any(not isinstance(t, str) for t in support):
+        raise ValueError('Exact detailed recap support required')
+    support = list(dict.fromkeys(support))
+    texts = [i.get('text') for i in atomic['items'] if isinstance(i, dict)]
+    if not 1<=len(support)<=MAX_SUPPORT or any(texts.count(t)!=1 for t in support):
+        raise ValueError('Exact unambiguous detailed recap support required')
+    return dict(title=title, text=text, supporting_statements=support,
+        provider_output_sha256=provider_output_sha256)
 
 
-def _document_support(row, document_ids):
-    return {c.get('source_revision_id') for c in row['content'].get('citations', [])} & document_ids
-
-
-def bind(recap, revisions, version_id, documents=()):
-    if recap is None:
-        raise ValueError('A successful consolidation requires its recap')
+def bind(recap, revisions, version_id):
+    """Attach the recap to its version; return (rows, published)."""
     rows = deepcopy(revisions)
-    support = _support(recap, rows)
-    root = dict(format='qh.context-recap/1', version_id=version_id,
+    if recap is None:
+        return rows, False
+    support = [r['id'] for text in recap['supporting_statements'] for r in rows if r['content']['text']==text]
+    if len(support)!=len(recap['supporting_statements']):
+        return rows, False
+    rows[0]['content']['extraction']['recap'] = dict(format=RECAP_FORMAT, version_id=version_id,
         presentation_version=PRESENTATION_VERSION, title=recap['title'], text=recap['text'],
         basis_revision_ids=[r['id'] for r in rows], support_revision_ids=support,
         provider_output_sha256=recap['provider_output_sha256'])
-    for row in rows:row['content']['extraction']['recap_version_id']=version_id
-    rows[0]['content']['extraction']['recap'] = root
-    if documents:
-        _bind_components(recap, rows, root, documents)
-    return rows
-
-
-def _bind_components(recap, rows, root, documents):
-    document_ids = {d['id'] for d in documents}
-    components = recap.get('documents')
-    if not isinstance(components, list):
-        raise ValueError('Modular document recap required')
-    expected = {doc for doc in document_ids if any(_document_support(r, document_ids)=={doc} for r in rows)}
-    if {c['source_revision_id'] for c in components} != expected or len(components)!=len(expected):
-        raise ValueError('Every supported document requires one synopsis')
-    general = dict(root, kind='general', source_revision_id=None)
-    bound = [general]
-    for component in components:
-        support = _support(component, rows)
-        if any(_document_support(r, document_ids)!={component['source_revision_id']} for r in rows if r['id'] in support):
-            raise ValueError('Document recap requires exact same-document evidence')
-        bound.append(dict(root,kind='document',source_revision_id=component['source_revision_id'],
-            title=component['title'],text=component['text'],support_revision_ids=support))
-    root['modular'] = True
-    # A component lives on one of its own immutable supports. Excluding another
-    # component's carrier cannot hide it; excluding this carrier makes it unsafe.
-    for index,component in enumerate(bound):
-        component['component_index'] = index
-        carrier = next(r for r in rows if r['id']==component['support_revision_ids'][0])
-        carrier['content']['extraction'].setdefault('recap_components', []).append(component)
+    return rows, True
 
 
 def from_version(rows, current):
@@ -377,18 +214,10 @@ def from_version(rows, current):
         recap = row['content'].get('extraction', {}).get('recap')
         if not recap:
             continue
-        if (recap.get('format')!='qh.context-recap/1' or recap.get('version_id')!=current['id']
+        if (recap.get('format')!=RECAP_FORMAT or recap.get('version_id')!=current['id']
             or set(recap.get('basis_revision_ids', []))!=set(current['revision_ids'])
             or not recap.get('support_revision_ids')
             or not set(recap['support_revision_ids'])<=set(current['revision_ids'])):
             raise ValueError('Recap must belong to this exact consolidated version')
-        result = {k:recap[k] for k in ('version_id', 'title', 'text', 'support_revision_ids')}
-        if recap.get('modular'):
-            components = [c for r in rows for c in r['content'].get('extraction', {}).get('recap_components', [])]
-            if any(c['version_id']!=current['id'] or set(c['basis_revision_ids'])!=set(current['revision_ids'])
-                or not set(c['support_revision_ids'])<=set(current['revision_ids']) for c in components):
-                raise ValueError('Components must belong to this exact consolidated version')
-            result['documents'] = [{k:c[k] for k in ('title', 'text', 'source_revision_id', 'support_revision_ids')}
-                for c in sorted(components,key=lambda c:c['component_index']) if c['kind']=='document']
-        return result
+        return {k:recap[k] for k in ('version_id', 'title', 'text', 'support_revision_ids')}
     return None

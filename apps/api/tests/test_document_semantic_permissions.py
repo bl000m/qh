@@ -16,12 +16,22 @@ from app.projections.document_scope import is_empty_projection
 from app.projections.drafts import ProjectionNotFound, RevisionKey
 from app.projections.guest_payload import recipient_payload
 from tests.test_disclosure import policy
-from tests.test_modular_recap import generate_documents, projected
+from tests.test_context_sovereignty import projected
 from tests.test_projection_drafts import run
+from tests.test_unified_recap import generate_documents
+
+TEXTS=['Giulia Rossi décrit son expérience en développement dans son CV.',
+    'Le contrat prévoit une activité de développement.',
+    'Giulia souhaiterait devenir architecte, sans décision contractuelle.']
+
+
+def general_recap(rows):
+    return next(r.content['extraction']['recap'] for r in rows if r.content.get('extraction',{}).get('recap'))
 
 
 def fixture():
-    bound, _, originals, _ = generate_documents()
+    generated = generate_documents(pages=TEXTS, items=[(text,[text]) for text in TEXTS])
+    bound, originals = generated.rows, generated.originals
     documents = tuple(s['id'] for s in originals)
     base = projected()[0]
     rows = [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
@@ -87,20 +97,27 @@ def test_legacy_empty_notice_approval_does_not_release_document_introduction_or_
     assert semantic.policy.semantic_documents==(documents[0],)
 
 
-@pytest.mark.parametrize('failure', ['masked-support','sensitive-introduction','excluded-support'])
+@pytest.mark.parametrize('failure', ['sensitive-introduction','excluded-support','missing-basis'])
 def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
     service,rows,documents,scope=fixture()
-    if failure=='masked-support':
-        rows[0].content['text']+=' private@example.test'
-    elif failure=='sensitive-introduction':
-        for row in rows:
-            for component in row.content.get('extraction',{}).get('recap_components',[]):
-                if component['kind']=='general':component['text']='Diagnostic médical privé.'
+    if failure=='sensitive-introduction':
+        general_recap(rows)['text']='Diagnostic médical privé.'
+    elif failure=='excluded-support':
+        rows[1].content['text']+=' Diagnostic médical privé.'
     else:
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
-    for selected in ((),documents):
-        preview=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=selected,original_documents=selected)))
+    for originals in ((),documents):
+        preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
         assert 'recap' not in preview.payload
+        assert preview.report['recap_status']==('unavailable' if failure=='missing-basis' else 'restricted')
+
+
+def test_masked_support_text_does_not_hide_the_safe_general_recap():
+    service,rows,documents,scope=fixture()
+    rows[0].content['text']+=' private@example.test'
+    preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context')))
+    assert preview.payload['recap']=={k:general_recap(rows)[k] for k in ('title','text')}
+    assert 'private@example.test' not in json.dumps(preview.payload) and preview.report['masks']
 
 
 def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
@@ -137,7 +154,7 @@ def test_fully_authorized_general_recap_wins_over_document_fallback():
     frozen=deepcopy(rows)
     full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
     limited=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
-    general=next(c for row in rows for c in row.content.get('extraction',{}).get('recap_components',[]) if c['kind']=='general')
+    general=general_recap(rows)
     assert full.payload['recap']=={key:general[key] for key in ('title','text')}
     assert 'recap' not in limited.payload
     assert 'document_recaps' not in full.payload and 'document_recaps' not in limited.payload
@@ -213,7 +230,7 @@ def test_unrelated_mask_does_not_hide_canonical_recap_or_promote_one_document_sy
     rows[1].content['text']+=' Identifiant : 123456789.'
     for originals in ((),documents):
         preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
-        general=next(c for r in rows for c in r.content.get('extraction',{}).get('recap_components',[]) if c['kind']=='general')
+        general=general_recap(rows)
         assert preview.payload['recap']=={k:general[k] for k in ('title','text')}
         assert 'document_recaps' not in preview.payload and preview.report['recap_status']=='available'
         assert rows[0].content['text'] in [i['text'] for i in preview.payload['items']]

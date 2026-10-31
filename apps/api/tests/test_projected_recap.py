@@ -18,25 +18,6 @@ def test_complete_recap_and_missing_recap_have_distinct_owner_status():
     assert 'recap' not in payload and report['recap_status']=='unavailable'
 
 
-@pytest.mark.parametrize('restriction',['excluded','masked'])
-def test_existing_synopsis_reused_only_when_exact_whole_disclosed_statement(restriction):
-    rows=projected()
-    summary=rows[0].content['extraction']['recap']
-    summary.update(title='Laboratorio proposto',text='Laboratorio proposto: Giulia vorrebbe partecipare, ma non ha ancora deciso.')
-    rows[0].content['text']=summary['text']
-    rows[1].content['text']='Diagnostic médical privé.' if restriction=='excluded' else 'Contacter private@example.test.'
-    frozen=deepcopy(rows)
-    payload,report=OutboundDisclosureGuard().apply(rows,policy())
-    assert payload['recap']==dict(title=summary['title'],text=summary['text'])
-    assert report['recap_status']=='available' and report['exclusions' if restriction=='excluded' else 'masks']
-    assert 'private@example.test' not in str(payload) and 'Diagnostic' not in str(payload)
-    assert rows==frozen
-    # A matching fragment is insufficient: dropping the rest could remove attribution.
-    rows[0].content['text']+=' Questa è soltanto un’ipotesi discussa, non una decisione.'
-    payload,report=OutboundDisclosureGuard().apply(rows,policy())
-    assert 'recap' not in payload and report['recap_status']=='restricted'
-
-
 def test_partial_basis_and_masked_summary_stay_closed_without_invented_fallback():
     rows=projected()
     rows[1].content['text']='Diagnostic médical privé.'
@@ -50,9 +31,11 @@ def test_partial_basis_and_masked_summary_stay_closed_without_invented_fallback(
     assert 'recap' not in payload and 'private@example.test' not in str(payload)
 
 
-@pytest.mark.parametrize('modular',[False,True])
-def test_exact_preview_is_approved_then_returned_by_guest_session_without_inference(modular):
+@pytest.mark.parametrize('originals',[0,1,2])
+def test_owner_preview_approval_and_guest_share_the_same_canonical_recap_and_knowledge(originals):
+    """Offline end-to-end: memorized CV-like PDFs → owner read → preview → approval → guest HTTP."""
     import asyncio
+    import json
     from dataclasses import replace
     from datetime import datetime, timezone
     from types import SimpleNamespace
@@ -61,41 +44,48 @@ def test_exact_preview_is_approved_then_returned_by_guest_session_without_infere
     from fastapi.testclient import TestClient
 
     from app.api.guest import COOKIE
+    from app.chat.guest import question_payload
     from app.projections.disclosure import ApprovedSnapshot, Candidate, Selection, TEXT_REVIEW
     from app.projections.disclosure_service import DisclosureService
     from app.projections.drafts import RevisionKey
     from app.projections.guest import GuestSnapshot
+    from app.understanding import recap
     from tests.test_projection_drafts import uid
     from tests.test_sharing_simplified import setup
+    from tests.test_unified_recap import SUMMARY, generate_documents, projected_documents
 
-    rows=projected()
-    if modular:
-        from tests.test_modular_recap import projected_documents
-        rows=projected_documents()
+    generated=generate_documents()
+    rows=projected_documents(generated)
+    owner_view=recap.from_version(generated.rows,dict(id=generated.version,revision_ids=[r['id'] for r in generated.rows]))
+    documents=tuple(s['id'] for s in generated.originals)
     owner,scope=uid(),uid()
     keys=tuple(Candidate(key=RevisionKey(item_id=r.item_id,revision_id=r.revision_id),state=r.validation_state,endpoints=()) for r in rows)
-    repository=Mock(select=AsyncMock(return_value=Selection(context_id=scope,stamp='stable',candidates=keys,name='Atelier')),
+    repository=Mock(select=AsyncMock(return_value=Selection(context_id=scope,stamp='stable',candidates=keys,name='RH',document_sources=documents)),
         prepare=AsyncMock(side_effect=lambda value:value),preview=AsyncMock(),approve=AsyncMock())
     drafts=Mock(_allow=AsyncMock(),create=AsyncMock(return_value=SimpleNamespace(id=uid(),version=1)),
         resolve=AsyncMock(return_value=SimpleNamespace(revisions=rows)))
     service=DisclosureService(drafts=drafts,repository=repository)
-    preview=asyncio.run(service.prepare(owner,scope,policy()))
+    preview=asyncio.run(service.prepare(owner,scope,policy(knowledge_scope='context',original_documents=documents[:originals])))
+    assert preview.payload['recap']=={k:owner_view[k] for k in ('title','text')}==SUMMARY
+    assert [i['text'] for i in preview.payload['items']]==[r.content['text'] for r in rows]
+    assert 'document_recaps' not in preview.payload and preview.report['recap_status']=='available'
     repository.preview.return_value=preview
     repository.approve.side_effect=lambda value,exceptions:ApprovedSnapshot(id=uid(),context_id=scope,owner_id=owner,
         preview_id=value.id,fingerprint=value.fingerprint,payload_json=value.payload_json,policy=value.policy,
         approved_at=datetime.now(timezone.utc),exceptions=exceptions)
     snapshot=asyncio.run(service.approve(owner,scope,preview.id,preview.fingerprint,exceptions=(TEXT_REVIEW,)))
-    assert snapshot.payload==preview.payload
+    assert snapshot.payload==preview.payload and snapshot.policy.original_documents==documents[:originals]
     app,_,_,_,_,provider,_,_=setup()
     guest=app.state.services.guest
-    grant=replace(guest.repository.authenticate.return_value,context_id=scope,snapshot_id=snapshot.id,rights=('READ',))
+    grant=replace(guest.repository.authenticate.return_value,context_id=scope,snapshot_id=snapshot.id,rights=('READ','ASK_AI'))
     guest.repository.authenticate.return_value=grant
     app.state.services.policy._guest_for.return_value=grant
     guest.repository.payload.return_value=GuestSnapshot(context_id=scope,snapshot_id=snapshot.id,payload_json=snapshot.payload_json,include_quotes=False)
     with TestClient(app,base_url='https://qh.example.test') as client:
         client.cookies.set(COOKIE,'synthetic-verified-cookie')
         response=client.get('/guest/session')
-        assert response.status_code==200
-        assert response.json()['recap']==preview.payload['recap']
-        assert response.json()['document_recaps']==preview.payload.get('document_recaps',[])
+        assert response.status_code==200 and response.json()['recap']==SUMMARY
+    # Interrogable knowledge is identical for 0, 1 or 2 downloadable PDFs and excludes original quotes.
+    packet=json.dumps(question_payload(snapshot.payload),ensure_ascii=False)
+    assert all(r.content['text'] in packet for r in rows) and '06 12 34 56 78' not in packet and 'secret' not in packet
     provider.generate.assert_not_awaited()

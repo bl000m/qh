@@ -32,7 +32,7 @@ function space(value: unknown): ContextSpace {
 }
 function workspaceState(state:WorkspaceState,scope:string):WorkspaceState {
     if(!state||state.context_id!==scope||!['empty','pending','running','current','failed'].includes(state.state)||!Array.isArray(state.intake)||!Number.isInteger(state.pending_count))throw new ApiError(502);
-    if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>(state.current.has_recap?100:150)||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
+    if(state.recap&&(!state.current||state.recap.version_id!==state.current.id||typeof state.recap.title!=='string'||!state.recap.title.trim()||typeof state.recap.text!=='string'||!state.recap.text.trim()||state.recap.text.trim().split(/\s+/).length>150||!Array.isArray(state.recap.support_revision_ids)||!state.recap.support_revision_ids.length||state.recap.support_revision_ids.some(id=>!state.current!.revision_ids.includes(id))))throw new ApiError(502);
     return state;
 }
 export class QhApi {

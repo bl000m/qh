@@ -44,7 +44,8 @@ def test_one_generation_retains_full_details_and_version_bound_recap():
     source,rows=asyncio.run(propose_selected_conversation(subject_id=subject,context_id=scope,
         conversation=conversation,extraction_key='recap-test',policy=policy,provider=provider,descriptor_version=3))
     original_hash=UnderstandingExtractor.source_hash(source)
-    bound=recap.bind(provider.recap,rows,version)
+    bound,published=recap.bind(provider.recap,rows,version)
+    assert published
     summary=recap.from_version(bound,dict(id=version,revision_ids=[r['id'] for r in bound]))
     assert summary['title']=='Préparation d’un risotto' and len(summary['text'].split())<=100
     assert '320 g' not in summary['text'] and '320 g' in bound[0]['content']['text']
@@ -61,26 +62,52 @@ def test_one_generation_retains_full_details_and_version_bound_recap():
     assert 'assistant explanations as user preferences' in system
 
 
-@pytest.mark.parametrize('change',['too_long','invented_support','duplicate_support','wrong_version'])
+@pytest.mark.parametrize('change',['too_long','invented_support','ambiguous_support','wrong_version'])
 def test_bad_recap_is_rejected_without_repair_or_foreign_version_reuse(change):
     _,output=recipe()
     if change=='too_long':output['recap']['text']='mot '*101
     elif change=='invented_support':output['recap']['supporting_statements']=['Une information absente.']
-    elif change=='duplicate_support':output['recap']['supporting_statements']*=2
+    elif change=='ambiguous_support':output['understanding']['items'].append(deepcopy(output['understanding']['items'][0]))
+    atomic,value,digest=recap.decode(json.dumps(output))
     if change!='wrong_version':
-        with pytest.raises(ValueError):recap.decode(json.dumps(output))
+        with pytest.raises(ValueError):recap.summary(value,atomic,digest)
     else:
-        _,summary=recap.decode(json.dumps(output))
-        rows=[dict(id=str(uuid4()),content=dict(text=i['text'],extraction={})) for i in output['understanding']['items']]
-        bound=recap.bind(summary,rows,str(uuid4()))
+        rows=[dict(id=str(uuid4()),content=dict(text=i['text'],extraction={})) for i in atomic['items']]
+        bound,_=recap.bind(recap.summary(value,atomic,digest),rows,str(uuid4()))
         with pytest.raises(ValueError):recap.from_version(bound,dict(id=str(uuid4()),revision_ids=[r['id'] for r in rows]))
+
+
+def test_strictly_identical_support_declarations_are_deduplicated_deterministically():
+    details,output=recipe()
+    output['recap']['supporting_statements']=[details[1],details[0],details[1]]
+    atomic,value,digest=recap.decode(json.dumps(output))
+    summary=recap.summary(value,atomic,digest)
+    assert summary['supporting_statements']==[details[1],details[0]]
+
+
+def test_invalid_recap_keeps_validated_understanding_without_publishing_a_recap():
+    details,output=recipe()
+    output['recap']['supporting_statements']=['Une information absente.']
+    delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(output)))))
+    reference_replay(delegate)
+    checks=[]
+    provider=UumExtractionProvider(delegate,consolidate=True,with_recap=True,observer=lambda rule,passed,*_:checks.append((rule,passed)))
+    policy=Mock(evaluate=AsyncMock(return_value=type('Decision',(),dict(allowed=True))()))
+    conversation=dict(id='recipe',revision_no=1,acquired_at='2026-10-27T10:00:00Z',metadata={},
+        turns=[dict(id=str(uuid4()),speaker='assistant (unverified dialogue)',text='\n\n'.join(details))])
+    _,rows=asyncio.run(propose_selected_conversation(subject_id=str(uuid4()),context_id=str(uuid4()),
+        conversation=conversation,extraction_key='recap-test',policy=policy,provider=provider,descriptor_version=3))
+    assert provider.recap is None and ('uum.recap_exact_statement_support',False) in checks
+    assert [r['content']['text'] for r in rows]==details and delegate.generate.await_count==1
+    bound,published=recap.bind(provider.recap,rows,str(uuid4()))
+    assert not published and recap.from_version(bound,dict(id='v',revision_ids=[r['id'] for r in bound])) is None
 
 
 def test_recap_word_limit_does_not_limit_detailed_statements():
     _,output=recipe()
     long_detail=' '.join('détail'+str(i) for i in range(250))
     output['understanding']['items'].append(dict(text=long_detail,primary_dimension=None,evidence=[dict(quote=long_detail)]))
-    atomic,_=recap.decode(json.dumps(output))
+    atomic,_,_=recap.decode(json.dumps(output))
     assert atomic['items'][-1]['text']==long_detail
 
 
@@ -145,16 +172,17 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
 
     # Reproduce the real failure shape without retaining the private response:
     # an exact source quote is still invalid in a statement-support declaration.
+    # The recap is dropped; the validated detailed items are still returned.
     output['recap']['supporting_statements'][0] = original_quote
     delegate.generate.return_value = GenerationResult(message=Message(
         role=MessageRole.ASSISTANT, content=json.dumps(output)))
     observer.reset_mock()
-    with pytest.raises(ValueError, match='Exact unambiguous detailed recap support required'):
-        asyncio.run(provider.generate(request))
+    result = asyncio.run(provider.generate(request))
+    assert provider.recap is None and len(json.loads(result.message.content)['items']) == len(details)
     observer.assert_any_call('uum.recap_exact_statement_support', False,
-        'Invalid recap envelope or exact detailed statement support')
+        'Recap not published: invalid envelope or exact detailed statement support')
     assert original_quote not in str(observer.call_args)
-    assert delegate.generate.await_count == 2  # One generation, then one rejected generation; no retry.
+    assert delegate.generate.await_count == 2  # One generation per request; no retry.
 
 
 def test_italian_subject_recap_stays_short_while_chat_receives_all_30_steps():
@@ -163,13 +191,14 @@ def test_italian_subject_recap_stays_short_while_chat_receives_all_30_steps():
         dict(text=t, primary_dimension=None, evidence=[dict(quote=t)]) for t in details]))
     output['recap'].update(title='Organizzazione di un laboratorio informatico',
         text='Linee guida proposte per organizzare un laboratorio informatico, con trenta attività pratiche e verifiche del materiale. La procedura dettagliata resta disponibile per la preparazione e lo svolgimento del laboratorio.')
-    atomic, summary = recap.decode(json.dumps(output))
+    atomic, value, digest = recap.decode(json.dumps(output))
+    summary = recap.summary(value, atomic, digest)
     assert len(summary['text'].split()) < 40  # No artificial minimum.
     for length in (100, 101):
-        candidate = deepcopy(output); candidate['recap']['text'] = 'parola '*length
-        if length == 100: recap.decode(json.dumps(candidate))
+        candidate = deepcopy(value); candidate['text'] = 'parola '*length
+        if length == 100: recap.summary(candidate, atomic, digest)
         else:
-            with pytest.raises(ValueError): recap.decode(json.dumps(candidate))
+            with pytest.raises(ValueError): recap.summary(candidate, atomic, digest)
     rows = tuple(revision(revision_id=str(i), item_id='item'+str(i), content=dict(text=item['text']))
         for i, item in enumerate(atomic['items']))
     context = build_context(context_id='space', revisions=rows, consolidated=True, extended_dialogue=True,
