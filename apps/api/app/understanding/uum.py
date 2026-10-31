@@ -249,7 +249,6 @@ class UumExtractionProvider:
                 raise ValueError('Assistant recap required')
             with measured_phase(self.measure,'validation_ms'):
                 self._decode_recap(summary.message.content, atomic=output, references=references)
-            await self._review_recap(output,source)
         return replace(result,message=Message(role=MessageRole.ASSISTANT,content=canonical_json(output)))
 
     def _document_catalogue(self):
@@ -309,29 +308,9 @@ class UumExtractionProvider:
         if result.message.role != MessageRole.ASSISTANT:
             raise ValueError('Consolidation must return an assistant envelope')
         atomic = self._decode_recap(result.message.content)
-        await self._review_recap(atomic,source)
         # Explicit envelope adapter, not a heuristic repair. The unchanged Engine
         # validates the exact atomic payload; diagnostics retain the raw envelope.
         return replace(result, message=Message(role=MessageRole.ASSISTANT, content=canonical_json(atomic)))
-
-    async def _review_recap(self, atomic, source):
-        if self.recap is None:return
-        from app.understanding.recap_review import RecapReview
-        original=self.validation_source or dict(id=source['source_revision_id'],content=source['text'],origin=dict(turns=source['turns']))
-        with measured_phase(self.measure,'validation_ms'):
-            normalize_output(atomic,original)
-            review=RecapReview(self.recap,atomic,self._recap_packet(atomic['items'],source))
-        try:
-            result=await self.delegate.generate(review.request)
-            with measured_phase(self.measure,'validation_ms'):
-                assessment=review.accept(result.message)
-        except ValueError:
-            if self.observer:self.observer('uum.recap_claim_review',False,'Invalid review structure or evidence')
-            raise
-        if self.observer:self.observer('uum.recap_claim_review',True)
-        if self.observer and assessment['status']=='inconclusive':
-            self.observer('uum.recap_semantic_advisory',True,
-                'Informative only: '+', '.join(assessment['advisories'])+'; conservative disclosure retained')
 
     def _decode_recap(self, content, atomic=None, references=None):
         try:

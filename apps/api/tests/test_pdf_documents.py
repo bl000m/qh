@@ -93,9 +93,6 @@ def test_long_document_all_parts_are_sent_then_validated_recap():
     packets=[]
     async def generate(request):
         packet=json.loads(request.messages[-1].content)
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            return GenerationResult(message=review_reply(request))
         if 'statements' in packet:
             assert packet['provenance'][0]['speakers']==['unverified PDF']
             assert 'quote' not in packet['provenance'][0]

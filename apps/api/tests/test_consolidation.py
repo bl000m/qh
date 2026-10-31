@@ -45,9 +45,6 @@ def reference_replay(provider):
     def respond(request):
         result = provider.generate.return_value
         packet = json.loads(request.messages[-1].content)
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            return GenerationResult(message=review_reply(request))
         output = reference_output(json.loads(result.message.content), packet)
         return replace(result, message=Message(role=MessageRole.ASSISTANT, content=json.dumps(output)))
     provider.generate.side_effect = respond
@@ -97,7 +94,7 @@ def test_one_atomic_publish_after_engine_and_repeat_does_not_generate():
     assert published[0]['content']['extraction']['recap']['version_id']==batch['operation_id']
     repo.claim.return_value={'replayed':True};repo.read.return_value=dict(current=None)
     asyncio.run(service.consolidate(who,scope))
-    assert delegate.generate.await_count==2 and repo.publish.await_count==1
+    assert delegate.generate.await_count==1 and repo.publish.await_count==1
 
 
 def test_published_recap_is_not_disclosed_after_owner_revocation():

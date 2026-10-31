@@ -24,19 +24,17 @@ service, central PolicyService, canonical PostgreSQL and native graph verificati
 Drafts are neither approved snapshots nor recipient grants; migration 0007 remains
 isolated-only and is not applied on the persistent VPS.
 
-## Canonical recap provenance review
+## Canonical recap provenance
 
-The existing UUM consolidation provider performs an independent semantic review
-of its one proposed recap before publication. It uses the same provider port,
-authorization and atomic accounting; it does not create another synthesis service.
-Private presentation-v4 metadata maps complete title/body coverage to canonical
-revision IDs and exact source-citation fingerprints. Projection rechecks these
-bindings locally, without inference or PDF hydration. Semantic entailment remains
-a probabilistic model assessment, explicitly distinct from structural validation
-and human confirmation. In V1, negative semantic verdicts and unused declared
-supports are advisory: all original supports remain, the inconclusive status is
-persisted, and precise-support disclosure is withheld. Malformed review structure,
-invalid citations and provenance still block atomic publication.
+UUM generates one free recap with exact statement supports; the existing Engine
+validates original citations/provenance before atomic publication. The extra
+semantic reviewer HTTP and its claims/spans validation have been removed from V1.
+Projection resolves recap supports to authorized canonical revisions of the same
+version, preserving full-basis presence and checking the existing Guard on text,
+supports and original citations even when quotations are hidden in the UI.
+Unrelated basis restrictions do not contaminate a safe recap; restricted actual
+supports still prevent disclosure. No share-time inference, evidence trimming,
+semantic certification, source re-extraction or new synthesis service is added.
 Historical approvals remain frozen; see the current
 [Product Contract](product/QH_PRODUCT_CONTRACT.md).
 

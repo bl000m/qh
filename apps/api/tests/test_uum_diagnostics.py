@@ -36,11 +36,7 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
         primary_dimension=None, evidence=[dict(quote=quote)])])
     def generate(request):
         packet = json.loads(request.messages[-1].content)
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            content=review_reply(request).content
-        else:
-            content = json.dumps(reference_output(consolidation_output(wire), packet))
+        content = json.dumps(reference_output(consolidation_output(wire), packet))
         diagnostic.begin()
         diagnostic.capture(raw_call(request, content))
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT, content=content))
@@ -58,8 +54,8 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
     assert record['operation']['totals']['combined_ms']==125
     assert extraction['metrics']['atomic_items']==extraction['metrics']['passage_references']==1
     assert extraction['metrics']['source_chars']==extraction['metrics']['source_disclosed_chars']>0
-    assert metrics['atomic_items']==0 and 'source_chars' not in metrics
-    assert record['operation']['totals']['reviews']==1 and record['operation']['totals']['atomic_items']==1
+    assert metrics['atomic_items']==1 and metrics['source_chars']>0
+    assert record['operation']['totals']['reviews']==0 and record['operation']['totals']['atomic_items']==1
     assert metrics['request_schema_chars']>0
     content = record['raw_response']['choices'][0]['message']['content']
     assert metrics['output_json_chars']==len(content) and metrics['output_json_bytes']==len(content.encode())

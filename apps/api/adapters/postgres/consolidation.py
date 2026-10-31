@@ -18,11 +18,11 @@ class PostgresConsolidationRepository(WorkspaceChatStorage, CanonicalRepository)
             WHERE r.id=ANY(v.revision_ids) AND r.context_space_id=v.context_space_id
             AND r.content #>> '{extraction,recap,version_id}'=v.id::text
             AND r.content #>> '{extraction,recap,presentation_version}'=ANY(%s::text[])
-            AND (r.content #>> '{extraction,recap,presentation_version}'=%s OR NOT EXISTS(
+            AND (r.content #>> '{extraction,recap,presentation_version}'=ANY(%s::text[]) OR NOT EXISTS(
                 SELECT 1 FROM context_intake i WHERE i.context_space_id=v.context_space_id
                 AND i.document ? 'source_revision_id'))) AS has_recap
             FROM context_consolidations v WHERE context_space_id=%s
-            ORDER BY version DESC LIMIT 1""", ([str(v) for v in recap_output.COMPATIBLE_VERSIONS],str(recap_output.PRESENTATION_VERSION),scope)).fetchone()
+            ORDER BY version DESC LIMIT 1""", ([str(v) for v in recap_output.COMPATIBLE_VERSIONS],['3','4'],scope)).fetchone()
         return json_values(row) if row else None
 
     def _read(self, c, scope):

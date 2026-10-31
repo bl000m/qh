@@ -61,11 +61,6 @@ def test_consolidation_quote_schema_and_final_validation_offline(tmp_path, monke
         sent.append(body)
         assert 'max_tokens' not in body and body['model'] == 'mistral-small-2603'
         packet = json.loads(body['messages'][-1]['content'])
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            from types import SimpleNamespace
-            reply=review_reply(SimpleNamespace(messages=[SimpleNamespace(content=body['messages'][-1]['content'])]))
-            return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=1000,completion_tokens=500),choices=[dict(finish_reason='stop',message=dict(content=reply.content))]))
         schema = body['response_format']['json_schema']['schema']['properties']['understanding']
         text = ''.join(s['text'] for s in packet['segments'])
         choices_by_quote = {text[p['start']:p['end']]:p['ref'] for p in packet['passages']}
@@ -95,7 +90,7 @@ def test_consolidation_quote_schema_and_final_validation_offline(tmp_path, monke
         citations = rows[0]['content']['citations']
         assert [c['quote'] for c in citations] == [lines[i] for i in (5, 7, 9)]
         assert all(source['content'][c['start']:c['end']] == c['quote'] for c in citations)
-    assert len(sent) == (1 if bad_quote else 2) and output == frozen
+    assert len(sent) == 1 and output == frozen
 
 
 def test_repeated_only_source_fails_before_provider_generation():

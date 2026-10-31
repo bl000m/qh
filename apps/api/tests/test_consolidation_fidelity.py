@@ -60,4 +60,4 @@ def test_question_is_not_a_personal_fact_and_assistant_advice_is_not_adoption(de
             assert citation['turn_id'] == ('answer' if row is rows[2] else 'question')
     assert advice in source['content']  # Source intact; filler need not become an atomic item.
     assert len({c['source_revision_id'] for r in rows for c in r['content']['citations']}) == 1
-    assert delegate.generate.await_count==2
+    assert delegate.generate.await_count==1

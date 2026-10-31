@@ -3,6 +3,68 @@
 Branche `feat/QH-18-21-22-demo-b`, PR #29, sans merge.
 Le plafond de deux supports a déjà été supprimé dans `7e637ee`.
 
+## État actuel — retrait du réviseur et vérification du parcours complet
+
+Cette décision remplace les règles de revue décrites dans l'historique ci-dessous.
+La cause applicative du résumé absent était le prérequis `require_claim_review`
+sur les nouveaux partages globaux : un résumé canonique v3 valide était écarté
+avant toute tentative de réutilisation, notamment après une revue inconclusive.
+Les contrôles de claims/spans, la revue obligatoire et son HTTP sont supprimés.
+Les doubles et tests dédiés à ce protocole supprimé sont retirés également.
+
+La Projection vérifie les supports contre les révisions canoniques autorisées de
+la même version, la présence de toute la base, le texte et les citations originales
+avec le Guard existant. Aucun item étranger aux supports ne contamine ce contrôle.
+Une citation nécessaire sensible ou masquable reste bloquante, même si l'UI cache
+les citations. Aucun support n'est supprimé ou fabriqué pour rendre le résumé visible.
+La récupération reconnaît les résumés v3/v4 déjà persistés sans les réextraire.
+La synthèse libre n'est pas présentée comme une preuve logique d'entailment.
+
+### RH réel, lecture seule
+
+Au premier relevé : version 1, 28 items, résumé v3 avec revue inconclusive.
+Le contexte a évolué pendant le travail. La vérification finale porte explicitement
+sur **la version 2, 43 items et 7 supports de résumé**, pas sur l'ancien RH à 36 items.
+PostgreSQL en transaction read-only et vérification native Neo4j : résumé owner
+présent, 41 items sortants, aucune écriture. Avec 0/1/2 originaux, payload identique.
+Le résumé reste restreint pour les règles de ses citations : `number` et
+`recognised_high_risk_citation`. Le contenu sensible n'est pas reproduit ici.
+Ces références persistées ne peuvent pas être retirées automatiquement en sécurité.
+
+### Scénario contrôlé
+
+Un seul scénario d'intégration utilise deux vrais PDF synthétiques, pypdf,
+PostgreSQL jetable, Neo4j de test, JWT owner signé et vérifié, boîte SMTP isolée,
+vérification OTP et routes HTTP guest. L'inférence seule est un replay offline,
+sans fournisseur payé ; le résumé est réellement persisté puis relu.
+
+| Critère | Résultat |
+|---|---|
+| Mémorisation → résumé owner persisté | PASS ; un appel simulé, aucune revue supplémentaire |
+| Même résumé dans aperçu → snapshot approuvé → guest vérifié | PASS |
+| 0/1/2 originaux : résumé et payload interrogeable identiques | PASS |
+| Originaux non autorisés indisponibles ; autorisés téléchargés | PASS |
+| Expiration et révocation | PASS ; session/documents refusés |
+| Donnée protégée étrangère aux supports | Exclue sans cacher le résumé sûr |
+| Support/citation protégés, provenance étrangère ou absente | Rejet du résumé, y compris citations cachées |
+| Citation originale invalide à la mémorisation | Rejet par l'Engine ; publication non effectuée |
+
+Le test browser rejoue les **sorties HTTP de ce même scénario** dans les composants
+réels owner/aperçu/guest ; il ne prétend pas effectuer un login browser sur le runtime.
+Le scope des pages de test et les valeurs du formulaire sont adaptés au replay,
+jamais le texte du résumé ni le payload produit par le Guard.
+
+109 tests offline ciblés passent, ainsi que le scénario SQL/native/SMTP/HTTP,
+le test browser sur ses sorties, TypeScript et Ruff.
+Un contrôle supplémentaire de confidentialité/disclosure donne 30 PASS et un FAIL
+préexistant : `test_proposed_inclusion_is_separate_and_does_not_confirm` attend que
+le flag historique `include_proposed=False` exclue les propositions. La règle
+`_item` est identique à `253edd7` et n'applique déjà plus ce filtre. La revue
+automatique a refusé de modifier cette attente de sécurité ; le test est conservé
+intact, sans changement de politique ni présentation du résultat comme PASS.
+Aucun appel Mistral effectué pour ce correctif ; aucun changement des données
+réelles ou des snapshots approuvés. Pas de migration nouvelle ni de Full Verification.
+
 ## Correctif après le test manuel de mémorisation
 
 Diagnostic privé lu sans nouvelle génération, le 31 octobre, heure de Paris :

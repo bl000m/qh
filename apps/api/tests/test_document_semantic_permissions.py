@@ -20,15 +20,12 @@ from tests.test_modular_recap import generate_documents, projected
 from tests.test_projection_drafts import run
 
 
-def fixture(*, historical=True):
+def fixture():
     bound, _, originals, _ = generate_documents()
     documents = tuple(s['id'] for s in originals)
     base = projected()[0]
     rows = [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
         provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in r['provenance'])) for r in bound]
-    if historical:
-        from tests.recap_review_helpers import historical_contents
-        historical_contents([r.content for r in rows])
     rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Dialogue independent.'),provenance=()))
     rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Mixed CV and contract.'),
         provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in documents[:2])))
@@ -125,14 +122,12 @@ def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
     assert first.payload==frozen and first.policy.semantic_documents==documents
 
 
-def test_legacy_single_safe_document_synopsis_survives_scope_without_random_excerpts():
+def test_new_preview_of_partial_legacy_basis_keeps_safe_fallback():
     service,rows,documents,scope=fixture()
     access=policy(semantic_documents=(documents[0],),original_documents=(documents[0],))
     frozen=deepcopy(rows)
     preview=run(service.prepare(str(uuid4()),scope,access))
-    component=next(c for row in rows for c in row.content.get('extraction',{}).get('recap_components',[])
-        if c['kind']=='document' and c['source_revision_id']==documents[0])
-    assert preview.payload['recap']=={key:component[key] for key in ('title','text')}
+    assert 'recap' not in preview.payload  # Full canonical basis is unavailable.
     assert rows==frozen and 'document_recaps' not in preview.payload
     assert rows[1].content['text'] not in json.dumps(question_payload(preview.payload))
 
@@ -144,7 +139,7 @@ def test_fully_authorized_general_recap_wins_over_document_fallback():
     limited=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
     general=next(c for row in rows for c in row.content.get('extraction',{}).get('recap_components',[]) if c['kind']=='general')
     assert full.payload['recap']=={key:general[key] for key in ('title','text')}
-    assert full.payload['recap']!=limited.payload['recap']
+    assert 'recap' not in limited.payload
     assert 'document_recaps' not in full.payload and 'document_recaps' not in limited.payload
     assert rows==frozen
 
@@ -157,13 +152,13 @@ def test_year_intervals_do_not_hide_cv_recap_but_real_identifier_still_blocks_ge
     frozen=deepcopy(rows)
     cv=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
     full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
-    assert cv.payload['recap'] and not cv.report['masks']
+    assert 'recap' not in cv.payload and not cv.report['masks']  # Missing canonical basis.
     assert '2022-2024' in cv.payload['items'][0]['text']
     if masked_support:
-        assert 'recap' not in full.payload  # Two safe document synopses cannot be chosen arbitrarily.
+        assert full.payload['recap']  # The masked contract item is not a declared recap support.
         assert full.report['masks'] and '123456789' not in json.dumps(full.payload)
     else:
-        assert full.payload['recap']!=cv.payload['recap'] and not full.report['masks']
+        assert full.payload['recap'] and not full.report['masks']
     assert rows==frozen
 
 
@@ -194,7 +189,7 @@ def test_number_redaction_preserves_only_calendar_year_intervals(text,masked):
 
 
 def test_context_knowledge_and_canonical_recap_are_independent_of_original_downloads():
-    service,rows,documents,scope=fixture(historical=False);frozen=deepcopy(rows)
+    service,rows,documents,scope=fixture();frozen=deepcopy(rows)
     previews=[run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',
         original_documents=originals,include_quotes=True))) for originals in ((),documents[1:2],documents)]
     assert all(p.payload==previews[0].payload for p in previews)
@@ -213,11 +208,12 @@ def test_context_knowledge_and_canonical_recap_are_independent_of_original_downl
 
 
 
-def test_context_sharing_uses_private_fallback_instead_of_promoting_one_document_synopsis():
+def test_unrelated_mask_does_not_hide_canonical_recap_or_promote_one_document_synopsis():
     service,rows,documents,scope=fixture()
     rows[1].content['text']+=' Identifiant : 123456789.'
     for originals in ((),documents):
         preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
-        assert 'recap' not in preview.payload and 'document_recaps' not in preview.payload
-        assert preview.report['recap_status']=='restricted'
+        general=next(c for r in rows for c in r.content.get('extraction',{}).get('recap_components',[]) if c['kind']=='general')
+        assert preview.payload['recap']=={k:general[k] for k in ('title','text')}
+        assert 'document_recaps' not in preview.payload and preview.report['recap_status']=='available'
         assert rows[0].content['text'] in [i['text'] for i in preview.payload['items']]

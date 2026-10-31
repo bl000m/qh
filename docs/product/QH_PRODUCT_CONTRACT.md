@@ -9,42 +9,30 @@ indicate come aperte non sono decisioni approvate né autorizzazioni a implement
 Il résumé rimane unico, libero nella formulazione e persistito con la versione
 canonica. La generazione non limita più a due i supporti: usa tutti e soli quelli
 necessari, entro i limiti tecnici già esistenti. Il contratto atomico UUM non cambia.
-Dopo la proposta del résumé, la stessa pipeline esegue una revisione semantica
-indipendente di titolo, testo e componenti documentali, tramite il medesimo provider
-Small autorizzato e contabilizzato. Non è una seconda sintesi: il revisore non può
-riscrivere, correggere o completare il candidato, né recuperare altri documenti.
-Questo aggiunge un HTTP di revisione alla memorizzazione, senza retry automatico.
-Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
+La revisione `recap_claim_review`, il suo HTTP obbligatorio e i controlli di claims,
+spans e selezione successiva dei supporti sono rimossi dalla V1. Restano il contratto
+strutturato del résumé, i supporti esatti negli item generati, la validazione delle
+citazioni originali e della provenance da parte dell'Engine, e la pubblicazione
+atomica. Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
 
-Il server verifica deterministicamente che le porzioni dichiarate coprano tutti i
-caratteri non bianchi di titolo e testo, senza buchi o sovrapposizioni; ogni porzione
-ha supporti esatti, citazioni originali appartenenti a tali supporti e nessun supporto
-inutilizzato per attribuire la provenance affinata v4. Una struttura/evidenza non
-valida interrompe la pubblicazione canonica. Per la V1, il giudizio semantico negativo
-o la selezione non minimale dei supporti sono invece informativi: la memorizzazione
-può riuscire con tutti i supporti originali validati, senza attribuirsi la verifica
-v4. Lo stato `inconclusive` e i motivi sono conservati nei metadati e nei diagnostici.
-Non vengono accettate prove parziali né scartati supporti per aggirare il Guard.
-
-**Limite esplicito:** entailment, granularità delle affermazioni, attribuzione e
-minimalità semantica sono valutazioni probabilistiche del modello indipendente,
-con possibili falsi positivi e falsi negativi. Gli span e le citazioni esatte non
-sono una prova logica del significato. La revisione non conferma conoscenza umana,
-non garantisce verità assoluta e non sostituisce l'approvazione della disclosure.
-
-Le nuove versioni di presentazione v4 conservano mapping affermazione → revisioni
-necessarie → citazioni originali verificabili e hash del testo/revisione. Owner,
-aperçu e guest riusano lo stesso résumé. Il Guard controlla testo, tutti i supporti
-e le citazioni effettive, presenza della base e appartenenza alla versione; un
-item protetto estraneo ai supporti non blocca automaticamente quel résumé. Una
-restrizione in un supporto o citazione necessari continua invece a bloccarlo.
+Owner, aperçu e guest riusano lo stesso résumé persistito. La Projection risolve i
+supporti dichiarati nelle revisioni canoniche autorizzate della medesima versione,
+con base interamente presente. Il Guard verifica titolo/testo, supporti ammessi e
+non mascherati, citazioni originali e appartenenza alla provenance, anche quando le
+citazioni non sono mostrate nell'UI. Un item protetto estraneo ai supporti non blocca
+automaticamente il résumé. Un supporto o una sua citazione protetti continuano a
+bloccarlo: nessuna eliminazione automatica di riferimenti o ritaglio delle prove.
 I PDF originali rimangono una scelta esclusiva di consultazione/download.
 
-Lo storico v2/v3 resta leggibile dall'owner senza migrazione o attestazioni nuove.
-Nelle nuove condivisioni V1, un résumé storico o con revisione inconcludente rimane sul fallback
-sicuro, anche se il testo sembra innocuo. Le compatibilità delle policy storiche e
-gli snapshot già approvati restano immutati. Nessun aggiornamento o rigenerazione
-automatica degli Space reali segue dal correttivo.
+**Limite esplicito:** la risoluzione esatta dei supporti e delle citazioni non prova
+logicamente l'entailment del testo libero. La sintesi rimane proposta, senza conferma
+umana automatica; non si attribuisce una certificazione semantica al résumé.
+
+Le presentazioni v3 e le v4 già persistite usano gli stessi controlli fondamentali,
+senza esigere un'attestazione del revisore. Le versioni storiche prive di supporti
+risolvibili conservano il comportamento prudente. Snapshot approvati, contenuto
+canonico e documenti rimangono immutati; nessuna migrazione o rigenerazione segue
+dal correttivo. I diagnostici storici della revisione restano leggibili.
 
 ## Condivisione V1 del Context Space — decisione owner, 2026-10-31
 
@@ -72,8 +60,8 @@ salari, negoziazioni o budget: non condividere lo Space se tali fatti devono res
 privati. Gli originali scaricabili possono contenere ulteriori dati non filtrati.
 
 Il recap globale canonico è riutilizzato solo se interamente ammesso dai controlli
-sul testo e sulla provenance; per le versioni v4 revisionate valgono i supporti
-effettivi e i controlli di integrità della base descritti sopra. Altrimenti la V1 mostra il fallback
+sul testo e sulla provenance, con i supporti canonici e la base descritti sopra.
+Altrimenti la V1 mostra il fallback
 privato: nessuna inferenza al caricamento, collage di estratti o promozione del
 recap di un solo PDF a résumé dell'intero contesto. I fatti ammessi restano interrogabili.
 

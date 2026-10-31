@@ -1,5 +1,8 @@
 """Owner preview → actual OTP/API → bounded simulated guest questions, no network AI."""
 import json
+import os
+from pathlib import Path
+from datetime import timedelta
 from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
@@ -31,7 +34,7 @@ pytestmark=pytest.mark.parametrize('generic',['0005_retire_legacy_category'],ind
 def client_for(p,provider,live=None):
     auth,_=build_auth(mapping={'external-alice':p['repo'].subject_id,'external-bob':uid()})
     app=create_app(services=ApplicationServices(context=FakeContextService(FakeContextEngine(RESULT)),policy=p['policy'],
-        guest=p['guest'],sharing=p['disclosure'],guest_chat=GuestSnapshotChat(guest=p['guest'],provider=provider,live=live)),
+        guest=p['guest'],sharing=p['disclosure'],consolidation=p.get('consolidation'),guest_chat=GuestSnapshotChat(guest=p['guest'],provider=provider,live=live)),
         security=SecurityBindings(authenticate=auth.authenticate,policy=p['policy']),guest_http=GuestHTTPConfig(origin=ORIGIN,minimum_response_seconds=0))
     return TestClient(app,base_url=ORIGIN,headers={'Origin':ORIGIN})
 
@@ -54,6 +57,100 @@ def invite(c,p,rights=('READ','ASK_AI'),provider_name='offline'):
     verified=c.post('/guest/verify',json=dict(invitation_token=invitation['invitation_token'],challenge_id=response.json()['challenge_id'],code=code))
     assert verified.status_code==200
     return snapshot,invitation,preview
+
+
+def test_pdf_memory_owner_preview_otp_guest_and_independent_originals(guest,empty_database):
+    """Real PDF parser, SQL, native Projection, signed owner JWT, SMTP and guest HTTP.
+
+    Only inference is replayed; no paid provider or persistent application data.
+    """
+    from adapters.pdf import extract_pdf
+    from tests.test_pdf_documents import pdf_bytes
+    from tests.test_consolidation_pipeline import prepare,run
+    from tests.test_consolidation import reference_output
+    from app.api.security import authenticated_chat_identity
+    from types import SimpleNamespace
+    from app.chat.guest import question_payload
+    from alembic import command
+    p=guest;memory,who,_,delegate=prepare(p,empty_database);p['consolidation']=memory
+    command.upgrade(empty_database,'0011_source_documents')  # This fixture's disposable database only.
+    memory.pdf_parser=extract_pdf
+    facts=['Le projet Atlas reste experimental.','La livraison Neptune depend du financement.',
+        'Diagnostic medical prive CANARY_EXCLUDED.']
+    originals=[pdf_bytes((facts[0],facts[2])),pdf_bytes((facts[1],))]
+    for i,data in enumerate(originals):run(memory.import_pdf(who.subject_id,p['scope'],uid(),f'synthetic-{i}.pdf',data))
+
+    async def replay(request):
+        packet=json.loads(request.messages[-1].content)
+        assert 'candidates' not in packet  # No recap reviewer, spans or extra HTTP.
+        available=''.join(s['text'] for s in packet['segments'])
+        selected=[t for t in facts if t in available]
+        atomic=dict(format='qh.atomic-understanding/1',items=[dict(text=t,primary_dimension=None,evidence=[dict(quote=t)]) for t in selected])
+        component=lambda text,support:dict(title='Projets proposes',text=text,supporting_statements=support)
+        summary=component('Atlas reste experimental ; Neptune depend du financement.',facts[:2])
+        summary['documents']=[dict(document_ref=d['document_ref'],**component(facts[i],[facts[i]])) for i,d in enumerate(packet['documents'])]
+        output=dict(format='qh.context-consolidation/1',understanding=atomic,recap=summary)
+        return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(reference_output(output,packet))))
+    delegate.generate.side_effect=replay
+    provider=OfflineSnapshotProvider()
+    with client_for(p,provider) as c:
+        # This existing test double supplies verified identity for the offline
+        # memorization AI account; all owner HTTP reads use signed JWT validation.
+        c.app.dependency_overrides[authenticated_chat_identity]=lambda:SimpleNamespace(subject_id=who.subject_id)
+        owner={'Authorization':'Bearer '+token()};root=f'/context-spaces/{p["scope"]}'
+        response=c.post(root+'/workspace/consolidate',headers=owner);assert response.status_code==200,response.text
+        assert delegate.generate.await_count==1
+        drain(p['worker'])
+        state=c.get(root+'/workspace',headers=owner);assert state.status_code==200,state.text
+        repeated=c.post(root+'/workspace/consolidate',headers=owner)
+        assert repeated.status_code==200 and repeated.json()['current']==state.json()['current']
+        assert delegate.generate.await_count==1  # No regeneration on an unchanged version.
+        recap={k:state.json()['recap'][k] for k in ('title','text')}
+        documents=c.get(root+'/workspace/documents',headers=owner).json()
+        ids=[d['source_revision_id'] for d in documents];assert len(ids)==2
+        before=p['repo'].read_snapshot((p['scope'],));payloads=[]
+        browser_evidence=dict(owner=state.json(),documents=documents,previews=[],sessions=[])
+        for count in (0,1,2):
+            body=dict(recipient_email='clement@example.test',purpose='Projet de test',
+                expires_at=(p['clock'][0]+timedelta(hours=1)).isoformat(),
+                knowledge_scope='context',documents=ids[:count])
+            response=c.post(root+'/sharing/previews',headers=owner,json=body);assert response.status_code==201,response.text
+            preview=response.json();assert preview['payload']['recap']==recap
+            browser_evidence['previews'].append(preview)
+            assert 'CANARY_EXCLUDED' not in json.dumps(preview['payload'])
+            payloads.append(question_payload(preview['payload']))
+            approved=c.post(root+'/sharing/previews/'+preview['id']+'/approve',headers=owner,
+                json=dict(fingerprint=preview['fingerprint'],exceptions=[TEXT_REVIEW]));assert approved.status_code==200,approved.text
+            snapshot=approved.json()['snapshot_id']
+            created=c.post(root+'/snapshots/'+snapshot+'/invitations',headers=owner,json={});assert created.status_code==201,created.text
+            invitation=created.json()
+            code_request=c.post('/guest/code',json=dict(invitation_token=invitation['invitation_token'],email='clement@example.test'))
+            code,_=mailbox_code(p)
+            verified=c.post('/guest/verify',json=dict(invitation_token=invitation['invitation_token'],challenge_id=code_request.json()['challenge_id'],code=code))
+            assert verified.status_code==200,verified.text
+            session=c.get('/guest/session').json();assert session['recap']==recap
+            browser_evidence['sessions'].append(session)
+            assert len(c.get('/guest/documents').json())==count
+            for i,doc in enumerate(ids):
+                result=c.get('/guest/documents/'+doc)
+                assert result.status_code==(200 if i<count else 401)
+                if i<count:assert result.content==originals[int(result.headers['content-disposition'].split('synthetic-')[1][0])]
+            frozen=run(p['disclosure'].snapshot(who.subject_id,p['scope'],snapshot))
+            assert frozen.payload==preview['payload']
+            if count==2:
+                p['clock'][0]+=timedelta(hours=2)
+                assert c.get('/guest/session').status_code==401 and c.get('/guest/documents').status_code==401
+                p['clock'][0]-=timedelta(hours=2)
+            revoked=c.post(root+'/invitations/'+invitation['id']+'/revoke',headers=owner,json={});assert revoked.status_code==204
+            assert c.get('/guest/session').status_code==401
+        assert payloads[0]==payloads[1]==payloads[2]
+        assert p['repo'].read_snapshot((p['scope'],))==before
+        assert delegate.generate.await_count==1
+        if os.environ.get('QH_RECAP_BROWSER_EVIDENCE'):
+            # Optional bridge to the browser replay: synthetic HTTP outputs only.
+            target=Path(os.environ['QH_RECAP_BROWSER_EVIDENCE'])
+            assert target.parent==Path('/evidence')
+            target.write_text(json.dumps(browser_evidence));target.chmod(0o600)
 
 
 def test_real_owner_preview_approval_and_guest_ask_only_receive_safe_snapshot(guest):

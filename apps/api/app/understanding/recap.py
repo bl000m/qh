@@ -4,8 +4,8 @@ from copy import deepcopy
 from app.understanding.extractor import canonical_json, decode_output, digest, nonempty, object_fields
 
 FORMAT = 'qh.context-consolidation/1'
-PRESENTATION_VERSION = 4
-COMPATIBLE_VERSIONS = (2, 3, PRESENTATION_VERSION)
+PRESENTATION_VERSION = 3
+COMPATIBLE_VERSIONS = (2, PRESENTATION_VERSION, 4)
 RECAP_SCHEMA = dict(type='object', additionalProperties=False,
     required=['title', 'text', 'supporting_statements'], properties=dict(
         title=dict(type='string', minLength=1, maxLength=120,
@@ -332,20 +332,13 @@ def _document_support(row, document_ids):
 def bind(recap, revisions, version_id, documents=()):
     if recap is None:
         raise ValueError('A successful consolidation requires its recap')
-    from app.understanding.recap_review import bind_review
     rows = deepcopy(revisions)
-    proof = bind_review(recap,rows)
     support = _support(recap, rows)
     root = dict(format='qh.context-recap/1', version_id=version_id,
-        presentation_version=PRESENTATION_VERSION if proof else 3, title=recap['title'], text=recap['text'],
+        presentation_version=PRESENTATION_VERSION, title=recap['title'], text=recap['text'],
         basis_revision_ids=[r['id'] for r in rows], support_revision_ids=support,
         provider_output_sha256=recap['provider_output_sha256'])
-    if 'review_assessment' in recap:root['review_assessment']=deepcopy(recap['review_assessment'])
-    if proof:
-        root['claim_review']=proof
-        from app.understanding.recap_review import reviewed_evidence
-        reviewed_evidence(root,{r['id']:r['content'] for r in rows})
-        for row in rows:row['content']['extraction']['recap_version_id']=version_id
+    for row in rows:row['content']['extraction']['recap_version_id']=version_id
     rows[0]['content']['extraction']['recap'] = root
     if documents:
         _bind_components(recap, rows, root, documents)
@@ -353,8 +346,6 @@ def bind(recap, revisions, version_id, documents=()):
 
 
 def _bind_components(recap, rows, root, documents):
-    for row in rows:
-        row['content']['extraction']['recap_version_id'] = root['version_id']
     document_ids = {d['id'] for d in documents}
     components = recap.get('documents')
     if not isinstance(components, list):
@@ -368,18 +359,8 @@ def _bind_components(recap, rows, root, documents):
         support = _support(component, rows)
         if any(_document_support(r, document_ids)!={component['source_revision_id']} for r in rows if r['id'] in support):
             raise ValueError('Document recap requires exact same-document evidence')
-        from app.understanding.recap_review import bind_review
-        value=dict(root,kind='document',source_revision_id=component['source_revision_id'],
-            title=component['title'],text=component['text'],support_revision_ids=support)
-        value.pop('claim_review',None)
-        if 'review_assessment' in component:value['review_assessment']=deepcopy(component['review_assessment'])
-        proof=bind_review(component,rows)
-        value['presentation_version']=PRESENTATION_VERSION if proof else 3
-        if proof:
-            value['claim_review']=proof
-            from app.understanding.recap_review import reviewed_evidence
-            reviewed_evidence(value,{r['id']:r['content'] for r in rows})
-        bound.append(value)
+        bound.append(dict(root,kind='document',source_revision_id=component['source_revision_id'],
+            title=component['title'],text=component['text'],support_revision_ids=support))
     root['modular'] = True
     # A component lives on one of its own immutable supports. Excluding another
     # component's carrier cannot hide it; excluding this carrier makes it unsafe.
@@ -401,19 +382,12 @@ def from_version(rows, current):
             or not recap.get('support_revision_ids')
             or not set(recap['support_revision_ids'])<=set(current['revision_ids'])):
             raise ValueError('Recap must belong to this exact consolidated version')
-        if recap.get('presentation_version')==PRESENTATION_VERSION:
-            from app.understanding.recap_review import reviewed_evidence
-            reviewed_evidence(recap,{r['id']:r['content'] for r in rows})
         result = {k:recap[k] for k in ('version_id', 'title', 'text', 'support_revision_ids')}
         if recap.get('modular'):
             components = [c for r in rows for c in r['content'].get('extraction', {}).get('recap_components', [])]
             if any(c['version_id']!=current['id'] or set(c['basis_revision_ids'])!=set(current['revision_ids'])
                 or not set(c['support_revision_ids'])<=set(current['revision_ids']) for c in components):
                 raise ValueError('Components must belong to this exact consolidated version')
-            for component in components:
-                if component.get('presentation_version')==PRESENTATION_VERSION:
-                    from app.understanding.recap_review import reviewed_evidence
-                    reviewed_evidence(component,{r['id']:r['content'] for r in rows})
             result['documents'] = [{k:c[k] for k in ('title', 'text', 'source_revision_id', 'support_revision_ids')}
                 for c in sorted(components,key=lambda c:c['component_index']) if c['kind']=='document']
         return result

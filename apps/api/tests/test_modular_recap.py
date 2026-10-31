@@ -39,9 +39,6 @@ def generate_documents(long=False, invalid_support=False):
 
     async def respond(request):
         packet=json.loads(request.messages[-1].content);packets.append(packet)
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            return GenerationResult(message=review_reply(request))
         if 'statements' in packet:
             assert packet['documents'][0]['turn_ids']
             schema = request.output_schema
@@ -81,18 +78,17 @@ def generate_documents(long=False, invalid_support=False):
     before=deepcopy(rows)
     bound=recap.bind(provider.recap,rows,version,originals)
     assert rows==before and [r['content']['text'] for r in bound]==TEXTS
-    assert delegate.generate.await_count==(len(provider.parts)+2 if long else 2)
+    assert delegate.generate.await_count==(len(provider.parts)+1 if long else 1)
     assert all('source_revision_id' not in doc for packet in packets for doc in packet.get('documents',[]))
     return bound,version,originals,provider
 
 
-def projected_documents(*, historical=True):
+def projected_documents():
     rows,_,_,_=generate_documents()
-    if historical:
-        from tests.recap_review_helpers import historical_contents
-        historical_contents([r['content'] for r in rows])
     base=projected()[0]
-    return [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content']) for r in rows]
+    from app.core.models import SourceRevisionRef
+    return [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
+        provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=p) for p in r['provenance'])) for r in rows]
 
 
 @pytest.mark.parametrize('long',[False,True])
@@ -126,13 +122,13 @@ def test_independent_projection_never_hydrates_or_grants_originals(restriction):
         rows[1].content['extraction']['recap_components'][0]['text']='Diagnostic médical privé.'
     frozen=deepcopy(rows)
     payload,report=guard.apply(rows,policy(original_documents=()))
-    # The general prose requires its complete unmasked basis as well.
-    assert ('recap' in payload)==(restriction=='sensitive-summary')
+    # Keep the complete basis present, while unrelated masks do not support prose.
+    assert ('recap' in payload)==(restriction!='excluded')
     if 'recap' in payload:
         assert payload['recap']==complete['recap']
-    assert [c['title'] for c in payload['document_recaps']]==['Expérience déclarée','Orientation envisagée']
-    assert 'contractuelle' in payload['document_recaps'][1]['text']
-    assert report['recap_status']=='available' and rows==frozen
+    components=payload.get('document_recaps',[])
+    assert [c['title'] for c in components]==([] if restriction=='excluded' else ['Expérience déclarée','Orientation envisagée'])
+    assert report['recap_status']==('restricted' if restriction=='excluded' else 'available') and rows==frozen
     assert recipient_payload(payload)==payload
     # Download rights do not broaden, narrow or otherwise alter semantic selection.
     assert guard.apply(rows,policy(original_documents=(str(uuid4()),)))[0]==payload
@@ -142,7 +138,7 @@ def test_independent_projection_never_hydrates_or_grants_originals(restriction):
         limited=guard.apply(only_documents,policy())[0]
         assert 'recap' not in limited
         assert [c['title'] for c in limited['document_recaps']]==['Orientation envisagée']
-    bad=deepcopy(payload);bad['document_recaps'][0]['source_revision_id']=str(uuid4())
+    bad=deepcopy(complete);bad['document_recaps'][0]['source_revision_id']=str(uuid4())
     from app.projections.guest import GuestUnavailable
     with pytest.raises(GuestUnavailable):recipient_payload(bad)
     for row in rows:
@@ -240,9 +236,6 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
 
     async def respond(request):
         packet = json.loads(request.messages[-1].content)
-        if 'candidates' in packet:
-            from tests.recap_review_helpers import review_reply
-            return GenerationResult(message=review_reply(request))
         atomic = dict(format='qh.atomic-understanding/1', items=[dict(text=t, primary_dimension=None,
             evidence=[dict(quote=t)]) for t in TEXTS])
         output = dict(format=recap.FORMAT, understanding=atomic, recap=summary)
@@ -261,7 +254,7 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
 
     repository.publish.side_effect = publish
     result = asyncio.run(service.consolidate(who, scope, str(uuid4())))
-    assert len(result['recap']['documents']) == 3 and delegate.generate.await_count == 2
+    assert len(result['recap']['documents']) == 3 and delegate.generate.await_count == 1
     repository.import_document.assert_not_called()
     assert batch == frozen and sources[retained['id']] == retained
     # A failed explicit regeneration must never publish an unvalidated replacement.
@@ -271,7 +264,7 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
         asyncio.run(service.consolidate(who, scope, str(uuid4())))
     repository.publish.assert_not_awaited()
     repository.fail.assert_awaited_once()
-    assert batch == frozen and delegate.generate.await_count == 3
+    assert batch == frozen and delegate.generate.await_count == 2
 
 
 def test_compact_summary_removes_only_source_quotes_and_duplicate_provenance(monkeypatch):
