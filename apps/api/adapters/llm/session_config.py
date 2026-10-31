@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 
-from adapters.llm.pricing import OfficialPricing
 from adapters.llm.diagnostics import PrivateDiagnostics, DiagnosticCall
 from adapters.llm.chat_config import private_json, ChatConfigurationError
 from adapters.llm.mistral import (ExperimentBudget, MistralProvider, MODEL,
@@ -32,7 +31,7 @@ class SessionBudget:
             rows = [r for r in state['calls'] if r.get('session_id') == self.session_id]
             return dict(calls=len(rows), committed_usd=str(sum(
                 (Decimal(r.get('observed_usd', r['reserved_usd'])) for r in rows), Decimal(0))),
-                blocked=state['blocked'] or any(r['status'] == 'pending' for r in state['calls']))
+                blocked=state['blocked'])
         return self.ledger.read(read)
 
 
@@ -48,7 +47,7 @@ class SessionProviderBinding:
 class PrivateSessionFactory:
     model = MODEL
 
-    def __init__(self, *, authorization_path, ledger_path, transport=None, pricing=None):
+    def __init__(self, *, authorization_path, ledger_path, transport=None):
         try:
             r = private_json(authorization_path)
             state = private_json(ledger_path)
@@ -102,7 +101,6 @@ class PrivateSessionFactory:
             self.snapshots = {(g['subject_id'], g['context_id']): g.get('snapshot_sha256') for g in grants}
             if trial is None and transport is None and any(not isinstance(v, str) or len(v) != 64 or any(c not in '0123456789abcdef' for c in v) for v in self.snapshots.values()):
                 raise ValueError('Live authorization requires exact context snapshots')
-            self.pricing = pricing or OfficialPricing()
             self.scopes = frozenset((g['subject_id'], g['context_id']) for g in grants)
             self.expires_at = expires.timestamp()
             self.max_calls = r.get('max_session_calls', 3)
@@ -128,14 +126,15 @@ class PrivateSessionFactory:
     def remaining(self):
         def read(state):
             spent = committed_cost(state)
-            blocked = state['blocked'] or any(r['status'] == 'pending' for r in state['calls'])
+            blocked = state['blocked']
             return dict(remaining_calls=None if self.poc else max(0, min(state['max_calls'], self.aggregate_calls)-len(state['calls'])),
                 remaining_usd=str(max(Decimal(0), effective_ceiling(state,Decimal(self.aggregate_usd))-spent)),
                 blocked=blocked)
         return self.ledger.read(read)
 
     async def verified(self, subject_id, context_id):
-        return self.allowed(subject_id, context_id) and await self.pricing.verify()
+        # Prices are pinned by the private authorization receipt and checked at startup.
+        return self.allowed(subject_id, context_id)
 
     async def available(self, subject_id, context_id):
         if not self.allowed(subject_id, context_id) or (self.development_account and not os.environ.get('MISTRAL_API_KEY', '').strip()):
@@ -144,7 +143,7 @@ class PrivateSessionFactory:
             remaining = self.remaining()
             if remaining['blocked'] or remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.reservation_usd:
                 return False
-            return await self.pricing.verify()
+            return True
         except Exception:
             return False
 
@@ -164,14 +163,11 @@ class PrivateSessionFactory:
     def bind_global(self, diagnostic=None):
         """Owner-approved development mode: the original aggregate ledger only."""
         raw = MistralProvider(budget=self.ledger, provider_defaults=True, transport=self.transport, observer=diagnostic.check if diagnostic else None, capture_private_errors=diagnostic is not None)
-        checker = self.pricing
         class GlobalProvider:
             async def generate(self, request):
                 from adapters.llm.mistral import MistralBudgetExceeded
                 from app.core.models import ProviderBudgetExceeded
                 try:
-                    if not await checker.verify():
-                        raise ChatConfigurationError('Official price verification unavailable')
                     if diagnostic:
                         diagnostic.begin()  # Storage must work before any paid HTTP.
                     result = await raw.generate(request)
@@ -201,13 +197,10 @@ class PrivateSessionFactory:
         raw = MistralProvider(budget=budget, max_input_tokens=12000,
                              max_output_tokens=1000, transport=self.transport)
 
-        checker = self.pricing
 
         class PrivateProvider:
             async def generate(self, request):
                 try:
-                    if not await checker.verify():
-                        raise ChatConfigurationError('Official price verification unavailable')
                     return await raw.generate(request)
                 finally:
                     raw.last_request = raw.last_exchange = None

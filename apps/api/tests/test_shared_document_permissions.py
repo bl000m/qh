@@ -64,7 +64,9 @@ def test_guest_frozen_knowledge_scope_never_expands_legacy_approvals(monkeypatch
     import asyncio
     import json
     from app.projections.document_scope import restrict_snapshot
-    from tests.test_guest_references import PAYLOAD
+    PAYLOAD=dict(format='qh.disclosure/1',items=[
+        dict(reference='R1',text='Expérience 2021–2022 : développement Python chez Alpha.'),
+        dict(reference='R2',text='Expérience 2023–2025 : responsable technique chez Beta.')])
     app,_,_,_,now,_,_,_=setup()
     grant=replace(app.state.services.guest.repository.authenticate.return_value,rights=('READ','ASK_AI'))
     docs=[str(uuid4()),str(uuid4())]

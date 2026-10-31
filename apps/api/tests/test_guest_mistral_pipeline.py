@@ -2,7 +2,7 @@
 import httpx,json
 
 from app.projections.disclosure import LIVE_PROVIDER
-from tests.test_guest_mistral import setup,wire_reply
+from tests.test_guest_mistral import setup
 from tests.test_sharing_pipeline import client_for,invite,pytestmark as pytestmark
 from tests.test_guest_pipeline import guest as guest
 from tests.test_disclosure_pipeline import disclosure as disclosure
@@ -24,16 +24,17 @@ def test_guest_real_path_accounted_with_only_materialized_payload(guest,tmp_path
         def transport(request):
             sent=json.loads(request.content);packet=json.loads(sent['messages'][1]['content'])
             calls.append(packet)
-            assert set(packet)<={'snapshot','question','subjects','language'}
-            assert all(item in preview['payload']['items'] for item in packet['snapshot']['items'])
+            assert set(packet)<={'snapshot','question','conversation'}
+            from app.chat.guest import question_payload
+            assert packet['snapshot']==question_payload(preview['payload'])  # Exactly the approved snapshot.
             refs=[packet['snapshot']['items'][0]['reference']]
             return httpx.Response(200,json=dict(model=LIVE_PROVIDER,usage=dict(prompt_tokens=100,completion_tokens=30),
-                choices=[dict(finish_reason='stop',message=dict(content=json.dumps(wire_reply(dict(answer='Un objectif est proposé.',reference_aliases=refs,support_basis='canonical',insufficient_context=False),packet,sent))))]))
+                choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer='Un objectif est proposé.',reference_aliases=refs,support_basis='canonical',insufficient_context=False))))]))
         factory.transport=httpx.MockTransport(transport)
-        snapshot,invitation,preview=invite(c,p,provider_name=LIVE_PROVIDER)
-        status=c.get('/guest/provider');assert status.status_code==200 and status.json()['model']==LIVE_PROVIDER
+        snapshot,invitation,preview=invite(c,p)  # The API selects the live provider.
+        status=c.get('/guest/provider');assert status.status_code==200 and status.json()=={'enabled':True,'simulated':False}
         assert not calls
-        answer=c.post('/guest/snapshots/'+snapshot+'/ask',json=dict(question='Quel objectif est proposé ?'))
+        answer=c.post('/guest/ask',json=dict(question='Quel objectif est proposé ?'))
         assert answer.status_code==200 and not answer.json()['simulated']
-        assert answer.json()['accounting']['status']=='completed' and len(calls)==2
+        assert len(calls)==1  # One generation: no selection pass, retry or fallback.
     assert p['repo'].read_snapshot((p['scope'],))==before

@@ -3,6 +3,7 @@ import type {ReactNode} from 'react';
 import {Modal} from './SpaceActions';
 import type {QhApi} from './api';
 import {ApiError,apiMessage} from './api';
+import {providerMessage} from './transport';
 import type {ContextIntake,WorkspaceState} from '../../../packages/shared/src/context-space';
 import type {CanonicalRevision} from './understanding';
 import WorkspaceUnderstandingSources from './WorkspaceUnderstandingSources';
@@ -22,7 +23,7 @@ type State=WorkspaceState & {understanding:CanonicalRevision[]};
 function intake(kind:ContextIntake['kind'],text:string|null,name:string|null=null):ContextIntake {
  return {id:crypto.randomUUID(),kind,role:'user',text,name,context:null};
 }
-function failure(error:unknown){return error instanceof ApiError&&error.status===402?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':error instanceof ApiError&&error.status===422?'L’analyse ou ses citations ne permettent pas une compréhension valide. Les apports restent disponibles.':error instanceof ApiError&&error.status===503?'Le résultat n’est pas confirmé. Actualise l’état avant de réessayer ; les apports déjà enregistrés sont conservés.':apiMessage(error);}
+function failure(error:unknown){const provider=error instanceof ApiError?providerMessage(error.providerError):null;if(provider)return provider;return error instanceof ApiError&&error.status===402?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':error instanceof ApiError&&error.status===422?'L’analyse ou ses citations ne permettent pas une compréhension valide. Les apports restent disponibles.':error instanceof ApiError&&error.status===503?'Le résultat n’est pas confirmé. Actualise l’état avant de réessayer ; les apports déjà enregistrés sont conservés.':apiMessage(error);}
 
 export default function ContextSpaceWorkspace({api,scope,heading,settingsContent,sharingContent,settingsRequest=0,name}:{api:QhApi;name?:string;scope:string;heading?:ReactNode;settingsContent?:ReactNode;sharingContent?:ReactNode;settingsRequest?:number}) {
  const [state,setState]=useState<State|null>(null),[caps,setCaps]=useState<SessionCapabilities|null>(null);
@@ -188,7 +189,7 @@ export default function ContextSpaceWorkspace({api,scope,heading,settingsContent
  },[state,reload]);
  const disabled=!!busy||state?.state==='running';
  const memoryStatus=!state?null:memoryPending||state.state==='running'?'Mémorisation en cours…':state.pending_count>0?'Nouveaux échanges à mémoriser':state.current?'Compréhension à jour':null;
- const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée. Tes messages sont conservés ; utilise « Actualiser la disponibilité » pour réessayer.':caps?.accounting_blocked?'L’IA est suspendue après une erreur du fournisseur. Tes messages sont conservés.':caps?.plafond_reached?'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.':caps&&!caps.enabled?'L’IA est indisponible pour ce contexte.':checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
+ const availabilityMessage=availabilityError?'La disponibilité de l’IA n’a pas pu être vérifiée. Tes messages sont conservés ; utilise « Actualiser la disponibilité » pour réessayer.':caps&&!caps.enabled?(providerMessage(caps.unavailable_reason)??'L’IA est indisponible pour ce contexte.'):checkingAvailability&&!caps?'Vérification de la disponibilité de l’IA…':'';
 
 
  const items=state?.intake??[];

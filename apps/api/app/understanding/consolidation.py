@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import json
 import time
 
-from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded
+from app.core.models import ContextBrowse, ContextRequest, ContextSpaceNotFound, Message, MessageRole, ProviderBudgetExceeded, ProviderFailure
 from app.chat.context import ChatProviderUnavailable
 from app.policy.models import PolicyAction, PolicyRequest
 from app.understanding.selected import propose_selected_conversation
@@ -233,7 +233,7 @@ class ContextConsolidation:
             await self._allow(identity.subject_id, scope)
         except Exception as exc:
             await repository.finish_chat(scope, question, operation)
-            if isinstance(exc, (ProviderBudgetExceeded, ContextSpaceNotFound)):
+            if isinstance(exc, (ProviderBudgetExceeded, ProviderFailure, ContextSpaceNotFound)):
                 raise
             raise WorkspaceChatFailed('Response generation failed') from None
         # If publication is uncertain, leave the running receipt. Synchronization

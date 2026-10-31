@@ -78,17 +78,17 @@ test('AI availability failures and accounting suspension are visible and can be 
   if(p.endsWith('/chat-sessions')){
    checks++;if(checks===1)return route.fulfill({status:503,json:{detail:'offline unavailable'}});
    const blocked=checks===2;
-   return route.fulfill({json:{automatic:true,enabled:!blocked,accounting_blocked:blocked,plafond_reached:false,model:blocked?null:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:blocked?null:Date.now()/1000+3600,remaining_calls:null,remaining_usd:'4.0'}});
+   return route.fulfill({json:{automatic:true,enabled:!blocked,accounting_blocked:blocked,unavailable_reason:blocked?'suspended':null,plafond_reached:false,model:blocked?null:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:blocked?null:Date.now()/1000+3600,remaining_calls:null,remaining_usd:'4.0'}});
   }
   return route.fulfill({status:404,json:{detail:'outside fixture'}});
  });
  await page.goto('/tests/fixtures/context-space.html');
  await page.getByRole('textbox',{name:'Ton message',exact:true}).fill('Un message à envoyer.');
  const send=page.getByRole('button',{name:'Envoyer',exact:true}),memory=page.getByRole('button',{name:'Mémoriser',exact:true});
- await expect(page.getByText('La disponibilité de l’IA n’a pas pu être vérifiée.',{exact:true})).toBeVisible();
+ await expect(page.getByText(/^La disponibilité de l’IA n’a pas pu être vérifiée\./)).toBeVisible();
  await expect(send).toBeDisabled();await expect(memory).toBeDisabled();
  await page.getByRole('button',{name:'Actualiser la disponibilité',exact:true}).click();
- await expect(page.getByText('L’IA est suspendue après une erreur du fournisseur. Tes messages sont conservés.',{exact:true})).toBeVisible();
+ await expect(page.getByText('L’IA est suspendue après une anomalie à vérifier. Tes messages sont conservés.',{exact:true})).toBeVisible();
  await expect(send).toBeDisabled();await expect(memory).toBeDisabled();
  await page.getByRole('button',{name:'Actualiser la disponibilité',exact:true}).click();
  await expect(send).toBeEnabled();await expect(memory).toBeEnabled();expect(posts).toBe(0);

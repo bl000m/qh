@@ -1,7 +1,7 @@
 import {ApiError,isUuid} from './transport';
 import {revisionPage} from './understanding';
 import type {CanonicalRevision} from './understanding';
-export interface SessionCapabilities {automatic?:boolean;plafond_reached?:boolean;accounting_blocked?:boolean;enabled:boolean;model:string|null;max_seconds:number|null;max_calls:number|null;max_usd:string;provider_expires_at:number|null;remaining_calls:number|null;remaining_usd:string}
+export interface SessionCapabilities {automatic?:boolean;plafond_reached?:boolean;accounting_blocked?:boolean;unavailable_reason?:'not_eligible'|'session_expired'|'suspended'|'budget'|'unconfigured'|null;enabled:boolean;model:string|null;max_seconds:number|null;max_calls:number|null;max_usd:string;provider_expires_at:number|null;remaining_calls:number|null;remaining_usd:string}
 export interface ProviderSession {
  session_id:string;context_id:string;model:string;state:'preview'|'active'|'closed'|'revoked';expires_at:number;
  include_proposed:boolean;snapshot_sha256:string;max_calls:number;max_usd:string;
@@ -11,7 +11,7 @@ export interface ProviderSession {
 export function capabilities(raw:unknown):SessionCapabilities {
  const v=raw as SessionCapabilities;
  if(v?.max_calls===null&&(!v.automatic||v.remaining_calls!==null||v.max_seconds!==null))throw new ApiError(502);
- if(!v||typeof v.enabled!=='boolean'||v.automatic!==undefined&&typeof v.automatic!=='boolean'||v.plafond_reached!==undefined&&typeof v.plafond_reached!=='boolean'||v.accounting_blocked!==undefined&&typeof v.accounting_blocked!=='boolean'||!(v.enabled?v.model==='mistral-small-2603':v.model===null)||
+ if(!v||typeof v.enabled!=='boolean'||v.automatic!==undefined&&typeof v.automatic!=='boolean'||v.plafond_reached!==undefined&&typeof v.plafond_reached!=='boolean'||v.accounting_blocked!==undefined&&typeof v.accounting_blocked!=='boolean'||v.unavailable_reason!=null&&!['not_eligible','session_expired','suspended','budget','unconfigured'].includes(v.unavailable_reason)||!(v.enabled?v.model==='mistral-small-2603':v.model===null)||
   (v.enabled?(!Number.isFinite(v.provider_expires_at)||!v.provider_expires_at):v.provider_expires_at!==null)||
   !(v.automatic&&v.max_calls===null&&v.remaining_calls===null)&&(!Number.isInteger(v.remaining_calls)||v.remaining_calls!<0||v.remaining_calls!>(v.automatic?100:8))||
   typeof v.remaining_usd!=='string'||!Number.isFinite(Number(v.remaining_usd))||Number(v.remaining_usd)<0||Number(v.remaining_usd)>(v.automatic?(v.max_calls===null?5:2.50):.20)||

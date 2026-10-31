@@ -21,6 +21,8 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
  await expect(dialog.getByRole('button',{name:'Vérifier le partage',exact:true})).toHaveCount(0);
  await expect(dialog.getByRole('button',{name:'Exclure cette information',exact:true})).toHaveCount(0);
  await expect(dialog.getByText('Informations susceptibles d’être communiquées',{exact:true})).toHaveCount(0);
+ await expect(dialog.getByRole('note')).toHaveText('La compréhension de ce Context Space sera accessible au destinataire. Les documents originaux restent privés sauf autorisation explicite.');
+ await expect(dialog).not.toContainText('Contenu filtré');await expect(dialog).not.toContainText('Masquage');
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');
  expect(await dialog.locator('.sharing-preview').evaluate(el=>el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(await dialog.locator('.sharing-settings').evaluate(el=>el.getBoundingClientRect().right));
  const create=dialog.getByRole('button',{name:'Créer l’invitation',exact:true});await expect(create).toBeEnabled();
@@ -30,7 +32,7 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
  await expect(dialog).not.toContainText('PRIVATE-RECAP-CANARY');expect(bodies[0].allow_update_proposals).toBe(false);
  if(advanced){
   await dialog.getByRole('checkbox',{name:/Autoriser les propositions/}).check();await expect.poll(()=>bodies.at(-1).allow_update_proposals).toBe(true);
-  await dialog.getByText('Confidentialité avancée',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
+  await dialog.getByText('Détails du partage',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
   await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
   await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);
  }

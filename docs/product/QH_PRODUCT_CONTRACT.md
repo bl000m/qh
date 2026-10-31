@@ -25,16 +25,32 @@ deduplicazione deterministica di supporti strettamente identici. Il résumé è 
 i riassunti per documento e il filtro dei supporti in estrazione, legati alla vecchia
 condivisione per PDF, sono rimossi; le versioni già persistite restano leggibili.
 
-Owner, aperçu e guest riusano lo stesso résumé persistito. La Projection risolve i
-supporti dichiarati nelle revisioni canoniche della medesima versione, con base
-interamente presente. Il Guard verifica il testo divulgato (titolo e testo, senza
-maschere né termini sensibili riconosciuti) e che almeno un supporto sia un item
-divulgato. Decisione owner 2026-10-31: un supporto escluso (testo sensibile, stato non
-ammesso, relazione pendente, o citazione protetta quando le citazioni sono condivise)
-resta escluso, senza testo né identificativi, ma non blocca il résumé; lo blocca solo
-l'assenza di supporti divulgati o un testo non sicuro. Limite: il Guard è lessicale,
-una parafrasi senza termini riconosciuti non è rilevata, come già per gli item.
-I PDF originali rimangono una scelta esclusiva di consultazione/download.
+## Regola di condivisione V1 — decisione owner, 2026-10-31
+
+Il proprietario condivide la Compréhension globale del Context Space: tutti gli
+Understanding Items ammessi (confermati o proposti, cioè quelli che l'owner vede)
+della versione canonica corrente entrano nello snapshot, testo invariato. Nessun
+filtraggio semantico automatico: niente esclusioni per parole chiave, regex, date,
+numeri o categorie, niente `[MASQUÉ]`, né nella projection né nelle risposte guest.
+Nessuna selezione di item né classificazione di riservatezza in V1. **Non è
+un'anonimizzazione**: l'owner condivide esplicitamente tutta la conoscenza canonica,
+comprese le eventuali informazioni personali. Restano esclusi solo per ragioni
+strutturali gli stati non ammessi (es. rifiutati), i testi vuoti o fuori limite e le
+relazioni con estremità assenti. Il destinatario non riceve mai automaticamente PDF
+originali, sorgenti private, citazioni originali o metadati interni (ID canonici).
+
+Owner, aperçu e guest riusano lo stesso résumé persistito, identico, senza
+rigenerazione: la Projection richiede solo provenance risolvibile (formato, base
+interamente presente, almeno un supporto condiviso). Senza résumé canonico valido
+l'aperçu lo indica e gli item restano interrogabili. I PDF originali sono una scelta
+indipendente di consultazione/download: zero, uno o più PDF non cambiano né il
+résumé né la conoscenza interrogabile. Le nuove preview esigono `knowledge_scope =
+context` senza citazioni; le policy e gli snapshot precedenti restano immutati e
+leggibili con le loro restrizioni originarie.
+
+Il guest ottiene una sola generazione sulla conoscenza dello snapshot (confronti,
+cronologie, sintesi), senza regole per dominio; la conversazione recente serve solo
+a interpretare le domande di seguito. Il server verifica gli alias citati.
 
 **Limite esplicito:** la risoluzione esatta dei supporti e delle citazioni non prova
 logicamente l'entailment del testo libero. La sintesi rimane proposta, senza conferma

@@ -50,25 +50,26 @@ def test_recap_is_approved_knowledge_without_implicit_original_quotes_or_interna
     assert 'ORIGINAL-ONLY-CANARY' not in wire and all(r.revision_id not in wire for r in rows)
     assert 'support_revision_ids' not in wire and 'provider_output_sha256' not in wire
     assert report['risks'] and rows == frozen
+    # New sharing never releases original quotations, even if a legacy flag is passed.
     explicit, _ = OutboundDisclosureGuard().apply(rows, policy(include_proposed=True, include_quotes=True))
-    assert 'ORIGINAL-ONLY-CANARY' in json.dumps(explicit)  # Separate explicit grant only.
+    assert 'ORIGINAL-ONLY-CANARY' not in json.dumps(explicit)
 
 
-def test_masked_support_text_does_not_hide_a_safe_recap():
+def test_contact_details_in_items_and_recap_are_shared_as_owned_knowledge():
     rows = projected()
     rows[1].content['text'] += ' contact@example.test'
+    rows[0].content['extraction']['recap']['text'] += ' contact@example.test'
     payload, report = OutboundDisclosureGuard().apply(rows, policy(include_proposed=True))
-    assert payload['recap']['title'] == 'Organizzazione di un laboratorio informatico'
-    assert 'contact@example.test' not in json.dumps(payload) and report['masks']
+    assert payload['recap']['text'].endswith('contact@example.test')
+    assert rows[1].content['text'] in [i['text'] for i in payload['items']] and report['masks'] == []
 
 
-@pytest.mark.parametrize('restriction', ['partial', 'unconfirmed', 'risky-recap', 'old-style'])
-def test_whole_space_recap_cannot_bypass_a_more_restrictive_projection(restriction):
+@pytest.mark.parametrize('restriction', ['partial', 'old-style'])
+def test_whole_space_recap_cannot_bypass_an_incomplete_canonical_basis(restriction):
     rows = projected()
     if restriction == 'partial': rows = rows[:1]
-    elif restriction == 'risky-recap': rows[0].content['extraction']['recap']['text'] += ' contact@example.test'
-    elif restriction == 'old-style': rows[0].content['extraction']['recap'].pop('presentation_version')
-    payload, _ = OutboundDisclosureGuard().apply(rows, policy(include_proposed=restriction != 'unconfirmed'))
+    else: rows[0].content['extraction']['recap'].pop('presentation_version')
+    payload, _ = OutboundDisclosureGuard().apply(rows, policy(include_proposed=True))
     assert 'recap' not in payload
 
 

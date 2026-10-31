@@ -126,17 +126,15 @@ def test_invalid_recap_publishes_validated_items_without_recap_or_retry(long):
 
 
 @pytest.mark.parametrize('include_quotes', [False, True])
-def test_undisclosed_sensitive_citations_do_not_hide_the_canonical_recap(include_quotes):
+def test_original_quotations_never_reach_the_share_and_never_hide_the_recap(include_quotes):
     rows = projected_documents()
     frozen = deepcopy(rows)
     payload, report = OutboundDisclosureGuard().apply(rows, policy(knowledge_scope='context', include_quotes=include_quotes))
     wire = json.dumps(payload, ensure_ascii=False)
     assert '06 12 34 56 78' not in wire and 'giulia.rossi@example.test' not in wire and rows == frozen
-    # Sharing quotations excludes the clause's support, which does not hide the recap.
+    # Original quotations are never part of a new share, even with a legacy quote flag.
     assert payload['recap'] == SUMMARY and report['recap_status'] == 'available'
-    assert 'secret' not in wire and 'document_recaps' not in payload
-    if include_quotes:
-        assert {'recognised_high_risk_citation'} == {e['reason'] for e in report['exclusions']}
+    assert 'secret' not in wire and 'document_recaps' not in payload and not report['exclusions']
 
 
 def test_regeneration_from_retained_pdf_sources_publishes_items_even_when_recap_is_invalid():

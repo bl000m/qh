@@ -35,7 +35,8 @@ def disclosure(drafts,empty_database):
 
 
 def prepare(p,**changes):
-    return run(p['disclosure'].prepare(p['repo'].subject_id,p['scope'],policy(**changes)))
+    # New previews always share the whole current understanding (owner decision 2026-10-31).
+    return run(p['disclosure'].prepare(p['repo'].subject_id,p['scope'],policy(**{'knowledge_scope':'context',**changes})))
 
 
 def approve(p,preview,**changes):
@@ -49,13 +50,8 @@ def count(p,table):
 
 def test_empty_projection_notice_and_single_bulk_proposal_inclusion(disclosure):
     p=disclosure;before=p['repo'].read_snapshot((p['scope'],))
+    # Eligible proposals are shared in one bulk preview, without a separate inclusion choice.
     preview=prepare(p)
-    from app.projections.document_scope import is_empty_projection
-    assert preview.report['status']=='no_disclosable_items' and is_empty_projection(preview.payload)
-    assert len(preview.report['exclusions'])==2
-    notice=approve(p,preview,exceptions=())
-    assert is_empty_projection(notice.payload) and count(p,'approved_snapshot_revisions')==0
-    preview=prepare(p,include_proposed=True)
     assert len(preview.payload['items'])==2
     with pytest.raises(DisclosureDecisionRequired):approve(p,preview,exceptions=())
     snapshot=approve(p,preview)
@@ -74,15 +70,14 @@ def test_minimized_snapshot_is_durable_never_rehydrates_originals(disclosure,mon
     row['content']['citations']=[dict(source_revision_id=p['source']['id'],quote='Choose a pilot.')]
     row['content']['properties']={'never':'PRIVATE PROPERTY'}
     p['repo'].save(revisions=[row]);drain(p['worker'])
-    # Restricting optional exact pairs is advanced; ordinary flow needed none.
-    preview=prepare(p,include_proposed=True,include_quotes=True,excluded=refs(p))
-    assert len(preview.payload['items'])==1
+    preview=prepare(p)
     snapshot=approve(p,preview)
     wire=json.dumps(snapshot.payload)
-    for canary in ('alice@example.test','+33 6 12 34 56 78','PRIVATE PROPERTY',p['source']['content'],row['id']):
+    # Item text is shared verbatim; nested properties, quotes, originals and IDs never are.
+    shared=next(i for i in snapshot.payload['items'] if i['text']==row['content']['text'])
+    for canary in ('PRIVATE PROPERTY','Choose a pilot.',p['source']['content'],row['id']):
         assert canary not in wire
-    assert snapshot.payload['items'][0]['citations'][0]['quote']=='Choose a pilot.'
-    assert snapshot.payload['items'][0]['primary_dimension']['review_state']=='proposed'
+    assert shared['primary_dimension']['review_state']=='proposed' and 'citations' not in shared
     def no_originals(*a,**kw):raise AssertionError('Snapshot must never hydrate originals')
     monkeypatch.setattr(type(p['repo']),'read_snapshot',no_originals)
     reopened=PostgresDisclosureRepository(url=p['repo'].url,projector=p['projector'])
@@ -91,15 +86,14 @@ def test_minimized_snapshot_is_durable_never_rehydrates_originals(disclosure,mon
     assert snapshot.payload['items'][0]['text']!='MUTATION'
 
 
-def test_sensitive_items_excluded_and_exceptions_do_not_override_blocked_content(disclosure):
+def test_owner_shares_sensitive_items_explicitly_without_keyword_exclusion(disclosure):
     p=disclosure;row=revision(p,'Diagnostic de cancer PRIVATE CANARY')
     p['repo'].save(revisions=[row]);drain(p['worker'])
-    preview=prepare(p,include_proposed=True)
-    assert any(r['reason']=='recognised_high_risk' for r in preview.report['exclusions'])
-    assert 'PRIVATE CANARY' not in json.dumps(preview.payload)
+    preview=prepare(p)
+    assert not preview.report['exclusions'] and 'PRIVATE CANARY' in json.dumps(preview.payload)
     snapshot=approve(p,preview)
-    assert all(a['revision_id']!=row['id'] for a in preview.report['anchors'])
-    assert 'PRIVATE CANARY' not in json.dumps(asdict(snapshot),default=str)
+    assert any(a['revision_id']==row['id'] for a in preview.report['anchors'])
+    assert 'PRIVATE CANARY' in json.dumps(snapshot.payload)
 
 
 @pytest.mark.parametrize('scope',['foreign','sibling'])

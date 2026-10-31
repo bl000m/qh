@@ -8,10 +8,10 @@ from app.projections.disclosure import (
     AccessPolicy, ApprovedSnapshot, DisclosureDecisionRequired, DisclosurePreview, TEXT_REVIEW,
     preview_fingerprint, validate_preview,
 )
-from app.projections.disclosure_guard import OutboundDisclosureGuard, redact, HIGH_RISK
+from app.projections.disclosure_guard import OutboundDisclosureGuard
 from app.projections.drafts import DraftSpec, ProjectionConflict, ProjectionNotFound, ProjectionUnavailable
 from app.projections.recap import recap_status
-from app.projections.document_scope import document_scope, empty_projection, is_empty_projection
+from app.projections.document_scope import empty_projection, is_empty_projection
 
 
 class DisclosureService:
@@ -26,14 +26,8 @@ class DisclosureService:
             raise ProjectionConflict('Disclosure expired; prepare a new preview')
 
     @staticmethod
-    def _scope(selection, policy):
-        selected, excluded = {}, []
-        for row in selection.candidates:
-            if row.key in policy.excluded:
-                excluded.append(dict(revision_id=row.key.revision_id,
-                    reason='owner_restriction'))
-            else:
-                selected[row.key] = row
+    def _scope(selection):
+        selected, excluded = {row.key: row for row in selection.candidates}, []
         # Remove dangling relations to a fixed point; never expand scope to endpoints.
         while True:
             dangling = [k for k, row in selected.items() if not set(row.endpoints) <= set(selected)]
@@ -48,27 +42,30 @@ class DisclosureService:
         await self.drafts._allow(subject, scope)
         if not isinstance(policy, AccessPolicy):
             raise ValueError('Explicit access policy required')
+        if policy.knowledge_scope != 'context' or policy.include_quotes:
+            # Retained document-scoped or quote-sharing policies stay readable, never new.
+            raise ValueError('Whole-context knowledge sharing without original quotations required')
         self._fresh(policy)
         selection = await self.repository.select(subject, scope)
         if selection.context_id != scope:
             raise ProjectionUnavailable('Disclosure unavailable')
-        if not set(policy.semantic_documents + policy.original_documents)<=set(selection.document_sources):
+        if not set(policy.original_documents)<=set(selection.document_sources):
             raise ProjectionNotFound('Document unavailable')
-        keys, excluded = self._scope(selection, policy)
+        keys, excluded = self._scope(selection)
         draft, rows = None, ()
         if keys:
             draft = await self.drafts.create(subject, scope, DraftSpec(recipient_kind='subject',
                 recipient=policy.recipient_email, purpose=policy.purpose, included=keys,
                 expires_at=policy.expires_at))
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
-        rows, document_exclusions = document_scope(rows, policy, selection.document_sources)
+        # Original-document grants never filter knowledge: the whole canonical
+        # understanding is shared, independently of 0, 1 or n accessible PDFs.
         payload, report = self.guard.apply(rows, policy)
-        payload['semantic_document_count'] = len(selection.document_sources) if policy.knowledge_scope=='context' else len(policy.semantic_documents)
-        report['document_scope_version'] = 3 if policy.knowledge_scope=='context' else 2
+        payload['semantic_document_count'] = len(selection.document_sources)
+        report['document_scope_version'] = 3
         report['recap_status'] = recap_status(rows, payload.get('recap'))
-        title = redact(selection.name)[0]
-        payload['name'] = title if not HIGH_RISK.search(title) else 'Contexte partagé'
-        report['exclusions'] = excluded + document_exclusions + report['exclusions']
+        payload['name'] = selection.name
+        report['exclusions'] = excluded + report['exclusions']
         report['status'] = 'review_required' if payload['items'] else 'no_disclosable_items'
         report['message'] = ('Examinez la divulgation proposée.' if report['status']=='review_required' else
             'Aucune information communicable dans ce périmètre.')

@@ -1,4 +1,4 @@
-"""Unified sharing plus retained document-scoped approval compatibility; no paid provider."""
+"""Whole-understanding sharing, independent of original PDF grants; no paid provider."""
 from copy import deepcopy
 from dataclasses import replace
 import json
@@ -49,189 +49,82 @@ def fixture():
     return service, rows, documents, base.context_id
 
 
-@pytest.mark.parametrize('selected,expected',[((),[3]),((0,),[0,3]),((0,1,2),[0,1,2,3,4])])
-def test_legacy_document_scope_requires_all_sources_then_applies_guard_and_preserves_canonical(selected,expected):
+def context_preview(service,scope,originals=()):
+    return run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
+
+
+def test_whole_understanding_is_shared_verbatim_independently_of_original_downloads():
     service,rows,documents,scope=fixture();frozen=deepcopy(rows)
-    access=policy(semantic_documents=tuple(documents[i] for i in selected),original_documents=tuple(documents[i] for i in selected))
-    preview=run(service.prepare(str(uuid4()),scope,access))
-    assert [i['text'] for i in preview.payload['items']]==[rows[i].content['text'] for i in expected]
-    assert preview.payload['semantic_document_count']==len(selected)
-    assert 'document_recaps' not in preview.payload and rows==frozen
-    assert recipient_payload(preview.payload)==preview.payload
-    assert any(e['reason']=='recognised_high_risk' for e in preview.report['exclusions'])==bool(selected)
-    # This exact minimized packet is the only knowledge available to snapshot chat.
-    packet=question_payload(preview.payload)
-    if len(selected)<3:
-        assert rows[1].content['text'] not in json.dumps(packet)
-        assert rows[2].content['text'] not in json.dumps(packet)
-        assert 'Mixed CV and contract.' not in json.dumps(packet)
+    previews=[context_preview(service,scope,originals) for originals in ((),documents[1:2],documents)]
+    assert all(p.payload==previews[0].payload for p in previews)
+    # Every eligible canonical item, including sensitive wording, mixed and dialogue items.
+    assert [i['text'] for i in previews[0].payload['items']]==[r.content['text'] for r in rows]
+    assert not previews[0].report['exclusions'] and previews[0].report['masks']==[]
+    assert previews[0].payload['recap']=={k:general_recap(rows)[k] for k in ('title','text')}
+    assert previews[0].payload['semantic_document_count']==len(documents) and rows==frozen
+    assert all('citations' not in item for item in previews[0].payload['items'])
+    assert recipient_payload(previews[0].payload)==previews[0].payload
+    assert [i['text'] for i in question_payload(previews[0].payload)['items']]==[r.content['text'] for r in rows]
 
 
-@pytest.mark.parametrize('originals', [False, True])
-def test_legacy_empty_notice_approval_does_not_release_document_introduction_or_call_ai(originals):
+def test_personal_data_dates_and_numbers_are_never_masked():
     service,rows,documents,scope=fixture()
-    service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[:3]))
-    owner=str(uuid4());access=policy(original_documents=(documents[0],) if originals else ())
-    preview=run(service.prepare(owner,scope,access))
-    assert is_empty_projection(preview.payload) and 'recap' not in preview.payload
-    assert not preview.report['anchors']
-    assert preview.payload['items'][0]['sources']==[]
-    service.repository.preview=AsyncMock(return_value=preview)
-    snapshot=ApprovedSnapshot(id=str(uuid4()),context_id=scope,owner_id=owner,preview_id=preview.id,
-        fingerprint=preview.fingerprint,payload_json=preview.payload_json,policy=access,
-        approved_at=service.clock(),exceptions=tuple(preview.report['risks']))
-    service.repository.approve=AsyncMock(return_value=snapshot)
-    assert run(service.approve(owner,scope,preview.id,preview.fingerprint,exceptions=snapshot.exceptions))==snapshot
-    assert recipient_payload(snapshot.payload)==snapshot.payload
-    from adapters.llm.guest_offline import OfflineSnapshotProvider
-    provider=OfflineSnapshotProvider()
-    provider.generate=AsyncMock(wraps=provider.generate)
-    chat=GuestSnapshotChat(guest=Mock(),provider=provider)
-    answer=run(chat.answer_payload(owner,scope,'offline',snapshot.payload,'Que prévoit le contrat ?',
-        AsyncMock(return_value=snapshot.payload)))
-    assert answer['insufficient_context'] and rows[1].content['text'] not in answer['answer']
-    assert question_payload(snapshot.payload)['items']==[]
-    provider.generate.assert_not_awaited()
-    semantic=run(service.prepare(owner,scope,policy(semantic_documents=(documents[0],))))
-    assert is_empty_projection(semantic.payload) and semantic.policy.original_documents==()
-    assert semantic.policy.semantic_documents==(documents[0],)
+    detail=' Né le 02/03/1981, tél. +33 6 12 34 56 78, private@example.test, Identifiant : 123456789, 2019/2021.'
+    rows[0].content['text']+=detail
+    preview=context_preview(service,scope)
+    assert rows[0].content['text'] in [i['text'] for i in preview.payload['items']]
+    assert '[MASQUÉ]' not in json.dumps(preview.payload,ensure_ascii=False) and preview.payload['recap']
 
 
-@pytest.mark.parametrize('failure', ['sensitive-introduction','all-supports-excluded','missing-basis'])
-def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
+@pytest.mark.parametrize('case',['sensitive-recap','missing-basis'])
+def test_shared_recap_is_the_persisted_one_or_explicitly_unavailable(case):
     service,rows,documents,scope=fixture()
-    if failure=='sensitive-introduction':
+    if case=='sensitive-recap':
         general_recap(rows)['text']='Diagnostic médical privé.'
-    elif failure=='all-supports-excluded':
-        for row in rows:
-            row.content['text']+=' Diagnostic médical privé.'
     else:
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
-    for originals in ((),documents):
-        preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
-        assert 'recap' not in preview.payload
-        assert preview.report['recap_status']==('unavailable' if failure=='missing-basis' else 'restricted')
+    preview=context_preview(service,scope,documents)
+    if case=='sensitive-recap':
+        assert preview.payload['recap']=={k:general_recap(rows)[k] for k in ('title','text')}
+    else:
+        # No valid canonical recap: say so, without blocking the detailed understanding.
+        assert 'recap' not in preview.payload and preview.report['recap_status']=='unavailable'
+        assert len(preview.payload['items'])==len(rows)-1
 
 
-def test_masked_support_text_does_not_hide_the_safe_general_recap():
-    service,rows,documents,scope=fixture()
-    rows[0].content['text']+=' private@example.test'
-    preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context')))
-    assert preview.payload['recap']=={k:general_recap(rows)[k] for k in ('title','text')}
-    assert 'private@example.test' not in json.dumps(preview.payload) and preview.report['masks']
-
-
-def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
+def test_legacy_policies_roundtrip_but_cannot_prepare_new_previews():
     service,rows,documents,scope=fixture();access=policy(semantic_documents=documents,original_documents=documents)
     assert AccessPolicy.from_wire(access.wire())==access
     old=policy().wire();assert 'semantic_documents' not in old
     assert AccessPolicy.from_wire(old).wire()==old
+    for legacy in (access,policy(),policy(knowledge_scope='context',include_quotes=True)):
+        with pytest.raises(ValueError):run(service.prepare(str(uuid4()),scope,legacy))
+    with pytest.raises(ValueError):policy(knowledge_scope='context',semantic_documents=documents)
     with pytest.raises(ProjectionNotFound):
-        run(service.prepare(str(uuid4()),scope,policy(semantic_documents=(str(uuid4()),))))
+        run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=(str(uuid4()),))))
     service.drafts.create.assert_not_awaited()
-    first=run(service.prepare(str(uuid4()),scope,access));frozen=deepcopy(first.payload)
+
+
+def test_preview_is_frozen_while_later_uploads_enter_only_new_previews():
+    service,rows,documents,scope=fixture()
+    first=context_preview(service,scope);frozen=deepcopy(first.payload)
     later=str(uuid4())
     service.repository.select.return_value=replace(service.repository.select.return_value,document_sources=documents+(later,))
-    new=replace(rows[0],revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Later private PDF.'),
+    new=replace(rows[0],revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Later PDF.'),
         provenance=(SourceRevisionRef(source_id=str(uuid4()),revision_id=later),))
     service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows)+(new,))
-    subsequent=run(service.prepare(str(uuid4()),scope,access))
-    assert 'Later private PDF.' not in json.dumps(subsequent.payload)
-    assert first.payload==frozen and first.policy.semantic_documents==documents
+    subsequent=context_preview(service,scope)
+    assert 'Later PDF.' in json.dumps(subsequent.payload) and first.payload==frozen
 
 
-def test_new_preview_of_partial_legacy_basis_keeps_safe_fallback():
+def test_empty_understanding_approval_never_calls_ai():
     service,rows,documents,scope=fixture()
-    access=policy(semantic_documents=(documents[0],),original_documents=(documents[0],))
-    frozen=deepcopy(rows)
-    preview=run(service.prepare(str(uuid4()),scope,access))
-    assert 'recap' not in preview.payload  # Full canonical basis is unavailable.
-    assert rows==frozen and 'document_recaps' not in preview.payload
-    assert rows[1].content['text'] not in json.dumps(question_payload(preview.payload))
-
-
-def test_fully_authorized_general_recap_wins_over_document_fallback():
-    service,rows,documents,scope=fixture()
-    frozen=deepcopy(rows)
-    full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
-    limited=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
-    general=general_recap(rows)
-    assert full.payload['recap']=={key:general[key] for key in ('title','text')}
-    assert 'recap' not in limited.payload
-    assert 'document_recaps' not in full.payload and 'document_recaps' not in limited.payload
-    assert rows==frozen
-
-
-@pytest.mark.parametrize('masked_support',[False,True])
-def test_year_intervals_do_not_hide_cv_recap_but_real_identifier_still_blocks_general(masked_support):
-    service,rows,documents,scope=fixture()
-    rows[0].content['text']+=' Période : 2022-2024.'
-    rows[1].content['text']+=' Identifiant : 123456789.' if masked_support else ' Période : 2008-2009.'
-    frozen=deepcopy(rows)
-    cv=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
-    full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
-    assert 'recap' not in cv.payload and not cv.report['masks']  # Missing canonical basis.
-    assert '2022-2024' in cv.payload['items'][0]['text']
-    if masked_support:
-        assert full.payload['recap']  # The masked contract item is not a declared recap support.
-        assert full.report['masks'] and '123456789' not in json.dumps(full.payload)
-    else:
-        assert full.payload['recap'] and not full.report['masks']
-    assert rows==frozen
-
-
-@pytest.mark.parametrize('text,masked',[
-    ('Période : 2022-2024.',False),
-    ('Parcours (2008-2009).',False),
-    ('Téléphone : 2022-2024.',True),
-    ('ID : 2022-2024.',True),
-    ('Tél. : 2022-2024.',True),
-    ('Naissance : 1981-1982.',True),
-    ('Budget : 2022-2024 euros.',True),
-    ('Budget : € 2022-2024.',True),
-    ('Référence : 2022-2024.',True),
-    ('Compte : 2022-2024.',True),
-    ('Numéro : 2022-2024.',True),
-    ('Date personnelle : 02/03/1981.',True),
-    ('Identifiant : 123 456 789.',True),
-    ('Contact : +33 6 12 34 56 78.',True),
-    ('Intervalle non valide : 2024-2022.',True),
-    ('Valeur longue : 2022-20241234.',True),
-])
-def test_number_redaction_preserves_only_calendar_year_intervals(text,masked):
-    from app.projections.disclosure_guard import redact
-    result,rules=redact(text)
-    assert bool(rules)==masked
-    assert (result!=text)==masked
-    assert ('[MASQUÉ]' in result)==masked
-
-
-def test_context_knowledge_and_canonical_recap_are_independent_of_original_downloads():
-    service,rows,documents,scope=fixture();frozen=deepcopy(rows)
-    previews=[run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',
-        original_documents=originals,include_quotes=True))) for originals in ((),documents[1:2],documents)]
-    assert all(p.payload==previews[0].payload for p in previews)
-    assert all(p.report['document_scope_version']==3 for p in previews)
-    assert previews[0].payload['semantic_document_count']==len(documents)
-    for row in rows[:2]:
-        assert row.content['text'] in [item['text'] for item in previews[0].payload['items']]
-    assert previews[0].payload['recap'] and rows==frozen
-    assert any(e['reason']=='recognised_high_risk' for e in previews[0].report['exclusions'])
-    assert rows[-1].content['text'] not in json.dumps(question_payload(previews[0].payload))
-    assert all(item.get('citations') for item in previews[0].payload['items'][:3])
-    access=previews[0].policy
-    assert access.wire()['knowledge_scope']=='context' and 'semantic_documents' not in access.wire()
-    assert AccessPolicy.from_wire(access.wire())==access
-    with pytest.raises(ValueError):policy(knowledge_scope='context',semantic_documents=documents)
-
-
-
-def test_unrelated_mask_does_not_hide_canonical_recap_or_promote_one_document_synopsis():
-    service,rows,documents,scope=fixture()
-    rows[1].content['text']+=' Identifiant : 123456789.'
-    for originals in ((),documents):
-        preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
-        general=general_recap(rows)
-        assert preview.payload['recap']=={k:general[k] for k in ('title','text')}
-        assert 'document_recaps' not in preview.payload and preview.report['recap_status']=='available'
-        assert rows[0].content['text'] in [i['text'] for i in preview.payload['items']]
+    service.repository.select.return_value=replace(service.repository.select.return_value,candidates=())
+    owner=str(uuid4());preview=run(service.prepare(owner,scope,policy(knowledge_scope='context')))
+    assert is_empty_projection(preview.payload) and not preview.report['anchors']
+    from adapters.llm.guest_offline import OfflineSnapshotProvider
+    provider=OfflineSnapshotProvider();provider.generate=AsyncMock(wraps=provider.generate)
+    chat=GuestSnapshotChat(guest=Mock(),provider=provider)
+    answer=run(chat.answer_payload(owner,scope,'offline',preview.payload,'Que prévoit le contrat ?',AsyncMock(return_value=preview.payload)))
+    assert answer['insufficient_context'] and question_payload(preview.payload)['items']==[]
+    provider.generate.assert_not_awaited()

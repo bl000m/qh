@@ -1,8 +1,6 @@
 """Guest questions have only a frozen safe snapshot; offline excerpt demonstration."""
 import json
 
-from app.chat.conversation import social_reply
-from app.chat.guest_context import GuestReferenceHistory, ordinal_focus, clarification, context_clarification
 from app.core.models import GenerationRequest, Message, MessageRole
 from app.projections.guest import GuestDenied, GuestUnavailable
 from app.projections.disclosure import LIVE_PROVIDER
@@ -66,7 +64,6 @@ class GuestSnapshotChat:
             raise ValueError('Only the offline snapshot demonstration is enabled')
         self.guest,self.provider=guest,provider
         self.live=live
-        self.references=GuestReferenceHistory()
 
     async def providers(self,owner,scope):
         result=[dict(model='offline',enabled=True,simulated=True)]
@@ -94,32 +91,10 @@ class GuestSnapshotChat:
             current=await self.guest.snapshot(token,snapshot_id,'ASK_AI')
             if current!=payload:raise GuestUnavailable('Snapshot changed')
             return current
-        conversation=self.references.read(grant.session_id,snapshot_id,payload)
-        focus=ordinal_focus(question,conversation)
-        local=context_clarification(question,payload) if not is_empty_projection(payload) else None
-        social=social_reply(question)
-        if social and not is_empty_projection(payload):
-            local=dict(answer=social,reference_aliases=[],referents=[],support_basis='dialogue',insufficient_context=False,simulated=False)
-        if not is_empty_projection(payload) and (focus==[] or local):
-            await recheck()
-            self.references.append(grant.session_id,snapshot_id,payload,[])
-            return local or clarification(question)
-        result=await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,
-            history=history,conversation=conversation)
-        if focus and not set(result['reference_aliases'])<=set(focus):
-            await recheck()
-            self.references.append(grant.session_id,snapshot_id,payload,[])
-            return clarification(question)
-        if result.pop('reference_overflow',False):
-            self.references.entries.pop(grant.session_id,None)
-        groups=([focus] if result['reference_aliases'] else []) if focus else result.get('referents',[])
-        # Only a rendered multi-subject list starts ordinal continuity; a resolved
-        # detail may retain its original list, but an unrelated single answer cannot.
-        if not focus and len(groups)<2:groups=[]
-        self.references.append(grant.session_id,snapshot_id,payload,groups)
-        return result
+        # Follow-ups are resolved by the model from the bounded client history.
+        return await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,history=history)
 
-    async def answer_payload(self,owner,scope,provider,payload,question,recheck,history=None,conversation=None):
+    async def answer_payload(self,owner,scope,provider,payload,question,recheck,history=None):
         history=bounded_history(history)
         if not isinstance(question,str) or not 1<=len(question.strip())<=2000:
             raise ValueError('Bounded question required')
@@ -128,7 +103,7 @@ class GuestSnapshotChat:
             return dict(simulated=False, answer=EMPTY_NOTICE,
                 reference_aliases=[], insufficient_context=True)
         if provider==LIVE_PROVIDER and self.live:
-            return await self.live.answer_payload(owner,scope,payload,question,recheck,history=history,conversation=conversation)
+            return await self.live.answer_payload(owner,scope,payload,question,recheck,history=history)
         if provider!='offline':raise GuestDenied('Vérification impossible.')
         await recheck()
         try:

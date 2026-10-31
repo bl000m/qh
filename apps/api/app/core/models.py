@@ -254,3 +254,19 @@ class GenerationResult:
 
 class ProviderBudgetExceeded(RuntimeError):
     """The outbound provider cannot reserve the bounded aggregate request cost."""
+
+
+class ProviderFailure(RuntimeError):
+    """Classified provider failure; never carries provider bodies or secrets.
+
+    request/transport/rate_limit/provider concern one call only. auth, accounting and
+    suspended need review; session means the user must sign in again.
+    """
+    KINDS = ('request', 'transport', 'rate_limit', 'provider', 'auth', 'accounting', 'suspended', 'session')
+    BLOCKING = ('auth', 'accounting')
+
+    def __init__(self, kind, message=None):
+        if kind not in self.KINDS:
+            raise ValueError('Unknown provider failure kind')
+        self.kind = kind
+        super().__init__(message or kind)

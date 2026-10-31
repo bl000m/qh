@@ -1,4 +1,4 @@
-"""Unified knowledge and retained document-scoped approvals; no canonical writes."""
+"""Empty projections and read-time compatibility for retained snapshots; no canonical writes."""
 
 EMPTY_NOTICE = ("Ce contexte ne contient pas suffisamment d'informations accessibles pour en présenter un résumé. "
     "Les informations non autorisées par le propriétaire restent privées.")
@@ -17,23 +17,6 @@ def is_empty_projection(payload):
         and isinstance(payload.get('name'),str) and 1<=len(payload['name'])<=256
         and payload.get('notice') == EMPTY_NOTICE and payload.get('items') == [NOTICE_ITEM]
         and not payload.get('recap') and not payload.get('document_recaps'))
-
-
-def document_scope(rows, policy, document_sources):
-    # New approvals share the unified understanding. Original download rights
-    # never filter knowledge; retain the old rule only for historical policies.
-    if policy.knowledge_scope=='context':
-        return tuple(rows), []
-    selected, excluded = [], []
-    unauthorized = set(document_sources) - (set(policy.semantic_documents) & set(policy.original_documents))
-    for row in rows:
-        sources = {p.revision_id for p in row.provenance}
-        sources.update(c.get('source_revision_id') for c in row.content.get('citations', []))
-        if sources & unauthorized:
-            excluded.append(dict(revision_id=row.revision_id, reason='document_information_not_authorized'))
-        else:
-            selected.append(row)
-    return tuple(selected), excluded
 
 
 def restrict_snapshot(payload, allowed_references, *, verified_recap=False):

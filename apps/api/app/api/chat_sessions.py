@@ -21,6 +21,7 @@ class CapabilityOutput(BaseModel):
     plafond_reached: bool = False
     accounting_blocked: bool = False
     enabled: bool
+    unavailable_reason: Literal['not_eligible','session_expired','suspended','budget','unconfigured'] | None = None
     model: Literal['mistral-small-2603'] | None
     max_seconds: Literal[300, 1800] | None
     max_calls: int | None = Field(ge=1, le=100)

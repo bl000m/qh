@@ -19,7 +19,7 @@ def poc(ai,ledger):
     path=ai.factory.authorization_path;r=json.loads(path.read_text())
     r['development_budget']=dict(max_calls=None,max_usd='5.00',max_eur='10.00',eur_per_usd_upper_bound='2');path.write_text(json.dumps(r))
     state=json.loads(ledger.read_text());state.update(max_calls=None,max_usd='5.00');ledger.write_text(json.dumps(state))
-    old=ai.factory;ai.factory=PrivateSessionFactory(authorization_path=path,ledger_path=ledger,transport=old.transport,pricing=old.pricing)
+    old=ai.factory;ai.factory=PrivateSessionFactory(authorization_path=path,ledger_path=ledger,transport=old.transport)
 
 
 def test_no_token_parameter_or_call_session_ceiling_and_history_retained(tmp_path,monkeypatch):
@@ -71,10 +71,11 @@ def test_full_window_reservation_blocks_before_http_not_prepaid_credit(tmp_path,
     assert not calls and not json.loads(ledger.read_text())['calls']
 
 
-def test_pending_reservation_is_not_reported_as_spent_ceiling(tmp_path,monkeypatch):
+def test_pending_reservation_holds_budget_without_suspending_the_ai(tmp_path,monkeypatch):
     ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer);poc(ai,ledger)
     state=json.loads(ledger.read_text());state['max_usd']='.16';state['calls']=[dict(status='pending',reserved_usd=str(cost(0,MODEL_CONTEXT_TOKENS)),kind='/chat/completions')];ledger.write_text(json.dumps(state))
-    caps=asyncio.run(ai.capabilities(who,request()));assert not caps['enabled'] and not caps['plafond_reached'] and not calls
+    caps=asyncio.run(ai.capabilities(who,request()))
+    assert not caps['enabled'] and not caps['accounting_blocked'] and caps['unavailable_reason']=='budget' and not calls
 
 
 def test_poc_capabilities_http_serializes_global_limits_without_provider_call(tmp_path, monkeypatch):

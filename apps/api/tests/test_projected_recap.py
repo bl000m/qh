@@ -18,17 +18,14 @@ def test_complete_recap_and_missing_recap_have_distinct_owner_status():
     assert 'recap' not in payload and report['recap_status']=='unavailable'
 
 
-def test_excluded_support_stays_excluded_and_masked_summary_stays_closed():
+def test_sensitive_item_and_contact_recap_are_shared_without_transformation():
     rows=projected()
     rows[1].content['text']='Diagnostic médical privé.'
-    payload,report=OutboundDisclosureGuard().apply(rows,policy())
-    assert report['recap_status']=='available'
-    assert payload['items'] and 'Diagnostic' not in str(payload) and rows[1].revision_id not in str(payload)
-    rows=projected()
     rows[0].content['extraction']['recap']['text']='Contacter private@example.test.'
-    rows[0].content['text']='Contacter private@example.test.'
-    payload,_=OutboundDisclosureGuard().apply(rows,policy())
-    assert 'recap' not in payload and 'private@example.test' not in str(payload)
+    payload,report=OutboundDisclosureGuard().apply(rows,policy())
+    assert report['recap_status']=='available' and payload['recap']['text']=='Contacter private@example.test.'
+    assert 'Diagnostic médical privé.' in [i['text'] for i in payload['items']]
+    assert rows[1].revision_id not in str(payload)
 
 
 @pytest.mark.parametrize('originals',[0,1,2])

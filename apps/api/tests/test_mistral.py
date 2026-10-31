@@ -69,20 +69,22 @@ def test_official_json_mode_no_retry_usage_and_raw_separation(tmp_path, monkeypa
 
 
 @pytest.mark.parametrize(
-    "failure",
+    "failure,kind,blocks",
     [
-        "429",
-        "500",
-        "redirect",
-        "timeout",
-        "bad_json",
-        "bad_usage",
-        "wrong_model",
-        "over_tokens",
+        ("400", "request", False),
+        ("401", "auth", True),
+        ("429", "rate_limit", False),
+        ("500", "provider", False),
+        ("redirect", "provider", False),
+        ("timeout", "transport", False),
+        ("bad_json", "provider", False),
+        ("bad_usage", "accounting", True),
+        ("wrong_model", "accounting", True),
+        ("over_tokens", "accounting", True),
     ],
 )
-def test_transport_failure_redacted_counted_blocks_and_never_retries(
-    tmp_path, monkeypatch, failure
+def test_failures_are_classified_counted_redacted_and_only_anomalies_block(
+    tmp_path, monkeypatch, failure, kind, blocks
 ):
     monkeypatch.setenv("MISTRAL_API_KEY", "synthetic-private-token")
     seen = []
@@ -91,11 +93,9 @@ def test_transport_failure_redacted_counted_blocks_and_never_retries(
         seen.append(req)
         if failure == "timeout":
             raise httpx.ReadTimeout("synthetic-private-token")
-        if failure in ("429", "500", "redirect"):
+        if failure in ("400", "401", "429", "500", "redirect"):
             return httpx.Response(
-                {"redirect": 302}.get(
-                    failure, int(failure) if failure.isdigit() else 500
-                ),
+                {"redirect": 302}.get(failure, int(failure) if failure.isdigit() else 500),
                 text="synthetic-private-token",
             )
         if failure == "bad_json":
@@ -112,11 +112,15 @@ def test_transport_failure_redacted_counted_blocks_and_never_retries(
     provider = MistralProvider(budget=ledger, transport=httpx.MockTransport(handler))
     with pytest.raises(MistralError) as exc:
         asyncio.run(provider.generate(REQUEST))
-    assert "synthetic-private-token" not in str(exc.value)
-    assert len(seen) == 1 and json.loads(ledger.path.read_text())["blocked"]
+    state = json.loads(ledger.path.read_text())
+    # One HTTP attempt, no retry; the failed reservation stays counted.
+    assert exc.value.kind == kind and "synthetic-private-token" not in str(exc.value)
+    assert len(seen) == 1 and state["calls"][0]["status"] == "failed"
+    assert "observed_usd" not in state["calls"][0] and state["blocked"] is blocks
     with pytest.raises(MistralError):
         asyncio.run(provider.generate(REQUEST))
-    assert len(seen) == 1
+    # An isolated request/transport/provider incident never blocks the next call.
+    assert len(seen) == (1 if blocks else 2)
 
 
 def test_caps_and_missing_key_fail_before_http(tmp_path, monkeypatch):
@@ -147,8 +151,10 @@ def test_persistent_call_budget_crash_and_spend_gates(tmp_path):
     with pytest.raises(MistralError):
         other.reserve("large", Decimal("0.21"))
     other.reserve("pending", Decimal("0.01"))
+    # A crash-left pending reservation stays counted but does not close the gate.
     with pytest.raises(MistralError):
-        ExperimentBudget(other.path).reserve("after-crash", Decimal(0))
+        ExperimentBudget(other.path).reserve("over-ceiling", Decimal("0.20"))
+    assert ExperimentBudget(other.path).reserve("after-crash", Decimal("0.19")) == 1
 
 
 def test_metadata_probe_uses_one_of_eight_requests(tmp_path, monkeypatch):
@@ -212,33 +218,19 @@ def test_error_diagnostics_keep_only_bounded_codes_and_numeric_retry_after(
     assert "synthetic-private-token" not in json.dumps(provider.last_failure)
 
 
-def test_reviewed_429_reconciliation_preserves_attempts_and_uncertain_cost(tmp_path):
+def test_only_review_worthy_failures_need_an_explicit_reconciliation(tmp_path):
     ledger = budget(tmp_path)
-    first = ledger.reserve("metadata", Decimal(0))
-    ledger.settle(first)
-    second = ledger.reserve("chat", Decimal("0.006"))
-    ledger.settle(second, error="Mistral HTTP 429")
-    before = json.loads(ledger.path.read_text())
-    ledger.reconcile_reviewed_429(
-        reason="Owner reports billing enabled and authorizes resumption"
-    )
+    limited = ledger.reserve("chat", Decimal("0.006"))
+    ledger.settle(limited, error="Mistral HTTP 429")
+    assert not json.loads(ledger.path.read_text())["blocked"]
+    with pytest.raises(MistralError):
+        ledger.reconcile_reviewed_429(reason="Nothing is blocked")
+    anomaly = ledger.reserve("chat", Decimal("0.006"))
+    ledger.settle(anomaly, error="Mistral usage missing or invalid", block=True)
     state = json.loads(ledger.path.read_text())
-    assert state["calls"] == before["calls"] and not state["blocked"]
-    assert state["max_calls"] == 8 and state["max_usd"] == "0.20"
-    assert state["reconciliations"][0]["calls_retained"] == 2
-    assert state["reconciliations"][0]["failed_reservations_retained_usd"] == "0.006"
-    assert ledger.reserve("resumed chat", Decimal("0.006")) == 2
+    assert state["blocked"] and [c["reserved_usd"] for c in state["calls"]] == ["0.006", "0.006"]
     with pytest.raises(MistralError):
-        ledger.reconcile_reviewed_429(reason="Cannot unlock in flight")
-
-
-def test_review_cannot_unlock_unknown_failure(tmp_path):
-    ledger = budget(tmp_path)
-    index = ledger.reserve("chat", Decimal("0.006"))
-    ledger.settle(index, error="Mistral transport/response failure")
-    with pytest.raises(MistralError):
-        ledger.reconcile_reviewed_429(reason="Unknown consumption")
-    assert json.loads(ledger.path.read_text())["blocked"]
+        ledger.reserve("blocked", Decimal(0))
 
 @pytest.mark.parametrize('capture_private_errors', [False, True])
 def test_error_body_capture_is_explicit_and_never_retries(tmp_path, monkeypatch, capture_private_errors):
@@ -256,4 +248,4 @@ def test_error_body_capture_is_explicit_and_never_retries(tmp_path, monkeypatch,
     assert (provider.last_exchange is not None) is capture_private_errors
     if capture_private_errors:
         assert provider.last_exchange['http_status'] == 429
-    assert json.loads(ledger.path.read_text())['blocked']
+    assert not json.loads(ledger.path.read_text())['blocked']

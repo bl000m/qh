@@ -6,8 +6,7 @@ Engine retain policy, graph freshness, provenance and proposed-only publication.
 from decimal import Decimal
 from dataclasses import replace
 
-from app.chat.context import ChatProviderUnavailable
-from app.core.models import ProviderBudgetExceeded
+from app.core.models import ProviderBudgetExceeded, ProviderFailure
 from app.chat.models import ChatRequest
 from app.core.models import ContextSpaceNotFound
 from app.chat.sessions import unavailable_capabilities
@@ -20,38 +19,42 @@ class DevelopmentAI:
     async def _authorize(self, identity, request, *, reserve=False):
         # Policy precedes any private configuration, ledger or context exposure.
         await self.chat._authorize(request)
-        if (identity.subject_id != request.subject_id or not self.factory.eligible_identity(identity)
-            or not identity.verified_session_id or not identity.work_expires_at
-            or self.clock() >= min(identity.expires_at, identity.work_expires_at)
-            or not self.factory.allowed(identity.subject_id, request.context_id)):
+        if not self._eligible(identity, request):
             raise ContextSpaceNotFound('Context space not found')
+        if not self._session_active(identity):
+            raise ProviderFailure('session')
         if reserve:
             remaining = self.factory.remaining()
             if remaining['blocked']:
-                raise ChatProviderUnavailable('Provider accounting requires review')
+                raise ProviderFailure('suspended')
             if remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd:
                 raise ProviderBudgetExceeded()
         if not await self.factory.verified(identity.subject_id, request.context_id):
-            raise ChatProviderUnavailable('Verified provider unavailable')
+            raise ProviderFailure('auth')
+
+    def _eligible(self, identity, request):
+        return (identity.subject_id == request.subject_id and self.factory.eligible_identity(identity)
+            and self.factory.allowed(identity.subject_id, request.context_id))
+
+    def _session_active(self, identity):
+        # The verified work session lasts eight hours from the actual sign-in.
+        return bool(identity.verified_session_id and identity.work_expires_at
+            and self.clock() < min(identity.expires_at, identity.work_expires_at))
 
     async def capabilities(self, identity, request):
         await self.chat._authorize(request)
-        enabled, exhausted, accounting_blocked = False, False, False
-        remaining = dict(remaining_calls=0, remaining_usd='0')
-        eligible = (identity.subject_id == request.subject_id and self.factory.eligible_identity(identity)
-            and identity.verified_session_id and identity.work_expires_at
-            and self.clock() < min(identity.expires_at, identity.work_expires_at)
-            and self.factory.allowed(identity.subject_id, request.context_id))
-        if not eligible:
-            return unavailable_capabilities(1800)
-        if eligible:
-            accounting = self.factory.remaining()
-            accounting_blocked = accounting['blocked']
-            remaining = {k:v for k,v in accounting.items() if k!='blocked'}
-            exhausted = not accounting['blocked'] and (remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd)
-            enabled = await self.factory.available(identity.subject_id, request.context_id)
-        return dict(automatic=bool(eligible), plafond_reached=bool(eligible and exhausted),
-            accounting_blocked=bool(eligible and accounting_blocked), enabled=enabled,
+        if not self._eligible(identity, request):
+            return dict(unavailable_capabilities(1800), automatic=False, unavailable_reason='not_eligible')
+        if not self._session_active(identity):
+            return dict(unavailable_capabilities(1800), automatic=True, unavailable_reason='session_expired')
+        accounting = self.factory.remaining()
+        blocked = accounting['blocked']
+        remaining = {k:v for k,v in accounting.items() if k!='blocked'}
+        exhausted = not blocked and (remaining['remaining_calls'] == 0 or Decimal(remaining['remaining_usd']) < self.factory.reservation_usd)
+        enabled = await self.factory.available(identity.subject_id, request.context_id)
+        reason = None if enabled else 'suspended' if blocked else 'budget' if exhausted else 'unconfigured'
+        return dict(automatic=True, plafond_reached=exhausted, accounting_blocked=blocked, enabled=enabled,
+            unavailable_reason=reason,
             model=self.factory.model if enabled else None, max_seconds=None if self.factory.poc else 1800,
             max_calls=self.factory.aggregate_calls, max_usd=self.factory.aggregate_usd, provider_expires_at=self.factory.expires_at if enabled else None,
             **remaining)

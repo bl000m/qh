@@ -21,7 +21,7 @@ export interface ContextSpace {
 }
 export interface SpacePage { items: ContextSpace[]; next_after_id: string | null }
 export { ApiError, isUuid } from './transport';
-import { ApiError, isUuid, saveDownload } from './transport';
+import { ApiError, failedResponse, isUuid, providerMessage, saveDownload } from './transport';
 export const validName = (v: string) => v.trim().length > 0 && [...v].length <= 256 && !v.includes('\0');
 function space(value: unknown): ContextSpace {
   const v = value as ContextSpace | null;
@@ -68,7 +68,7 @@ export class QhApi {
     const missingSpace=response.status===404&&/^\/context-spaces\/[^/]+(?:\/workspace)?$/.test(path);
     if(mutation||[401,403].includes(response.status)||missingSpace)this.navigationReads.clear();
     if (response.status === 401) this.expired();
-    if (!response.ok) throw new ApiError(response.status);
+    if (!response.ok) throw await failedResponse(response);
     if(response.status===204)return null;
     try { return await response.json(); } catch { throw new ApiError(502); }
   }
@@ -273,6 +273,8 @@ export class QhApi {
   }
 }
 export function apiMessage(error: unknown): string {
+  const provider = error instanceof ApiError ? providerMessage(error.providerError) : null;
+  if (provider) return provider;
   if (error instanceof ApiError && error.status === 404) return 'Ce Context Space est introuvable ou inaccessible.';
   if (error instanceof ApiError && error.status === 403) return 'Ton compte ne dispose pas des autorisations nécessaires.';
   if (error instanceof ApiError && error.status === 422) return 'Vérifie les informations saisies.';

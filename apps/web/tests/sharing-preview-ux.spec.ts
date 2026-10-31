@@ -64,6 +64,6 @@ test('valid email loading failure is distinct from missing email and guarded rec
  const dialog=page.getByRole('dialog'),card=dialog.locator('.sharing-preview-card');
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('recipient@example.test');
  await expect(card).toContainText('L’aperçu n’a pas pu être chargé');
- await expect(card).not.toContainText('Indiquez le destinataire');await expect(card).not.toContainText('Le résumé général n’est pas disponible');
+ await expect(card).not.toContainText('Indiquez le destinataire');await expect(card).not.toContainText('Aucun résumé validé');
  failing=false;await dialog.getByRole('button',{name:'Réessayer',exact:true}).click();await expect(card).toContainText(recap.text);
 });

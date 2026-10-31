@@ -53,14 +53,15 @@ def test_concrete_adapter_reuses_port_and_http_mock_only(tmp_path,monkeypatch):
     assert provider.provider.last_exchange is None
 
 
-def test_429_blocks_next_attempt_without_retry_and_retains_ledger(tmp_path,monkeypatch):
+def test_429_is_counted_without_retry_and_never_blocks_the_next_call(tmp_path,monkeypatch):
     auth,ledger=setup(tmp_path,monkeypatch);seen=[]
     def handler(req):seen.append(req);return httpx.Response(429,headers={'Retry-After':'42'},json={'message':'synthetic-chat-private-key'})
     provider=ScopedMistralChatProvider(authorization_path=auth,ledger_path=ledger,transport=httpx.MockTransport(handler))
     for _ in range(2):
         with pytest.raises(Exception):asyncio.run(provider.generate(built((revision(),)).request))
-    assert len(seen)==1
-    state=json.loads(ledger.read_text());assert state['blocked'] and len(state['calls'])==1
+    # Each explicit request makes exactly one HTTP attempt; a rate limit blocks nothing.
+    assert len(seen)==2
+    state=json.loads(ledger.read_text());assert not state['blocked'] and [c['status'] for c in state['calls']]==['failed','failed']
 
 
 @pytest.mark.parametrize('changes',[{'owner_authorized':False},{'context_ids':[]},

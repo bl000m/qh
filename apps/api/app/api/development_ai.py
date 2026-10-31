@@ -12,7 +12,7 @@ from app.api.context_spaces import allowed_query, call
 from app.api.enrichment import EnrichmentInput, EnrichmentReceipt
 from app.api.security import authenticated_chat_identity
 from app.chat.context import ChatProviderUnavailable
-from app.core.models import ProviderBudgetExceeded
+from app.core.models import ProviderBudgetExceeded, ProviderFailure
 from app.chat.context import ChatContextUnavailable, ChatInputInvalid
 from app.understanding.enrichment import EnrichmentConflict, EnrichmentUnavailable
 
@@ -33,6 +33,11 @@ router = APIRouter(prefix='/context-spaces/{context_id}/ai', tags=['development 
 PLAFOND = 'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.'
 
 
+def provider_failure(exc):
+    # 429 only for a provider rate limit; every other classified failure is a 503.
+    return HTTPException(429 if exc.kind=='rate_limit' else 503, dict(provider_error=exc.kind))
+
+
 def service(request, response):
     allowed_query(request, set())
     response.headers['Cache-Control'] = 'private, no-store'
@@ -49,6 +54,8 @@ async def execute(operation):
         return await call(operation)
     except ProviderBudgetExceeded:
         raise HTTPException(402, PLAFOND) from None
+    except ProviderFailure as exc:
+        raise provider_failure(exc) from None
     except EnrichmentConflict:
         raise HTTPException(409, 'Conflicting operation; no automatic retry') from None
     except (ChatProviderUnavailable, ChatContextUnavailable, EnrichmentUnavailable):

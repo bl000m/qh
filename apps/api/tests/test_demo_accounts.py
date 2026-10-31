@@ -40,7 +40,7 @@ def test_two_verified_accounts_share_factory_budget_but_never_private_spaces(tmp
     receipt['additional_development_accounts'] = [dict(environment='development', subject_id='bob', principal_id='b'*64)]
     path.write_text(json.dumps(receipt))
     old = ai.factory
-    ai.factory = PrivateSessionFactory(authorization_path=path, ledger_path=ledger, transport=old.transport, pricing=old.pricing)
+    ai.factory = PrivateSessionFactory(authorization_path=path, ledger_path=ledger, transport=old.transport)
     ai.chat.policy = OwnerPolicyService(owner_for=owned)
     bob = replace(alice, subject_id='bob', principal_id='b'*64)
     async def run():

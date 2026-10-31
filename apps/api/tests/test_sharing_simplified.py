@@ -129,7 +129,7 @@ def test_document_selection_only_grants_original_download(count):
     provider.generate.assert_not_awaited()
 
 
-@pytest.mark.parametrize('text',['Référence R1','Source S2','{"items": []}','validation_state: proposed'])
+@pytest.mark.parametrize('text',['Référence [R1]','Sources (S2, S3)','{"items": []}','validation_state: proposed'])
 def test_public_answer_refuses_structure_even_if_a_model_attempts_to_echo_it(text):
     with pytest.raises(ValueError): public_answer(dict(answer=text,insufficient_context=False,simulated=False))
 

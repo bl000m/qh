@@ -2,12 +2,11 @@
 from app.core.uum import RECAP_FORMAT, RECAP_PRESENTATION_VERSIONS
 
 
-def projected_recap(rows, anchors, redact, high_risk):
-    """Disclose the canonical recap when its own text is safe and a support is disclosed.
+def projected_recap(rows, anchors):
+    """Share the canonical recap exactly as persisted when its provenance resolves.
 
-    Supports resolve to the exact canonical version. Excluded supports stay excluded
-    (neither text nor identifiers leave the perimeter) without hiding the recap; the
-    recap is withheld only when no support is disclosed or its own text is unsafe.
+    Supports resolve to the exact canonical version, with full-basis presence and at
+    least one shared support. No share-time filtering, rewriting or regeneration.
     """
     disclosed = {a['revision_id'] for a in anchors}
     present = {row.revision_id for row in rows}
@@ -22,7 +21,7 @@ def projected_recap(rows, anchors, redact, high_risk):
                 and recap.get('presentation_version') in RECAP_PRESENTATION_VERSIONS
                 and _identifiers(basis) and _identifiers(support) and row.revision_id in basis
                 and set(support) <= set(basis) <= present and set(support) & disclosed
-                and _safe_summary(recap.get('title'), recap.get('text'), redact, high_risk)):
+                and _bounded(recap.get('title'), recap.get('text'))):
             candidates.append(dict(title=recap['title'], text=recap['text']))
     # Do not arbitrarily choose between historical consolidated versions.
     return candidates[0] if len(candidates) == 1 else None
@@ -40,8 +39,7 @@ def _identifiers(values):
     return isinstance(values, list) and bool(values) and all(isinstance(v, str) for v in values)
 
 
-def _safe_summary(title, text, redact, high_risk):
-    return (isinstance(title,str) and 1<=len(title.strip())<=120
-        and isinstance(text,str) and 1<=len(text.strip())<=1500 and len(text.split())<=100
-        and not high_risk.search(title+' '+text) and not redact(title+' '+text)[1]
-        and not any(ord(ch)<32 and ch not in '\n\t' for ch in title+text))
+def _bounded(title, text):
+    # Same envelope the recipient payload validates; persisted recaps already satisfy it.
+    return (isinstance(title, str) and 1 <= len(title.strip()) <= 120
+        and isinstance(text, str) and 1 <= len(text.strip()) <= 1500 and len(text.split()) <= 100)

@@ -31,19 +31,22 @@ validates original citations/provenance before atomic publication. The recap is
 presentation only: an invalid or missing recap is not persisted and never blocks
 the validated items (owner decision, 2026-10-31). Per-document synopses and the
 extraction-time support filter, inherited from PDF-scoped sharing, are removed;
-understanding no longer imports the Guard. Projection resolves recap supports to the
-canonical revisions of the same version, with full-basis presence; the Guard checks
-the recap's own text and requires at least one disclosed support; excluded supports
-stay excluded without hiding the recap (owner decision 2026-10-31). Undisclosed
-original quotations do not hide a recap; they are guarded per item when shared. No share-time inference, evidence trimming,
+understanding no longer imports the Guard. Projection shares the persisted recap
+unchanged when its supports resolve to the same version (full basis, at least one
+shared support). No share-time filtering, inference, evidence trimming,
 semantic certification, source re-extraction or new synthesis service is added.
 Historical approvals remain frozen; see the current
 [Product Contract](product/QH_PRODUCT_CONTRACT.md).
 
 ## Unified sharing V1 — owner decision, 2026-10-31
 
-New sharing projects the current unified Understanding through the existing Guard;
-PDF download permission no longer filters its semantic items. The explicit persisted
+New sharing projects the whole current Understanding through a structural Guard
+only (eligible state, bounded text, relation endpoints): no keyword, regex, number,
+date or category filtering and no masking (V1 owner decision, not anonymisation).
+Original quotations, sources and canonical IDs never leave. PDF download permission
+never filters knowledge; prepare refuses legacy document-scoped or quote policies.
+Guest answers use one generation over the snapshot plus the bounded client
+conversation for follow-ups; the server checks cited aliases only. The explicit persisted
 `knowledge_scope: context` policy/report-v3 marker distinguishes these approvals
 from retained immutable document-scoped snapshots. Original downloads retain their
 separate allowlist. No UUM, storage schema, module boundary or approved ADR boundary
@@ -678,9 +681,12 @@ The [ADR 0007 amendment](adr/0007-scoped-provider-sessions.md#later-owner-amendm
 separates fixed provider availability from short token-bound conversation grants
 and automatic official-price freshness. No module or canonical persistence boundary
 changes. The same outbound factory checks private receipt revocation, fixed
-owner/Space/model/synthetic snapshot and cumulative ledger; a fixed public docs
-price fetch uses no key/context and no Mistral API call. Unknown or increased
-prices fail closed after cache expiry. This does not verify semantic entailment.
+owner/Space/model/synthetic snapshot and cumulative ledger. **Superseded 2026-10-31:**
+availability no longer scrapes the public price page; the private receipt pins the
+rates, which must equal the accounting constants at startup. Provider failures are
+classified (request, transport, rate_limit, provider, auth, accounting); only auth
+and accounting anomalies block the ledger. In-flight reservations stay counted at
+their maximum but never suspend other calls. This does not verify semantic entailment.
 
 The owner authorizes an actual 30-day private-POC activation for Alice / Projet
 pilote only, one Codex smoke and remaining owner manual calls under the existing

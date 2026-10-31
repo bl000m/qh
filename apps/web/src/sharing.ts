@@ -1,4 +1,4 @@
-import {ApiError,isUuid} from './transport';
+import {ApiError,failedResponse,isUuid,providerMessage} from './transport';
 import type {GuestSessionView,SharedPayload,GuestAnswer,GuestProviderStatus,RecipientAnswer} from '@qh/shared';
 export const sharingEnabled=import.meta.env.VITE_QH_SHARING==='1';
 
@@ -6,7 +6,7 @@ export async function guestRequest(path:string,body?:unknown):Promise<unknown>{
  let response:Response;
  try{response=await fetch('/api/guest'+path,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',redirect:'error',
    headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});}catch{throw new ApiError(503);}
- if(!response.ok)throw new ApiError(response.status);
+ if(!response.ok)throw await failedResponse(response);
  if(response.status===204)return null;
  return response.json();
 }
@@ -59,6 +59,7 @@ export function sharingError(e:unknown){
 /** Safe failure categories only: never render provider bodies or private diagnostics. */
 export function guestChatError(error:unknown):string{
  if(!(error instanceof ApiError))return 'La réponse n’a pas pu être obtenue.';
+ const provider=providerMessage(error.providerError);if(provider)return provider;
  if([402,429].includes(error.status))return sharingError(error);
  if([401,403].includes(error.status))return 'Cet accès n’est plus valide. Rouvrez votre invitation.';
  if([400,413,422].includes(error.status))return 'La question ou l’historique n’a pas pu être accepté. Rouvrez la discussion si nécessaire.';

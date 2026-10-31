@@ -45,7 +45,7 @@ test('persisted owner recap crosses preview and guest UI with unchanged PDF know
   await expect.poll(()=>count).toBe(selected);
   await expect(page.getByRole('region',{name:'Documents accessibles',exact:true})).toContainText(selected?`${selected} sur 2`:'Aucun');
   await expect(preview).toContainText(recap.title);await expect(preview).toContainText(recap.text);
-  await expect(preview).not.toContainText('Le résumé général n’est pas disponible');
+  await expect(preview).not.toContainText('Aucun résumé validé');
  }
  await page.goto('/tests/fixtures/guest-understanding.html');
  await expect(page.locator('.guest-context')).toContainText(recap.title);
