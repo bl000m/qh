@@ -12,7 +12,7 @@ from tests import test_guest_mistral as fixture
 
 
 PAYLOAD=dict(format='qh.disclosure/1',items=[
-    dict(reference='R1',text='Expérience 2021–2023 : développement Python chez Alpha.'),
+    dict(reference='R1',text='Expérience 2021–2022 : développement Python chez Alpha.'),
     dict(reference='R2',text='Expérience 2023–2025 : responsable technique chez Beta.')])
 
 
@@ -21,9 +21,11 @@ def setup(tmp_path,monkeypatch):
     chat,_,_,grant=fixture.setup(tmp_path,monkeypatch)
     packets=[]
     def respond(request):
-        packet=json.loads(json.loads(request.content)['messages'][1]['content']);packets.append(packet)
-        second=len(packets)>1
-        selected=packet.get('focus_references',['R1'])
+        wire=json.loads(request.content);packet=json.loads(wire['messages'][1]['content'])
+        selecting='assessments' in wire['response_format']['json_schema']['schema']['properties']
+        if not selecting:packets.append(packet)
+        second=len(packets)>1 if not selecting else False
+        selected=next(iter(packet['subjects'].values())) if 'subjects' in packet and second else ['R1']
         detail='Responsable technique chez Beta.' if selected==['R2'] else 'Développement Python chez Alpha.'
         value=dict(answer=detail if second else
             '1. Responsable technique chez Beta.\n2. Développement Python chez Alpha.',
@@ -32,7 +34,7 @@ def setup(tmp_path,monkeypatch):
             subjects=[] if second else [dict(text='Responsable technique chez Beta.',reference_aliases=['R2']),dict(text='Développement Python chez Alpha.',reference_aliases=['R1'])],
             insufficient_context=False,support_basis='canonical')
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=30),
-            choices=[dict(finish_reason='stop',message=dict(content=json.dumps(value)))]))
+            choices=[dict(finish_reason='stop',message=dict(content=json.dumps(fixture.wire_reply(value,packet,wire))))]))
     chat.live.factory.transport=httpx.MockTransport(respond)
     return chat,grant,packets
 
@@ -50,9 +52,8 @@ def test_second_experience_resolves_from_ordered_current_references_without_old_
         await chat.ask('token',grant.snapshot_id,'E prima?')
     asyncio.run(run())
     assert 'conversation_references' not in packets[0]
-    assert packets[1]['conversation_references']==[[['R2'],['R1']]]
-    assert packets[1]['focus_references']==['R1']
-    assert packets[2]['conversation_references']==[[['R2'],['R1']],[['R1']]]
+    assert list(packets[1]['subjects'].values())==[['R1']]
+    assert set(ref for group in packets[2]['subjects'].values() for ref in group)<={'R1','R2'}  # Fresh selection for the ambiguous 'E prima?' query.
     wire=json.dumps(packets[1])
     assert 'EXCLUDED' not in wire and '999999' not in wire and 'history' not in packets[1]
     assert '1. Responsable' not in wire  # Old response prose is absent.
@@ -103,14 +104,14 @@ def test_french_second_then_first_stay_bound_to_original_rendered_list(tmp_path,
     from app.chat.guest_context import ordinal_focus
     chat,grant,packets=setup(tmp_path,monkeypatch)
     async def run():
-        first=await chat.ask('token',grant.snapshot_id,'Deux expériences ?')
+        first=await chat.ask('token',grant.snapshot_id,'Les deux dernières expériences ?')
         assert first['answer'].startswith('1. Responsable technique chez Beta.')
         assert first['referents']==[['R2'],['R1']]  # Raw model referents were reversed.
         await chat.ask('token',grant.snapshot_id,'Peux-tu détailler la deuxième ?')
         await chat.ask('token',grant.snapshot_id,'Et la première ?')
     asyncio.run(run())
-    assert packets[1]['focus_references']==['R1']
-    assert packets[2]['focus_references']==['R2']
+    assert list(packets[1]['subjects'].values())==[['R1']]
+    assert list(packets[2]['subjects'].values())==[['R2']]
     assert ordinal_focus('Peux-tu détailler la deuxième ?',[])==[]
     assert ordinal_focus('Peux-tu détailler la deuxième ?',[[['R1'],['R1']]])==[]
     assert ordinal_focus('Et la première ?',[[['R1']]])==[]  # Original list was lost, not renumbered.

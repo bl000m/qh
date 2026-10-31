@@ -17,6 +17,10 @@ def unique_fields(pairs):
     return result
 
 
+def evidence_quotes(item):
+    return list(dict.fromkeys(citation['quote'] for citation in item.get('citations',[])))
+
+
 def question_payload(payload):
     # The model gets authorized knowledge, not source/review/graph metadata.
     items=[]
@@ -24,7 +28,7 @@ def question_payload(payload):
         value=dict(reference=item['reference'],text=item['text'])
         # Only quotes already included in the approved, freshly restricted
         # snapshot. Never hydrate sources or infer quote permission here.
-        quotes=list(dict.fromkeys(citation['quote'] for citation in item.get('citations',[])))
+        quotes=evidence_quotes(item)
         if quotes:
             value['evidence_quotes']=quotes
         if item.get('primary_dimension',{}).get('value')=='hypotheses_uncertainties':
@@ -104,6 +108,8 @@ class GuestSnapshotChat:
         if focus and not set(result['reference_aliases'])<=set(focus):
             await recheck()
             return clarification(question)
+        if result.pop('reference_overflow',False):
+            self.references.entries.pop(grant.session_id,None)
         groups=([focus] if result['reference_aliases'] else []) if focus else result.get('referents',[])
         self.references.append(grant.session_id,snapshot_id,payload,groups)
         return result

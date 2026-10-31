@@ -991,3 +991,30 @@ Absence of quote approval still means no quotation in model input. No original P
 read, canonical hydration, new snapshot enrichment, inference on load or automatic
 confirmation follows from this correction. Fresh document scope, revocation and
 expiry checks continue to restrict both item text and its approved quotations.
+
+### Guest evidence selection and composition — owner correction
+
+Guest response generation separates a private relevance assessment from public
+composition. The first phase assesses every current authorized item against the
+requested subject and conditions; it neither composes prose nor chooses a subset
+to satisfy a count. The server validates complete coverage and exact authorized
+aliases. Explicit first/last counts and conservative ordering use only literal
+dates in current item text or already approved quotations; missing or overlapping
+temporal evidence requires clarification, never invented precision or item-order
+selection. No canonical extraction, source hydration or new semantic type follows.
+
+Composition receives only the selected items and their approved quotations, without
+a broader recap or discarded items. Required subject slots and their supporting
+aliases are fixed by the server; the model cannot drop slots, change citation
+assignments or redefine ordinal order. Follow-ups keep only the existing bounded,
+current-payload-bound alias groups, never previous answer prose. Large complete
+enumerations are not truncated to fit reference memory; instead old ordinal
+references are cleared when the list cannot be retained within its existing bound.
+
+A positive question normally uses selection then composition. An already resolved
+ordinal uses composition only; absence/ordering limits stop after selection, and
+existing empty/social paths still avoid inference. These are fixed purposeful
+phases, not paid retry/fallback. Authorization, snapshot equality, receipt, expiry,
+revocation and aggregate budget are checked around each HTTP; each reserves its
+technical maximum atomically and retains durable accounting. Response cost/usage
+aggregate the executed phases without changing limits, history or public contracts.

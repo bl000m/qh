@@ -6,7 +6,6 @@ import pytest
 
 from app.chat.snapshot_answer import SnapshotAnswerError, decode_snapshot_answer, projection_request
 from app.core.models import Message, MessageRole
-from app.projections.guest import GuestUnavailable
 from tests.test_guest_mistral import setup, PAYLOAD
 
 
@@ -18,16 +17,16 @@ def test_real_failure_patterns_stay_rejected_with_precise_private_codes(tmp_path
     with pytest.raises(SnapshotAnswerError) as error:
         decode_snapshot_answer(Message(role=MessageRole.ASSISTANT,content=json.dumps(answer)),PAYLOAD)
     assert error.value.code==code
+    if code=='guest.invalid_snapshot_support':return  # Composer citations are now assigned by the server.
     chat,calls,_,grant=setup(tmp_path,monkeypatch,answer)
     if code=='guest.internal_structure_in_answer':
         result=asyncio.run(chat.ask('token',grant.snapshot_id,'Pourquoi cette confusion ?'))
         assert result['support_basis']=='dialogue' and result['reference_aliases']==[]
         assert 'R1' not in result['answer']
-    else:
-        with pytest.raises(GuestUnavailable):asyncio.run(chat.ask('token',grant.snapshot_id,'Quale contenuto?'))
     diagnostics=[json.loads(p.read_text()) for p in chat.live.factory.diagnostics.path.glob('*.json')]
-    assert len(calls)==1 and diagnostics[0]['outcome']=='rejected'
-    assert diagnostics[0]['checks'][-1]['reason']==code
+    rejected=[d for d in diagnostics if d['outcome']=='rejected']
+    assert len(calls)==2 and len(rejected)==1
+    assert rejected[0]['checks'][-1]['reason']==code
 
 
 @pytest.mark.parametrize('basis,refs,text',[

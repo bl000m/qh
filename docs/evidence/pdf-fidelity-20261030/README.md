@@ -4,6 +4,9 @@ Esito complessivo: **FAIL, fedeltà completa non dimostrata**. Base `3eaf9f7`;
 correttivo circoscritto alla serializzazione delle evidenze già approvate.
 Nessuna rigenerazione o modifica di RH propre, RH 2 o snapshot reali.
 
+Correttivo successivo della sola selezione guest, base `44a9dd0`:
+[risultati, verifiche reali/replay e limiti](guest-selection.md).
+
 ## Corpus e percorso eseguito
 
 [corpus.json](corpus.json) fissa prima delle chiamate 11 gruppi di fatti, le

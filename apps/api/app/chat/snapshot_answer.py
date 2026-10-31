@@ -131,7 +131,7 @@ def answer_schema(payload):
         required=['answer','reference_aliases','insufficient_context','support_basis','subjects'],properties=dict(
         answer=dict(type='string',minLength=1,maxLength=1_000_000,description='Public natural-language answer. Never include reference aliases, bracket citations, internal identifiers or JSON.'),
         reference_aliases=dict(type='array',maxItems=100,description='Exact authorized references supporting facts in answer. Nonempty requires canonical or mixed, never dialogue. Clarification without context facts uses [].',items=dict(type='string',enum=[i['reference'] for i in payload['items']])),
-        subjects=dict(type='array',maxItems=8,items=dict(type='object',additionalProperties=False,
+        subjects=dict(type='array',maxItems=100,items=dict(type='object',additionalProperties=False,
             required=['text','reference_aliases'],properties=dict(text=dict(type='string',minLength=1,maxLength=1000000),
             reference_aliases=dict(type='array',minItems=1,maxItems=len(payload['items']),items=dict(type='string',enum=[i['reference'] for i in payload['items']]))))),
         insufficient_context=dict(type='boolean'),
@@ -155,17 +155,19 @@ def decode_snapshot_answer(message,payload):
         or not isinstance(refs,list) or len(refs)>100 or any(not isinstance(r,str) or r not in allowed for r in refs)
         or len(set(refs))!=len(refs) or basis not in ('dialogue','canonical','mixed','insufficient')):raise SnapshotAnswerError('guest.invalid_snapshot_support')
     subjects=value.pop('subjects',[])
-    if not isinstance(subjects,list) or len(subjects)>8:
+    if not isinstance(subjects,list) or len(subjects)>100:
         raise SnapshotAnswerError('guest.invalid_subjects')
     if subjects:
         if any(not isinstance(subject,dict) or set(subject)!={'text','reference_aliases'}
             or not isinstance(subject['text'],str) or not subject['text'].strip() or len(subject['text'])>1000000 for subject in subjects):
             raise SnapshotAnswerError('guest.invalid_subjects')
         try:
-            value['referents']=checked_referents([subject['reference_aliases'] for subject in subjects],allowed)
+            groups=[checked_referents([subject['reference_aliases']],allowed)[0] for subject in subjects]
+            value['referents']=groups if len(groups)<=8 else []
+            if len(groups)>8:value['reference_overflow']=True
         except ValueError:
             raise SnapshotAnswerError('guest.invalid_subject_support') from None
-        refs=list(dict.fromkeys(ref for group in value['referents'] for ref in group))
+        refs=list(dict.fromkeys(ref for group in groups for ref in group))
         value['reference_aliases']=refs
         text='\n'.join(f"{index+1}. {subject['text']}" for index,subject in enumerate(subjects))
         value['answer']=text

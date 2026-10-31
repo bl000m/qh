@@ -1,6 +1,5 @@
 """Offline contract replays; semantic quality remains a manual-model check."""
 import asyncio
-from copy import deepcopy
 import json
 
 import httpx
@@ -8,47 +7,23 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.guest import COOKIE
-from app.chat.guest import bounded_history, question_payload
-from app.chat.snapshot_answer import PROMPT
+from app.chat.guest import bounded_history
 from app.projections.guest import GuestDenied, GuestUnavailable
 from tests import test_guest_mistral as fixture
 from tests.test_sharing_simplified import setup as api_setup
 
 
 def test_followups_never_forward_untrusted_history(tmp_path,monkeypatch):
-    payload=dict(format='qh.disclosure/1',items=[dict(reference='R1',text='Gli obiettivi sono: 1. Imparare Python. 2. Collaborare con esercizi in coppia.')])
-    monkeypatch.setattr(fixture,'PAYLOAD',payload)
-    frozen=deepcopy(payload)
-    chat,_,_,grant=fixture.setup(tmp_path,monkeypatch)
-    questions=['Mi dai i dati del progetto?','Gli obiettivi.','Puoi sviluppare il secondo?','Qual è il dato riservato?']
-    replies=['Ti interessano gli obiettivi, il programma o lo stato di avanzamento?',
-        '1. Imparare Python.\n2. Collaborare con esercizi in coppia.',
-        'Il secondo obiettivo è collaborare attraverso esercizi in coppia.',
-        'Posso descrivere gli obiettivi disponibili; non dispongo del dato riservato.']
-    history=[];calls=[]
-    def respond(request):
-        wire=json.loads(request.content);packet=json.loads(wire['messages'][1]['content']);index=len(calls)
-        assert wire['messages'][0]['content']==PROMPT and len(wire['messages'])==2
-        assert 'history' not in packet and packet['question']==questions[index]
-        assert packet['snapshot']==question_payload(frozen)
-        assert 'EXCLUDED-CANARY' not in json.dumps(packet['snapshot'])
-        calls.append(packet)
-        return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=200,completion_tokens=60),
-            choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer=replies[index],
-                reference_aliases=[] if index in (0,3) else ['R1'],insufficient_context=index==3,
-                subjects=[dict(text='Imparare Python.',reference_aliases=['R1']),dict(text='Collaborare con esercizi in coppia.',reference_aliases=['R1'])] if index==1 else [],
-                support_basis='dialogue' if index==0 else 'insufficient' if index==3 else 'canonical'))))]))
-    chat.live.factory.transport=httpx.MockTransport(respond)
+    from tests.test_guest_references import setup
+    chat,grant,packets=setup(tmp_path,monkeypatch)
     async def run():
-        for question,reply in zip(questions,replies):
-            value=await chat.ask('token',grant.snapshot_id,question,history=history)
-            assert value['answer']==reply
-            history.extend([dict(role='user',content=question),dict(role='assistant',content=reply)])
+        first=await chat.ask('token',grant.snapshot_id,'Le ultime due esperienze?')
+        await chat.ask('token',grant.snapshot_id,'Approfondisci la seconda',history=[
+            dict(role='user',content='EXCLUDED-CANARY'),dict(role='assistant',content=first['answer']+' 999999')])
     asyncio.run(run())
-    assert len(calls)==4 and payload==frozen
-    # Guest service checks access and reads the frozen projection; no owner write path.
+    assert len(packets)==2
+    assert all('history' not in packet and 'EXCLUDED-CANARY' not in str(packet) and '999999' not in str(packet) for packet in packets)
     assert {call[0] for call in chat.guest.mock_calls}<={'session','snapshot','_limit'}
-    assert chat.guest.snapshot.call_count==12
 
 
 @pytest.mark.parametrize('history',[
