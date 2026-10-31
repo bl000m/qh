@@ -102,15 +102,20 @@ class GuestSnapshotChat:
             local=dict(answer=social,reference_aliases=[],referents=[],support_basis='dialogue',insufficient_context=False,simulated=False)
         if not is_empty_projection(payload) and (focus==[] or local):
             await recheck()
+            self.references.append(grant.session_id,snapshot_id,payload,[])
             return local or clarification(question)
         result=await self.answer_payload(grant.owner_id,grant.context_id,grant.provider,payload,question,recheck,
             history=history,conversation=conversation)
         if focus and not set(result['reference_aliases'])<=set(focus):
             await recheck()
+            self.references.append(grant.session_id,snapshot_id,payload,[])
             return clarification(question)
         if result.pop('reference_overflow',False):
             self.references.entries.pop(grant.session_id,None)
         groups=([focus] if result['reference_aliases'] else []) if focus else result.get('referents',[])
+        # Only a rendered multi-subject list starts ordinal continuity; a resolved
+        # detail may retain its original list, but an unrelated single answer cannot.
+        if not focus and len(groups)<2:groups=[]
         self.references.append(grant.session_id,snapshot_id,payload,groups)
         return result
 

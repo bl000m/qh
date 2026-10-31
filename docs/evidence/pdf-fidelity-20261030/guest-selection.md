@@ -92,3 +92,42 @@ riconosciuti o identità non ricostruibili non vengono risolti per supposizione.
 La pertinenza semantica resta valutata dal modello, non certificata formalmente.
 Una risposta D2 reale usa la prima persona: i legami e i fatti sono corretti, ma la
 voce narrativa non è normalizzata da questo intervento.
+
+
+## Follow-up dei FAIL manuali — 2026-10-31
+
+La verifica sintetica precedente non dimostra la completezza del corpus reale.
+Diagnosi successiva, senza HTTP Mistral o scritture canoniche:
+
+- Il ramo cronologico di `context_clarification()` precedeva il selettore e cercava
+  anni soltanto in `item.text`. Poteva negare periodi già presenti nelle citazioni
+  approvate. Rimosso quel ramo duplicato: selezione e controllo temporale esistenti
+  valutano testo e citazioni attualmente autorizzati. I periodi mancanti non sono
+  inventati e le attività non diventano incarichi tramite questa modifica.
+- Il riconoscimento degli ordinali richiedeva l'intero messaggio: la richiesta
+  composta « Peux-tu détailler la deuxième ? Puis : Et la première ? » passava
+  invece al selettore come nuova domanda. Ora richiede una precisazione senza HTTP.
+  Inoltre la ricerca di una lista precedente saltava le risposte vuote/non-lista,
+  e i ritorni locali non registravano l'interruzione. Ora una risposta senza lista
+  interrompe quel riferimento; solo un elenco strutturato avvia la continuità e un
+  dettaglio ordinale risolto conserva l'ordine originario.
+- Il percorso recap è stato tracciato: `document_scope` → Guard →
+  `projected_components`/`projected_recap` → `accessible_introduction`. Se il Guard
+  ammette il generale, quest'ultimo viene conservato e prevale sul fallback di un
+  singolo documento. Un test mirato verifica questa proprietà e l'esclusione del
+  generale nel perimetro parziale. Nessuna modifica alla selezione dei recap è
+  giustificata dai soli screenshot; non vengono assemblati estratti.
+
+**Limite della diagnosi reale:** la lettura SQL in transazione read-only non trova
+un Context Space chiamato « RH propre » nel database attivo. È stata richiesta
+conferma dell'eventuale rinomina in « RH nuovo »; non sono stati assunti equivalenti
+né esaminati al suo posto altri Space. Non è quindi verificata qui la cronologia
+presente nel suo snapshot, né la causa specifica delle due preview identiche.
+Il terzo FAIL e l'accettazione sul corpus reale rimangono aperti fino
+all'identificazione del contesto. Nessuna modifica di RH, RH 2 o snapshot approvati.
+
+Verifiche del correttivo: **108 test offline mirati PASS**, Ruff e controllo segreti
+dell'indice PASS. Nessuna Full Verification, chiamata Mistral o nuova lettura PDF.
+I test esercitano citazioni come unica evidenza temporale, assenza effettiva di date,
+ordinali composti in tre lingue, interruzione della lista e conservazione dei dettagli
+« deuxième » → « première », oltre a revoca/scadenza e isolamento esistenti.

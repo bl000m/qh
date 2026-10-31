@@ -132,3 +132,15 @@ def test_single_safe_document_synopsis_survives_scope_without_random_excerpts():
     assert preview.payload['recap']=={key:component[key] for key in ('title','text')}
     assert rows==frozen and 'document_recaps' not in preview.payload
     assert rows[1].content['text'] not in json.dumps(question_payload(preview.payload))
+
+
+def test_fully_authorized_general_recap_wins_over_document_fallback():
+    service,rows,documents,scope=fixture()
+    frozen=deepcopy(rows)
+    full=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents,original_documents=documents)))
+    limited=run(service.prepare(str(uuid4()),scope,policy(semantic_documents=documents[:1],original_documents=documents[:1])))
+    general=next(c for row in rows for c in row.content.get('extraction',{}).get('recap_components',[]) if c['kind']=='general')
+    assert full.payload['recap']=={key:general[key] for key in ('title','text')}
+    assert full.payload['recap']!=limited.payload['recap']
+    assert 'document_recaps' not in full.payload and 'document_recaps' not in limited.payload
+    assert rows==frozen

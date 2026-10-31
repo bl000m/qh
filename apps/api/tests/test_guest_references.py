@@ -118,11 +118,10 @@ def test_french_second_then_first_stay_bound_to_original_rendered_list(tmp_path,
 
 
 @pytest.mark.parametrize('question,insufficient',[
-    ('Quelles sont les deux dernières expériences professionnelles ?',True),
     ('Pourquoi as-tu confondu Alpha et Beta dans ta réponse précédente ?',False),
     ('Tu as confondu Alpha et Beta, explique.',False),
 ])
-def test_missing_career_periods_and_previous_wording_do_not_call_model(tmp_path,monkeypatch,question,insufficient):
+def test_unavailable_previous_wording_does_not_call_model(tmp_path,monkeypatch,question,insufficient):
     monkeypatch.setattr(fixture,'PAYLOAD',dict(format='qh.disclosure/1',items=[dict(reference='R1',text='Activité CRM sans période ni employeur.')]))
     chat,calls,_,grant=fixture.setup(tmp_path,monkeypatch)
     value=asyncio.run(chat.ask('token',grant.snapshot_id,question))
@@ -146,3 +145,66 @@ def test_social_language_is_shared_and_never_paid(tmp_path,monkeypatch,question,
     value=asyncio.run(chat.ask('token',grant.snapshot_id,question))
     assert value['answer'].startswith(language_word) and value['answer']==conversational_reply(question)
     assert value['reference_aliases']==[] and not calls
+
+
+@pytest.mark.parametrize('quotes',[False,True])
+def test_chronology_reaches_selector_and_checks_approved_quotes(tmp_path,monkeypatch,quotes):
+    from copy import deepcopy
+    payload=deepcopy(PAYLOAD)
+    for item,period in zip(payload['items'],('2021–2022','2023–2025')):
+        item['text']='Expérience déclarée chez '+('Alpha' if item['reference']=='R1' else 'Beta')+'.'
+        if quotes:item['citations']=[dict(source='S1',quote='Période : '+period,redacted=False)]
+    chat,grant,packets=setup(tmp_path,monkeypatch)
+    monkeypatch.setattr(fixture,'PAYLOAD',payload)
+    chat.guest.snapshot.return_value=payload
+    value=asyncio.run(chat.ask('token',grant.snapshot_id,'Quelles sont les deux dernières expériences professionnelles ?'))
+    if quotes:
+        assert value['referents']==[['R2'],['R1']] and len(packets)==1
+        assert packets[0]['snapshot']['items'][0]['evidence_quotes']==['Période : 2021–2022']
+    else:
+        assert value['insufficient_context'] and not value.get('referents') and not packets
+    # A paid HTTP mock reservation proves the old pre-selector short circuit is gone.
+    assert chat.live.factory.ledger.read(lambda state:len(state['calls']))==(2 if quotes else 1)
+
+
+@pytest.mark.parametrize('question',[
+    'Peux-tu détailler la deuxième ? Puis : Et la première ?',
+    'Approfondisci la seconda e poi la prima',
+    'Elaborate on the second, then the first',
+])
+def test_compound_ordinals_never_start_arbitrary_selection(tmp_path,monkeypatch,question):
+    chat,grant,packets=setup(tmp_path,monkeypatch)
+    async def run():
+        value=await chat.ask('token',grant.snapshot_id,question)
+        assert value['reference_aliases']==[] and value['support_basis']=='dialogue'
+        await chat.ask('token',grant.snapshot_id,'Les deux dernières expériences ?')
+        before=len(packets)
+        value=await chat.ask('token',grant.snapshot_id,question)
+        assert value['reference_aliases']==[] and len(packets)==before
+    asyncio.run(run())
+    assert len(packets)==1
+
+
+def test_non_list_response_invalidates_earlier_list(tmp_path,monkeypatch):
+    chat,grant,packets=setup(tmp_path,monkeypatch)
+    async def run():
+        await chat.ask('token',grant.snapshot_id,'Les deux dernières expériences ?')
+        await chat.ask('token',grant.snapshot_id,'Pourquoi as-tu confondu Alpha et Beta dans ta réponse précédente ?')
+        value=await chat.ask('token',grant.snapshot_id,'Peux-tu détailler la deuxième ?')
+        assert value['support_basis']=='dialogue' and value['reference_aliases']==[]
+    asyncio.run(run())
+    assert len(packets)==1
+
+
+def test_single_subject_answer_does_not_resurrect_an_old_list(tmp_path,monkeypatch):
+    from unittest.mock import AsyncMock
+    chat,grant,packets=setup(tmp_path,monkeypatch)
+    async def run():
+        await chat.ask('token',grant.snapshot_id,'Les deux dernières expériences ?')
+        chat.live.answer_payload=AsyncMock(return_value=dict(answer='Une information.',reference_aliases=['R1'],
+            referents=[['R1']],support_basis='canonical',insufficient_context=False))
+        await chat.ask('token',grant.snapshot_id,'Un autre sujet nommé ?')
+        value=await chat.ask('token',grant.snapshot_id,'Et la première ?')
+        assert value['support_basis']=='dialogue' and value['reference_aliases']==[]
+        assert chat.live.answer_payload.await_count==1
+    asyncio.run(run())

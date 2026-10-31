@@ -26,15 +26,24 @@ def ordinal_focus(question, conversation):
     )
     value=question.strip().casefold().rstrip(' .!?')
     value=re.sub(r'^et (?:pour )?', '', value)
+    mentions=0
     for pattern,positions in patterns:
+        mentions += len(re.findall(r'(?<!\w)(?:'+pattern+r')(?!\w)',value))
         match=re.fullmatch(pattern,value)
         if match:
-            groups=next((turn for turn in reversed(conversation) if len(turn)>1),[])
+            groups=[]
+            for turn in reversed(conversation):
+                if not turn:break  # A non-list response invalidates the previous list.
+                if len(turn)>1:
+                    groups=turn
+                    break
             position=positions[match[1]]
             if len(groups)<=position:return []
             selected=groups[position]
             return selected if sum(set(group)==set(selected) for group in groups)==1 else []
-    return None
+    # Compound/unrecognized ordinal requests must not become a fresh selection.
+    compound=re.search(r'[?;:]|\b(?:puis|poi|then|ensuite|and|et)\b',value)
+    return [] if mentions>1 or (mentions and compound) else None
 
 
 class GuestReferenceHistory:
@@ -83,20 +92,14 @@ def clarification(question):
 
 
 def context_clarification(question, payload):
-    """Fail closed on missing temporal evidence or unavailable previous wording."""
+    """Do not reconstruct previous wording that is deliberately not retained.
+
+    Temporal sufficiency belongs to selection over current items AND approved quotes.
+    """
     value=question.casefold()
     previous=re.search(r'(?:ta|tes|votre|previous|tua|tue) (?:réponse|réponses|answer|risposta|risposte)',value)
     previous=previous or re.search(r'(?:tu|vous).{0,40}(?:confon|mélang)|(?:confon\w*|mélang\w*)-(?:tu|vous)|(?:you|hai).{0,40}(?:confus|said|detto)',value)
     challenge=re.search(r'pourquoi|comment|confon|confusion|mélang|incorrect|erreur|why|perché|confus',value)
     if previous and challenge:
         return clarification(question)
-    chronology=re.search(r'derni[eè]res? (?:deux )?expériences? professionnelles?|ultime (?:due )?esperienze (?:lavorative|professionali)|last two (?:jobs|work experiences|professional experiences)',value)
-    if chronology and not any(re.search(r'\b(?:19|20)\d{2}\b',item['text']) for item in payload['items']):
-        if 'ultime' in value:
-            answer='Le informazioni autorizzate non riportano periodi per ordinare le esperienze lavorative. Non posso identificare le ultime due senza inventare la cronologia. Attività e progetti restano consultabili separatamente.'
-        elif 'last two' in value:
-            answer='The authorized information has no periods for ordering the jobs. I cannot identify the last two without inventing a chronology. Activities and projects can be explored separately.'
-        else:
-            answer='Les informations autorisées ne donnent pas de périodes pour classer les expériences professionnelles. Je ne peux donc pas identifier les deux dernières sans inventer la chronologie. Les activités et projets restent consultables séparément.'
-        return dict(answer=answer,reference_aliases=[],referents=[],support_basis='insufficient',insufficient_context=True,simulated=False)
     return None
