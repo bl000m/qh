@@ -291,3 +291,16 @@ def test_compact_summary_removes_only_source_quotes_and_duplicate_provenance(mon
     def component(ref):return dict(title='Contexte proposé',text='Compréhension proposée, incertitude préservée.',supporting_refs=[ref])
     wire=dict(component('s001'),documents=dict(d1=component('s002'),d2=component('s003')))
     assert compact.expand(json.dumps(wire))==before.expand(json.dumps(wire))
+
+
+def test_general_recap_keeps_all_declared_supports_above_two_with_existing_bounds():
+    statements=['Projet Atlas proposé.', 'Décision Lumen adoptée.', 'Contrainte Neptune déclarée.']
+    protocol=recap.FinalRecapReferences(dict(documents=[],statements=statements,evidence=[]))
+    assert protocol.schema['properties']['supporting_refs']['maxItems']==len(statements)
+    assert recap.summary_schema()['properties']['supporting_statements']['maxItems']==100
+    value=dict(title='Projet et décisions',text='Présentation du projet, des décisions et des contraintes.',
+        supporting_refs=['s001','s002','s003'])
+    assert protocol.expand(json.dumps(value))['supporting_statements']==statements
+    for refs in (['s001','s001'],['s001','unknown']):
+        with pytest.raises(ValueError,match='Exact unambiguous'):
+            protocol.expand(json.dumps(dict(value,supporting_refs=refs)))

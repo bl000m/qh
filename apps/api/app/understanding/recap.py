@@ -118,7 +118,6 @@ labels, not evidence. A document's existence/name alone does not establish its c
 
 def summary_schema(documents=()):
     result = deepcopy(RECAP_SCHEMA)
-    result['properties']['supporting_statements']['maxItems'] = 2
     result['properties']['text']['pattern'] = r'^\s*\S+(?:\s+\S+){0,39}\s*$'
     if documents:
         component = deepcopy(RECAP_SCHEMA)
@@ -194,7 +193,7 @@ Do not copy private document details into the general overview. No new atomic it
 For the GENERAL title/text, introduce ONLY the subject and broad professional or
 other topical scope, in one or two short sentences and at most 40 words. Do not
 list document contents, salaries, contractual terms, dates or personal details.
-Choose AT MOST TWO exact statement refs that alone fully support this introduction.
+Choose all and only the exact statement refs necessary to support every assertion.
 All other statements belong in the detailed understanding, not in general support.
 The evidence entries link statement_ref to provenance_refs in the shared provenance
 catalogue. Preserve its speakers and turn_ids: they describe attribution, not extra
@@ -216,7 +215,6 @@ statements actually needed for its subject/scope; never list all refs by default
         self.packet['statements'] = [dict(ref=ref,text=text) for ref,text in self.statements.items()]
         self.schema = final_summary_schema(packet)
         self._references(self.schema, identifiers)
-        self.schema['properties']['supporting_refs']['maxItems'] = min(2, len(self.statements))
         if general_support_allowed is not None:
             eligible = [ref for ref,text in self.statements.items() if general_support_allowed(text)]
             if eligible:
