@@ -33,7 +33,20 @@ def test_undisclosed_support_quotations_do_not_hide_the_recap(quote):
     assert payload['recap']['title']==root(rows)['title'] and quote not in str(payload)
 
 
-@pytest.mark.parametrize('failure',['protected-text','masked-text','protected-support','shared-protected-quote',
+@pytest.mark.parametrize('excluded',['protected-support','shared-protected-quote'])
+def test_excluded_support_stays_excluded_without_hiding_the_recap(excluded):
+    rows=projected_documents()
+    recap=root(rows)
+    support=next(r for r in rows if r.revision_id==recap['support_revision_ids'][0])
+    if excluded=='protected-support':support.content['text']='Diagnostic medical prive.'
+    else:support.content['citations'][0]['quote']='Diagnostic medical prive.'
+    payload,report=OutboundDisclosureGuard().apply(rows,policy(knowledge_scope='context',include_quotes=True))
+    assert payload['recap']=={'title':recap['title'],'text':recap['text']}
+    assert support.revision_id in {e['revision_id'] for e in report['exclusions']}
+    assert 'Diagnostic' not in str(payload) and support.revision_id not in str(payload)
+
+
+@pytest.mark.parametrize('failure',['protected-text','masked-text','all-supports-protected',
     'foreign-support','wrong-version','missing-basis'])
 def test_real_restrictions_and_unverified_supports_still_block_recap(failure):
     rows=projected_documents()
@@ -42,9 +55,9 @@ def test_real_restrictions_and_unverified_supports_still_block_recap(failure):
     include_quotes=False
     if failure=='protected-text':recap['text']='Diagnostic medical prive.'
     elif failure=='masked-text':recap['title']+=' 06 12 34 56 78'
-    elif failure=='protected-support':support.content['text']='Diagnostic medical prive.'
-    elif failure=='shared-protected-quote':
-        support.content['citations'][0]['quote']='Diagnostic medical prive.';include_quotes=True
+    elif failure=='all-supports-protected':
+        for row in rows:
+            if row.revision_id in recap['support_revision_ids']:row.content['text']='Diagnostic medical prive.'
     elif failure=='foreign-support':recap['support_revision_ids']=[str(uuid4())]
     elif failure=='wrong-version':recap['format']='qh.context-recap/0'
     else:rows=[rows[0],*rows[2:]]

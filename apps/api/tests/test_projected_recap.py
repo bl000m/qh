@@ -18,12 +18,12 @@ def test_complete_recap_and_missing_recap_have_distinct_owner_status():
     assert 'recap' not in payload and report['recap_status']=='unavailable'
 
 
-def test_partial_basis_and_masked_summary_stay_closed_without_invented_fallback():
+def test_excluded_support_stays_excluded_and_masked_summary_stays_closed():
     rows=projected()
     rows[1].content['text']='Diagnostic médical privé.'
     payload,report=OutboundDisclosureGuard().apply(rows,policy())
-    assert 'recap' not in payload and report['recap_status']=='restricted'
-    assert payload['items'] and 'Diagnostic' not in str(payload)
+    assert report['recap_status']=='available'
+    assert payload['items'] and 'Diagnostic' not in str(payload) and rows[1].revision_id not in str(payload)
     rows=projected()
     rows[0].content['extraction']['recap']['text']='Contacter private@example.test.'
     rows[0].content['text']='Contacter private@example.test.'

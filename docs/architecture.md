@@ -33,7 +33,8 @@ the validated items (owner decision, 2026-10-31). Per-document synopses and the
 extraction-time support filter, inherited from PDF-scoped sharing, are removed;
 understanding no longer imports the Guard. Projection resolves recap supports to the
 canonical revisions of the same version, with full-basis presence; the Guard checks
-the recap's own text and requires every support to be a disclosed item. Undisclosed
+the recap's own text and requires at least one disclosed support; excluded supports
+stay excluded without hiding the recap (owner decision 2026-10-31). Undisclosed
 original quotations do not hide a recap; they are guarded per item when shared. No share-time inference, evidence trimming,
 semantic certification, source re-extraction or new synthesis service is added.
 Historical approvals remain frozen; see the current

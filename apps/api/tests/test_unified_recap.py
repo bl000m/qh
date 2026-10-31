@@ -132,13 +132,11 @@ def test_undisclosed_sensitive_citations_do_not_hide_the_canonical_recap(include
     payload, report = OutboundDisclosureGuard().apply(rows, policy(knowledge_scope='context', include_quotes=include_quotes))
     wire = json.dumps(payload, ensure_ascii=False)
     assert '06 12 34 56 78' not in wire and 'giulia.rossi@example.test' not in wire and rows == frozen
+    # Sharing quotations excludes the clause's support, which does not hide the recap.
+    assert payload['recap'] == SUMMARY and report['recap_status'] == 'available'
+    assert 'secret' not in wire and 'document_recaps' not in payload
     if include_quotes:
-        # Sharing quotations discloses the clause: that support is excluded, so the recap is withheld.
-        assert 'recap' not in payload and report['recap_status'] == 'restricted'
         assert {'recognised_high_risk_citation'} == {e['reason'] for e in report['exclusions']}
-    else:
-        assert payload['recap'] == SUMMARY and report['recap_status'] == 'available'
-        assert 'secret' not in wire and 'document_recaps' not in payload
 
 
 def test_regeneration_from_retained_pdf_sources_publishes_items_even_when_recap_is_invalid():

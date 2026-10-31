@@ -28,11 +28,12 @@ condivisione per PDF, sono rimossi; le versioni già persistite restano leggibil
 Owner, aperçu e guest riusano lo stesso résumé persistito. La Projection risolve i
 supporti dichiarati nelle revisioni canoniche della medesima versione, con base
 interamente presente. Il Guard verifica il testo divulgato (titolo e testo, senza
-maschere né termini sensibili riconosciuti) e che ogni supporto sia un item divulgato:
-un supporto escluso (testo sensibile, stato non ammesso, relazione pendente, o
-citazione protetta quando le citazioni sono condivise) blocca il résumé. Le citazioni
-originali non divulgate e le maschere sul testo di un supporto non lo bloccano: non
-lasciano il perimetro e il testo del résumé è controllato direttamente.
+maschere né termini sensibili riconosciuti) e che almeno un supporto sia un item
+divulgato. Decisione owner 2026-10-31: un supporto escluso (testo sensibile, stato non
+ammesso, relazione pendente, o citazione protetta quando le citazioni sono condivise)
+resta escluso, senza testo né identificativi, ma non blocca il résumé; lo blocca solo
+l'assenza di supporti divulgati o un testo non sicuro. Limite: il Guard è lessicale,
+una parafrasi senza termini riconosciuti non è rilevata, come già per gli item.
 I PDF originali rimangono una scelta esclusiva di consultazione/download.
 
 **Limite esplicito:** la risoluzione esatta dei supporti e delle citazioni non prova

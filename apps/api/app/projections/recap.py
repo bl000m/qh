@@ -3,12 +3,11 @@ from app.core.uum import RECAP_FORMAT, RECAP_PRESENTATION_VERSIONS
 
 
 def projected_recap(rows, anchors, redact, high_risk):
-    """Disclose the canonical recap when its own text is safe and no support is withheld.
+    """Disclose the canonical recap when its own text is safe and a support is disclosed.
 
-    Supports resolve to the exact canonical version and must all be disclosed items:
-    a support excluded by the Guard (sensitive text, ineligible state, dangling
-    relation) withholds the recap. Original citations are not part of the recap;
-    they are guarded with each item only when quotations are shared.
+    Supports resolve to the exact canonical version. Excluded supports stay excluded
+    (neither text nor identifiers leave the perimeter) without hiding the recap; the
+    recap is withheld only when no support is disclosed or its own text is unsafe.
     """
     disclosed = {a['revision_id'] for a in anchors}
     present = {row.revision_id for row in rows}
@@ -22,7 +21,7 @@ def projected_recap(rows, anchors, redact, high_risk):
         if (recap.get('format') == RECAP_FORMAT
                 and recap.get('presentation_version') in RECAP_PRESENTATION_VERSIONS
                 and _identifiers(basis) and _identifiers(support) and row.revision_id in basis
-                and set(support) <= set(basis) <= present and set(support) <= disclosed
+                and set(support) <= set(basis) <= present and set(support) & disclosed
                 and _safe_summary(recap.get('title'), recap.get('text'), redact, high_risk)):
             candidates.append(dict(title=recap['title'], text=recap['text']))
     # Do not arbitrarily choose between historical consolidated versions.

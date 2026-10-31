@@ -97,13 +97,14 @@ def test_legacy_empty_notice_approval_does_not_release_document_introduction_or_
     assert semantic.policy.semantic_documents==(documents[0],)
 
 
-@pytest.mark.parametrize('failure', ['sensitive-introduction','excluded-support','missing-basis'])
+@pytest.mark.parametrize('failure', ['sensitive-introduction','all-supports-excluded','missing-basis'])
 def test_introduction_is_not_disclosable_merely_because_it_is_general(failure):
     service,rows,documents,scope=fixture()
     if failure=='sensitive-introduction':
         general_recap(rows)['text']='Diagnostic médical privé.'
-    elif failure=='excluded-support':
-        rows[1].content['text']+=' Diagnostic médical privé.'
+    elif failure=='all-supports-excluded':
+        for row in rows:
+            row.content['text']+=' Diagnostic médical privé.'
     else:
         service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[1:]))
     for originals in ((),documents):
