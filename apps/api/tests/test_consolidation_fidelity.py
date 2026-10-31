@@ -39,7 +39,7 @@ def test_question_is_not_a_personal_fact_and_assistant_advice_is_not_adoption(de
     source, rows = asyncio.run(propose_selected_conversation(subject_id=str(uuid4()), context_id=str(uuid4()),
         conversation=conversation, extraction_key='fidelity-offline', policy=policy,
         provider=UumExtractionProvider(delegate, consolidate=True, with_recap=True), descriptor_version=3))
-    sent = delegate.generate.call_args.args[0]
+    sent = delegate.generate.call_args_list[0].args[0]
     prompt = sent.messages[0].content
     assert 'Questions are not declarations' in prompt
     assert 'unsolicited generic assistant recommendations' in prompt
@@ -60,4 +60,4 @@ def test_question_is_not_a_personal_fact_and_assistant_advice_is_not_adoption(de
             assert citation['turn_id'] == ('answer' if row is rows[2] else 'question')
     assert advice in source['content']  # Source intact; filler need not become an atomic item.
     assert len({c['source_revision_id'] for r in rows for c in r['content']['citations']}) == 1
-    delegate.generate.assert_awaited_once()
+    assert delegate.generate.await_count==2

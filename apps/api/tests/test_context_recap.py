@@ -32,7 +32,7 @@ def recipe():
     return details,output
 
 
-def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_recap():
+def test_one_generation_and_review_retain_full_details_and_version_bound_recap():
     details,output=recipe();frozen=deepcopy(output)
     delegate=Mock(generate=AsyncMock(return_value=GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(output)))))
     reference_replay(delegate)
@@ -45,7 +45,7 @@ def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_r
         conversation=conversation,extraction_key='recap-test',policy=policy,provider=provider,descriptor_version=3))
     original_hash=UnderstandingExtractor.source_hash(source)
     bound=recap.bind(provider.recap,rows,version)
-    summary=recap.from_version([dict(content=r['content']) for r in bound],dict(id=version,revision_ids=[r['id'] for r in bound]))
+    summary=recap.from_version(bound,dict(id=version,revision_ids=[r['id'] for r in bound]))
     assert summary['title']=='Préparation d’un risotto' and len(summary['text'].split())<=100
     assert '320 g' not in summary['text'] and '320 g' in bound[0]['content']['text']
     assert [r['content']['text'] for r in bound]==details and len(bound)==3
@@ -55,8 +55,8 @@ def test_one_engine_call_retains_full_details_exact_evidence_and_version_bound_r
         assert row['validation_state']=='proposed'
     assert UnderstandingExtractor.source_hash(source)==original_hash and output==frozen
     assert 'recap' not in rows[0]['content']['extraction']  # No mutation of the Engine result.
-    assert delegate.generate.await_count==1
-    system=delegate.generate.call_args.args[0].messages[0].content
+    assert delegate.generate.await_count==2
+    system=delegate.generate.call_args_list[0].args[0].messages[0].content
     assert 'not a transcript' in system and 'never to understanding.items' in system
     assert 'assistant explanations as user preferences' in system
 
@@ -136,7 +136,7 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
     asyncio.run(provider.generate(request))
     observer.assert_any_call('uum.authorized_passage_references', True)
     observer.assert_any_call('uum.recap_exact_statement_support', True)
-    sent = delegate.generate.call_args.args[0]
+    sent = delegate.generate.call_args_list[0].args[0]
     assert 'NEVER "Try **Carnaroli** rice."' in sent.messages[0].content
     field = sent.output_schema['properties']['recap']['anyOf'][0]['properties']['supporting_statements']
     assert 'never evidence[].quote' in field['description']
@@ -154,7 +154,7 @@ def test_recap_instruction_distinguishes_statement_text_from_original_evidence()
     observer.assert_any_call('uum.recap_exact_statement_support', False,
         'Invalid recap envelope or exact detailed statement support')
     assert original_quote not in str(observer.call_args)
-    assert delegate.generate.await_count == 2  # One per explicit request, no retry.
+    assert delegate.generate.await_count == 3  # One generation/review, then one rejected generation; no retry.
 
 
 def test_italian_subject_recap_stays_short_while_chat_receives_all_30_steps():
@@ -215,7 +215,7 @@ def test_recap_final_content_and_essential_attribution_offline(attributed):
         conversation=conversation, extraction_key='recap-final-content', policy=policy, provider=provider, descriptor_version=3))
     # Replays check the request and unchanged acceptance/preservation path. They
     # do not establish how a real model will follow the semantic instructions.
-    instructions = delegate.generate.call_args.args[0].messages[0].content
+    instructions = delegate.generate.call_args_list[0].args[0].messages[0].content
     assert 'final reusable result' in instructions and 'not the process that produced it' in instructions
     assert 'Ideally 1-3 short sentences' in instructions and 'No target word count or minimum' in instructions
     assert 'ONLY when indispensable to meaning' in instructions
@@ -224,7 +224,7 @@ def test_recap_final_content_and_essential_attribution_offline(attributed):
     assert rows[0]['content']['text'] == detailed and rows[0]['validation_state'] == 'proposed'
     citation = rows[0]['content']['citations'][0]
     assert citation['quote'] == source['content'][citation['start']:citation['end']] == original
-    assert output == frozen and conversation == conversation_before and delegate.generate.await_count == 1
+    assert output == frozen and conversation == conversation_before and delegate.generate.await_count == 2
 
 
 def test_heading_context_survives_as_employment_and_explicit_project_links():

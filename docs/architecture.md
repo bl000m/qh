@@ -24,6 +24,18 @@ service, central PolicyService, canonical PostgreSQL and native graph verificati
 Drafts are neither approved snapshots nor recipient grants; migration 0007 remains
 isolated-only and is not applied on the persistent VPS.
 
+## Canonical recap provenance review
+
+The existing UUM consolidation provider performs an independent semantic review
+of its one proposed recap before publication. It uses the same provider port,
+authorization and atomic accounting; it does not create another synthesis service.
+Private presentation-v4 metadata maps complete title/body coverage to canonical
+revision IDs and exact source-citation fingerprints. Projection rechecks these
+bindings locally, without inference or PDF hydration. Semantic entailment remains
+a probabilistic model assessment, explicitly distinct from structural validation
+and human confirmation. Historical approvals remain frozen; see the current
+[Product Contract](product/QH_PRODUCT_CONTRACT.md).
+
 ## Unified sharing V1 — owner decision, 2026-10-31
 
 New sharing projects the current unified Understanding through the existing Guard;

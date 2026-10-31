@@ -4,6 +4,44 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Provenance del résumé canonico — correttivo owner
+
+Il résumé rimane unico, libero nella formulazione e persistito con la versione
+canonica. La generazione non limita più a due i supporti: usa tutti e soli quelli
+necessari, entro i limiti tecnici già esistenti. Il contratto atomico UUM non cambia.
+Dopo la proposta del résumé, la stessa pipeline esegue una revisione semantica
+indipendente di titolo, testo e componenti documentali, tramite il medesimo provider
+Small autorizzato e contabilizzato. Non è una seconda sintesi: il revisore non può
+riscrivere, correggere o completare il candidato, né recuperare altri documenti.
+Questo aggiunge un HTTP di revisione alla memorizzazione, senza retry automatico.
+Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
+
+Il server verifica deterministicamente che le porzioni dichiarate coprano tutti i
+caratteri non bianchi di titolo e testo, senza buchi o sovrapposizioni; ogni porzione
+ha supporti esatti, citazioni originali appartenenti a tali supporti e nessun supporto
+inutilizzato. Un giudizio negativo o una struttura/evidenza non valida interrompe la
+pubblicazione canonica; non vengono accettati risultati parziali della revisione.
+
+**Limite esplicito:** entailment, granularità delle affermazioni, attribuzione e
+minimalità semantica sono valutazioni probabilistiche del modello indipendente,
+con possibili falsi positivi e falsi negativi. Gli span e le citazioni esatte non
+sono una prova logica del significato. La revisione non conferma conoscenza umana,
+non garantisce verità assoluta e non sostituisce l'approvazione della disclosure.
+
+Le nuove versioni di presentazione v4 conservano mapping affermazione → revisioni
+necessarie → citazioni originali verificabili e hash del testo/revisione. Owner,
+aperçu e guest riusano lo stesso résumé. Il Guard controlla testo, tutti i supporti
+e le citazioni effettive, presenza della base e appartenenza alla versione; un
+item protetto estraneo ai supporti non blocca automaticamente quel résumé. Una
+restrizione in un supporto o citazione necessari continua invece a bloccarlo.
+I PDF originali rimangono una scelta esclusiva di consultazione/download.
+
+Lo storico v2/v3 resta leggibile dall'owner senza migrazione o attestazioni nuove.
+Nelle nuove condivisioni V1, un résumé storico senza revisione rimane sul fallback
+sicuro, anche se il testo sembra innocuo. Le compatibilità delle policy storiche e
+gli snapshot già approvati restano immutati. Nessun aggiornamento o rigenerazione
+automatica degli Space reali segue dal correttivo.
+
 ## Condivisione V1 del Context Space — decisione owner, 2026-10-31
 
 Questa decisione sostituisce, per **nuove condivisioni**, la politica storica che
@@ -30,7 +68,8 @@ salari, negoziazioni o budget: non condividere lo Space se tali fatti devono res
 privati. Gli originali scaricabili possono contenere ulteriori dati non filtrati.
 
 Il recap globale canonico è riutilizzato solo se interamente ammesso dai controlli
-esistenti sui supporti, sulla base e sul testo. Altrimenti la V1 mostra il fallback
+sul testo e sulla provenance; per le versioni v4 revisionate valgono i supporti
+effettivi e i controlli di integrità della base descritti sopra. Altrimenti la V1 mostra il fallback
 privato: nessuna inferenza al caricamento, collage di estratti o promozione del
 recap di un solo PDF a résumé dell'intero contesto. I fatti ammessi restano interrogabili.
 

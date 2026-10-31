@@ -35,6 +35,8 @@ ATOMIC_METRICS = {'atomic_items','atomic_text_chars','passage_references','evide
 def output_phase(response):
     try:
         value=json.loads(response['choices'][0]['message']['content'])
+        if isinstance(value,dict) and value.get('format')=='qh.recap-claim-review/1':
+            return 'recap_review'
         if 'understanding' in value and 'recap' in value:
             return 'extraction_summary'
         if 'items' in value or 'understanding' in value:
@@ -49,7 +51,7 @@ def output_phase(response):
 def call_metrics(metrics, response):
     result={k:v for k,v in metrics.items() if k not in ATOMIC_METRICS}
     # Summary HTTP responses do not inherit the preceding extraction's counters.
-    if output_phase(response)=='summary':
+    if output_phase(response) in ('summary','recap_review'):
         result={k:v for k,v in result.items() if k not in SOURCE_METRICS|ATOMIC_METRICS}
         result['atomic_items']=0
     result.update(uum_output_metrics(response))
@@ -71,12 +73,12 @@ def validation_rounds(checks):
 def operation_totals(calls):
     keys=('input_tokens','output_tokens','request_message_chars','atomic_items','source_chars')
     extraction=[call for call in calls if call['phase'] in ('extraction','extraction_summary')]
-    result=dict(calls=len(calls),blocks=len(extraction),summaries=sum(c['phase'] in ('summary','extraction_summary') for c in calls))
+    result=dict(calls=len(calls),blocks=len(extraction),summaries=sum(c['phase'] in ('summary','extraction_summary') for c in calls),reviews=sum(c['phase']=='recap_review' for c in calls))
     for key in keys:
         selected=extraction if key in ('atomic_items','source_chars') else calls
         values=[call['metrics'].get(key) for call in selected]
         result[key]=sum(values) if values and all(v is not None for v in values) else None
-    for name,phase in (('extraction_ms','extraction'),('summary_ms','summary'),('combined_ms','extraction_summary')):
+    for name,phase in (('extraction_ms','extraction'),('summary_ms','summary'),('combined_ms','extraction_summary'),('recap_review_ms','recap_review')):
         values=[call['metrics'].get('provider_ms') for call in calls if call['phase']==phase]
         result[name]=sum(values) if all(v is not None for v in values) else None
     return result
@@ -86,7 +88,7 @@ def diagnostic_view(record):
     if record['kind']!='uum':return record
     response=record.get('raw_response')
     warnings=record.get('warnings',[])
-    if output_phase(response)=='summary':
+    if output_phase(response) in ('summary','recap_review'):
         warnings=[w for w in warnings if w=='output_tokens_over_3x_input']
     return dict(record,metrics=call_metrics(record.get('metrics',{}),response),
         warnings=warnings,call_phase=output_phase(response),validation_rounds=validation_rounds(record['checks']),

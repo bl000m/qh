@@ -20,12 +20,15 @@ from tests.test_modular_recap import generate_documents, projected
 from tests.test_projection_drafts import run
 
 
-def fixture():
+def fixture(*, historical=True):
     bound, _, originals, _ = generate_documents()
     documents = tuple(s['id'] for s in originals)
     base = projected()[0]
     rows = [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
         provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in r['provenance'])) for r in bound]
+    if historical:
+        from tests.recap_review_helpers import historical_contents
+        historical_contents([r.content for r in rows])
     rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Dialogue independent.'),provenance=()))
     rows.append(replace(base,revision_id=str(uuid4()),item_id=str(uuid4()),content=dict(text='Mixed CV and contract.'),
         provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=s) for s in documents[:2])))
@@ -191,7 +194,7 @@ def test_number_redaction_preserves_only_calendar_year_intervals(text,masked):
 
 
 def test_context_knowledge_and_canonical_recap_are_independent_of_original_downloads():
-    service,rows,documents,scope=fixture();frozen=deepcopy(rows)
+    service,rows,documents,scope=fixture(historical=False);frozen=deepcopy(rows)
     previews=[run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',
         original_documents=originals,include_quotes=True))) for originals in ((),documents[1:2],documents)]
     assert all(p.payload==previews[0].payload for p in previews)

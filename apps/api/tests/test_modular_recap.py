@@ -39,6 +39,9 @@ def generate_documents(long=False, invalid_support=False):
 
     async def respond(request):
         packet=json.loads(request.messages[-1].content);packets.append(packet)
+        if 'candidates' in packet:
+            from tests.recap_review_helpers import review_reply
+            return GenerationResult(message=review_reply(request))
         if 'statements' in packet:
             assert packet['documents'][0]['turn_ids']
             schema = request.output_schema
@@ -78,13 +81,16 @@ def generate_documents(long=False, invalid_support=False):
     before=deepcopy(rows)
     bound=recap.bind(provider.recap,rows,version,originals)
     assert rows==before and [r['content']['text'] for r in bound]==TEXTS
-    assert delegate.generate.await_count==(len(provider.parts)+1 if long else 1)
+    assert delegate.generate.await_count==(len(provider.parts)+2 if long else 2)
     assert all('source_revision_id' not in doc for packet in packets for doc in packet.get('documents',[]))
     return bound,version,originals,provider
 
 
-def projected_documents():
+def projected_documents(*, historical=True):
     rows,_,_,_=generate_documents()
+    if historical:
+        from tests.recap_review_helpers import historical_contents
+        historical_contents([r['content'] for r in rows])
     base=projected()[0]
     return [replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content']) for r in rows]
 
@@ -234,6 +240,9 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
 
     async def respond(request):
         packet = json.loads(request.messages[-1].content)
+        if 'candidates' in packet:
+            from tests.recap_review_helpers import review_reply
+            return GenerationResult(message=review_reply(request))
         atomic = dict(format='qh.atomic-understanding/1', items=[dict(text=t, primary_dimension=None,
             evidence=[dict(quote=t)]) for t in TEXTS])
         output = dict(format=recap.FORMAT, understanding=atomic, recap=summary)
@@ -252,7 +261,7 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
 
     repository.publish.side_effect = publish
     result = asyncio.run(service.consolidate(who, scope, str(uuid4())))
-    assert len(result['recap']['documents']) == 3 and delegate.generate.await_count == 1
+    assert len(result['recap']['documents']) == 3 and delegate.generate.await_count == 2
     repository.import_document.assert_not_called()
     assert batch == frozen and sources[retained['id']] == retained
     # A failed explicit regeneration must never publish an unvalidated replacement.
@@ -262,7 +271,7 @@ def test_regenerate_modular_recaps_from_retained_pdf_sources_without_reimport():
         asyncio.run(service.consolidate(who, scope, str(uuid4())))
     repository.publish.assert_not_awaited()
     repository.fail.assert_awaited_once()
-    assert batch == frozen and delegate.generate.await_count == 2
+    assert batch == frozen and delegate.generate.await_count == 3
 
 
 def test_compact_summary_removes_only_source_quotes_and_duplicate_provenance(monkeypatch):

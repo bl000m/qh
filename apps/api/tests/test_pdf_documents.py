@@ -93,10 +93,13 @@ def test_long_document_all_parts_are_sent_then_validated_recap():
     packets=[]
     async def generate(request):
         packet=json.loads(request.messages[-1].content)
+        if 'candidates' in packet:
+            from tests.recap_review_helpers import review_reply
+            return GenerationResult(message=review_reply(request))
         if 'statements' in packet:
-            assert packet['evidence'][0]['passages'][0]['speakers']==['unverified PDF']
-            assert packet['evidence'][0]['passages'][0]['quote'] in text
-            out=dict(title='Document',text='Proposed document information.',supporting_statements=[packet['statements'][0]])
+            assert packet['provenance'][0]['speakers']==['unverified PDF']
+            assert 'quote' not in packet['provenance'][0]
+            out=dict(title='Document',text='Proposed document information.',supporting_refs=[packet['statements'][0]['ref']])
         else:
             packets.append(packet)
             out=dict(format='qh.atomic-understanding.refs/1',items=[dict(text='Part '+str(len(packets)),
@@ -125,6 +128,7 @@ def test_empty_pages_are_retained_without_invalid_zero_length_engine_turns():
 def test_empty_pdf_understanding_is_not_reported_as_semantic_success(monkeypatch):
     service,who,scope,repo,_,batch=fixture()
     batch['intake'][0]['source_revision_id']=str(uuid4())
+    batch['intake'][0]['document_turns']=[dict(id='page:1',speaker='unverified PDF',text=batch['intake'][0]['text'])]
     monkeypatch.setattr('app.understanding.consolidation.propose_selected_conversation',
         AsyncMock(return_value=({'id':str(uuid4())},())))
     with pytest.raises(DocumentInvalid,match='originaux restent conservés'):

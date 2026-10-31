@@ -36,13 +36,19 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
         primary_dimension=None, evidence=[dict(quote=quote)])])
     def generate(request):
         packet = json.loads(request.messages[-1].content)
-        content = json.dumps(reference_output(consolidation_output(wire), packet))
+        if 'candidates' in packet:
+            from tests.recap_review_helpers import review_reply
+            content=review_reply(request).content
+        else:
+            content = json.dumps(reference_output(consolidation_output(wire), packet))
         diagnostic.begin()
         diagnostic.capture(raw_call(request, content))
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT, content=content))
     ai._provider.return_value = Mock(generate=AsyncMock(side_effect=generate))
     result = asyncio.run(service.consolidate(who, scope))
-    record, = store.records(subject=who.subject_id, scope=scope)
+    records=store.records(subject=who.subject_id, scope=scope)
+    record=max(records,key=lambda r:len(r['operation']['calls']))
+    extraction=next(r for r in records if len(r['operation']['calls'])==1)
     metrics = record['metrics']
     assert record['outcome']=='accepted' and result['recap'] and repo.publish.await_count==1
     assert metrics['input_tokens']==1000 and metrics['output_tokens']==5000
@@ -50,9 +56,11 @@ def test_consolidation_metrics_warnings_are_private_and_do_not_block_publication
     assert record['operation']['totals']['validation_ms']>0
     assert record['operation']['totals']['persistence_ms']>=0
     assert record['operation']['totals']['combined_ms']==125
-    assert metrics['atomic_items']==metrics['passage_references']==1
-    assert metrics['source_chars']==metrics['source_disclosed_chars']>0
-    assert metrics['source_tokens'] is None and metrics['request_schema_chars']>0
+    assert extraction['metrics']['atomic_items']==extraction['metrics']['passage_references']==1
+    assert extraction['metrics']['source_chars']==extraction['metrics']['source_disclosed_chars']>0
+    assert metrics['atomic_items']==0 and 'source_chars' not in metrics
+    assert record['operation']['totals']['reviews']==1 and record['operation']['totals']['atomic_items']==1
+    assert metrics['request_schema_chars']>0
     content = record['raw_response']['choices'][0]['message']['content']
     assert metrics['output_json_chars']==len(content) and metrics['output_json_bytes']==len(content.encode())
     assert record['warnings']==['output_tokens_over_3x_input']
@@ -160,3 +168,17 @@ def test_phase_durations_accumulate_only_in_operation_and_never_double_count_htt
     calls=[dict(phase=phase,metrics={'provider_ms':ms}) for phase,ms in [('extraction',100),('extraction',200),('summary',50)]]
     totals=operation_totals(calls)
     assert totals['extraction_ms']==300 and totals['summary_ms']==50 and totals['combined_ms']==0
+
+
+
+def test_claim_review_has_separate_phase_and_never_inherits_source_counters():
+    from app.chat.diagnostic_summary import output_phase,call_metrics,operation_totals
+    def response(value):return dict(choices=[dict(message=dict(content=json.dumps(value)))])
+    assert output_phase(response([]))=='unknown'
+    review=response(dict(format='qh.recap-claim-review/1',reviews={}))
+    assert output_phase(review)=='recap_review'
+    metrics=call_metrics(dict(atomic_items=20,source_chars=1000,input_tokens=400,provider_ms=25),review)
+    assert metrics['atomic_items']==0 and 'source_chars' not in metrics
+    totals=operation_totals([dict(phase='recap_review',metrics=metrics)])
+    assert totals['reviews']==1 and totals['blocks']==totals['summaries']==0
+    assert totals['recap_review_ms']==25 and totals['input_tokens']==400

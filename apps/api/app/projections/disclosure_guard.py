@@ -72,9 +72,9 @@ class OutboundDisclosureGuard:
                     masks.append(dict(reference=reference, rules=sorted(set(redactions))))
         items, anchors, masks = self._relations(items, anchors, masks, relations, exclusions)
         payload = dict(format=GUARD_VERSION, items=items)
-        recap, document_recaps = projected_components(revisions, anchors, masks, redact, HIGH_RISK)
+        recap, document_recaps = projected_components(revisions, anchors, masks, redact, HIGH_RISK,require_claim_review=policy.knowledge_scope=='context')
         if recap is None:
-            recap = projected_recap(revisions, anchors, masks, redact, HIGH_RISK, items)
+            recap = projected_recap(revisions, anchors, masks, redact, HIGH_RISK, items,require_claim_review=policy.knowledge_scope=='context')
         if document_recaps:
             payload['document_recaps'] = document_recaps
         if recap:
