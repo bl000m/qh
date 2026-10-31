@@ -10,16 +10,10 @@ from app.api.guest import GuestRoute,bound,proof
 from app.api.security import authenticated_subject, authenticated_chat_identity
 from app.projections.disclosure import AccessPolicy,LIVE_PROVIDER
 from app.projections.guest import GuestUnavailable
-from app.projections.drafts import RevisionKey, ProjectionConflict
+from app.projections.drafts import ProjectionConflict
 from app.chat.snapshot_answer import public_answer
 
 router=APIRouter(route_class=GuestRoute,tags=['governed sharing'])
-
-
-class ExclusionInput(BaseModel):
-    model_config=ConfigDict(extra='forbid')
-    item_id:UUID
-    revision_id:UUID
 
 
 class PolicyInput(BaseModel):
@@ -29,7 +23,7 @@ class PolicyInput(BaseModel):
     expires_at:datetime
     allow_update_proposals:StrictBool=False
     documents:list[UUID]=Field(default_factory=list,max_length=100)
-    excluded:list[ExclusionInput]=Field(default_factory=list,max_length=100)
+    knowledge_scope:Literal['context']
 
 
 class ApprovalInput(BaseModel):
@@ -74,9 +68,8 @@ async def prepare(scope:UUID,document:PolicyInput,request:Request,subject=Depend
         expires_at=document.expires_at,rights=('READ','ASK_AI'),provider=provider,
         allow_update_proposals=document.allow_update_proposals,
         original_documents=tuple(map(str,document.documents)),
-        semantic_documents=tuple(map(str,document.documents)),
-        include_proposed=True,include_quotes=False,
-        excluded=tuple(RevisionKey(item_id=str(k.item_id),revision_id=str(k.revision_id)) for k in document.excluded))
+        knowledge_scope=document.knowledge_scope,
+        include_proposed=True,include_quotes=False)
     return preview_view(await owner_service(request).prepare(subject,str(scope),policy))
 
 

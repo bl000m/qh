@@ -86,7 +86,7 @@ def test_guest_can_ask_but_cannot_read_snapshot_items_or_internal_metadata_and_e
             assert private not in text
         assert 'Jupyter Notebook' in result.json()['answer']
         sent=json.loads(provider.generate.call_args.args[0].messages[1].content)['snapshot']
-        assert sent==question_payload(payload) and set(sent['items'][0])=={'reference','text'}
+        assert sent==question_payload(payload) and set(sent['items'][0])=={'reference','text','evidence_quotes'}
         now[0]+=timedelta(hours=1)
         assert c.get('/guest/session').status_code==401
         assert c.post('/guest/ask',json=dict(question='Encore ?')).status_code==401
@@ -97,7 +97,7 @@ def test_three_field_share_automatically_uses_current_knowledge_and_owner_previe
     app, owner, scope, _, _, provider, sharing, _ = setup()
     with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test'}) as c:
         prepared=c.post(f'/context-spaces/{scope}/sharing/previews',headers={'Authorization':'Bearer owner'},
-            json=dict(recipient_email='invite@example.test',purpose='Préparer un atelier',expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()))
+            json=dict(knowledge_scope='context',recipient_email='invite@example.test',purpose='Préparer un atelier',expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()))
         assert prepared.status_code==201
         policy=sharing.prepare.call_args.args[2]
         assert policy.rights==('ASK_AI','READ') and policy.include_proposed and not policy.include_quotes
@@ -113,16 +113,17 @@ def test_three_field_share_automatically_uses_current_knowledge_and_owner_previe
 
 
 @pytest.mark.parametrize('count', [0,1,3])
-def test_one_document_selection_grants_both_knowledge_and_original_download(count):
+def test_document_selection_only_grants_original_download(count):
     app,owner,scope,_,_,provider,sharing,_=setup()
     documents=[uid() for _ in range(3)]
     app.state.services=replace(app.state.services,consolidation=Mock(documents=AsyncMock(return_value=[dict(source_revision_id=d) for d in documents])))
-    request=dict(recipient_email='invite@example.test',purpose='Consultation',documents=documents[:count],
+    request=dict(knowledge_scope='context',recipient_email='invite@example.test',purpose='Consultation',documents=documents[:count],
         expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat())
     with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test','Authorization':'Bearer owner'}) as client:
         assert client.post(f'/context-spaces/{scope}/sharing/previews',json=request).status_code==201
         policy=sharing.prepare.call_args.args[2]
-        assert policy.original_documents==policy.semantic_documents==tuple(documents[:count])
+        assert policy.original_documents==tuple(documents[:count])
+        assert policy.knowledge_scope=='context' and not policy.semantic_documents and not policy.excluded
         assert client.post(f'/context-spaces/{scope}/sharing/previews',json=dict(request,original_documents=[])).status_code==400
         assert client.post(f'/context-spaces/{scope}/sharing/previews',json=dict(request,documents=[uid()])).status_code!=201
     provider.generate.assert_not_awaited()
@@ -143,7 +144,7 @@ def test_owner_question_preview_uses_verified_owner_guard_and_only_minimized_dat
     def response(request):
         packet=json.loads(json.loads(request.content)['messages'][1]['content'])
         assert packet==dict(snapshot=question_payload(payload),question='Quel outil ?')
-        assert 'ORIGINAL-ONLY' not in request.content.decode()
+        assert packet['snapshot']['items'][0]['evidence_quotes']==['ORIGINAL-ONLY']  # Already approved quote, never source hydration.
         return httpx.Response(200,json=dict(model='mistral-small-2603',usage=dict(prompt_tokens=100,completion_tokens=30),
             choices=[dict(finish_reason='stop',message=dict(content=json.dumps(dict(answer='Utiliser Jupyter Notebook.',
                 reference_aliases=['R1'],insufficient_context=False,support_basis='canonical'))))]))
@@ -195,7 +196,7 @@ def test_update_permission_roundtrips_without_granting_guest_write_access(allowe
     app, _, scope, _, _, _, sharing, _ = setup()
     with TestClient(app, base_url='https://qh.example.test', headers={'Origin':'https://qh.example.test'}) as client:
         result = client.post(f'/context-spaces/{scope}/sharing/previews', headers={'Authorization':'Bearer owner'},
-            json=dict(recipient_email='invite@example.test', purpose='Consultation', allow_update_proposals=allowed,
+            json=dict(knowledge_scope='context',recipient_email='invite@example.test', purpose='Consultation', allow_update_proposals=allowed,
                 expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()))
         assert result.status_code == 201
         policy = sharing.prepare.call_args.args[2]
@@ -206,3 +207,14 @@ def test_update_permission_roundtrips_without_granting_guest_write_access(allowe
             assert 'allow_update_proposals' not in policy.wire()  # Retained fingerprint compatibility.
         client.cookies.set(COOKIE, 'synthetic-verified-cookie')
         assert client.post('/guest/proposals', json=dict(conversation='Untrusted guest contribution')).status_code == 404
+
+
+
+def test_new_share_requires_explicit_context_scope_and_rejects_abandoned_selection_fields():
+    app,_,scope,_,_,_,sharing,_=setup()
+    request=dict(recipient_email='invite@example.test',purpose='Consultation',
+        expires_at=(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat())
+    with TestClient(app,base_url='https://qh.example.test',headers={'Origin':'https://qh.example.test','Authorization':'Bearer owner'}) as client:
+        for invalid in (request,dict(request,knowledge_scope='documents'),dict(request,knowledge_scope='context',excluded=[])):
+            assert client.post(f'/context-spaces/{scope}/sharing/previews',json=invalid).status_code==400
+    sharing.prepare.assert_not_awaited()

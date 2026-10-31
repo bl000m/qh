@@ -1,4 +1,4 @@
-"""Offline sharing service/Guard/snapshot checks; no SQL or paid provider."""
+"""Unified sharing plus retained document-scoped approval compatibility; no paid provider."""
 from copy import deepcopy
 from dataclasses import replace
 import json
@@ -40,7 +40,7 @@ def fixture():
 
 
 @pytest.mark.parametrize('selected,expected',[((),[3]),((0,),[0,3]),((0,1,2),[0,1,2,3,4])])
-def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_canonical(selected,expected):
+def test_legacy_document_scope_requires_all_sources_then_applies_guard_and_preserves_canonical(selected,expected):
     service,rows,documents,scope=fixture();frozen=deepcopy(rows)
     access=policy(semantic_documents=tuple(documents[i] for i in selected),original_documents=tuple(documents[i] for i in selected))
     preview=run(service.prepare(str(uuid4()),scope,access))
@@ -58,7 +58,7 @@ def test_document_scope_requires_all_sources_then_applies_guard_and_preserves_ca
 
 
 @pytest.mark.parametrize('originals', [False, True])
-def test_empty_notice_approval_does_not_release_document_introduction_or_call_ai(originals):
+def test_legacy_empty_notice_approval_does_not_release_document_introduction_or_call_ai(originals):
     service,rows,documents,scope=fixture()
     service.drafts.resolve.return_value=SimpleNamespace(revisions=tuple(rows[:3]))
     owner=str(uuid4());access=policy(original_documents=(documents[0],) if originals else ())
@@ -122,7 +122,7 @@ def test_exact_policy_roundtrip_foreign_documents_and_later_uploads():
     assert first.payload==frozen and first.policy.semantic_documents==documents
 
 
-def test_single_safe_document_synopsis_survives_scope_without_random_excerpts():
+def test_legacy_single_safe_document_synopsis_survives_scope_without_random_excerpts():
     service,rows,documents,scope=fixture()
     access=policy(semantic_documents=(documents[0],),original_documents=(documents[0],))
     frozen=deepcopy(rows)
@@ -188,3 +188,33 @@ def test_number_redaction_preserves_only_calendar_year_intervals(text,masked):
     assert bool(rules)==masked
     assert (result!=text)==masked
     assert ('[MASQUÉ]' in result)==masked
+
+
+def test_context_knowledge_and_canonical_recap_are_independent_of_original_downloads():
+    service,rows,documents,scope=fixture();frozen=deepcopy(rows)
+    previews=[run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',
+        original_documents=originals,include_quotes=True))) for originals in ((),documents[1:2],documents)]
+    assert all(p.payload==previews[0].payload for p in previews)
+    assert all(p.report['document_scope_version']==3 for p in previews)
+    assert previews[0].payload['semantic_document_count']==len(documents)
+    for row in rows[:2]:
+        assert row.content['text'] in [item['text'] for item in previews[0].payload['items']]
+    assert previews[0].payload['recap'] and rows==frozen
+    assert any(e['reason']=='recognised_high_risk' for e in previews[0].report['exclusions'])
+    assert rows[-1].content['text'] not in json.dumps(question_payload(previews[0].payload))
+    assert all(item.get('citations') for item in previews[0].payload['items'][:3])
+    access=previews[0].policy
+    assert access.wire()['knowledge_scope']=='context' and 'semantic_documents' not in access.wire()
+    assert AccessPolicy.from_wire(access.wire())==access
+    with pytest.raises(ValueError):policy(knowledge_scope='context',semantic_documents=documents)
+
+
+
+def test_context_sharing_uses_private_fallback_instead_of_promoting_one_document_synopsis():
+    service,rows,documents,scope=fixture()
+    rows[1].content['text']+=' Identifiant : 123456789.'
+    for originals in ((),documents):
+        preview=run(service.prepare(str(uuid4()),scope,policy(knowledge_scope='context',original_documents=originals)))
+        assert 'recap' not in preview.payload and 'document_recaps' not in preview.payload
+        assert preview.report['recap_status']=='restricted'
+        assert rows[0].content['text'] in [i['text'] for i in preview.payload['items']]

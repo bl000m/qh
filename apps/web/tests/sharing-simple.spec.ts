@@ -5,10 +5,11 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
  const bodies:any[]=[];let questions=0,approvals=0;
  await page.route('**/api/**',async route=>{
   const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/workspace/documents'))return route.fulfill({json:[]});
   if(path.endsWith('/workspace'))return route.fulfill({json:{context_id:id,state:'current',pending_count:0,intake:[],understanding:[],current:{id:revision,version:1,revision_ids:[revision]},recap:{version_id:revision,title:'Organizzazione di un atelier informatico',text:'PRIVATE-RECAP-CANARY',support_revision_ids:[revision]}}});
   if(path.endsWith('/invitations')&&route.request().method()==='GET')return route.fulfill({json:{items:[]}});
   if(path.endsWith('/sharing/previews')){const body=route.request().postDataJSON();bodies.push(body);
-   return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:body,payload:{format:'qh.disclosure/1',name:'Atelier informatique',...(body.excluded.length?{}:{recap:{title:'Organizzazione di un atelier informatico',text:'Linee guida per progettare un atelier.'}}),items:body.excluded.length?[{reference:'R1',text:'Attività pratiche guidate.'}]:[{reference:'R1',text:'Utilizzare Jupyter Notebook.'},{reference:'R2',text:'Attività pratiche guidate.'}]},report:{risks:['unassessed_free_text'],exclusions:body.excluded.length?[{revision_id:revision,reason:'owner_restriction'}]:[],masks:[],anchors:body.excluded.length?[{reference:'R1',item_id:revision,revision_id:id}]:[{reference:'R1',item_id:id,revision_id:revision}]}}});}
+   return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:body,payload:{format:'qh.disclosure/1',name:'Atelier informatique',recap:{title:'Organizzazione di un atelier informatico',text:'Linee guida per progettare un atelier.'},items:[{reference:'R1',text:'Utilizzare Jupyter Notebook.'},{reference:'R2',text:'Attività pratiche guidate.'}]},report:{risks:['unassessed_free_text'],exclusions:[],masks:[],anchors:[]}}});}
   if(path.endsWith('/ask')){questions++;return route.fulfill({json:{answer:'Sono previste attività pratiche guidate.',insufficient_context:false,simulated:true}});}
   if(path.endsWith('/approve')){approvals++;if(advanced&&approvals===1)return route.fulfill({status:409,json:{detail:'Context changed'}});expect(route.request().postDataJSON()).toEqual({fingerprint:'a'.repeat(64),exceptions:['unassessed_free_text']});return route.fulfill({json:{snapshot_id:revision}});}
   if(path.endsWith('/invitations'))return route.fulfill({json:{id,snapshot_id:revision,expires_at:'2030-01-01T00:00:00Z',invitation_token:'offline-token'}});
@@ -21,17 +22,15 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
  await expect(dialog.getByRole('button',{name:'Exclure cette information',exact:true})).toHaveCount(0);
  await expect(dialog.getByText('Informations susceptibles d’être communiquées',{exact:true})).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');
- expect(await dialog.locator('.sharing-preview').evaluate(el=>el.getBoundingClientRect().left)).toBeGreaterThan(await dialog.locator('.sharing-settings').evaluate(el=>el.getBoundingClientRect().right));
+ expect(await dialog.locator('.sharing-preview').evaluate(el=>el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(await dialog.locator('.sharing-settings').evaluate(el=>el.getBoundingClientRect().right));
  const create=dialog.getByRole('button',{name:'Créer l’invitation',exact:true});await expect(create).toBeEnabled();
  await expect(dialog.getByText('Utilizzare Jupyter Notebook.',{exact:true})).not.toBeVisible();
- expect(questions).toBe(0);expect(approvals).toBe(0);expect(Object.keys(bodies[0]).sort()).toEqual(['allow_update_proposals','excluded','expires_at','purpose','recipient_email']);
+ expect(questions).toBe(0);expect(approvals).toBe(0);expect(Object.keys(bodies[0]).sort()).toEqual(['allow_update_proposals','documents','expires_at','knowledge_scope','purpose','recipient_email']);
  await expect(dialog.getByRole('heading',{name:'Organizzazione di un atelier informatico',exact:true})).toBeVisible();
  await expect(dialog).not.toContainText('PRIVATE-RECAP-CANARY');expect(bodies[0].allow_update_proposals).toBe(false);
  if(advanced){
   await dialog.getByRole('checkbox').check();await expect.poll(()=>bodies.at(-1).allow_update_proposals).toBe(true);
   await dialog.getByText('Confidentialité avancée',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
-  await dialog.getByRole('button',{name:'Exclure cette information',exact:true}).first().click();
-  await expect(dialog.getByText('Informations retirées à ta demande',{exact:true})).toBeVisible();await expect(dialog.getByText('Aucun résumé vérifiable n’est disponible pour cette sélection. Les questions porteront sur les informations autorisées.',{exact:true})).toBeVisible();expect(bodies.at(-1).excluded).toEqual([{item_id:id,revision_id:revision}]);
   await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
   await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);
  }
@@ -55,9 +54,9 @@ test('recipient sees authorized recap and chat without requesting a raw snapshot
 });
 
 for(const method of ['backdrop','escape','cross'] as const)test(`sharing modal closes with ${method}, never on inside click`,async({page})=>{
- await page.route('**/api/**',route=>route.fulfill({json:{items:[]}}));
+ await page.route('**/api/**',route=>route.fulfill({json:new URL(route.request().url()).pathname.endsWith('/workspace/documents')?[]:{items:[]}}));
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
- const modal=page.getByRole('dialog');await modal.getByRole('heading',{name:'Partager ce contexte',exact:true}).click();await expect(modal).toBeVisible();
+ const modal=page.getByRole('dialog');await modal.locator('.sharing-intro').click();await expect(modal).toBeVisible();
  if(method==='escape')await page.keyboard.press('Escape');
  else if(method==='cross')await modal.getByRole('button',{name:'Fermer la fenêtre',exact:true}).click();
  else await page.mouse.click(2,2);

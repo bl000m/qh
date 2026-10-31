@@ -63,9 +63,9 @@ class DisclosureService:
             rows = (await self.drafts.resolve(subject, scope, draft.id, draft.version)).revisions
         rows, document_exclusions = document_scope(rows, policy, selection.document_sources)
         payload, report = self.guard.apply(rows, policy)
-        payload=accessible_introduction(payload)
-        payload['semantic_document_count'] = len(policy.semantic_documents)
-        report['document_scope_version'] = 2
+        payload=accessible_introduction(payload,allow_document_fallback=policy.knowledge_scope is None)
+        payload['semantic_document_count'] = len(selection.document_sources) if policy.knowledge_scope=='context' else len(policy.semantic_documents)
+        report['document_scope_version'] = 3 if policy.knowledge_scope=='context' else 2
         report['recap_status'] = recap_status(rows, payload.get('recap'))
         title = redact(selection.name)[0]
         payload['name'] = title if not HIGH_RISK.search(title) else 'Contexte partagé'

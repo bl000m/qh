@@ -24,6 +24,16 @@ service, central PolicyService, canonical PostgreSQL and native graph verificati
 Drafts are neither approved snapshots nor recipient grants; migration 0007 remains
 isolated-only and is not applied on the persistent VPS.
 
+## Unified sharing V1 — owner decision, 2026-10-31
+
+New sharing projects the current unified Understanding through the existing Guard;
+PDF download permission no longer filters its semantic items. The explicit persisted
+`knowledge_scope: context` policy/report-v3 marker distinguishes these approvals
+from retained immutable document-scoped snapshots. Original downloads retain their
+separate allowlist. No UUM, storage schema, module boundary or approved ADR boundary
+changes; see the current [Product Contract](product/QH_PRODUCT_CONTRACT.md).
+Natural-language exclusions are deferred, with no new classifier or inference.
+
 ## Demo B sharing boundary — owner decision, 2026-10-25
 
 The later owner-approved [real guest Mistral increment](qh-40-mistral-guest.md)

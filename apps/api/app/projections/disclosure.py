@@ -29,11 +29,16 @@ class AccessPolicy:
     include_quotes: bool = False
     allow_update_proposals: bool = False
     provider: str | None = None
-    excluded: tuple[RevisionKey, ...] = ()
+    excluded: tuple[RevisionKey, ...] = ()  # Retained exact-item policies only.
     original_documents: tuple[str, ...] = ()
-    semantic_documents: tuple[str, ...] = ()
+    semantic_documents: tuple[str, ...] = ()  # Retained document-scoped approvals only.
+    knowledge_scope: str | None = None
 
     def __post_init__(self):
+        if self.knowledge_scope not in (None,'context'):
+            raise ValueError('Unknown knowledge scope')
+        if self.knowledge_scope=='context' and (self.semantic_documents or self.excluded):
+            raise ValueError('Context sharing has no additional semantic selection')
         email = self.recipient_email
         if (not isinstance(email, str) or len(email) > 254 or not email.isascii()
                 or re.fullmatch(r'[A-Za-z0-9.!#$%&\x27*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+', email) is None):
@@ -69,6 +74,10 @@ class AccessPolicy:
     def wire(self):
         data = {**asdict(self), 'expires_at': self.expires_at.isoformat()}
         # Preserve fingerprints of retained policies predating this optional choice.
+        if self.knowledge_scope is None:
+            data.pop('knowledge_scope')
+        else:
+            data.pop('excluded')
         if not self.allow_update_proposals:
             data.pop('allow_update_proposals')
         if not self.original_documents:
@@ -84,7 +93,7 @@ class AccessPolicy:
         data['rights'] = tuple(data['rights'])
         data['original_documents'] = tuple(data.get('original_documents', ()))
         data['semantic_documents'] = tuple(data.get('semantic_documents', ()))
-        data['excluded'] = tuple(RevisionKey(**k) for k in data['excluded'])
+        data['excluded'] = tuple(RevisionKey(**k) for k in data.get('excluded', ()))
         return cls(**data)
 
 

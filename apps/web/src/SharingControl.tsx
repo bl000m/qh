@@ -12,7 +12,7 @@ import {DocumentPermission,SharedDocumentsPreview} from './SharingDocuments';
 import {Icon} from './Ui';
 
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
-const reasonLabels:Record<string,string>={document_information_not_authorized:'Informations de documents non autorisées',owner_restriction:'Informations retirées à ta demande',recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
+const reasonLabels:Record<string,string>={recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
 const maskLabels:Record<string,string>={email:'Adresses email masquées',url:'Liens masqués',number:'Coordonnées ou numéros masqués',identifier:'Identifiants masqués'};
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('Consulter et interroger le contexte partagé');
@@ -22,7 +22,6 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  function loadDocuments(){setDocumentStatus('loading');void api.sharing<import('../../../packages/shared/src/context-space').SourceDocument[]>(scope,'workspace/documents').then(rows=>{setDocuments(rows);setDocumentStatus('ready');}).catch(()=>setDocumentStatus('error'));}
  useEffect(()=>{loadDocuments();},[api,scope]);
  const [expiry,setExpiry]=useState(()=>{const d=new Date(Date.now()+3600000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,19);});
- const [excluded,setExcluded]=useState<NonNullable<SharingInput['excluded']>>([]);
  const [previewRefresh,setPreviewRefresh]=useState(0);
  const [preparing,setPreparing]=useState(false);const generation=useRef(0);
  const [preview,setPreview]=useState<SharingPreview|null>(null),[link,setLink]=useState(''),[snapshot,setSnapshot]=useState('');
@@ -44,16 +43,14 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!purpose.trim()||!Number.isFinite(expires)||expires<=Date.now()){setPreparing(false);return;}
   setPreparing(true);
   const timer=setTimeout(()=>{
-   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),excluded,allow_update_proposals:allowUpdates,documents:originals};
+   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),knowledge_scope:'context',allow_update_proposals:allowUpdates,documents:originals};
    void api.sharing<SharingPreview>(scope,'sharing/previews','POST',body)
     .then(value=>{if(current===generation.current)setPreview(value);})
     .catch(e=>{if(current===generation.current)setError(sharingError(e));})
     .finally(()=>{if(current===generation.current)setPreparing(false);});
   },400);
   return()=>{clearTimeout(timer);generation.current++;};
- },[api,scope,email,purpose,expiry,excluded,allowUpdates,originals,previewRefresh]);
- function exclude(reference:string){const key=preview?.report.anchors?.find(a=>a.reference===reference);if(!key)return;
-  setExcluded(previous=>[...previous,{item_id:key.item_id,revision_id:key.revision_id}]);}
+ },[api,scope,email,purpose,expiry,allowUpdates,originals,previewRefresh]);
  function fail(error:unknown){setError(sharingError(error));if(error instanceof ApiError&&error.status===409){setPreview(null);setSnapshot('');}}
  async function testQuestion(){if(!preview||preparing||lock.current||!question.trim())return;const current=generation.current;lock.current=true;setBusy(true);setError('');setAnswer(null);
   try{const value=recipientAnswer(await api.sharing(scope,'sharing/previews/'+preview.id+'/ask','POST',{question}));if(current===generation.current)setAnswer(value);}
@@ -68,14 +65,13 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
   catch(e){setError(sharingError(e));}finally{lock.current=false;setBusy(false);}}
  const matches=preview&&preview.policy.recipient_email===email&&preview.policy.purpose===purpose
   &&JSON.stringify(preview.policy.original_documents??[])===JSON.stringify(originals)
-  &&JSON.stringify(preview.policy.semantic_documents??[])===JSON.stringify(originals)
+  &&preview.policy.knowledge_scope==='context'
   &&(preview.policy.allow_update_proposals??false)===allowUpdates
-  &&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime()
-  &&!excluded.some(k=>preview.report.anchors?.some(a=>a.item_id===k.item_id&&a.revision_id===k.revision_id));
+  &&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime();
  const exclusions=[...new Set(preview?.report.exclusions.map(x=>reasonLabels[x.reason]??'Informations exclues par les règles de protection'))];
  const masks=[...new Set(preview?.report.masks.flatMap(x=>x.rules.map(r=>maskLabels[r]??'Informations masquées')))];
  return <Modal title="Partager ce contexte" onClose={onClose} className="sharing-dialog" closeOnBackdrop>
- <p className="sharing-intro">Choisissez ce que votre destinataire pourra consulter.</p>
+ <p className="sharing-intro">Partagez la compréhension de ce contexte et choisissez les fichiers originaux accessibles.</p>
  <form onSubmit={(event:FormEvent)=>{event.preventDefault();void approve();}}>
  <div className="sharing-columns"><div className="sharing-settings"><fieldset disabled={busy||!!link}>
  <label>Email du destinataire<input type="email" required maxLength={254} placeholder="votre@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></label>
@@ -83,6 +79,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <h3>Droits accordés</h3>
  <div className="sharing-permission included"><span className="permission-tick" aria-hidden="true">✓</span><div><strong>Consulter et interroger le contexte</strong><span className="permission-badge">Toujours inclus</span><p>Le destinataire peut lire le résumé autorisé et poser des questions, sans modifier le contenu.</p></div></div>
  <label className="sharing-permission check"><input type="checkbox" checked={allowUpdates} onChange={e=>setAllowUpdates(e.target.checked)}/><span><strong>Autoriser les propositions de mise à jour</strong><span className="permission-description">Vous conservez le contrôle et la validation finale de toute modification.</span></span></label>
+ <section aria-label="Informations protégées automatiquement"><h3>Informations protégées automatiquement</h3><p>Masquage des emails, URL et formats reconnus de coordonnées, numéros ou identifiants. Exclusion des textes contenant les termes sensibles repérés (santé, sexualité, suicide, mots de passe et clés API).</p><p className="small muted">Ce filtre est limité : il ne garantit ni l’anonymat ni la protection du salaire, des négociations ou du budget. Ne partagez pas ce contexte si ces informations doivent rester privées.</p></section>
  <DocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
 
  </fieldset></div>
@@ -90,7 +87,7 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <div className="sharing-preview-card"><strong>{preview?.payload.name??name}</strong>
  <SharedRecap recap={matches?preview?.payload.recap:undefined}/>
  {(!matches||!preview?.payload.recap)&&<p className="muted">{preparing?'Préparation de l’aperçu autorisé…':matches?(preview?.payload.notice??'Le résumé général n’est pas disponible dans ce périmètre.'):'Indiquez le destinataire pour préparer l’aperçu autorisé.'}</p>}
- {matches&&!preview?.payload.notice&&<p className="small muted">{preview?.payload.semantic_document_count??0} document(s) autorisé(s) pour les questions</p>}
+ {matches&&!preview?.payload.notice&&<p className="small muted">{preview?.payload.semantic_document_count??0} document(s) contribuant à la connaissance</p>}
  <p className="small muted">Contenu filtré selon les règles de confidentialité</p></div>
  <SharedDocumentsPreview documents={documents} selected={originals}/>
  <p className="sharing-original-warning"><Icon name="info"/>Un PDF original peut contenir des informations absentes de l’aperçu ou exclues du partage. Vérifiez chaque autorisation avant l’envoi.</p>
@@ -103,9 +100,8 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  {preview&&<section aria-label="Prévisualisation du partage"><h3>Informations communicables</h3>
  {preview.payload.name&&<p>Nom partagé : {preview.payload.name}</p>}
  {!preview.payload.items.length&&<p>Aucune information communicable dans ce périmètre.</p>}
- {preview.payload.items.length>0&&!preview.payload.notice&&<details><summary>Consulter les informations communicables</summary>{preview.payload.items.map(item=><div key={item.reference}><p>{item.text}</p>{!link&&<button type="button" className="secondary" disabled={busy||!preview.report.anchors?.some(a=>a.reference===item.reference)} onClick={()=>{void exclude(item.reference);}}>Exclure cette information</button>}</div>)}</details>}
+ {preview.payload.items.length>0&&!preview.payload.notice&&<details><summary>Consulter les informations communicables</summary>{preview.payload.items.map(item=><div key={item.reference}><p>{item.text}</p></div>)}</details>}
  {(exclusions.length>0||masks.length>0)&&<div><h4>Protection appliquée</h4>{[...exclusions,...masks].map(text=><p key={text}>{text}</p>)}</div>}
- {excluded.length>0&&!link&&<button type="button" className="secondary" disabled={busy} onClick={()=>{setExcluded([]);}}>Annuler les exclusions supplémentaires</button>}
  {preview.payload.items.length>0&&!preview.payload.notice&&!link&&<details><summary>Tester une question comme le destinataire</summary><p>Ce test lance une réponse à ta demande, uniquement sur les informations communicables.</p><label>Question de test<textarea value={question} maxLength={2000} onChange={e=>setQuestion(e.target.value)} disabled={busy}/></label><button type="button" disabled={busy||!question.trim()} onClick={()=>{void testQuestion();}}>Tester la question</button>{answer&&<div className="guest-answer">{answer.simulated&&<p>Démonstration locale, sans réponse IA réelle.</p>}<AnswerMarkdown text={answer.answer}/>{answer.insufficient_context&&<p>Les informations communicables sont insuffisantes pour répondre complètement.</p>}</div>}</details>}
  <p>Le masquage automatique ne garantit pas à lui seul la confidentialité : vérifie ces textes pour ce destinataire, y compris les informations indirectement identifiantes.</p>
  </section>}

@@ -14,7 +14,7 @@ test('original sharing default, exact selection, preview and authorized recipien
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith('/workspace/documents'))return route.fulfill({json:docs});
   if(path.endsWith('/invitations')&&route.request().method()==='GET')return route.fulfill({json:{items:[]}});
-  if(path.endsWith('/sharing/previews')){lastBody=route.request().postDataJSON();selected=[...lastBody.documents];if(holdPreview)await new Promise<void>(resolve=>{releasePreview=resolve;});return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:{...lastBody,original_documents:lastBody.documents,semantic_documents:lastBody.documents},payload:{format:'qh.disclosure/1',name:'RH',recap,items:[{reference:'R1',text:'Parcours professionnel.'}]},report:{risks:[],exclusions:[],masks:[],anchors:[]}}});}
+  if(path.endsWith('/sharing/previews')){lastBody=route.request().postDataJSON();selected=[...lastBody.documents];if(holdPreview)await new Promise<void>(resolve=>{releasePreview=resolve;});return route.fulfill({json:{id,fingerprint:'a'.repeat(64),policy:{...lastBody,original_documents:lastBody.documents},payload:{format:'qh.disclosure/1',name:'RH',recap,items:[{reference:'R1',text:'Parcours professionnel.'}]},report:{risks:[],exclusions:[],masks:[],anchors:[]}}});}
   if(path.endsWith('/approve')){approved=[...selected];return route.fulfill({json:{snapshot_id:id}});}
   if(path.endsWith('/invitations'))return route.fulfill({json:{id,snapshot_id:id,expires_at:'2030-01-01T00:00:00Z',invitation_token:'offline-token'}});
   if(path.endsWith('/guest/session'))return route.fulfill({json:{name:'RH',recap,can_ask:true,expires_at:'2030-01-01T00:00:00Z',verification:'mailbox_control'}});
@@ -25,11 +25,11 @@ test('original sharing default, exact selection, preview and authorized recipien
   return route.fulfill({status:404});
  });
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
- const dialog=page.getByRole('dialog'),selection=dialog.getByRole('region',{name:'Documents à partager',exact:true}),create=dialog.locator('.sharing-footer button').last();
+ const dialog=page.getByRole('dialog'),selection=dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}),create=dialog.locator('.sharing-footer button').last();
  await expect(selection.getByRole('checkbox',{checked:true})).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('destinataire@example.test');await expect(create).toBeEnabled();expect(lastBody.documents).toEqual([]);
  const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('Aucun');await capture('01-private');
- await dialog.getByRole('region',{name:'Documents à partager',exact:true}).getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
+ await dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}).getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
  holdPreview=true;await dialog.locator('.semantic-document-choice').filter({hasText:'Contrat de travail'}).getByRole('checkbox').uncheck();
  await expect(create).toBeDisabled();await expect(preview).toContainText('2 sur 3');await expect(preview).not.toContainText('Contrat de travail');
  await expect.poll(()=>selected.length).toBe(2);holdPreview=false;releasePreview?.();await expect(create).toBeEnabled();expect(selected).toEqual([docs[0].source_revision_id,docs[2].source_revision_id]);await capture('02-selection');

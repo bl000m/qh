@@ -4,6 +4,46 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Condivisione V1 del Context Space — decisione owner, 2026-10-31
+
+Questa decisione sostituisce, per **nuove condivisioni**, la politica storica che
+legava la conoscenza derivata dai PDF al permesso di consultarne gli originali.
+Si condivide la Compréhension unica dello Space (documenti, dialoghi e altre fonti),
+proiettata attraverso i filtri esistenti. Provenance, citazioni esatte, stato proposto,
+autorizzazione owner/Space e verifica canonica/grafo restano invariati.
+
+L'owner indica email, scadenza e facoltà di proporre modifiche. Consultazione e
+interrogazione restano incluse; finalità e controlli facoltativi restano disponibili.
+La scelta **Documents originaux accessibles**, vuota per default, concede soltanto
+consultazione/download dei PDF. Cambiarla non modifica fatti interrogabili o recap.
+L'interfaccia spiega esplicitamente che la conoscenza di un PDF non scaricabile può
+restare interrogabile. Nessuna nuova revisione obbligatoria degli item o conferma
+intermedia; il pulsante di creazione approva ancora l'esatta disclosure preparata.
+
+**Esclusioni aggiuntive in linguaggio naturale: rinviate.** Non esistono campo libero,
+classificazione manuale o traduzione di richieste in prompt di sicurezza. La V1
+mantiene soltanto il Guard deterministico esistente: mascheramento di email, URL e
+formati riconosciuti di coordinate/num ID; esclusione dei testi/citazioni con termini
+sensibili riconosciuti (salute, sessualità, suicidio, password/chiavi API). Il filtro
+lessicale non garantisce anonimato, rilevamento completo, né protezione semantica di
+salari, negoziazioni o budget: non condividere lo Space se tali fatti devono restare
+privati. Gli originali scaricabili possono contenere ulteriori dati non filtrati.
+
+Il recap globale canonico è riutilizzato solo se interamente ammesso dai controlli
+esistenti sui supporti, sulla base e sul testo. Altrimenti la V1 mostra il fallback
+privato: nessuna inferenza al caricamento, collage di estratti o promozione del
+recap di un solo PDF a résumé dell'intero contesto. I fatti ammessi restano interrogabili.
+
+Nuove richieste dichiarano `knowledge_scope: context`; questo valore è conservato
+nella policy JSON approvata con report di scope v3. Richieste prive di questa scelta
+esplicita o contenenti vecchi campi di selezione aggiuntiva vengono rifiutate, evitando
+che client precedenti amplino inavvertitamente la condivisione. Nessuna migrazione,
+backfill, nuova architettura o feature flag di rollout. Le policy senza questo marker
+mantengono **esclusivamente per compatibilità** il vecchio filtro documentale e i loro
+fingerprint. Nessun invito esistente acquisisce conoscenza o accesso agli originali:
+il nuovo perimetro richiede un nuovo snapshot approvato. Revoca, scadenza, immutabilità
+e risposte IA limitate al payload approvato restano vincolanti.
+
 ## Demo B: condivisione governata — decisione owner, 2026-10-25
 
 **Share access to the context, not manually selected pieces of context.**
@@ -934,7 +974,7 @@ supports safe retry after ambiguous responses and contains no Space content.
 Other Spaces, account identities and aggregate financial ledgers are preserved.
 Migration 0012 must be explicitly authorized and backed up before VPS activation.
 
-### Source confidentiality correction — owner, 2026-10-30
+### Source confidentiality correction — owner, 2026-10-30 (historical document scope)
 
 This later owner decision supersedes the introduction exception above: every
 PDF-derived item and recap requires all supporting PDF revisions to be authorized.

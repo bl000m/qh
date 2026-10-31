@@ -8,16 +8,16 @@ type DocumentSelectionProps={documents:SourceDocument[];selected:string[];onChan
 
 export function DocumentPermission({documents,selected,onChange,status,onRetry}:DocumentSelectionProps){
  const [search,setSearch]=useState('');
- return <section className="sharing-originals sharing-semantic" aria-label="Documents à partager">
-  <div className="sharing-originals-heading"><Icon name="sources"/><strong>Documents à partager</strong></div>
-  <p>Les documents sélectionnés pourront être interrogés, consultés et téléchargés par le destinataire.</p>
+ return <section className="sharing-originals sharing-semantic" aria-label="Documents originaux accessibles">
+  <div className="sharing-originals-heading"><Icon name="sources"/><strong>Documents originaux accessibles</strong></div>
+  <p>Les fichiers sélectionnés pourront être consultés et téléchargés. Même sans accès au PDF original, sa connaissance contribue au contexte interrogable, après application des filtres de confidentialité.</p>
   {status==='loading'?<p role="status">Chargement des documents…</p>:status==='error'?<p role="alert">Documents indisponibles. <button type="button" onClick={onRetry}>Réessayer</button></p>:!documents.length?<p>Aucun document dans ce contexte.</p>:<>
    <div className="originals-modes"><button type="button" onClick={()=>onChange(documents.map(doc=>doc.source_revision_id))}>Tous les documents actuels</button><button type="button" onClick={()=>onChange([])}>Aucun document</button></div>
-   {documents.length>5&&<input type="search" aria-label="Rechercher les documents à partager" placeholder="Rechercher un document" value={search} onChange={e=>setSearch(e.target.value)}/>}
+   {documents.length>5&&<input type="search" aria-label="Rechercher les documents originaux" placeholder="Rechercher un document" value={search} onChange={e=>setSearch(e.target.value)}/>}
    <div className="originals-selection">{documents.filter(doc=>documentMatches(doc,search)).map(doc=><label className="semantic-document-choice" key={doc.source_revision_id}>
     <input type="checkbox" value={doc.source_revision_id} checked={selected.includes(doc.source_revision_id)} onChange={e=>onChange(e.target.checked?[...selected,doc.source_revision_id]:selected.filter(id=>id!==doc.source_revision_id))}/>
     <span>{documentName(doc)}</span>
-   </label>)}</div><p className="originals-future">Les documents ajoutés après cette invitation resteront privés.</p>
+   </label>)}</div><p className="originals-future">Les documents et connaissances ajoutés après cette invitation ne sont pas inclus dans son snapshot.</p>
   </>}
  </section>;
 }

@@ -1,4 +1,4 @@
-"""Document authorization and deterministic presentation without canonical writes."""
+"""Unified knowledge and retained document-scoped approvals; no canonical writes."""
 
 EMPTY_NOTICE = ("Ce contexte ne contient pas suffisamment d'informations accessibles pour en présenter un résumé. "
     "Les informations non autorisées par le propriétaire restent privées.")
@@ -20,6 +20,10 @@ def is_empty_projection(payload):
 
 
 def document_scope(rows, policy, document_sources):
+    # New approvals share the unified understanding. Original download rights
+    # never filter knowledge; retain the old rule only for historical policies.
+    if policy.knowledge_scope=='context':
+        return tuple(rows), []
     selected, excluded = [], []
     unauthorized = set(document_sources) - (set(policy.semantic_documents) & set(policy.original_documents))
     for row in rows:
@@ -54,7 +58,7 @@ def restrict_snapshot(payload, allowed_references, *, verified_recap=False):
     return accessible_introduction(result)
 
 
-def accessible_introduction(payload):
+def accessible_introduction(payload, *, allow_document_fallback=True):
     """Reuse one already scoped canonical synopsis; never synthesize random excerpts."""
     if is_empty_projection(payload):
         return payload
@@ -62,6 +66,6 @@ def accessible_introduction(payload):
     if result.get('recap',{}).get('title')=='Aperçu · extraits autorisés':
         result.pop('recap')  # Withdraw the old presentation, never rewrite its snapshot.
     summaries=result.pop('document_recaps',[])
-    if not result.get('recap') and len(summaries)==1:
+    if allow_document_fallback and not result.get('recap') and len(summaries)==1:
         result['recap']=dict(summaries[0])
     return result

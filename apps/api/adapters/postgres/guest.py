@@ -172,9 +172,12 @@ class PostgresGuestRepository:
                 (current.snapshot_id, current.context_id)).fetchone()
             # Access check only: hydrate no source text and never expand the frozen
             # payload. Retained approvals remain immutable even when now restricted.
-            documents = set(document_source_ids(c, current.context_id))
-            permitted = set(row['policy'].get('semantic_documents', [])) & set(row['policy'].get('original_documents', []))
-            unauthorized = documents - permitted
+            unauthorized = set()
+            if row['policy'].get('knowledge_scope')!='context':
+                # Compatibility only: never broaden a previously approved document scope.
+                documents = set(document_source_ids(c, current.context_id))
+                permitted = set(row['policy'].get('semantic_documents', [])) & set(row['policy'].get('original_documents', []))
+                unauthorized = documents - permitted
             anchors = c.execute("""SELECT a.reference,r.id,
                 ARRAY(SELECT p.source_revision_id::text FROM item_revision_provenance p WHERE p.item_revision_id=r.id)
                 || ARRAY(SELECT q->>'source_revision_id' FROM jsonb_array_elements(coalesce(r.content->'citations','[]')) q) AS sources
@@ -184,10 +187,12 @@ class PostgresGuestRepository:
             report = c.execute('SELECT p.report FROM approved_snapshots s JOIN disclosure_previews p ON p.id=s.preview_id '
                 'WHERE s.id=%s AND s.context_space_id=%s', (current.snapshot_id,current.context_id)).fetchone()['report']
             safe = {a['reference'] for a in anchors if not set(a['sources']) & unauthorized}
-            if report.get('introduction_only') and report.get('document_scope_version') != 2:
+            if row['policy'].get('knowledge_scope')=='context' and report.get('document_scope_version')!=3:
+                raise GuestDenied('Vérification impossible.')
+            if report.get('introduction_only') and report.get('document_scope_version') not in (2,3):
                 safe = set()  # Old synthetic introductions were not document-scoped.
             filtered = restrict_snapshot(row['payload'],safe,
-                verified_recap=report.get('document_scope_version')==2 or not unauthorized)
+                verified_recap=report.get('document_scope_version') in (2,3) or not unauthorized)
             return GuestSnapshot(context_id=str(row['context_space_id']), snapshot_id=str(row['id']),
                 payload_json=json.dumps(filtered,ensure_ascii=False,sort_keys=True),
                 include_quotes=row['policy'].get('include_quotes') is True)
