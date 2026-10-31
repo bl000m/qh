@@ -16,7 +16,7 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
   return route.fulfill({status:404,json:{detail:'outside fixture'}});
  });
  await page.goto('/tests/fixtures/sharing-simple.html');await page.getByRole('button',{name:'Partager ce contexte',exact:true}).click();
- const dialog=page.getByRole('dialog',{name:'Partager ce contexte',exact:true});await expect(dialog.getByRole('checkbox')).not.toBeChecked();
+ const dialog=page.getByRole('dialog',{name:'Partager ce contexte',exact:true});await expect(dialog.getByRole('checkbox',{name:/Autoriser les propositions/})).not.toBeChecked();
  await expect(dialog.getByRole('heading',{name:'Organizzazione di un atelier informatico',exact:true})).toHaveCount(0);
  await expect(dialog.getByRole('button',{name:'Vérifier le partage',exact:true})).toHaveCount(0);
  await expect(dialog.getByRole('button',{name:'Exclure cette information',exact:true})).toHaveCount(0);
@@ -29,7 +29,7 @@ for(const advanced of [false,true])test('main owner sharing stays simple, advanc
  await expect(dialog.getByRole('heading',{name:'Organizzazione di un atelier informatico',exact:true})).toBeVisible();
  await expect(dialog).not.toContainText('PRIVATE-RECAP-CANARY');expect(bodies[0].allow_update_proposals).toBe(false);
  if(advanced){
-  await dialog.getByRole('checkbox').check();await expect.poll(()=>bodies.at(-1).allow_update_proposals).toBe(true);
+  await dialog.getByRole('checkbox',{name:/Autoriser les propositions/}).check();await expect.poll(()=>bodies.at(-1).allow_update_proposals).toBe(true);
   await dialog.getByText('Confidentialité avancée',{exact:true}).click();await dialog.getByText('Consulter les informations communicables',{exact:true}).click();
   await dialog.getByText('Tester une question comme le destinataire',{exact:true}).click();await dialog.getByLabel('Question de test',{exact:true}).fill('Quelles activités ?');await dialog.getByRole('button',{name:'Tester la question',exact:true}).click();
   await expect(dialog.locator('.guest-answer')).toContainText('attività pratiche guidate');expect(questions).toBe(1);

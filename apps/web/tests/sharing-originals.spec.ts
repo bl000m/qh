@@ -28,7 +28,7 @@ test('original sharing default, exact selection, preview and authorized recipien
  const dialog=page.getByRole('dialog'),selection=dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}),create=dialog.locator('.sharing-footer button').last();
  await expect(selection.getByRole('checkbox',{checked:true})).toHaveCount(0);
  await dialog.getByLabel('Email du destinataire',{exact:true}).fill('destinataire@example.test');await expect(create).toBeEnabled();expect(lastBody.documents).toEqual([]);
- const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('Aucun');await capture('01-private');
+ const preview=dialog.getByRole('region',{name:'Documents accessibles'});await expect(preview).toContainText('0 sur 3');await capture('01-private');
  await dialog.getByRole('region',{name:'Documents originaux accessibles',exact:true}).getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>selected.length).toBe(3);
  holdPreview=true;await dialog.locator('.semantic-document-choice').filter({hasText:'Contrat de travail'}).getByRole('checkbox').uncheck();
  await expect(create).toBeDisabled();await expect(preview).toContainText('2 sur 3');await expect(preview).not.toContainText('Contrat de travail');

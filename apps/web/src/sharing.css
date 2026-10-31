@@ -7,13 +7,15 @@
 .sharing-dialog input:not([type=checkbox]),.sharing-dialog textarea{border:1px solid #cbd0d9;border-radius:8px;padding:10px 12px;background:#fff;color:#15151b;font:inherit}
 .sharing-dialog label{font-size:14px;font-weight:500}
 .sharing-dialog h3{font-size:18px;font-weight:700;margin:8px 0 0}
-.sharing-permission{display:flex;align-items:flex-start;gap:12px;border:1px solid #e0e2e8;border-radius:9px;padding:15px;font-size:13px;line-height:1.45}
-.sharing-permission.included{background:#f6f6f8;border-color:#f6f6f8}
+.sharing-permissions{display:grid;gap:12px;grid-auto-rows:1fr}
+.sharing-permission{background:#f6f6f8;display:flex;align-items:flex-start;gap:12px;border:1px solid #f6f6f8;border-radius:9px;padding:15px;font-size:13px;line-height:1.45}
 .sharing-dialog label.sharing-permission{display:flex;font-size:13px;gap:12px}
-.sharing-permission input[type=checkbox]{width:22px;height:22px;flex-shrink:0;margin:2px 0;accent-color:#171719}
+.sharing-permission input[type=checkbox]{width:22px;height:22px;flex-shrink:0;margin:2px 0;appearance:none;display:grid;place-content:center;border:1px solid #c4c8d0;border-radius:5px;background:white}
+.sharing-permission input[type=checkbox]:checked{background:#202022;border-color:#202022}
+.sharing-permission input[type=checkbox]:checked::after{content:"✓";color:white;font-size:18px;font-weight:700;line-height:1}
+.sharing-permission input[type=checkbox]:focus-visible{outline:2px solid #202022;outline-offset:3px}
 .sharing-permission strong{font-size:13px;font-weight:650}
 .sharing-permission p,.permission-description{display:block;color:#737886;font-size:12px;margin:5px 0 0}
-.permission-tick{display:grid;place-items:center;background:#202022;color:white;border-radius:5px;width:22px;height:22px;flex-shrink:0}
 .permission-badge{display:inline-block;font-size:10px;background:#e2e4ea;color:#636a77;padding:2px 5px;border-radius:5px;margin-left:6px}
 .sharing-hint{font-size:12px;line-height:1.5;color:#737886;margin:0}
 .sharing-settings .sharing-hint{background:#f6f7f9;border:1px solid #eceef2;padding:12px;border-radius:8px}

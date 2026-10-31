@@ -24,7 +24,7 @@ export function DocumentPermission({documents,selected,onChange,status,onRetry}:
 
 export function SharedDocumentsPreview({documents,selected}:{documents:SourceDocument[];selected:string[]}){
  const visible=documents.filter(doc=>selected.includes(doc.source_revision_id));
- return <section className="shared-documents-preview" aria-label="Documents accessibles"><header><h4>Documents accessibles</h4><span>{visible.length?visible.length+' sur '+documents.length:'Aucun'}</span></header>
+ return <section className="shared-documents-preview" aria-label="Documents accessibles"><header><h4>Documents accessibles</h4><span>{visible.length+' sur '+documents.length}</span></header>
   <div>{visible.length?visible.map(doc=><p key={doc.source_revision_id}><Icon name="sources"/>{documentName(doc)}</p>):<p className="muted">Aucun fichier original n’est partagé. Le destinataire peut interroger le contexte, mais pas télécharger les sources.</p>}</div>
  </section>;
 }

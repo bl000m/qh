@@ -14,6 +14,13 @@ import {Icon} from './Ui';
 interface InvitationRow{id:string;recipient_email:string;expires_at:string;revoked_at:string|null}
 const reasonLabels:Record<string,string>={recognised_high_risk:'Informations sensibles repérées',recognised_high_risk_citation:'Citations sensibles',endpoint_outside_scope:'Relations hors du périmètre autorisé',endpoint_not_disclosable:'Relations avec des informations exclues',unsupported_content:'Informations non communicables'};
 const maskLabels:Record<string,string>={email:'Adresses email masquées',url:'Liens masqués',number:'Coordonnées ou numéros masqués',identifier:'Identifiants masqués'};
+function knowledgeMatches(preview:SharingPreview|null,email:string,purpose:string,expiry:string){
+ return !!preview&&preview.policy.recipient_email===email.trim()&&preview.policy.purpose===purpose
+  &&preview.policy.knowledge_scope==='context'&&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime();
+}
+function SharingPermission({title,description,included=false,checked=false,onChange}:{title:string;description:string;included?:boolean;checked?:boolean;onChange?:(checked:boolean)=>void}){
+ return <label className="sharing-permission check"><input type="checkbox" checked={included||checked} disabled={included} onChange={e=>onChange?.(e.target.checked)}/><span><strong>{title}</strong>{included&&<span className="permission-badge">Toujours inclus</span>}<span className="permission-description">{description}</span></span></label>;
+}
 function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onClose:()=>void}){
  const [email,setEmail]=useState(''),[purpose,setPurpose]=useState('Consulter et interroger le contexte partagé');
  const [allowUpdates,setAllowUpdates]=useState(false);
@@ -38,14 +45,14 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  const refresh=()=>api.sharing<{items:InvitationRow[]}>(scope,'invitations').then(v=>setRows(v.items));
  useEffect(()=>{void refresh().catch(e=>setError(sharingError(e)));},[]);
  useEffect(()=>{
-  const current=++generation.current;setPreview(null);setLink('');setSnapshot('');setAnswer(null);setError('');
+  const current=++generation.current;setPreview(previous=>knowledgeMatches(previous,email,purpose,expiry)?previous:null);setLink('');setSnapshot('');setAnswer(null);setError('');
   const expires=new Date(expiry).getTime();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!purpose.trim()||!Number.isFinite(expires)||expires<=Date.now()){setPreparing(false);return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())||!purpose.trim()||!Number.isFinite(expires)||expires<=Date.now()){setPreparing(false);return;}
   setPreparing(true);
   const timer=setTimeout(()=>{
-   const body:SharingInput={recipient_email:email,purpose,expires_at:new Date(expires).toISOString(),knowledge_scope:'context',allow_update_proposals:allowUpdates,documents:originals};
+   const body:SharingInput={recipient_email:email.trim(),purpose,expires_at:new Date(expires).toISOString(),knowledge_scope:'context',allow_update_proposals:allowUpdates,documents:originals};
    void api.sharing<SharingPreview>(scope,'sharing/previews','POST',body)
-    .then(value=>{if(current===generation.current)setPreview(value);})
+    .then(value=>{if(current===generation.current){if(!knowledgeMatches(value,email,purpose,expiry))throw new ApiError(502);setPreview(value);}})
     .catch(e=>{if(current===generation.current)setError(sharingError(e));})
     .finally(()=>{if(current===generation.current)setPreparing(false);});
   },400);
@@ -63,11 +70,19 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  async function revoke(id:string){if(lock.current)return;lock.current=true;setBusy(true);setError('');
   try{await api.sharing(scope,'invitations/'+id+'/revoke','POST',{});await refresh();setLink('');}
   catch(e){setError(sharingError(e));}finally{lock.current=false;setBusy(false);}}
- const matches=preview&&preview.policy.recipient_email===email&&preview.policy.purpose===purpose
-  &&JSON.stringify(preview.policy.original_documents??[])===JSON.stringify(originals)
-  &&preview.policy.knowledge_scope==='context'
-  &&(preview.policy.allow_update_proposals??false)===allowUpdates
-  &&Date.parse(preview.policy.expires_at)===new Date(expiry).getTime();
+ const showKnowledge=knowledgeMatches(preview,email,purpose,expiry);
+ const matches=showKnowledge&&preview
+  &&(preview.policy.original_documents??[]).length===originals.length
+  &&originals.every(id=>preview.policy.original_documents?.includes(id))
+  &&(preview.policy.allow_update_proposals??false)===allowUpdates;
+ const validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+ const previewMessage=showKnowledge?(preview?.payload.notice??'Le résumé général n’est pas disponible dans ce périmètre.')
+  :preparing?'Préparation de l’aperçu autorisé…'
+  :!validEmail?'Indiquez le destinataire pour préparer l’aperçu autorisé.'
+  :error?'L’aperçu n’a pas pu être chargé. Réessayez.'
+  :!purpose.trim()||!Number.isFinite(new Date(expiry).getTime())||new Date(expiry).getTime()<=Date.now()
+   ?'Vérifiez la finalité et la date d’expiration pour préparer l’aperçu autorisé.'
+   :'Préparation de l’aperçu autorisé…';
  const exclusions=[...new Set(preview?.report.exclusions.map(x=>reasonLabels[x.reason]??'Informations exclues par les règles de protection'))];
  const masks=[...new Set(preview?.report.masks.flatMap(x=>x.rules.map(r=>maskLabels[r]??'Informations masquées')))];
  return <Modal title="Partager ce contexte" onClose={onClose} className="sharing-dialog" closeOnBackdrop>
@@ -77,22 +92,23 @@ function Editor({api,scope,name,onClose}:{api:QhApi;scope:string;name:string;onC
  <label>Email du destinataire<input type="email" required maxLength={254} placeholder="votre@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></label>
  <label>Expiration de l’accès<input type="datetime-local" step="1" required value={expiry} onChange={e=>setExpiry(e.target.value)}/></label>
  <h3>Droits accordés</h3>
- <div className="sharing-permission included"><span className="permission-tick" aria-hidden="true">✓</span><div><strong>Consulter et interroger le contexte</strong><span className="permission-badge">Toujours inclus</span><p>Le destinataire peut lire le résumé autorisé et poser des questions, sans modifier le contenu.</p></div></div>
- <label className="sharing-permission check"><input type="checkbox" checked={allowUpdates} onChange={e=>setAllowUpdates(e.target.checked)}/><span><strong>Autoriser les propositions de mise à jour</strong><span className="permission-description">Vous conservez le contrôle et la validation finale de toute modification.</span></span></label>
+ <div className="sharing-permissions">
+ <SharingPermission title="Consulter et interroger le contexte" description="Le destinataire peut lire le résumé autorisé et poser des questions, sans modifier le contenu." included/>
+ <SharingPermission title="Autoriser les propositions de mise à jour" description="Vous conservez le contrôle et la validation finale de toute modification." checked={allowUpdates} onChange={setAllowUpdates}/>
+ </div>
  <section aria-label="Informations protégées automatiquement"><h3>Informations protégées automatiquement</h3><p>Masquage des emails, URL et formats reconnus de coordonnées, numéros ou identifiants. Exclusion des textes contenant les termes sensibles repérés (santé, sexualité, suicide, mots de passe et clés API).</p><p className="small muted">Ce filtre est limité : il ne garantit ni l’anonymat ni la protection du salaire, des négociations ou du budget. Ne partagez pas ce contexte si ces informations doivent rester privées.</p></section>
  <DocumentPermission documents={documents} selected={originals} onChange={setOriginals} status={documentStatus} onRetry={loadDocuments}/>
 
  </fieldset></div>
  <aside className="sharing-preview" aria-label="Aperçu du contexte partagé"><h3>Aperçu du contexte partagé</h3><p className="small muted">Voici ce que verra votre destinataire après vérification de son accès.</p>
  <div className="sharing-preview-card"><strong>{preview?.payload.name??name}</strong>
- <SharedRecap recap={matches?preview?.payload.recap:undefined}/>
- {(!matches||!preview?.payload.recap)&&<p className="muted">{preparing?'Préparation de l’aperçu autorisé…':matches?(preview?.payload.notice??'Le résumé général n’est pas disponible dans ce périmètre.'):'Indiquez le destinataire pour préparer l’aperçu autorisé.'}</p>}
- {matches&&!preview?.payload.notice&&<p className="small muted">{preview?.payload.semantic_document_count??0} document(s) contribuant à la connaissance</p>}
+ <SharedRecap recap={showKnowledge?preview?.payload.recap:undefined}/>
+ {(!showKnowledge||!preview?.payload.recap)&&<p className="muted" role={preparing&&!showKnowledge?'status':undefined}>{previewMessage}</p>}
  <p className="small muted">Contenu filtré selon les règles de confidentialité</p></div>
  <SharedDocumentsPreview documents={documents} selected={originals}/>
  <p className="sharing-original-warning"><Icon name="info"/>Un PDF original peut contenir des informations absentes de l’aperçu ou exclues du partage. Vérifiez chaque autorisation avant l’envoi.</p>
  </aside></div><div className="sharing-supplement">
- {error&&<div role="alert"><p className="notice error">{error}</p>{!preview&&<button type="button" className="secondary" disabled={busy||preparing} onClick={()=>setPreviewRefresh(n=>n+1)}>Réessayer</button>}</div>}
+ {error&&<div role="alert"><p className="notice error">{error}</p>{!matches&&<button type="button" className="secondary" disabled={busy||preparing} onClick={()=>setPreviewRefresh(n=>n+1)}>Réessayer</button>}</div>}
  <p className="sharing-hint">Créer l’invitation approuve la divulgation des informations communicables. Vérifiez les exclusions, masquages et risques dans Confidentialité avancée ; le masquage ne garantit pas l’anonymat.</p>
  <details className="sharing-advanced"><summary>Confidentialité avancée</summary> <p className="sharing-hint">L’autorisation est enregistrée avec l’invitation. L’envoi de propositions reste indisponible dans cette démo : le parcours de réception et de validation des contributions externes n’est pas encore implémenté.</p>
 

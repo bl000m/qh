@@ -30,7 +30,7 @@ test('original downloads are independent of unified knowledge and its recap',asy
  await expect(page.getByRole('region',{name:'Documents originaux',exact:true})).toHaveCount(0);
  await page.getByLabel('Email du destinataire',{exact:true}).fill('invite@example.test');
  await expect(preview).toContainText(recap.text);await expect(create).toBeEnabled();expect(body.documents).toEqual([]);expect(body.knowledge_scope).toBe('context');expect(body.excluded).toBeUndefined();
- await selection.getByRole('checkbox',{name:'CV personnalisé',exact:true}).check();await expect.poll(()=>body.documents).toEqual([docs[0].source_revision_id]);await expect(preview).toContainText('3 document(s)');
+ await selection.getByRole('checkbox',{name:'CV personnalisé',exact:true}).check();await expect.poll(()=>body.documents).toEqual([docs[0].source_revision_id]);await expect(preview.locator('.sharing-preview-card')).not.toContainText('document(s)');
  await expect(preview).toContainText(recap.text);expect(body.documents).toEqual([docs[0].source_revision_id]);await expect(preview).not.toContainText('PRIVATE DOCUMENT');
  await selection.getByRole('button',{name:'Tous les documents actuels',exact:true}).click();await expect.poll(()=>body.documents).toEqual(docs.map(d=>d.source_revision_id));
  await expect(preview).toContainText(recap.text);await selection.getByRole('button',{name:'Aucun document',exact:true}).click();await expect.poll(()=>body.documents).toEqual([]);
