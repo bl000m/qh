@@ -3,7 +3,7 @@ from uuid import UUID
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr, model_validator
 
 from app.api.chat import ChatInput, ChatOutput
 from app.api.context_spaces import allowed_query, call
@@ -19,14 +19,25 @@ router = APIRouter(prefix='/context-spaces', tags=['chat sessions'])
 class CapabilityOutput(BaseModel):
     automatic: bool = False
     plafond_reached: bool = False
+    accounting_blocked: bool = False
     enabled: bool
+    unavailable_reason: Literal['not_eligible','session_expired','suspended','budget','unconfigured'] | None = None
     model: Literal['mistral-small-2603'] | None
-    max_seconds: Literal[300, 1800]
-    max_calls: int = Field(ge=1, le=100)
+    max_seconds: Literal[300, 1800] | None
+    max_calls: int | None = Field(ge=1, le=100)
     max_usd: str
     provider_expires_at: float | None
-    remaining_calls: int = Field(ge=0, le=100)
+    remaining_calls: int | None = Field(ge=0, le=100)
     remaining_usd: str
+
+    @model_validator(mode='after')
+    def coherent_global_limits(self):
+        limits = (self.max_seconds, self.max_calls, self.remaining_calls)
+        if any(value is None for value in limits) and not (
+            self.automatic and all(value is None for value in limits)
+        ):
+            raise ValueError('Quota-free limits require automatic global accounting')
+        return self
 
 
 class AccountingOutput(BaseModel):

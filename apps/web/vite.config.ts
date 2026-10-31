@@ -18,7 +18,14 @@ export default defineConfig(({ mode }) => ({
         xfwd:!!process.env.QH_WEB_TLS_KEY,
         target: process.env.QH_WEB_API_TARGET || loadEnv(mode, process.cwd(), '').QH_WEB_API_TARGET || 'http://backend:8000',
         rewrite: path => path.replace(/^\/api/, ''),
-        configure(proxy) { proxy.on('error', () => { /* Never log requests/tokens. */ }); }
+        configure(proxy) {
+          if(process.env.QH_WEB_TLS_KEY)proxy.on('proxyReq',(outgoing,request)=>{
+            // Replace caller-supplied forwarding headers at the TLS boundary.
+            outgoing.setHeader('x-forwarded-proto','https');
+            outgoing.setHeader('x-forwarded-for',request.socket.remoteAddress||'unknown');
+          });
+          proxy.on('error', () => { /* Never log requests/tokens. */ });
+        }
       }
     }
   }

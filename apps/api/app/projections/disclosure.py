@@ -11,6 +11,7 @@ from app.projections.drafts import RevisionKey, identifier
 
 GUARD_VERSION = 'qh.disclosure/1'
 TEXT_REVIEW = 'unassessed_free_text'
+LIVE_PROVIDER = 'mistral-small-2603'
 
 
 def digest(value):
@@ -24,12 +25,20 @@ class AccessPolicy:
     purpose: str
     rights: tuple[str, ...]
     expires_at: datetime
-    include_proposed: bool = False
+    include_proposed: bool = True
     include_quotes: bool = False
+    allow_update_proposals: bool = False
     provider: str | None = None
-    excluded: tuple[RevisionKey, ...] = ()
+    excluded: tuple[RevisionKey, ...] = ()  # Retained exact-item policies only.
+    original_documents: tuple[str, ...] = ()
+    semantic_documents: tuple[str, ...] = ()  # Retained document-scoped approvals only.
+    knowledge_scope: str | None = None
 
     def __post_init__(self):
+        if self.knowledge_scope not in (None,'context'):
+            raise ValueError('Unknown knowledge scope')
+        if self.knowledge_scope=='context' and (self.semantic_documents or self.excluded):
+            raise ValueError('Context sharing has no additional semantic selection')
         email = self.recipient_email
         if (not isinstance(email, str) or len(email) > 254 or not email.isascii()
                 or re.fullmatch(r'[A-Za-z0-9.!#$%&\x27*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+', email) is None):
@@ -41,26 +50,50 @@ class AccessPolicy:
             raise ValueError('Explicit READ/ASK_AI rights required')
         if not isinstance(self.expires_at, datetime) or self.expires_at.utcoffset() is None:
             raise ValueError('Explicit timezone-aware expiry required')
-        if type(self.include_proposed) is not bool or type(self.include_quotes) is not bool:
+        if (type(self.include_proposed) is not bool or type(self.include_quotes) is not bool
+                or type(self.allow_update_proposals) is not bool):
             raise ValueError('Explicit inclusion choices required')
-        if (self.provider not in (None, 'offline') or ('ASK_AI' in self.rights) != (self.provider is not None)):
-            raise ValueError('ASK_AI requires an available QH-controlled provider (offline only)')
+        if (self.provider not in (None, 'offline',LIVE_PROVIDER) or ('ASK_AI' in self.rights) != (self.provider is not None)):
+            raise ValueError('ASK_AI requires an explicitly authorized QH-controlled provider')
         if (not isinstance(self.excluded, tuple) or len(self.excluded) > 100
                 or any(not isinstance(k, RevisionKey) for k in self.excluded)
                 or len(set(self.excluded)) != len(self.excluded)):
             raise ValueError('Bounded exact restrictions required')
+        if not isinstance(self.original_documents, tuple) or len(self.original_documents)>100 or len(set(self.original_documents))!=len(self.original_documents):
+            raise ValueError('Bounded explicit original document permissions required')
+        for revision in self.original_documents:
+            identifier(revision)
+        if (not isinstance(self.semantic_documents, tuple) or len(self.semantic_documents)>100
+            or len(set(self.semantic_documents))!=len(self.semantic_documents)):
+            raise ValueError('Bounded explicit document information permissions required')
+        for revision in self.semantic_documents:
+            identifier(revision)
         object.__setattr__(self, 'rights', tuple(sorted(self.rights)))
         object.__setattr__(self, 'excluded', tuple(sorted(self.excluded)))
 
     def wire(self):
-        return {**asdict(self), 'expires_at': self.expires_at.isoformat()}
+        data = {**asdict(self), 'expires_at': self.expires_at.isoformat()}
+        # Preserve fingerprints of retained policies predating this optional choice.
+        if self.knowledge_scope is None:
+            data.pop('knowledge_scope')
+        else:
+            data.pop('excluded')
+        if not self.allow_update_proposals:
+            data.pop('allow_update_proposals')
+        if not self.original_documents:
+            data.pop('original_documents')
+        if not self.semantic_documents:
+            data.pop('semantic_documents')
+        return data
 
     @classmethod
     def from_wire(cls, value):
         data = dict(value)
         data['expires_at'] = datetime.fromisoformat(data['expires_at'])
         data['rights'] = tuple(data['rights'])
-        data['excluded'] = tuple(RevisionKey(**k) for k in data['excluded'])
+        data['original_documents'] = tuple(data.get('original_documents', ()))
+        data['semantic_documents'] = tuple(data.get('semantic_documents', ()))
+        data['excluded'] = tuple(RevisionKey(**k) for k in data.get('excluded', ()))
         return cls(**data)
 
 
@@ -76,6 +109,8 @@ class Selection:
     context_id: str
     stamp: str
     candidates: tuple[Candidate, ...]
+    name: str = 'Contexte partagé'
+    document_sources: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

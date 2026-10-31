@@ -1,10 +1,11 @@
 """Metadata only on existing canonical tables; owner predicates fence stale policy reads."""
 
 from uuid import UUID, uuid4
+import asyncio
 
 import psycopg
-from psycopg.rows import dict_row
 from sqlalchemy.engine import URL
+from adapters.postgres.connections import connection as database_connection
 
 from app.core.models import ContextId, ContextSpace, ContextStorageUnavailable, SubjectId
 
@@ -20,21 +21,14 @@ class PostgresContextSpaceRepository:
         self._url = url
 
     async def _execute(self, query, parameters, *, many=False):
+        return await asyncio.to_thread(self._execute_on, query, parameters, many=many)
+
+    def _execute_on(self, query, parameters, *, many=False):
         try:
-            connection = await psycopg.AsyncConnection.connect(
-                host=self._url.host, port=self._url.port, dbname=self._url.database,
-                user=self._url.username, password=self._url.password, connect_timeout=5,
-                row_factory=dict_row,
-            )
-            try:
-                async with connection:
-                    await connection.execute("SET statement_timeout = '5s'")
-                    cursor = await connection.execute(query, parameters)
-                    return await cursor.fetchall() if many else await cursor.fetchone()
-            finally:
-                # As in CanonicalRepository, commit failures must not leak a
-                # psycopg 3.2.9 session; context-manager exit may raise first.
-                await connection.close()
+            with database_connection(self._url) as connection:
+                connection.execute("SET LOCAL statement_timeout = '5s'")
+                cursor = connection.execute(query, parameters)
+                return cursor.fetchall() if many else cursor.fetchone()
         except psycopg.Error:
             raise ContextStorageUnavailable("Context storage unavailable") from None
 

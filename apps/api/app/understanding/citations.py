@@ -32,7 +32,7 @@ def resolve_output_citations(output, *, source):
         or len(text.encode()) > 1_000_000
         or not isinstance(source.get("id"), str)
         or not isinstance(turns, list)
-        or not 1 <= len(turns) <= 100
+        or not 1 <= len(turns) <= 1000
     ):
         raise ValueError("Original source and bounded identified turns required")
     previous_end, seen = 0, set()

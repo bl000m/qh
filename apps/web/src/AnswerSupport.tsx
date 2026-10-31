@@ -1,5 +1,5 @@
 import type {ChatAnswer} from './chat';
-const labels={dialogue:'Conversation envoyée',canonical:'Éléments cités du Space',mixed:'Conversation et éléments cités du Space',insufficient:'Appui non établi'};
+const labels={general:'Connaissances générales du modèle',dialogue:'Conversation envoyée',canonical:'Éléments cités du Space',mixed:'Conversation et éléments cités du Space',insufficient:'Appui non établi'};
 export default function AnswerSupport({answer}:{answer:ChatAnswer}){
  return <div className="answer-support" data-support-basis={answer.support_basis}>
   <p>Appui déclaré : <strong>{labels[answer.support_basis]}</strong>.</p>

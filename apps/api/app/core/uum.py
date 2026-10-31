@@ -5,6 +5,8 @@ PRIMARY_DIMENSIONS = (
     'situation_information', 'objectives_intentions', 'decisions_actions',
     'constraints_preferences', 'hypotheses_uncertainties', 'open_questions',
 )
+# Persisted version-bound recap contract, shared by understanding and projections.
+RECAP_FORMAT, RECAP_PRESENTATION_VERSIONS = 'qh.context-recap/1', (2, 3, 4)
 
 
 def validate_primary(value, evidence_count):

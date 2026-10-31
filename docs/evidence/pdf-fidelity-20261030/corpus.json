@@ -1,0 +1,45 @@
+{
+  "documents": [
+    {"name":"cv-alex-synthetique.pdf","lines":[
+      "Alex Martin - CV synthetique - declarations du candidat non verifiees",
+      "EXPERIENCES PROFESSIONNELLES (de la plus recente a la plus ancienne)",
+      "Orbite - Ingenieur de recherche - septembre 2023 a ce jour.",
+      "Dans cet emploi chez Orbite : projet Atlas, deploiement Matomo et monitoring Prometheus.",
+      "Freelance - Developpeur full-stack - janvier 2022 a aout 2023.",
+      "Client de cette mission freelance : association Nova. Projet Lumen : portail Ruby on Rails et PostgreSQL.",
+      "Amarante - Coordinateur data/digital - juin 2018 a decembre 2021.",
+      "Dans cet emploi chez Amarante : migration CRM vers Sendinblue et analyses SQL.",
+      "FORMATION (distincte des emplois)",
+      "Ecole 42 - architecture des systemes - 2022 a 2024. Ce cursus est une formation, pas un emploi.",
+      "Une formation Rust est envisagee ; sans inscription decidee."
+    ]},
+    {"name":"projet-contrat-synthetique.pdf","lines":[
+      "Projet de contrat synthetique pour Alex Martin",
+      "Employeur propose : Helios. Poste propose : ingenieur logiciel.",
+      "STATUT : NON SIGNE. Ce projet ne constitue pas un engagement effectif.",
+      "Debut envisage : 1er mars 2027. Projet de CDI, sans date de fin fixee.",
+      "Remuneration proposee : 54 000 euros bruts par an.",
+      "Temps de travail propose : 35 heures par semaine ; deux jours de teletravail par semaine.",
+      "Clause Neptune : prime de mobilite proposee de 900 euros, uniquement sur justificatifs de demenagement.",
+      "Toutes ces conditions sont proposees et restent sans effet tant que le contrat reste non signe."
+    ]}
+  ],
+  "facts":[
+    {"id":"C1","document":0,"label":"Orbite, ingenieur de recherche, septembre 2023 a ce jour","quotes":[2]},
+    {"id":"C2","document":0,"label":"Freelance full-stack, janvier 2022 a aout 2023","quotes":[4]},
+    {"id":"C3","document":0,"label":"Amarante, coordinateur data/digital, juin 2018 a decembre 2021","quotes":[6]},
+    {"id":"C4","document":0,"label":"Atlas/Matomo/Prometheus sous Orbite","quotes":[2,3]},
+    {"id":"C5","document":0,"label":"Lumen/Rails/PostgreSQL pour Nova sous freelance","quotes":[4,5]},
+    {"id":"C6","document":0,"label":"CRM/Sendinblue/SQL sous Amarante","quotes":[6,7]},
+    {"id":"K1","document":1,"label":"Helios, ingenieur logiciel propose, contrat non signe","quotes":[1,2,7]},
+    {"id":"K2","document":1,"label":"CDI propose, debut envisage 1er mars 2027, pas de fin fixee","quotes":[3,7]},
+    {"id":"K3","document":1,"label":"54 000 euros bruts annuels proposes","quotes":[4,7]},
+    {"id":"K4","document":1,"label":"35 heures et 2 jours de teletravail proposes par semaine","quotes":[5,7]},
+    {"id":"K5","document":1,"label":"Neptune, prime900 proposee conditionnee aux justificatifs","quotes":[6,7]}
+  ],
+  "questions":[
+    "Quali sono le ultime due esperienze professionali? Indica aziende o incarichi, ruoli e periodi, in ordine dalla piu recente. Distingui gli impieghi dalle singole attivita e dalla formazione.",
+    "Raccontami l'esperienza freelance: periodo, cliente e attivita. Quali attivita erano invece associate all'incarico in Orbite e a quello in Amarante?",
+    "Cosa prevede il contratto: datore di lavoro e ruolo, data di inizio e durata, retribuzione, orario e telelavoro, clausola Neptune e sue condizioni? E firmato ed efficace oppure e ancora un progetto non firmato?"
+  ]
+}

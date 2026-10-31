@@ -32,7 +32,7 @@ def expand(ai, ledger):
     state.update(max_calls=100, max_usd='2.50')
     ledger.write_text(json.dumps(state))
     old = ai.factory
-    ai.factory = PrivateSessionFactory(authorization_path=path, ledger_path=ledger, transport=old.transport, pricing=old.pricing)
+    ai.factory = PrivateSessionFactory(authorization_path=path, ledger_path=ledger, transport=old.transport)
 
 
 def test_expanded_envelope_preserves_history_shared_counts_and_caps_at_100(tmp_path, monkeypatch):
@@ -108,7 +108,6 @@ def test_diagnostics_exact_owner_scope_no_price_http_delete_does_not_touch_ledge
     ai, who, _, _, calls, ledger, _, _ = setup(tmp_path, monkeypatch, answer)
     asyncio.run(ai.respond(who, request()))
     before = ledger.read_bytes()
-    ai.factory.pricing.verify = AsyncMock(side_effect=AssertionError('No price/provider HTTP for diagnostics'))
     with pytest.raises(ContextSpaceNotFound):
         asyncio.run(ai.diagnostics(replace(who, principal_id='b'*64), request()))
     with pytest.raises(ContextSpaceNotFound):

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.projections.drafts import identifier
+from app.projections.guest_payload import recipient_payload
 from app.projections.guest import GuestDenied, GuestRateLimited, GuestSession, GuestSnapshot, GuestUnavailable, Invitation, MailUnavailable
 
 
@@ -85,9 +86,15 @@ class GuestInvitationService:
         payload = result.payload
         if not await self.authorize(grant, right):
             raise GuestDenied('Vérification impossible.')
-        if not isinstance(payload, dict) or payload.get('format') != 'qh.disclosure/1' or not payload.get('items'):
-            raise GuestUnavailable('Guest access unavailable')
-        return payload
+        return recipient_payload(payload, include_quotes=result.include_quotes)
 
     async def logout(self, token):
         await self.repository.logout(self.proofs.token_hash(token, 'session'))
+
+    async def documents(self, token, revision=None):
+        grant=await self.session(token)
+        if not await self.authorize(grant,'READ'):
+            raise GuestDenied('Vérification impossible.')
+        result=await self.repository.documents(grant,revision)
+        await self.session(token)
+        return result

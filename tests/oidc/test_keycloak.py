@@ -43,6 +43,11 @@ SESSION_METHODS = {
 DEVELOPMENT_AI_METHODS = {
     '/context-spaces/{context_id}/ai/diagnostics': {'get'},
     '/context-spaces/{context_id}/ai/diagnostics/{diagnostic_id}': {'delete'},
+    '/context-spaces/{context_id}/workspace': {'get'},
+    '/context-spaces/{context_id}/workspace/intake': {'post'},
+    '/context-spaces/{context_id}/workspace/consolidate': {'post'},
+    '/context-spaces/{context_id}/workspace/export': {'get'},
+    '/context-spaces/{context_id}/workspace/messages': {'post'},
     '/context-spaces/{context_id}/ai/messages': {'post'},
     '/context-spaces/{context_id}/ai/proposals': {'post'},
 }

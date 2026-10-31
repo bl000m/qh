@@ -42,6 +42,11 @@ def packet_hash(built):
         sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
+def unavailable_capabilities(max_seconds=300):
+    return dict(enabled=False, model=None, max_seconds=max_seconds, max_calls=3,
+        max_usd='0.01', provider_expires_at=None, remaining_calls=0, remaining_usd='0')
+
+
 class ProviderSessions:
     def __init__(self, *, chat, factory: ProviderSessionFactory | None = None, clock, session_binding=False):
         self.session_binding = session_binding
@@ -51,6 +56,8 @@ class ProviderSessions:
     async def capabilities(self, request):
         await self.chat._authorize(request)
         enabled = self.factory is not None and not getattr(self.factory, 'development_account', None) and await self.factory.available(request.subject_id, request.context_id)
+        if not enabled:
+            return unavailable_capabilities(1800 if self.session_binding else 300)
         return dict(enabled=enabled, model=self.factory.model if enabled else None,
                     max_seconds=1800 if self.session_binding else 300, max_calls=self.factory.max_calls if enabled else 3,
                     max_usd=self.factory.max_usd if enabled else '0.01',

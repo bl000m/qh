@@ -49,6 +49,7 @@ class GuestSnapshot:
     context_id: str
     snapshot_id: str
     payload_json: str = field(repr=False)
+    include_quotes: bool = False
 
     @property
     def payload(self):

@@ -2,6 +2,35 @@ import {test,expect} from '@playwright/test';
 import {capabilities} from '../src/provider-session';
 import {QhApi} from '../src/api';
 const scope='00000000-0000-0000-0000-000000000001';
+test('UUM measurements and advisory flags appear only inside private development diagnostics',async({page})=>{
+ let reads=0;
+ await page.route('**/api/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/chat-sessions'))return route.fulfill({json:{automatic:true,enabled:true,model:'mistral-small-2603',max_seconds:null,max_calls:null,max_usd:'5.00',provider_expires_at:2000000000,remaining_calls:null,remaining_usd:'4.00'}});
+  if(path.endsWith('/workspace'))return route.fulfill({json:{context_id:scope,state:'empty',pending_count:0,current:null,recap:null,intake:[],understanding:[]}});
+  if(path.endsWith('/ai/diagnostics')){
+   reads++;expect(route.request().method()).toBe('GET');
+   return route.fulfill({json:{retention_seconds:3600,items:[{id:scope,context_id:scope,created_at:Date.now()/1000,expires_at:Date.now()/1000+3600,kind:'uum',outcome:'accepted',attempt_index:0,http_status:200,checks:[{rule:'uum.item.0.fields',result:'PASS',reason:null}],raw_response:{},accounting:{},metrics:{input_tokens:1000,output_tokens:5000,provider_ms:125,consolidation_ms:250,atomic_items:12,passage_references:15,source_chars:3000,source_tokens:null,output_json_chars:8000},warnings:['output_tokens_over_3x_input']}]}});
+  }
+  return route.fulfill({status:404,json:{detail:'offline only'}});
+ });
+ await page.goto('/tests/fixtures/workspace-loading.html');
+ await expect(page.getByRole('region',{name:'Performances UUM privées'})).toHaveCount(0);expect(reads).toBe(0);
+ await page.getByRole('button',{name:'Paramètres',exact:true}).click();
+ await page.getByText('Diagnostics IA (développement)',{exact:true}).click();
+ await page.getByRole('button',{name:'Charger les diagnostics privés'}).click();
+ await page.getByText('uum · tentative 0 · accepted · HTTP 200',{exact:true}).click();
+ const metrics=page.getByRole('region',{name:'Performances UUM privées'});
+ await expect(metrics).toBeVisible();await expect(metrics).toContainText('Appel Mistral · ms');
+ await expect(metrics.locator('dd').filter({hasText:/^125$/})).toHaveCount(1);
+ await expect(metrics).toContainText('non isolés');await expect(metrics).toContainText('—');
+ await expect(metrics).toContainText('Sortie supérieure à trois fois l’entrée');
+ await expect(metrics).toContainText('sans refus, plafond ou nouvelle tentative automatique');
+ await expect(page.getByText('PASS · uum.item.0.fields',{exact:true})).not.toBeVisible();
+ await page.getByText('Contrôles détaillés · 1 PASS · 0 autres résultats',{exact:true}).click();
+ await expect(page.getByText('PASS · uum.item.0.fields',{exact:true})).toBeVisible();
+ expect(reads).toBe(1);
+});
 test('development capability accepts the explicit hundred-call envelope without widening legacy sessions',()=>{
  const cap={automatic:true,plafond_reached:false,enabled:true,model:'mistral-small-2603',max_seconds:1800,max_calls:100,max_usd:'2.50',provider_expires_at:1900000000,remaining_calls:94,remaining_usd:'2.49701920'};
  expect(capabilities(cap)).toEqual(cap);

@@ -16,6 +16,7 @@ from app.projections.drafts import ProjectionNotFound, ProjectionUnavailable
 from app.projections.drafts import ProjectionConflict
 from app.projections.disclosure import DisclosureDecisionRequired
 from app.projections.guest import GuestDenied, GuestRateLimited, GuestUnavailable
+from app.core.models import ProviderBudgetExceeded, ProviderFailure
 
 COOKIE = '__Host-qh_guest'
 
@@ -51,7 +52,8 @@ class GuestRoute(APIRoute):
                     if request.headers.get('content-type', '').split(';')[0] != 'application/json':
                         raise HTTPException(400, 'Requête invalide.')
                     length = request.headers.get('content-length', '')
-                    if not length.isdecimal() or int(length) > 4096:
+                    limit=128000 if request.url.path=='/guest/ask' else 4096
+                    if not length.isdecimal() or int(length) > limit:
                         raise HTTPException(413, 'Requête invalide.')
                 result = await handler(request)
             except RequestValidationError:
@@ -60,6 +62,11 @@ class GuestRoute(APIRoute):
                 result = JSONResponse(status_code=401, content={'detail': 'Vérification impossible.'})
             except GuestRateLimited:
                 result = JSONResponse(status_code=429, content={'detail': 'Trop de tentatives.'}, headers={'Retry-After': '60'})
+            except ProviderBudgetExceeded:
+                result = JSONResponse(status_code=402,content={'detail':'Plafond IA atteint. Aucune nouvelle requête ne sera facturée.'})
+            except ProviderFailure as error:
+                result = JSONResponse(status_code=429 if error.kind=='rate_limit' else 503,
+                    content={'detail': {'provider_error': error.kind}})
             except ProjectionNotFound:
                 result = JSONResponse(status_code=404, content={'detail': 'Projection not found'})
             except ProjectionConflict:
@@ -118,9 +125,15 @@ def proof(request):
     return value
 
 
-def session_view(access):
-    return dict(snapshot_id=access.snapshot_id, rights=list(access.rights), expires_at=access.expires_at,
-        verification='mailbox_control')
+async def session_view(request, access, token):
+    right='READ' if 'READ' in access.rights else 'ASK_AI'
+    payload=await bound(request).snapshot(token, access.snapshot_id, right)
+    return dict(name=payload.get('name','Contexte partagé'),can_ask='ASK_AI' in access.rights,
+        expires_at=access.expires_at,verification='mailbox_control',
+        recap=payload.get('recap') if 'READ' in access.rights else None,
+        **({'notice':payload['notice']} if 'notice' in payload else {}),
+        **({'semantic_document_count':payload['semantic_document_count']} if 'READ' in access.rights
+            and 'semantic_document_count' in payload else {}))
 
 
 @router.post('/context-spaces/{scope}/snapshots/{snapshot_id}/invitations', status_code=201)
@@ -151,17 +164,12 @@ async def verify(document: VerifyRequest, request: Request, response: Response):
     # Backend checks expiry/revocation on every request even if a stale cookie remains.
     response.set_cookie(COOKIE, result.token, max_age=1800, expires=result.access.expires_at,
         path='/', secure=True, httponly=True, samesite='strict')
-    return session_view(result.access)
+    return await session_view(request,result.access,result.token)
 
 
 @router.get('/guest/session')
 async def session(request: Request):
-    return session_view(await bound(request).session(proof(request)))
-
-
-@router.get('/guest/snapshots/{snapshot_id}')
-async def snapshot(snapshot_id: UUID, request: Request):
-    return await bound(request).snapshot(proof(request), str(snapshot_id))
+    return await session_view(request,await bound(request).session(proof(request)),proof(request))
 
 
 @router.post('/guest/logout', status_code=204)
@@ -171,3 +179,14 @@ async def logout(document: EmptyRequest, request: Request, response: Response):
     response.delete_cookie(COOKIE, path='/', secure=True, httponly=True, samesite='strict')
     response.status_code = 204
     return response
+
+
+@router.get('/guest/documents')
+async def documents(request: Request):
+    return await bound(request).documents(proof(request))
+
+
+@router.get('/guest/documents/{revision_id}')
+async def document(revision_id: UUID, request: Request):
+    from app.api.consolidation import document_response
+    return document_response(await bound(request).documents(proof(request),str(revision_id)))

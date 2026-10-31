@@ -173,14 +173,14 @@ def test_commit_failure_closes_connection_and_sanitizes_error(monkeypatch):
     import asyncio
     class Connection:
         closed = False
-        async def __aenter__(self): return self
-        async def __aexit__(self, *args): raise psycopg.OperationalError('private-commit-details')
-        async def execute(self, *args): return self
-        async def fetchone(self): return None
-        async def close(self): self.closed = True
+        def __enter__(self): return self
+        def __exit__(self, *args): raise psycopg.OperationalError('private-commit-details')
+        def execute(self, *args): return self
+        def fetchone(self): return None
+        def close(self): self.closed = True
     connection = Connection()
-    async def connect(**kwargs): return connection
-    monkeypatch.setattr(psycopg.AsyncConnection, 'connect', connect)
+    def connect(**kwargs): return connection
+    monkeypatch.setattr(psycopg, 'connect', connect)
     repo = PostgresContextSpaceRepository(url=URL.create('postgresql', host='unused', database='test'))
     with pytest.raises(ContextStorageUnavailable, match='^Context storage unavailable$'):
         asyncio.run(repo._execute('SELECT 1', ()))

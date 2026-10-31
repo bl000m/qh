@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api.consolidation import router as consolidation_router
 from app.api.development_ai import router as development_ai_router
 from app.api.enrichment import router as enrichment_router
 from app.api.review import router as review_router
@@ -40,6 +41,7 @@ def create_app(*, services: ApplicationServices | None = None,
         application.include_router(sharing_router)
     elif services is not None and services.guest is not None:
         raise ValueError('Explicit guest HTTPS configuration required')
+    application.include_router(consolidation_router)
     application.include_router(development_ai_router)
     application.include_router(enrichment_router)
     application.include_router(review_router)

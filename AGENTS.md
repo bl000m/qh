@@ -75,6 +75,15 @@ permissions. Explicit owner instructions and already granted scoped approvals pr
   runtime configuration: 100 attempts / USD2.50, including history. Never claim the
   larger runtime ceiling is active or change limits/reset ledgers implicitly.
   Check actual availability/configuration only when relevant to the operation.
+- Later owner decision, 2026-10-26, supersedes that runtime checkpoint: EUR10 total
+  including history is active as USD5 at the retained EUR2/USD conservative bound,
+  with a stricter observed-credit guard. Original ledger/history and old experiment
+  files remain intact; historical external costs count once. No total/session call
+  quota, paid retry/fallback or monthly ledger refill. Verified OTP guests may use
+  `mistral-small-2603` only on their explicitly approved minimized snapshot plus
+  question, through the same atomic aggregate accounting; no live Space/source/graph
+  retrieval or canonical write. Automatic tests/CI remain offline. See
+  [actual guest activation](docs/qh-40-mistral-guest.md); startup/page load never infer.
 
 ## Autonomy and STOP AND ASK
 

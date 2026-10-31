@@ -41,6 +41,8 @@ def selected_source(context_id, conversation):
     keeps the established source identity/text/turn-locator representation, without
     inventing extra turns to satisfy that old importer or mutating its sealed file.
     """
+    if not 1 <= len(conversation['turns']) <= 1000:
+        raise ValueError('Selected source exceeds 1000 identified passages')
     chunks, turns, offset = [], [], 0
     for turn in conversation['turns']:
         prefix = turn['speaker'] + ': '
@@ -58,7 +60,7 @@ def selected_source(context_id, conversation):
     return source
 
 
-async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None):
+async def propose_selected_conversation(*, subject_id, context_id, conversation, extraction_key, policy, provider, descriptor_version=1, observer=None, original_source=None, measure=None):
     def observed(rule, operation):
         try:
             result = operation()
@@ -69,7 +71,9 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
         if observer:
             observer(rule, True)
         return result
-    source = selected_source(context_id, conversation)
+    source = deepcopy(original_source) if original_source is not None else selected_source(context_id, conversation)
+    if source['context_space_id'] != str(context_id):
+        raise PermissionError('Original source outside authorized Space')
     buffer = _PreparedSource(subject_id, source)
 
     class ResolvedProvider:
@@ -87,7 +91,7 @@ async def propose_selected_conversation(*, subject_id, context_id, conversation,
             return replace(result, message=Message(role=MessageRole.ASSISTANT,
                 content=canonical_json(derived)))
 
-    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider(), descriptor_version=descriptor_version, observer=observer)
+    engine = UnderstandingExtractor(repository=buffer, policy=policy, provider=ResolvedProvider(), descriptor_version=descriptor_version, observer=observer, measure=measure)
     try:
         checkpoint = await engine.extract(subject_id=subject_id,context_id=context_id,
             source_revision_id=source['id'],extraction_key=extraction_key)

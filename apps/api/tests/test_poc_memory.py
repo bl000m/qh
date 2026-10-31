@@ -19,7 +19,7 @@ def poc(ai,ledger):
     path=ai.factory.authorization_path;r=json.loads(path.read_text())
     r['development_budget']=dict(max_calls=None,max_usd='5.00',max_eur='10.00',eur_per_usd_upper_bound='2');path.write_text(json.dumps(r))
     state=json.loads(ledger.read_text());state.update(max_calls=None,max_usd='5.00');ledger.write_text(json.dumps(state))
-    old=ai.factory;ai.factory=PrivateSessionFactory(authorization_path=path,ledger_path=ledger,transport=old.transport,pricing=old.pricing)
+    old=ai.factory;ai.factory=PrivateSessionFactory(authorization_path=path,ledger_path=ledger,transport=old.transport)
 
 
 def test_no_token_parameter_or_call_session_ceiling_and_history_retained(tmp_path,monkeypatch):
@@ -71,7 +71,59 @@ def test_full_window_reservation_blocks_before_http_not_prepaid_credit(tmp_path,
     assert not calls and not json.loads(ledger.read_text())['calls']
 
 
-def test_pending_reservation_is_not_reported_as_spent_ceiling(tmp_path,monkeypatch):
+def test_pending_reservation_holds_budget_without_suspending_the_ai(tmp_path,monkeypatch):
     ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer);poc(ai,ledger)
     state=json.loads(ledger.read_text());state['max_usd']='.16';state['calls']=[dict(status='pending',reserved_usd=str(cost(0,MODEL_CONTEXT_TOKENS)),kind='/chat/completions')];ledger.write_text(json.dumps(state))
-    caps=asyncio.run(ai.capabilities(who,request()));assert not caps['enabled'] and not caps['plafond_reached'] and not calls
+    caps=asyncio.run(ai.capabilities(who,request()))
+    assert not caps['enabled'] and not caps['accounting_blocked'] and caps['unavailable_reason']=='budget' and not calls
+
+
+def test_poc_capabilities_http_serializes_global_limits_without_provider_call(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from unittest.mock import AsyncMock
+    from app.api.security import SecurityBindings
+    from app.composition import ApplicationServices
+    from app.main import create_app
+    from app.api.chat_sessions import CapabilityOutput
+    from pydantic import ValidationError
+
+    ai, who, _, _, calls, ledger, _, _ = setup(tmp_path, monkeypatch, answer)
+    poc(ai, ledger)
+    ai.chat._authorize = AsyncMock()
+    async def authenticate(token):
+        return who.subject_id
+    async def identity(token):
+        return who
+    app = create_app(services=ApplicationServices(
+        context=ai.chat.context, policy=ai.chat.policy, chat=ai.chat,
+        chat_sessions=object(), development_ai=ai), security=SecurityBindings(
+        authenticate=authenticate, authenticate_session=identity,
+        authenticate_with_expiry=AsyncMock(), policy=ai.chat.policy))
+    before = ledger.read_bytes()
+    with TestClient(app) as client:
+        response = client.get('/context-spaces/'+str(uuid4())+'/chat-sessions',
+            headers={'Authorization': 'Bearer synthetic'})
+        assert response.status_code == 200
+        value = response.json()
+        assert value['automatic'] and value['enabled']
+        assert value['max_seconds'] is value['max_calls'] is value['remaining_calls'] is None
+        assert response.headers['cache-control'] == 'private, no-store'
+        assert client.get('/context-spaces/'+str(uuid4())+'/chat-sessions').status_code == 401
+    assert not calls and ledger.read_bytes() == before
+    for change in ({'automatic': False}, {'max_calls': 3}, {'max_seconds': 1800}):
+        with pytest.raises(ValidationError):
+            CapabilityOutput.model_validate({**value, **change})
+
+
+def test_accounting_block_is_reported_without_changing_history_or_spending(tmp_path,monkeypatch):
+    ai,who,_,_,calls,ledger,_,_=setup(tmp_path,monkeypatch,answer);poc(ai,ledger)
+    state=json.loads(ledger.read_text())
+    state['blocked']=True
+    state['calls']=[dict(status='failed',reserved_usd=str(cost(0,MODEL_CONTEXT_TOKENS)),error='Mistral HTTP 400')]
+    ledger.write_text(json.dumps(state));before=ledger.read_bytes()
+    caps=asyncio.run(ai.capabilities(who,request()))
+    assert caps['accounting_blocked'] and not caps['enabled'] and not caps['plafond_reached']
+    assert Decimal(caps['remaining_usd'])>1
+    from app.api.chat_sessions import CapabilityOutput
+    assert CapabilityOutput.model_validate(caps).accounting_blocked
+    assert ledger.read_bytes()==before and not calls

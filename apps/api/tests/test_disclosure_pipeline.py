@@ -35,7 +35,8 @@ def disclosure(drafts,empty_database):
 
 
 def prepare(p,**changes):
-    return run(p['disclosure'].prepare(p['repo'].subject_id,p['scope'],policy(**changes)))
+    # New previews always share the whole current understanding (owner decision 2026-10-31).
+    return run(p['disclosure'].prepare(p['repo'].subject_id,p['scope'],policy(**{'knowledge_scope':'context',**changes})))
 
 
 def approve(p,preview,**changes):
@@ -47,14 +48,10 @@ def count(p,table):
     with p['repo'].connect() as c:return c.execute('SELECT count(*) AS n FROM '+table).fetchone()['n']
 
 
-def test_empty_current_no_false_empty_snapshot_and_single_bulk_proposal_inclusion(disclosure):
+def test_empty_projection_notice_and_single_bulk_proposal_inclusion(disclosure):
     p=disclosure;before=p['repo'].read_snapshot((p['scope'],))
+    # Eligible proposals are shared in one bulk preview, without a separate inclusion choice.
     preview=prepare(p)
-    assert preview.report['status']=='no_disclosable_items' and not preview.payload['items']
-    assert len(preview.report['exclusions'])==2
-    with pytest.raises(ProjectionNotFound):approve(p,preview)
-    assert count(p,'approved_snapshots')==0
-    preview=prepare(p,include_proposed=True)
     assert len(preview.payload['items'])==2
     with pytest.raises(DisclosureDecisionRequired):approve(p,preview,exceptions=())
     snapshot=approve(p,preview)
@@ -73,15 +70,14 @@ def test_minimized_snapshot_is_durable_never_rehydrates_originals(disclosure,mon
     row['content']['citations']=[dict(source_revision_id=p['source']['id'],quote='Choose a pilot.')]
     row['content']['properties']={'never':'PRIVATE PROPERTY'}
     p['repo'].save(revisions=[row]);drain(p['worker'])
-    # Restricting optional exact pairs is advanced; ordinary flow needed none.
-    preview=prepare(p,include_proposed=True,include_quotes=True,excluded=refs(p))
-    assert len(preview.payload['items'])==1
+    preview=prepare(p)
     snapshot=approve(p,preview)
     wire=json.dumps(snapshot.payload)
-    for canary in ('alice@example.test','+33 6 12 34 56 78','PRIVATE PROPERTY',p['source']['content'],row['id']):
+    # Item text is shared verbatim; nested properties, quotes, originals and IDs never are.
+    shared=next(i for i in snapshot.payload['items'] if i['text']==row['content']['text'])
+    for canary in ('PRIVATE PROPERTY','Choose a pilot.',p['source']['content'],row['id']):
         assert canary not in wire
-    assert snapshot.payload['items'][0]['citations'][0]['quote']=='Choose a pilot.'
-    assert snapshot.payload['items'][0]['primary_dimension']['review_state']=='proposed'
+    assert shared['primary_dimension']['review_state']=='proposed' and 'citations' not in shared
     def no_originals(*a,**kw):raise AssertionError('Snapshot must never hydrate originals')
     monkeypatch.setattr(type(p['repo']),'read_snapshot',no_originals)
     reopened=PostgresDisclosureRepository(url=p['repo'].url,projector=p['projector'])
@@ -90,15 +86,14 @@ def test_minimized_snapshot_is_durable_never_rehydrates_originals(disclosure,mon
     assert snapshot.payload['items'][0]['text']!='MUTATION'
 
 
-def test_sensitive_items_excluded_and_exceptions_do_not_override_blocked_content(disclosure):
+def test_owner_shares_sensitive_items_explicitly_without_keyword_exclusion(disclosure):
     p=disclosure;row=revision(p,'Diagnostic de cancer PRIVATE CANARY')
     p['repo'].save(revisions=[row]);drain(p['worker'])
-    preview=prepare(p,include_proposed=True)
-    assert any(r['reason']=='recognised_high_risk' for r in preview.report['exclusions'])
-    assert 'PRIVATE CANARY' not in json.dumps(preview.payload)
+    preview=prepare(p)
+    assert not preview.report['exclusions'] and 'PRIVATE CANARY' in json.dumps(preview.payload)
     snapshot=approve(p,preview)
-    assert all(a['revision_id']!=row['id'] for a in preview.report['anchors'])
-    assert 'PRIVATE CANARY' not in json.dumps(asdict(snapshot),default=str)
+    assert any(a['revision_id']==row['id'] for a in preview.report['anchors'])
+    assert 'PRIVATE CANARY' in json.dumps(snapshot.payload)
 
 
 @pytest.mark.parametrize('scope',['foreign','sibling'])
@@ -206,3 +201,41 @@ def test_additive_snapshot_schema_keeps_canonical_rows_and_old_triggers(drafts,e
         after=c.execute("SELECT tgname,pg_get_triggerdef(oid) AS def FROM pg_trigger WHERE NOT tgisinternal AND tgrelid NOT IN "
             "('disclosure_previews'::regclass,'approved_snapshots'::regclass,'approved_snapshot_revisions'::regclass) ORDER BY tgname,def").fetchall()
         assert after==triggers
+
+
+@pytest.mark.parametrize('generic', ['0005_retire_legacy_category'], indirect=True)
+def test_subject_recap_materializes_without_sources_and_guest_read_keeps_explicit_quote_policy(disclosure, monkeypatch):
+    from adapters.postgres.guest import PostgresGuestRepository
+    from app.core.models import GuestAccess
+    from app.projections.guest_payload import recipient_payload
+    from app.understanding import recap
+    p = disclosure
+    p['repo'].register_types(uum_definitions())
+    rows = [revision(p, text) for text in ('Obiettivi del laboratorio informatico.', 'Esercizi pratici e strumenti digitali.')]
+    for row in rows:
+        row['type_version'] = 3
+        row['content']['extraction'] = {}
+        row['content']['citations'] = [dict(source_revision_id=p['source']['id'], quote='Choose a pilot.')]
+    summary = dict(title='Organizzazione di un laboratorio informatico',
+        text='Proposta di laboratorio informatico con obiettivi, esercizi pratici e strumenti digitali.',
+        supporting_statements=[r['content']['text'] for r in rows], provider_output_sha256='synthetic')
+    rows, _ = recap.bind(summary, rows, uid())
+    p['repo'].save(revisions=rows)
+    drain(p['worker'])
+    preview = prepare(p, include_proposed=True)
+    assert preview.payload['recap']['title'] == summary['title']
+    assert 'Choose a pilot.' not in json.dumps(preview.payload)
+    snapshot = approve(p, preview)
+    grant = GuestAccess(session_id=uid(), invitation_id=uid(), context_id=p['scope'], snapshot_id=snapshot.id,
+        rights=('READ',), expires_at=policy().expires_at)
+    # This check exercises the changed SQL payload/policy read; authentication
+    # itself is covered separately by guest policy and HTTP denial cases.
+    repository = PostgresGuestRepository(url=p['repo'].url)
+    monkeypatch.setattr(repository, '_active', lambda *args, **kwargs: grant)
+    def no_originals(*args, **kwargs): raise AssertionError('Guest payload must never hydrate originals')
+    monkeypatch.setattr(type(p['repo']), 'read_snapshot', no_originals)
+    stored = run(repository.payload(grant, 'READ'))
+    assert not stored.include_quotes
+    assert recipient_payload(stored.payload, include_quotes=stored.include_quotes) == snapshot.payload
+    # Materialized approval remains readable without canonical/source hydration.
+    assert run(p['disclosure'].snapshot(p['repo'].subject_id, p['scope'], snapshot.id)).payload == snapshot.payload

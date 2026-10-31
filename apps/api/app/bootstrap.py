@@ -18,6 +18,7 @@ from app.chat.sessions import ProviderSessions
 from app.chat.implementation import ContextualChatService
 from adapters.oidc import OIDCAuthenticator, OIDCSettings
 from adapters.postgres.config import database_url
+from adapters.postgres.connections import runtime_connections
 from adapters.postgres.security import PostgresSecurityReader
 from adapters.postgres.spaces import PostgresContextSpaceRepository
 from app.api.security import SecurityBindings
@@ -26,6 +27,14 @@ from app.policy.owner import OwnerPolicyService
 from app.context.service import ManagedContextService
 from app.composition import ApplicationServices
 from app.core.models import ContextRetrievalUnavailable
+from adapters.postgres.space_deletion import PostgresSpaceDeletion
+from app.context.deletion import SpaceDeletion
+
+
+def create_sharing_runtime_app():
+    """Explicit owner-enabled private deployment, never the default factory."""
+    from adapters.sharing import private_sharing_settings
+    return create_runtime_app(guest_settings=private_sharing_settings())
 
 
 def create_runtime_app(*, guest_settings=None):
@@ -50,9 +59,21 @@ def create_runtime_app(*, guest_settings=None):
         SecureGuestProofs(guest_settings.verifier_key)
         guest_http=GuestHTTPConfig(origin=guest_settings.origin)
         guest_repository=PostgresGuestRepository(url=database_url())
-    policy = OwnerPolicyService(owner_for=reader.owner_for,
+    deletion_repository=PostgresSpaceDeletion(url=database_url())
+    policy = OwnerPolicyService(owner_for=reader.owner_for,deletion_owner_for=deletion_repository.owner_for,
         guest_for=guest_repository.guest_for if guest_repository else None)
     running = {}
+
+    def purge_private(owner, scope):
+        if factory and factory.diagnostics:
+            for row in factory.diagnostics.records(subject=owner,scope=scope):
+                factory.diagnostics.delete(subject=owner,scope=scope,identity=row['id'])
+
+    def purge_graph(scope):
+        runtime=running.get('runtime')
+        if runtime is None:
+            raise ContextRetrievalUnavailable('Graph unavailable')
+        runtime.projector.purge(scope)
 
     def retrieval_for(subject):
         runtime = running.get("runtime")
@@ -62,6 +83,13 @@ def create_runtime_app(*, guest_settings=None):
 
     @asynccontextmanager
     async def lifespan(application):
+        # Dispose after request/worker shutdown, also when startup fails.
+        with runtime_connections(database_url()):
+            async with application_lifespan(application):
+                yield
+
+    @asynccontextmanager
+    async def application_lifespan(application):
         runtime = None
         application.state.native_context = None
         enabled = os.environ.get("QH_NATIVE_CONTEXT_ENABLED", "false")
@@ -81,17 +109,17 @@ def create_runtime_app(*, guest_settings=None):
                 max_transaction_retry_time=5,
             )
             runtime = NativeRuntime(
-                url=database_url(), driver=driver, policy=policy, namespace=namespace,
+                url=database_url(), driver=driver, policy=policy, namespace=namespace,purge_private=purge_private,
             )
             await asyncio.to_thread(runtime.start)
             application.state.native_context = runtime
             running["runtime"] = runtime
         if guest_settings is not None:
             try:
-                if runtime is None or runtime.schema_version!='0009_guest_invitations':
+                if runtime is None or runtime.schema_version not in ('0009_guest_invitations','0010_context_consolidation','0011_source_documents','0012_space_deletion'):
                     raise RuntimeError('Explicit sharing bindings require reviewed schema 0009')
                 from adapters.sharing import bind_sharing
-                application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings)
+                application.state.services=bind_sharing(application.state.services,runtime,guest_repository,guest_settings,factory=factory)
             except Exception:
                 running.clear()
                 if runtime is not None:await asyncio.to_thread(runtime.stop)
@@ -132,10 +160,18 @@ def create_runtime_app(*, guest_settings=None):
         provider=LiteralSegmentProvider(), uum=True)
     from app.chat.development import DevelopmentAI
     automatic = DevelopmentAI(chat=chat, enrichment=enrichment, factory=factory, clock=time.time) if factory and factory.development_account else None
+    from app.understanding.consolidation import ContextConsolidation
+    from adapters.postgres.consolidation import PostgresConsolidationRepository
+    from adapters.pdf import extract_pdf
+    consolidation = ContextConsolidation(context=context, policy=policy, ai=automatic, pdf_parser=extract_pdf,
+        repository_for=lambda subject: PostgresConsolidationRepository(url=database_url(), subject_id=subject,
+            connection_options='-c statement_timeout=5000 -c lock_timeout=5000'))
     return create_app(
         services=ApplicationServices(
             context=context,
-            enrichment=enrichment, development_ai=automatic,
+            enrichment=enrichment, development_ai=automatic, consolidation=consolidation,
+            space_deletion=SpaceDeletion(repository=deletion_repository,policy=policy,
+                purge_graph=purge_graph,purge_private=purge_private),
             review=ReviewService(context=context, policy=policy, repository=PostgresReviewRepository(url=database_url())),
             environment=EnvironmentService(repository=PostgresOrganizationRepository(url=database_url()), policy=policy, context=context),
             chat=chat, chat_sessions=sessions,

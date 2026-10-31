@@ -33,41 +33,37 @@ def test_access_policy_rejects_ambiguous_grants_and_header_injection(changes):
     with pytest.raises(ValueError):policy(**changes)
 
 
-def test_proposed_inclusion_is_separate_and_does_not_confirm():
+def test_proposed_items_are_shared_without_confirmation_and_rejected_ones_never():
     row=setup()[5];guard=OutboundDisclosureGuard()
     before=json.dumps(row.content)
     payload,report=guard.apply((row,),policy())
-    assert not payload['items'] and report['exclusions'][0]['reason']=='unconfirmed'
-    payload,report=guard.apply((row,),policy(include_proposed=True))
     assert payload['items'][0]['validation_state']=='proposed'
-    assert report['risks']==[TEXT_REVIEW] and 'anonyme' in report['warning']
+    assert report['risks']==[TEXT_REVIEW] and 'anonymisation' in report['warning']
     assert row.validation_state=='proposed' and json.dumps(row.content)==before
+    payload,report=guard.apply((replace(row,validation_state='rejected'),),policy())
+    assert not payload['items'] and report['exclusions'][0]['reason']=='ineligible_state'
 
 
-def test_masking_covers_text_and_quotes_and_minimizes_nested_fields():
-    source=uid();row=replace(setup()[5],validation_state='confirmed',
-        content={'text':'Contact pilot@example.test at +33 6 12 34 56 78 or https://private.example/id',
-            'properties':{'private':'PRIVATE NESTED'}, 'descriptors':[{'value':'PRIVATE DESCRIPTOR'}],
-            'citations':[dict(source_revision_id=source,quote='Write to pilot@example.test')]},
+def test_text_is_shared_verbatim_while_nested_fields_quotes_and_ids_stay_private():
+    source=uid();text='Contact pilot@example.test at +33 6 12 34 56 78 or https://private.example/id, né le 02/03/1981'
+    row=replace(setup()[5],validation_state='confirmed',
+        content={'text':text,'properties':{'private':'PRIVATE NESTED'}, 'descriptors':[{'value':'PRIVATE DESCRIPTOR'}],
+            'citations':[dict(source_revision_id=source,quote='PRIVATE QUOTE')]},
         provenance=(SourceRevisionRef(source_id=uid(),revision_id=source),))
     payload,report=OutboundDisclosureGuard().apply((row,),policy(include_quotes=True))
     wire=json.dumps(payload)
-    for private in ('pilot@example.test','+33 6 12 34 56 78','https://private.example','PRIVATE',source,row.item_id):
-        assert private not in wire
     item=payload['items'][0]
-    assert item['sources']==['S1'] and item['citations'][0]['redacted']
-    assert '[MASQUÉ]' in item['text'] and report['masks']
-    assert report['anchors'][0]['revision_id']==row.revision_id
-    # Recognised redactions do not waive the unknown free-text/reidentification risk.
-    assert report['risks']==[TEXT_REVIEW]
+    assert item['text']==text and item['sources']==['S1'] and 'citations' not in item
+    for private in ('PRIVATE',source,row.item_id,row.revision_id):
+        assert private not in wire
+    assert report['masks']==[] and report['anchors'][0]['revision_id']==row.revision_id
 
 
-@pytest.mark.parametrize('text',['Diagnostic de cancer', 'password: fictional', 'API_KEY=fictional'])
-def test_recognized_sensitive_fixture_hazards_deny_without_exposing_text(text):
+@pytest.mark.parametrize('text',['Diagnostic de cancer', 'password: fictional', 'Salaire de 45 000 €'])
+def test_owner_shares_sensitive_wording_without_keyword_exclusion(text):
     row=replace(setup()[5],validation_state='confirmed',content={'text':text})
     payload,report=OutboundDisclosureGuard().apply((row,),policy())
-    assert not payload['items'] and report['exclusions'][0]['reason']=='recognised_high_risk'
-    assert text not in json.dumps(report)
+    assert payload['items'][0]['text']==text and not report['exclusions']
 
 
 def test_primary_dimension_does_not_decide_disclosure_and_citations_default_to_omitted():
@@ -79,28 +75,17 @@ def test_primary_dimension_does_not_decide_disclosure_and_citations_default_to_o
     assert 'PRIVATE QUOTE' not in json.dumps(payload) and report['risks']==[TEXT_REVIEW]
 
 
-def test_out_of_scope_and_sensitive_quote_cannot_be_released_by_quote_option():
-    source=uid();row=replace(setup()[5],validation_state='confirmed',
-        provenance=(SourceRevisionRef(source_id=uid(),revision_id=source),))
-    for citation in ({'source_revision_id':uid(),'quote':'Allowed words'},
-                     {'source_revision_id':source,'quote':'Diagnostic privé'}):
-        candidate=replace(row,content={'text':'Allowed words','citations':[citation]})
-        payload,report=OutboundDisclosureGuard().apply((candidate,),policy(include_quotes=True))
-        assert not payload['items'] and report['exclusions']
-        assert citation['quote'] not in json.dumps(report)
-
-
-@pytest.mark.parametrize('sensitive',[False,True])
-def test_relation_endpoints_must_survive_guard_without_automatic_scope_expansion(sensitive):
+@pytest.mark.parametrize('rejected',[False,True])
+def test_relation_endpoints_must_survive_guard_without_automatic_scope_expansion(rejected):
     a=replace(setup()[5],validation_state='confirmed')
-    b=replace(a,item_id=uid(),revision_id=uid(),content={'text':'Diagnostic privé' if sensitive else 'Second allowed statement'})
+    b=replace(a,item_id=uid(),revision_id=uid(),content={'text':'Second statement'},validation_state='rejected' if rejected else 'confirmed')
     relation=replace(a,item_id=uid(),revision_id=uid(),structural_kind='relation',content={'text':'Two statements are related'},
         relation=RevisionRelation(predicate='related_to',source_item_id=a.item_id,source_revision_id=a.revision_id,
             target_item_id=b.item_id,target_revision_id=b.revision_id))
     payload,report=OutboundDisclosureGuard().apply((a,b,relation),policy())
-    assert len(payload['items'])==(1 if sensitive else 3)
-    if sensitive:
-        assert {r['reason'] for r in report['exclusions']}=={'recognised_high_risk','endpoint_not_disclosable'}
+    assert len(payload['items'])==(1 if rejected else 3)
+    if rejected:
+        assert {r['reason'] for r in report['exclusions']}=={'ineligible_state','endpoint_not_disclosable'}
     else:
         assert payload['items'][2]['relation']=={'source':'R1','target':'R2'}
     assert a.item_id not in json.dumps(payload) and b.revision_id not in json.dumps(payload)

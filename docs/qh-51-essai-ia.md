@@ -92,6 +92,53 @@ No raw content in ordinary logs, CI artifacts or repository. Repetitive tests us
 synthetic transport only. Validation admission rules are unchanged; the proposed
 [functional contract and audit](qh-51-validation-audit.md) await owner approval.
 
+### Private UUM performance diagnostics — 29 October 2026
+
+Consolidations add numeric metadata to the same private, scoped, one-hour records.
+`input_tokens`/`output_tokens` reuse validated ledger usage reported by Mistral;
+they cover the entire request, not an independently verified invoice or isolated
+source tokenization. `source_tokens` is unavailable (`null`); no tokenizer estimate
+is presented as billed usage. Missing measurements remain missing, never zero.
+`provider_ms` reuses the existing monotonic transport timing (after reservation,
+through response receipt/JSON capture). `consolidation_ms` measures entry into
+consolidate, including authorization, context preparation, provider, validation and
+publication/error cleanup, up to diagnostic finalization. Replays without a new
+provider call do not create an artificial generation diagnostic.
+
+`source_chars` includes the original source's speaker prefixes and separators;
+`source_disclosed_chars` counts its nonoverlapping transmitted segments. Both use
+Unicode code points. `request_message_chars` covers all message bodies, including
+instructions/previous machine state; `request_schema_chars` measures the compact
+output schema. `catalogue_chars` measures compact passage metadata plus segment
+reference labels, excluding source text. These normalized JSON sizes are not HTTP
+wire byte measurements. `output_json_chars`/`output_json_bytes` measure the actual
+provider message content in code points/UTF-8 bytes before canonical expansion.
+`atomic_items`, `passage_references` (occurrences, not distinct IDs),
+`atomic_text_chars` and compact `evidence_json_chars` describe returned output,
+including a candidate subsequently rejected by the Engine. They imply no semantic
+support or confirmation. Invalid JSON retains available sizes without invented counts.
+
+Four simple advisory flags are independent of admission and budgets:
+
+- Output tokens > 3 × input tokens, with output >= 2,000 tokens.
+- At least 8 atomics and more than 1 atomic per 100 source characters.
+- Compact evidence/reference arrays > 50% of actual output characters, with output >= 2,000 characters.
+- Catalogue metadata > 2 × source characters, with catalogue >= 4,000 characters.
+
+Ratios are indicative comparisons (including normalized field sizes where stated),
+not proof of an error. Long requested procedures can legitimately trigger them.
+No flag changes validation, token ceilings, timeouts, retries or persistence.
+The existing payload carries source text once; catalogue descriptors contain no
+copied quotes. Previous understanding is separately labelled unverified machine
+data. No context compaction is introduced.
+
+A future passage selector can fit between the authorized Engine packet and
+`PassageReferences` construction in `UumExtractionProvider.generate`. It must keep
+original source IDs/offsets and relevant facts, constraints, negation, contradictions,
+chronology and user/assistant/external attribution, with sufficient surrounding
+context. Existing access checks and canonical citation validation remain mandatory;
+selection must not turn missing evidence into an assertion. This is not implemented.
+
 
 ## Contratto di risposta approvato — 22 ottobre 2026
 

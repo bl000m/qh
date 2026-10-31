@@ -9,10 +9,12 @@ from app.policy.models import PolicyAction, PolicyDecision, PolicyRequest
 
 class OwnerPolicyService:
     def __init__(self, *, owner_for: Callable[[ContextId], Awaitable[SubjectId | None]],
-                 guest_for: Callable[[str], Awaitable[GuestAccess | None]] | None = None, clock=None) -> None:
+                 guest_for: Callable[[str], Awaitable[GuestAccess | None]] | None = None, clock=None,
+                 deletion_owner_for=None) -> None:
         self._owner_for = owner_for
         self._guest_for = guest_for
         self.clock = clock or (lambda: datetime.now(timezone.utc))
+        self._deletion_owner_for = deletion_owner_for or owner_for
 
     async def evaluate(self, request: PolicyRequest) -> PolicyDecision:
         if request.action in (PolicyAction.READ_SNAPSHOT, PolicyAction.ASK_SNAPSHOT):
@@ -22,6 +24,9 @@ class OwnerPolicyService:
             return PolicyDecision(allowed=False, reason='Snapshot access required')
         if not request.subject_id:
             return PolicyDecision(allowed=False, reason="Owner access required")
+        if request.action == PolicyAction.DELETE_CONTEXT:
+            allowed = len(request.context_ids)==1 and await self._deletion_owner_for(request.context_ids[0])==request.subject_id
+            return PolicyDecision(allowed=allowed,reason=None if allowed else 'Owner access required')
         if request.action in (PolicyAction.CREATE_CONTEXT, PolicyAction.LIST_CONTEXTS, PolicyAction.ORGANIZE_ENVIRONMENT):
             # The trusted authenticated subject selects only their own namespace.
             # No target owner or foreign scope can be supplied with these actions.

@@ -1,0 +1,20 @@
+<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Isolated session transition</title></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {User} from 'oidc-client-ts';
+import {createSession} from '../../src/auth';
+import App from '../../src/App';
+import '../../src/styles.css';
+const parameters=new URLSearchParams(location.search),callback=parameters.has('callback'),fail=parameters.has('fail');
+history.replaceState(null,'',callback?'/oidc/callback?code=isolated&state=isolated':'/');
+let redirectCalls=0,callbackCalls=0,releaseRedirect,releaseCallback;
+const redirectGate=new Promise(resolve=>{releaseRedirect=resolve;}),callbackGate=new Promise(resolve=>{releaseCallback=resolve;});
+const manager={
+ events:{addAccessTokenExpired:()=>{}},clearStaleState:async()=>{},removeUser:async()=>{},signoutRedirect:async()=>{},
+ signinRedirect:async()=>{redirectCalls++;await redirectGate;location.assign('/tests/fixtures/session-transition.html?callback=1'+(!callback&&fail?'&fail=1':''));},
+ signinRedirectCallback:async()=>{callbackCalls++;await callbackGate;if(fail)throw new Error('Isolated callback failure');return new User({access_token:'isolated-offline-token',token_type:'Bearer',expires_at:Date.now()/1000+300,profile:{sub:'isolated-owner',iss:'isolated',aud:'qh-web',exp:9999999999,iat:0}});}
+};
+const session=createSession(manager,false);
+window.transitionControl={releaseRedirect,releaseCallback,session,counts:()=>({redirectCalls,callbackCalls})};
+createRoot(document.getElementById('root')).render(React.createElement(React.StrictMode,null,React.createElement(App,{session})));
+</script></body></html>

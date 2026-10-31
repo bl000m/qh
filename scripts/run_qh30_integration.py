@@ -39,6 +39,7 @@ def main():
     return pytest.main([
         "-q", "-x", "--tb=short", "-p", "no:cacheprovider",
         "-o", "faulthandler_timeout=60",
+        "tests/test_consolidation.py", "tests/test_consolidation_pipeline.py",
         "tests/test_uum.py", "tests/test_uum_presence.py", "tests/test_uum_pipeline.py", "tests/test_uum_provisioning.py",
         "tests/test_semantic_assignments.py", "tests/test_semantic_pipeline.py",
         "tests/test_enrichment.py", "tests/test_enrichment_pipeline.py",
@@ -48,6 +49,7 @@ def main():
         "tests/test_disclosure.py", "tests/test_disclosure_pipeline.py",
         "tests/test_guest.py", "tests/test_guest_pipeline.py",
         "tests/test_sharing_pipeline.py",
+        "tests/test_guest_mistral.py", "tests/test_guest_mistral_pipeline.py",
         "tests/test_ux_v2_architecture.py", "tests/test_environment.py", "tests/test_owner_review.py",
         "tests/test_session_pricing.py", "tests/test_chat_sessions.py", "tests/test_chat_sessions_api.py", "tests/test_chat_sessions_pipeline.py",
         "tests/test_chat_context.py", "tests/test_chat_references.py", "tests/test_chat_serialization.py", "tests/test_chat_service.py", "tests/test_chat_mistral.py", "tests/test_chat_pipeline.py",

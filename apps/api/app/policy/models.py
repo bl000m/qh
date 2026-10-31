@@ -8,6 +8,7 @@ class PolicyAction(str, Enum):
     CREATE_CONTEXT = "create_context"
     LIST_CONTEXTS = "list_contexts"
     UPDATE_CONTEXT = "update_context"
+    DELETE_CONTEXT = "delete_context"
     READ_CONTEXT = "read_context"
     PROJECT_CONTEXT = "project_context"
     CHAT = "chat"

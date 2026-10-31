@@ -10,5 +10,5 @@ export default defineConfig({
   use: { baseURL: process.env.QH_BROWSER_BASE_URL||'http://localhost:5173', browserName: 'chromium',
     ignoreHTTPSErrors:process.env.QH_SHARING_BROWSER_TEST==='1',
     trace: 'off', video: 'off', screenshot: 'off' },
-  webServer: process.env.QH_BROWSER_EXTERNAL_SERVER === '1' ? undefined : { command: 'npm run dev -- --mode test', env:{VITE_QH_OFFLINE_TESTS:'1'}, url: 'http://localhost:5173', reuseExistingServer: false, stdout: 'ignore', stderr: 'pipe' }
+  webServer: process.env.QH_BROWSER_EXTERNAL_SERVER === '1' ? undefined : { command: 'npm run dev -- --mode test', env:{VITE_QH_OFFLINE_TESTS:'1',VITE_QH_SHARING:'1'}, url: 'http://localhost:5173', reuseExistingServer: false, stdout: 'ignore', stderr: 'pipe' }
 });

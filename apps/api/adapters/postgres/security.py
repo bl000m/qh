@@ -1,9 +1,12 @@
 """Read-only identity/owner lookup. No runtime provisioning or migrations."""
 
 from uuid import UUID
+import asyncio
 
 import psycopg
 from sqlalchemy.engine import URL
+from psycopg.rows import tuple_row
+from adapters.postgres.connections import connection
 
 from adapters.oidc import IdentityUnavailable
 from app.core.models import ContextId, SubjectId
@@ -14,14 +17,15 @@ class PostgresSecurityReader:
         self._url = url
 
     async def _read(self, query: str, parameters: tuple):
+        return await asyncio.to_thread(self._read_on, query, parameters)
+
+    def _read_on(self, query, parameters):
         try:
-            async with await psycopg.AsyncConnection.connect(
-                host=self._url.host, port=self._url.port, dbname=self._url.database,
-                user=self._url.username, password=self._url.password, connect_timeout=5,
-            ) as connection:
-                await connection.execute("SET statement_timeout = '5s'")
-                cursor = await connection.execute(query, parameters)
-                return await cursor.fetchone()
+            with connection(self._url) as c:
+                c.execute("SET LOCAL statement_timeout = '5s'")
+                with c.cursor(row_factory=tuple_row) as cursor:
+                    cursor.execute(query, parameters)
+                    return cursor.fetchone()
         except psycopg.Error:
             raise IdentityUnavailable("Identity storage unavailable") from None
 

@@ -35,6 +35,18 @@ class ContextualChatService:
             raise ContextSpaceNotFound('Context space not found')
 
     async def _collect(self, request):
+        if request.consolidated_revision_ids is not None:
+            rows = []
+            if len(request.consolidated_revision_ids)>100:
+                raise ChatContextUnavailable('Consolidated understanding exceeds supported item count')
+            for revision in request.consolidated_revision_ids:
+                page = await self.context.browse(ContextRequest(subject_id=request.subject_id,
+                    query=ContextBrowse(context_id=request.context_id, view='history', limit=1,
+                                        revision_id=revision)))
+                if len(page.revisions)!=1 or page.revisions[0].revision_id!=revision:
+                    raise ChatContextUnavailable('Consolidated revision unavailable')
+                rows.append(page.revisions[0])
+            return tuple(rows), False
         rows, partial = [], False
         for view in ('current', 'proposed') if request.include_proposed else ('current',):
             cursor = None
@@ -67,12 +79,12 @@ class ContextualChatService:
             raise ChatInputInvalid('One explicit Space required')
         # Validate dialogue before any private read or provider invocation.
         build_context(context_id=request.context_id, revisions=(), messages=request.messages,
-                      include_proposed=request.include_proposed, extended_dialogue=request.extended_dialogue)
+                      include_proposed=request.include_proposed, extended_dialogue=request.extended_dialogue, consolidated=request.consolidated_revision_ids is not None)
         await self._authorize(request)
         selected = await self._collect(request)
         expected = fingerprint(selected)
         built = build_context(context_id=request.context_id, revisions=selected[0],
-            messages=request.messages, include_proposed=request.include_proposed, partial=selected[1], extended_dialogue=request.extended_dialogue)
+            messages=request.messages, include_proposed=request.include_proposed, partial=selected[1], extended_dialogue=request.extended_dialogue, consolidated=request.consolidated_revision_ids is not None)
         if fingerprint(await self._collect(request)) != expected:
             raise ChatContextUnavailable('Context changed before generation')
         await self._authorize(request)  # Separate CHAT gate immediately before disclosure.

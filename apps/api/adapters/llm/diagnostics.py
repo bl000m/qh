@@ -6,6 +6,27 @@ from pathlib import Path
 import time
 from uuid import UUID, uuid4
 
+from app.chat.diagnostic_summary import uum_output_metrics as uum_output_metrics
+from app.chat.diagnostic_summary import call_metrics, output_phase, operation_totals
+
+
+def performance_warnings(metrics):
+    """Advisory only; see docs/qh-51-essai-ia.md for thresholds and units."""
+    warnings = []
+    source, items = metrics.get('source_chars'), metrics.get('atomic_items')
+    input_tokens, output_tokens = metrics.get('input_tokens'), metrics.get('output_tokens')
+    output_chars, evidence = metrics.get('output_json_chars'), metrics.get('evidence_json_chars')
+    catalogue = metrics.get('catalogue_chars')
+    if input_tokens and output_tokens is not None and output_tokens>=2000 and output_tokens>3*input_tokens:
+        warnings.append('output_tokens_over_3x_input')
+    if source and items is not None and items>=8 and items>source/100:
+        warnings.append('dense_atomic_items')
+    if output_chars and evidence is not None and output_chars>=2000 and evidence>output_chars/2:
+        warnings.append('evidence_over_half_output')
+    if source and catalogue is not None and catalogue>=4000 and catalogue>2*source:
+        warnings.append('catalogue_over_2x_source')
+    return warnings
+
 
 class PrivateDiagnostics:
     retention = 3600
@@ -110,7 +131,24 @@ class DiagnosticCall:
     def __init__(self, store, subject, scope, kind):
         self.store, self.subject, self.scope, self.kind = store, subject, scope, kind
         self.identity = None
+        self.accounting_summary = None
         self.pending_checks = []
+        self.metrics = {}
+        self.operation_id = str(uuid4())
+        self.calls = []
+        self.durations = {}
+
+    def measure(self, **values):
+        # Callers supply numeric metadata only, never prompt/source content.
+        for key,value in values.items():
+            if key in ('validation_ms','persistence_ms'):
+                self.durations[key]=self.durations.get(key,0)+value
+            else:
+                self.metrics[key]=value
+
+    def _operation(self):
+        return dict(id=self.operation_id,calls=list(self.calls),
+            totals=dict(operation_totals(self.calls),**self.durations))
 
     def begin(self):
         self.identity = self.store.begin(subject=self.subject, scope=self.scope, kind=self.kind)
@@ -129,6 +167,7 @@ class DiagnosticCall:
             return
         # Never persist request/system prompt, credentials or provider headers.
         exchange = raw.last_exchange or {}
+        latency = exchange.get('latency_seconds', (raw.last_failure or {}).get('latency_seconds'))
         response = exchange.get('response')
         text = json.dumps(response, ensure_ascii=False)
         redacted = bool(raw._key and raw._key in text)
@@ -136,10 +175,30 @@ class DiagnosticCall:
             response = json.loads(text.replace(raw._key, '[REDACTED]'))
         index = getattr(raw, 'last_attempt', None)
         row = raw.budget.read(lambda s: s['calls'][index]) if index is not None else None
-        self.store.update(self.identity, raw_response=response, secret_redacted=redacted,
+        if row is not None:
+            self.accounting_summary=dict(attempt=index+1,status=row['status'],
+                cost_usd=row.get('observed_usd'),usage=row.get('usage'))
+        if self.kind == 'uum':
+            usage = (row or {}).get('usage') or {}
+            self.measure(input_tokens=usage.get('prompt_tokens'), output_tokens=usage.get('completion_tokens'),
+                provider_ms=round(latency*1000, 3) if latency is not None else None)
+            self.metrics = call_metrics(self.metrics, exchange.get('response'))
+            request = raw.last_request
+            if request is not None:
+                self.measure(request_message_chars=sum(len(m.content) for m in request.messages),
+                    request_instruction_chars=sum(len(m.content) for m in request.messages if m.role.value=='system'),
+                    request_data_chars=sum(len(m.content) for m in request.messages if m.role.value!='system'),
+                    request_schema_chars=len(json.dumps(request.output_schema, ensure_ascii=False, separators=(',', ':'))))
+        if self.kind=='uum':
+            self.calls.append(dict(attempt_index=index,phase=output_phase(response),metrics=dict(self.metrics)))
+        self.store.update(self.identity, **({'operation':self._operation()} if self.kind=='uum' else {}), raw_response=response, secret_redacted=redacted,
             attempt_index=index, accounting=row, http_status=exchange.get('http_status',
-                (raw.last_failure or {}).get('http_status')), latency_seconds=exchange.get('latency_seconds'))
+                (raw.last_failure or {}).get('http_status')), latency_seconds=latency,
+            metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))
 
-    def finish(self, outcome, phase):
+    def finish(self, outcome, phase, *, started_at=None):
+        if started_at is not None:
+            self.measure(consolidation_ms=round((time.perf_counter()-started_at)*1000, 3))
         if self.identity:
-            self.store.update(self.identity, outcome=outcome, phase=phase)
+            self.store.update(self.identity, **({'operation':self._operation()} if self.kind=='uum' else {}), outcome=outcome, phase=phase,
+                metrics=dict(self.metrics), warnings=performance_warnings(self.metrics))

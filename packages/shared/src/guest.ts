@@ -26,25 +26,41 @@ export interface GuestVerifyRequest {
 }
 
 export interface GuestSessionView {
-  snapshot_id: string;
-  rights: GuestRight[];
-  expires_at: string;
-  verification: 'mailbox_control';
+  name:string;can_ask:boolean;expires_at:string;verification:'mailbox_control';
+  /** Authorized snapshot recap only; absent when unavailable or READ is denied. */
+  notice?:string;
+  recap?:{title:string;text:string}|null;
+  document_recaps?:{title:string;text:string}[];
+  semantic_document_count?:number;
 }
+
+export interface RecipientAnswer {answer:string;insufficient_context:boolean;simulated:boolean;documents?:import('./context-space').SourceDocument[]}
+export interface SharingInput {recipient_email:string;purpose:string;expires_at:string;allow_update_proposals?:boolean;documents?:string[];knowledge_scope:'context'}
 
 export interface SharingPolicy {
   recipient_email:string; purpose:string; rights:GuestRight[]; expires_at:string;
-  include_proposed:boolean; include_quotes:boolean; provider:'offline'|null;
+  /** Recorded owner permission; external contribution workflow is not yet available. */
+  allow_update_proposals?:boolean;
+  original_documents?:string[];
+  /** Historical approvals only; new knowledge is scoped to the Context Space. */
+  semantic_documents?:string[];
+  knowledge_scope?:'context';
+  include_proposed:boolean; include_quotes:boolean; provider:'offline'|'mistral-small-2603'|null;
 }
 export interface SharedItem {
   reference:string; text:string; validation_state:'proposed'|'confirmed'; origin_kind:string;
   sources:string[]; citations?:{source:string;quote:string;redacted:boolean}[];
   primary_dimension?:{value:string;certainty:string;review_state:string};
 }
-export interface SharedPayload {format:'qh.disclosure/1';items:SharedItem[]}
+export interface SharedPayload {notice?:string;format:'qh.disclosure/1';name?:string;items:SharedItem[];recap?:{title:string;text:string};document_recaps?:{title:string;text:string}[];semantic_document_count?:number}
 export interface SharingPreview {
   id:string;fingerprint:string;policy:SharingPolicy;payload:SharedPayload;
-  report:{status:string;message:string;warning:string;risks:string[];
-    exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
+  report:{status:string;message:string;warning:string;risks:string[];introduction_only?:boolean;recap_status?:'available'|'restricted'|'unavailable';
+    anchors?:{reference:string;item_id:string;revision_id:string}[];exclusions:{revision_id:string;reason:string}[];masks:{reference:string;rules:string[]}[]};
 }
-export interface GuestAnswer {simulated:true;answer:string;reference_aliases:string[];insufficient_context:true}
+export interface GuestProviderStatus {model:'offline'|'mistral-small-2603';enabled:boolean;simulated:boolean;remaining_usd?:string|null;plafond_reached?:boolean;authorized_total_eur?:string;budget_scope?:'development_global'}
+export interface GuestAnswer {simulated:boolean;model?:'mistral-small-2603';answer:string;reference_aliases:string[];insufficient_context:boolean;support_basis?:'dialogue'|'canonical'|'mixed'|'insufficient';budget?:GuestProviderStatus;accounting?:{attempt:number;cost_usd:string;usage:{prompt_tokens:number;completion_tokens:number}}}
+
+/** Temporary recipient dialogue; at most six complete turns, 16000 characters total. */
+export interface RecipientMessage {role:'user'|'assistant';content:string}
+export interface RecipientQuestion {question:string;history?:RecipientMessage[]}

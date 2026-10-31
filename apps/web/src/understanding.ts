@@ -72,3 +72,12 @@ export function revisionPage(raw: unknown, query: RevisionQuery): RevisionPage {
   }
   return p;
 }
+
+/** Label only the exact original PDF citation, never infer its page from item text. */
+export function sourceCitationLabel(source:SourceRevision|undefined,citation:Citation):string|null{
+ if(!source||source.source_revision_id!==citation.source_revision_id)return null;
+ const metadata=source.origin.metadata;
+ if(!metadata||typeof metadata!=='object'||Array.isArray(metadata)||typeof metadata.filename!=='string')return null;
+ const page=/:page:([1-9][0-9]*)$/.exec(citation.turn_id??'');
+ return metadata.filename+(page?' · page '+page[1]:'');
+}

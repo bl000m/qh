@@ -11,6 +11,7 @@ class ChatRequest:
     context_query: ContextQuery | None = None
     context_id: ContextId | None = None
     include_proposed: bool = False
+    consolidated_revision_ids: tuple[str, ...] | None = None
     extended_dialogue: bool = False  # Trusted development composition, never a client flag.
 
 
@@ -21,7 +22,7 @@ class ChatResponse:
     model: str = "unbound"
     references: tuple[CanonicalRevision, ...] = ()
     provided_revisions: tuple[CanonicalRevision, ...] = ()
-    support_basis: Literal['dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
+    support_basis: Literal['general', 'dialogue', 'canonical', 'mixed', 'insufficient'] = 'insufficient'
     insufficient_context: bool = True  # Completeness warning, independent of support_basis.
     partial_coverage: bool = False
     input_bound: int = 0

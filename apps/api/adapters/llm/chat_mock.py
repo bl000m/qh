@@ -9,7 +9,7 @@ class MockChatProvider:
     async def generate(self, request):
         context = json.loads(request.messages[1].content)
         rows, excerpts = [], []
-        for row in expand_model_context(context):
+        for row in expand_model_context(context, max_revisions=100):
             text = row['content'].get('text')
             if not isinstance(text, str) or not text.strip():
                 continue

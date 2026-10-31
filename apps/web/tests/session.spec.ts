@@ -17,7 +17,7 @@ test('QH-52 memory renewal serializes wake/API requests, preserves route, revoke
   const state=session.snapshot();await session.logout();expiry();
   return {refresh,revoked,removed,tokens,state,after:session.snapshot(),route,stored:[...Object.values(sessionStorage),...Object.values(localStorage)]};
  });
- expect(result.refresh).toBe(1);expect(result.tokens).toEqual(['renewed','renewed','renewed']);expect(result.state).toBe('authenticated');expect(result.after).toBe('signed-out');expect(result.revoked).toBe(1);
+ expect(result.refresh).toBe(1);expect(result.tokens).toEqual(['renewed','renewed','renewed']);expect(result.state).toBe('authenticated');expect(result.after).toBe('starting');expect(result.revoked).toBe(1);
  expect(result.route).toBe('/context-spaces/00000000-0000-0000-0000-000000000001');expect(result.stored.join('')).not.toMatch(/memory-refresh|renewed|first/);
 });
 
@@ -52,7 +52,7 @@ test('QH-52 failed rotation and account changes fail closed; logout wins an in-f
   }
   return results;
  });
- expect(results).toEqual([{mode:'reused-refresh',rejected:true,state:'expired'},{mode:'different-account',rejected:true,state:'expired'},{mode:'logout-race',rejected:true,state:'signed-out'}]);
+ expect(results).toEqual([{mode:'reused-refresh',rejected:true,state:'expired'},{mode:'different-account',rejected:true,state:'expired'},{mode:'logout-race',rejected:true,state:'starting'}]);
 });
 
 test('QH-52 legacy profile keeps its approved home landing until the development gate',async({page})=>{

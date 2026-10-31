@@ -8,25 +8,12 @@ import httpx
 import pytest
 
 from adapters.llm.mistral import ExperimentBudget
-from adapters.llm.pricing import OfficialPricing
 from adapters.llm.session_config import PrivateSessionFactory, configured_session_factory
 from app.chat.sessions import ProviderSessions, ChatIdentity, SessionClosed
 from app.chat.context import ChatContextUnavailable, ChatInputInvalid, ChatProviderUnavailable
 from app.core.models import ContextSpaceNotFound, Message, MessageRole
 from tests.test_chat_service import case, request
 from tests.test_chat_context import revision
-
-
-def price_html(incoming='0.15', outgoing='0.6'):
-    value = dict(pricing=dict(type='custom', free=False,
-        input=[dict(type='range', price=float(incoming), denominator='/M Tokens')],
-        output=[dict(type='range', price=float(outgoing), denominator='/M Tokens')]), isRetired=False)
-    return 'Mistral Small 4 mistral-small-2603<script>self.__next_f.push(' + json.dumps([1, json.dumps(value)]) + ')</script>'
-
-
-def offline_pricing():
-    return OfficialPricing(transport=httpx.MockTransport(lambda r: httpx.Response(200,
-        text=price_html(), headers={'Content-Type': 'text/html'})))
 
 
 def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
@@ -49,7 +36,7 @@ def setup(tmp_path, monkeypatch, handler=None, rows=None, **limits):
             usage=dict(prompt_tokens=100, completion_tokens=20), choices=[dict(finish_reason='stop',
             message=dict(content=json.dumps(dict(answer='Controllo generativo simulato.', reference_aliases=['R1'], support_basis='canonical', insufficient_context=False))))]))
     factory = PrivateSessionFactory(authorization_path=auth, ledger_path=ledger,
-                                   transport=httpx.MockTransport(simulated), pricing=offline_pricing())
+                                   transport=httpx.MockTransport(simulated))
     chat, context, _, owner = case(rows)
     clock = [now.timestamp()]
     sessions = ProviderSessions(chat=chat, factory=factory, clock=lambda: clock[0])
@@ -210,16 +197,20 @@ def test_small_session_budget_reserves_before_disclosure(tmp_path,monkeypatch):
     asyncio.run(run());assert not calls and not json.loads(ledger.read_text())['calls']
 
 
-def test_pending_reservation_survives_reopen_and_blocks_other_session(tmp_path,monkeypatch):
+def test_pending_reservation_survives_reopen_and_stays_counted(tmp_path,monkeypatch):
     from decimal import Decimal
     from adapters.llm.session_config import SessionBudget
-    from adapters.llm.mistral import MistralError
+    from adapters.llm.mistral import MistralError, committed_cost
     s,_,_,_,calls,ledger,_=setup(tmp_path,monkeypatch)
     original=SessionBudget(s.factory.ledger,'crashed-session',3,'0.01')
     original.reserve('test-pending',Decimal('0.0024'))
+    state=json.loads(ledger.read_text());state['max_usd']='0.004';ledger.write_text(json.dumps(state))
     reopened=SessionBudget(ExperimentBudget(ledger),'new-session',3,'0.01')
+    # The crash-left reservation does not block, but its maximum still counts.
     with pytest.raises(MistralError):reopened.reserve('test-next',Decimal('0.0024'))
-    assert not calls and len(json.loads(ledger.read_text())['calls'])==1
+    assert reopened.reserve('test-small',Decimal('0.0015'))==1
+    state=json.loads(ledger.read_text())
+    assert not state['blocked'] and committed_cost(state)==Decimal('0.0039') and not calls
 
 
 def test_cross_session_reservations_are_atomic_under_concurrency(tmp_path,monkeypatch):
@@ -228,6 +219,7 @@ def test_cross_session_reservations_are_atomic_under_concurrency(tmp_path,monkey
     from adapters.llm.session_config import SessionBudget
     from adapters.llm.mistral import MistralError
     s,_,_,_,calls,ledger,_=setup(tmp_path,monkeypatch)
+    state=json.loads(ledger.read_text());state['max_usd']='0.004';ledger.write_text(json.dumps(state))
     def reserve(index):
         try:
             return SessionBudget(s.factory.ledger,str(index),3,'0.01').reserve('parallel',Decimal('0.0024'))

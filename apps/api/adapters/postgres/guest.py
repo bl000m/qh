@@ -7,6 +7,8 @@ from uuid import uuid4
 
 from adapters.postgres.canonical import CanonicalRepository
 from app.core.models import GuestAccess
+from app.projections.document_scope import restrict_snapshot
+from adapters.postgres.source_documents import document_source_ids
 from app.projections.drafts import ProjectionNotFound, identifier
 from app.projections.guest import CodeDelivery, GuestDenied, GuestSnapshot, GuestUnavailable
 
@@ -32,11 +34,11 @@ class PostgresGuestRepository:
     @staticmethod
     def _invitation(c, token_hash, now):
         return c.execute('''
-            SELECT i.*,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
+            SELECT i.*,s.approved_by AS owner_id,s.policy->>'recipient_email' AS email,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_invitations i JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
             WHERE i.token_hash=%s AND i.revoked_at IS NULL AND i.expires_at>%s
-                AND cs.status='active' AND u.status='active' FOR UPDATE OF i FOR SHARE OF cs,u
+                AND cs.status='active' AND u.status='active' AND cs.owner_id=s.approved_by FOR UPDATE OF i FOR SHARE OF cs,u
         ''', (token_hash, now)).fetchone()
 
     async def create(self, subject, scope, snapshot_id, token_hash):
@@ -132,25 +134,25 @@ class PostgresGuestRepository:
             c.execute('INSERT INTO guest_sessions (id,invitation_id,challenge_id,token_hash,expires_at,created_at) '
                 'VALUES (%s,%s,%s,%s,%s,%s)', (session_id, invite['id'], challenge_id, session_hash, expiry, now))
             return GuestAccess(session_id=session_id, invitation_id=str(invite['id']), context_id=str(invite['context_space_id']),
-                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry,provider=invite['provider'])
+                snapshot_id=str(invite['snapshot_id']), rights=tuple(invite['rights']), expires_at=expiry,provider=invite['provider'],owner_id=str(invite['owner_id']))
         return await asyncio.to_thread(self._run, None, consume)
 
     @staticmethod
     def _active(c, now, *, session_hash=None, session_id=None):
         row = c.execute('''
-            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
+            SELECT g.id,g.invitation_id,g.expires_at,i.context_space_id,i.snapshot_id,s.approved_by AS owner_id,s.policy->'rights' AS rights,s.policy->>'provider' AS provider
             FROM guest_sessions g JOIN guest_invitations i ON i.id=g.invitation_id
             JOIN approved_snapshots s ON s.id=i.snapshot_id
             JOIN context_spaces cs ON cs.id=i.context_space_id JOIN users u ON u.id=cs.owner_id
             WHERE '''+('g.token_hash=%s' if session_hash is not None else 'g.id=%s')+'''
                 AND g.revoked_at IS NULL AND i.revoked_at IS NULL AND g.expires_at>%s AND i.expires_at>%s
-                AND cs.status='active' AND u.status='active' FOR SHARE OF g,i,cs,u
+                AND cs.status='active' AND u.status='active' AND cs.owner_id=s.approved_by FOR SHARE OF g,i,cs,u
         ''', (session_hash if session_hash is not None else session_id, now, now)).fetchone()
         if row is None:
             return None
         return GuestAccess(session_id=str(row['id']), invitation_id=str(row['invitation_id']),
             context_id=str(row['context_space_id']), snapshot_id=str(row['snapshot_id']), rights=tuple(row['rights']),
-            expires_at=row['expires_at'],provider=row['provider'])
+            expires_at=row['expires_at'],provider=row['provider'],owner_id=str(row['owner_id']))
 
     async def authenticate(self, session_hash):
         return await asyncio.to_thread(self._run, None,
@@ -166,13 +168,60 @@ class PostgresGuestRepository:
             if current != grant or right not in ('READ', 'ASK_AI') or right not in current.rights:
                 raise GuestDenied('Vérification impossible.')
             # Session/invitation/owner locks fence revocation through this final safe read.
-            row = c.execute('SELECT id,context_space_id,payload FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
+            row = c.execute('SELECT id,context_space_id,payload,policy FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
                 (current.snapshot_id, current.context_id)).fetchone()
+            # Access check only: hydrate no source text and never expand the frozen
+            # payload. Retained approvals remain immutable even when now restricted.
+            unauthorized = set()
+            if row['policy'].get('knowledge_scope')!='context':
+                # Compatibility only: never broaden a previously approved document scope.
+                documents = set(document_source_ids(c, current.context_id))
+                permitted = set(row['policy'].get('semantic_documents', [])) & set(row['policy'].get('original_documents', []))
+                unauthorized = documents - permitted
+            anchors = c.execute("""SELECT a.reference,r.id,
+                ARRAY(SELECT p.source_revision_id::text FROM item_revision_provenance p WHERE p.item_revision_id=r.id)
+                || ARRAY(SELECT q->>'source_revision_id' FROM jsonb_array_elements(coalesce(r.content->'citations','[]')) q) AS sources
+                FROM approved_snapshot_revisions a JOIN understanding_item_revisions r
+                  ON r.id=a.revision_id AND r.context_space_id=a.context_space_id
+                WHERE a.snapshot_id=%s AND a.context_space_id=%s""", (current.snapshot_id,current.context_id)).fetchall()
+            report = c.execute('SELECT p.report FROM approved_snapshots s JOIN disclosure_previews p ON p.id=s.preview_id '
+                'WHERE s.id=%s AND s.context_space_id=%s', (current.snapshot_id,current.context_id)).fetchone()['report']
+            safe = {a['reference'] for a in anchors if not set(a['sources']) & unauthorized}
+            if row['policy'].get('knowledge_scope')=='context' and report.get('document_scope_version')!=3:
+                raise GuestDenied('Vérification impossible.')
+            if report.get('introduction_only') and report.get('document_scope_version') not in (2,3):
+                safe = set()  # Old synthetic introductions were not document-scoped.
+            filtered = restrict_snapshot(row['payload'],safe,
+                verified_recap=report.get('document_scope_version') in (2,3) or not unauthorized)
             return GuestSnapshot(context_id=str(row['context_space_id']), snapshot_id=str(row['id']),
-                payload_json=json.dumps(row['payload'],ensure_ascii=False,sort_keys=True))
+                payload_json=json.dumps(filtered,ensure_ascii=False,sort_keys=True),
+                include_quotes=row['policy'].get('include_quotes') is True)
         return await asyncio.to_thread(self._run, None, read)
 
     async def logout(self, session_hash):
         def revoke(repository, c, now):
             c.execute('UPDATE guest_sessions SET revoked_at=COALESCE(revoked_at,%s) WHERE token_hash=%s', (now, session_hash))
         return await asyncio.to_thread(self._run, None, revoke)
+
+    async def documents(self, grant, revision=None):
+        def read(repository, c, now):
+            current=self._active(c,now,session_id=grant.session_id)
+            if current!=grant or 'READ' not in current.rights:
+                raise GuestDenied('Vérification impossible.')
+            policy=c.execute('SELECT policy FROM approved_snapshots WHERE id=%s AND context_space_id=%s',
+                (current.snapshot_id,current.context_id)).fetchone()['policy']
+            allowed=policy.get('original_documents',[])
+            if revision is not None and revision not in allowed:
+                raise GuestDenied('Vérification impossible.')
+            if revision is None:
+                from adapters.postgres.source_documents import document_metadata
+                return document_metadata(c,current.context_id,allowed)
+            fields='filename,media_type,original'
+            rows=c.execute('SELECT '+fields+' FROM source_documents WHERE context_space_id=%s AND source_revision_id=ANY(%s::uuid[]) ORDER BY source_revision_id',
+                (current.context_id,allowed if revision is None else [revision])).fetchall()
+            if revision is not None:
+                if not rows:
+                    raise GuestDenied('Vérification impossible.')
+                return rows[0]
+            return [dict(row,source_revision_id=str(row['source_revision_id'])) for row in rows]
+        return await asyncio.to_thread(self._run,None,read)

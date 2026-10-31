@@ -93,6 +93,6 @@ def register_uum_profiles(repository):
     """Trusted explicit provisioning; no VPS registration before cutover approval."""
     with repository.connect() as c:
         version = c.execute('SELECT version_num FROM alembic_version').fetchone()['version_num']
-        if version not in ('0004_projection_outbox', '0005_retire_legacy_category', '0006_owner_organization'):
+        if version not in ('0004_projection_outbox', '0005_retire_legacy_category', '0006_owner_organization', '0009_guest_invitations', '0010_context_consolidation'):
             raise RuntimeError('Reviewed native schema required')
     repository.register_types(uum_definitions())

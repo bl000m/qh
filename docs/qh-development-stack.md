@@ -1,5 +1,25 @@
 # QH VPS POC — sviluppo live nel checkout unico
 
+## Owner Space erasure — activation pending, 2026-10-30
+
+The delete action requires migration `0012_space_deletion`. Before activation,
+requests fail closed with 503 and do not change Space data. No migration or real
+Space deletion was performed while implementing the feature.
+
+Activation is a separate explicitly authorized operation: obtain and verify a
+private PostgreSQL backup/restore safeguard, apply only the reviewed forward
+migration, then use `sudo -n make dev-restart DEV_SERVICE=backend` so the native
+worker recognizes schema 0012 and resumes durable pending deletions. Preserve
+all existing realm/configuration/volumes. Never use generic `make migrate` or
+Compose lifecycle commands against this POC. Verify first with a disposable,
+explicitly designated Space; no existing Space is a smoke-test target.
+
+Deletion revokes access before graph work. On partial failure, retry the same
+confirmed action or let the worker resume; do not reset jobs, disable triggers,
+or restore old canonical data over a live database. Completed erasure keeps only
+an owner-bound completion receipt; graph assertions, PDFs, history and shares
+are removed for that Space. Aggregate cost/account records are preserved.
+
 Decisione esplicita del proprietario, **2026-10-17**, durante QH-12 / [PR #13](https://github.com/bl000m/qh/pull/13).
 Sostituisce per questa fase POC la gestione image-only di frontend/backend.
 La PR resta aperta per la prova personale del proprietario; Jira QH-12 resta aperto.
@@ -205,3 +225,35 @@ container afterward. `DEV_SERVICE` accepts only frontend/backend; omit it to ret
 the original app-pair behavior. A normal dev-up is not permission to enable a
 provider, renew receipts, replace ledgers or run an inference. Existing dev-stop
 before branch switching and all persistent-data protections remain mandatory.
+
+## PDF activation — owner authorization, 2026-10-29
+
+The backend dependency image is now `qh-api:pdf-685f005`, built from Git archive
+685f005 with pinned pypdf 6.21.4. Its exact ID/revision is retained in
+`infra/docker/qh-backend-image.json`; the guard overlays only this backend pin,
+leaving the historical image evidence and frontend/MCP pins intact. Application
+sources still come from this checkout. Both native and sharing startup gates
+explicitly accept additive schema `0011_source_documents`; unknown versions remain
+refused. Only the backend was recreated/restarted with guarded `dev-*` commands.
+
+A fresh private PostgreSQL dump was restored in a disposable, networkless tmpfs
+container; every table fingerprint matched. Migration 0010→0011 was rehearsed
+there, then applied alone to the persistent database while the backend was stopped.
+All pre-existing table fingerprints remained unchanged. Backup, globals, SHA256
+and restore receipts are retained with 0700/0600 protection under
+`.local-archive/qh-pdf-activation-20261029/`. Never downgrade or restore over new
+writes for application rollback; keep 0011 and existing original documents.
+
+The actual HTTPS/OIDC browser path passed synthetic PDF upload, page text, exact
+original download, a fresh persisted read and anonymous-download denial. No
+memorization or paid inference ran in the verification browser, whose inference
+routes were blocked. Authorization and `.env` hashes and all non-backend
+container identities/start times/mounts were unchanged. The ledger changed during
+the activation window independently of this browser path; it was not reset,
+rewritten by maintenance or reconciled, and no pending attempt remained at the
+final read-only check. Three
+clearly labelled synthetic Spaces were retained after a browser-script error;
+one contains the verification PDF. No existing Space was modified or deleted.
+The owner's CV itself was not inspected: the previous generic complexity error
+was reproduced on a valid synthetic PDF because pypdf was missing from the old
+image; the same parser succeeds with the installed dependency and unchanged limits.

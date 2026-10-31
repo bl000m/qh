@@ -5,6 +5,7 @@ description = "QH API backend"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "fastapi==0.116.1",
+  "pypdf==6.21.4",
   "pydantic==2.11.7",
   "uvicorn==0.35.0",
   "watchfiles==1.1.0",

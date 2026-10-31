@@ -115,6 +115,9 @@ class EnvironmentService:
             raise ValueError('Invalid resume page')
         if domain not in (None, 'unclassified'):
             UUID(domain)
-        ids = await self.repository.resume(subject, sort, domain, limit+1, after)
-        items = tuple([await self.context.get_space(subject_id=subject, context_id=id) for id in ids[:limit]])
-        return ContextSpacePage(items=items, next_after_id=items[-1].id if len(ids)>limit else None)
+        rows = await self.repository.resume(subject, sort, domain, limit+1, after)
+        items = tuple(rows[:limit])
+        # Metadata is read in one owner-scoped SQL query. Keep the resource
+        # policy check before disclosure, including after ownership revocation.
+        await self._allow(subject, tuple(item.id for item in items))
+        return ContextSpacePage(items=items, next_after_id=items[-1].id if len(rows)>limit else None)

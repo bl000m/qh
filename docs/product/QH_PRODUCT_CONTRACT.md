@@ -4,6 +4,104 @@ Stato: riferimento funzionale principale, definito dal proprietario del prodotto
 Questo contratto guida tutte le implementazioni future. Le ipotesi e le proposte
 indicate come aperte non sono decisioni approvate né autorizzazioni a implementare.
 
+## Provenance del résumé canonico — correttivo owner
+
+Il résumé rimane unico, libero nella formulazione e persistito con la versione
+canonica. La generazione non limita più a due i supporti: usa tutti e soli quelli
+necessari, entro i limiti tecnici già esistenti. Il contratto atomico UUM non cambia.
+La revisione `recap_claim_review`, il suo HTTP obbligatorio e i controlli di claims,
+spans e selezione successiva dei supporti sono rimossi dalla V1. Restano il contratto
+strutturato del résumé, i supporti esatti negli item generati, la validazione delle
+citazioni originali e della provenance da parte dell'Engine, e la pubblicazione
+atomica. Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
+
+**Decisione owner, 2026-10-31 (semplificazione).** Il résumé è presentazione
+probabilistica: non condiziona più la memorizzazione. Gli Understanding Items con
+citazioni originali esatte e provenance validate vengono pubblicati anche quando il
+résumé è assente o non valido; in quel caso la versione resta senza résumé e lo
+segnala, e solo «Régénérer» avvia esplicitamente una nuova analisi. Citazioni non
+valide negli item restano sempre un rifiuto. L'unica correzione ammessa è la
+deduplicazione deterministica di supporti strettamente identici. Il résumé è unico:
+i riassunti per documento e il filtro dei supporti in estrazione, legati alla vecchia
+condivisione per PDF, sono rimossi; le versioni già persistite restano leggibili.
+
+## Regola di condivisione V1 — decisione owner, 2026-10-31
+
+Il proprietario condivide la Compréhension globale del Context Space: tutti gli
+Understanding Items ammessi (confermati o proposti, cioè quelli che l'owner vede)
+della versione canonica corrente entrano nello snapshot, testo invariato. Nessun
+filtraggio semantico automatico: niente esclusioni per parole chiave, regex, date,
+numeri o categorie, niente `[MASQUÉ]`, né nella projection né nelle risposte guest.
+Nessuna selezione di item né classificazione di riservatezza in V1. **Non è
+un'anonimizzazione**: l'owner condivide esplicitamente tutta la conoscenza canonica,
+comprese le eventuali informazioni personali. Restano esclusi solo per ragioni
+strutturali gli stati non ammessi (es. rifiutati), i testi vuoti o fuori limite e le
+relazioni con estremità assenti. Il destinatario non riceve mai automaticamente PDF
+originali, sorgenti private, citazioni originali o metadati interni (ID canonici).
+
+Owner, aperçu e guest riusano lo stesso résumé persistito, identico, senza
+rigenerazione: la Projection richiede solo provenance risolvibile (formato, base
+interamente presente, almeno un supporto condiviso). Senza résumé canonico valido
+l'aperçu lo indica e gli item restano interrogabili. I PDF originali sono una scelta
+indipendente di consultazione/download: zero, uno o più PDF non cambiano né il
+résumé né la conoscenza interrogabile. Le nuove preview esigono `knowledge_scope =
+context` senza citazioni; le policy e gli snapshot precedenti restano immutati e
+leggibili con le loro restrizioni originarie.
+
+Il guest ottiene una sola generazione sulla conoscenza dello snapshot (confronti,
+cronologie, sintesi), senza regole per dominio; la conversazione recente serve solo
+a interpretare le domande di seguito. Il server verifica gli alias citati.
+
+**Limite esplicito:** la risoluzione esatta dei supporti e delle citazioni non prova
+logicamente l'entailment del testo libero. La sintesi rimane proposta, senza conferma
+umana automatica; non si attribuisce una certificazione semantica al résumé.
+
+Le presentazioni v2, v3 e v4 già persistite, incluse le versioni modulari, usano gli
+stessi controlli sul résumé generale, senza esigere un'attestazione del revisore. Snapshot approvati, contenuto
+canonico e documenti rimangono immutati; nessuna migrazione o rigenerazione segue
+dal correttivo. I diagnostici storici della revisione restano leggibili.
+
+## Condivisione V1 del Context Space — decisione owner, 2026-10-31
+
+Questa decisione sostituisce, per **nuove condivisioni**, la politica storica che
+legava la conoscenza derivata dai PDF al permesso di consultarne gli originali.
+Si condivide la Compréhension unica dello Space (documenti, dialoghi e altre fonti),
+proiettata attraverso i filtri esistenti. Provenance, citazioni esatte, stato proposto,
+autorizzazione owner/Space e verifica canonica/grafo restano invariati.
+
+L'owner indica email, scadenza e facoltà di proporre modifiche. Consultazione e
+interrogazione restano incluse; finalità e controlli facoltativi restano disponibili.
+La scelta **Documents originaux accessibles**, vuota per default, concede soltanto
+consultazione/download dei PDF. Cambiarla non modifica fatti interrogabili o recap.
+L'interfaccia spiega esplicitamente che la conoscenza di un PDF non scaricabile può
+restare interrogabile. Nessuna nuova revisione obbligatoria degli item o conferma
+intermedia; il pulsante di creazione approva ancora l'esatta disclosure preparata.
+
+**Esclusioni aggiuntive in linguaggio naturale: rinviate.** Non esistono campo libero,
+classificazione manuale o traduzione di richieste in prompt di sicurezza. La V1
+mantiene soltanto il Guard deterministico esistente: mascheramento di email, URL e
+formati riconosciuti di coordinate/num ID; esclusione dei testi/citazioni con termini
+sensibili riconosciuti (salute, sessualità, suicidio, password/chiavi API). Il filtro
+lessicale non garantisce anonimato, rilevamento completo, né protezione semantica di
+salari, negoziazioni o budget: non condividere lo Space se tali fatti devono restare
+privati. Gli originali scaricabili possono contenere ulteriori dati non filtrati.
+
+Il recap globale canonico è riutilizzato solo se interamente ammesso dai controlli
+sul testo e sulla provenance, con i supporti canonici e la base descritti sopra.
+Altrimenti la V1 mostra il fallback
+privato: nessuna inferenza al caricamento, collage di estratti o promozione del
+recap di un solo PDF a résumé dell'intero contesto. I fatti ammessi restano interrogabili.
+
+Nuove richieste dichiarano `knowledge_scope: context`; questo valore è conservato
+nella policy JSON approvata con report di scope v3. Richieste prive di questa scelta
+esplicita o contenenti vecchi campi di selezione aggiuntiva vengono rifiutate, evitando
+che client precedenti amplino inavvertitamente la condivisione. Nessuna migrazione,
+backfill, nuova architettura o feature flag di rollout. Le policy senza questo marker
+mantengono **esclusivamente per compatibilità** il vecchio filtro documentale e i loro
+fingerprint. Nessun invito esistente acquisisce conoscenza o accesso agli originali:
+il nuovo perimetro richiede un nuovo snapshot approvato. Revoca, scadenza, immutabilità
+e risposte IA limitate al payload approvato restano vincolanti.
+
 ## Demo B: condivisione governata — decisione owner, 2026-10-25
 
 **Share access to the context, not manually selected pieces of context.**
@@ -847,3 +945,174 @@ concurrent requests cannot overspend. No retry/fallback. Insufficient global
 reservation returns « Plafond IA atteint. Aucune nouvelle requête ne sera facturée. »
 before sending. Previous decisions above remain historical and continue outside
 this precisely scoped development mode. See [implementation contract](../qh-51-essai-ia.md).
+
+## Explicit two-account demo authorization — owner, 2026-10-28
+
+Alice and Bob may use the same server-side Mistral Small configuration in their
+own Spaces. Both exact verified OIDC subject/principal pairs must be explicitly
+listed in private authorization; all other accounts remain denied. Sharing the
+provider key grants no access to another account's Spaces or conversations.
+The existing aggregate ledger, history, USD5/EUR10 envelope, observed-credit guard,
+expiry and maximum-cost reservations are unchanged and shared, never per-account
+or replenished. No paid call is needed to check availability. Non-eligible accounts
+receive valid disabled capabilities rather than an invalid quota-free response.
+
+## Context Space V0.2 — owner UX pivot, 2026-10-26
+
+The explicit Context Space V0.2 request supersedes mandatory item/dimension review
+as the ordinary user journey. Discussion is the default; one closed-by-default,
+expandable, read-only Understanding panel replaces Elements/Overview/Sources/
+History/Review/Advice navigation. Provenance stays available on demand.
+
+Explicit Mémoriser consolidates the complete retained intake through the existing
+UUM Engine, preserving attribution, uncertainty and original evidence. A machine
+consolidation is usable without individual review but **does not set human
+confirmation**. Existing canonical proposals/review and sharing exclusion rules
+remain intact. The consolidated version selects exact immutable revisions for
+chat; pending corrections remain distinguishable until the next consolidation.
+Source/proposals/outbox/version publish atomically, with durable idempotency and
+retained previous versions. A failed/empty analysis never claims consolidation.
+
+Portable versioned owner export and validated import preserve origin identities
+and uncertainty; imports become pending intake rather than overwrite current
+understanding. This is separate from controlled third-party disclosure. No new
+provider/model/budget, paid automatic test, persistent migration or runtime
+activation is authorized by this implementation. See [implementation and manual
+acceptance](../context-space-v02.md), including the remaining PDF limitation.
+
+### Concise understanding and source sovereignty — owner, 2026-10-27
+
+The recap describes the subject and available knowledge autonomously, in the main
+language of the original memorized content: usually 40–80 words when useful, no
+minimum and at most 100 words. Detailed structured knowledge retains complete
+procedures, tools and activities for chat; the recap is not its retrieval limit.
+No automatic re-extraction on questions. Missing authorized detail stays explicit.
+
+Projection READ/ASK_AI does not grant access to original conversations, documents,
+internal revisions, diagnostics or owner export. Original evidence stays preserved
+and owner-accessible. Existing explicit minimized-quote approval remains separate
+and restrictive by default. A recap may enter a newly approved snapshot only when
+its complete basis survives the disclosure scope without masking; otherwise omit
+it rather than disclose excluded knowledge. Existing approved snapshots remain
+immutable. Guest chat uses only the authorized materialized projection.
+
+### Unified document sharing and Space introduction — owner, 2026-10-30
+
+The later owner decision supersedes separate semantic/download choices. New sharing
+requests select exact SourceRevision IDs once (`documents`, empty by default),
+granting both document-derived knowledge and original PDF access. Mixed items require
+all supporting document sources. All-current selection freezes the current IDs;
+later uploads remain private. Retained policies/snapshots/invitations are unchanged.
+
+Owner Understanding, preview and guest show one general title/introduction only.
+Existing document synopses remain immutable metadata, without automatic presentation.
+New introductions describe the subject and broad scope, using minimal exact UUM
+support rather than a catalogue of private document details. The independently
+reviewed introduction may be approved without releasing its detailed supporting
+items or PDFs. The complete canonical supports still pass graph/citation checks and
+the unchanged Disclosure Guard: excluded/masked supports or an unsafe introduction
+prevent its release. A general label alone grants nothing. The general synopsis is
+stable across document selections; document items and downloads follow the selected
+IDs. Summary-only snapshots are allowed with exact owner approval. Sharing and
+snapshot opening perform no inference. No persistent migration is required.
+An introduction-only projection represents the exact verified synopsis as its
+sole minimized item, anchored to its existing canonical support. It creates no
+canonical Understanding Item and releases no underlying document details.
+
+### Confirmed owner erasure — owner, 2026-10-30
+
+The owner may irreversibly delete one Space after exact-name confirmation. This
+explicit erasure is the sole scoped exception to immutable history retention;
+ordinary updates/deletes/truncation remain forbidden. A durable deleting state
+revokes invitations/sessions and blocks reads/writes before graph cleanup. An
+idempotent fenced graph purge precedes transactional SQL erasure. Failures retain
+the revoked pending operation for worker recovery; only complete graph/SQL erasure
+returns success. A minimal owner-bound receipt (IDs, confirmation hash, timestamps)
+supports safe retry after ambiguous responses and contains no Space content.
+Other Spaces, account identities and aggregate financial ledgers are preserved.
+Migration 0012 must be explicitly authorized and backed up before VPS activation.
+
+### Source confidentiality correction — owner, 2026-10-30 (historical document scope)
+
+This later owner decision supersedes the introduction exception above: every
+PDF-derived item and recap requires all supporting PDF revisions to be authorized.
+Filter before recap selection and close relations over retained endpoints. Retained
+snapshots remain immutable; access-time checks may only restrict their frozen
+contents using support/permission metadata, never add live canonical knowledge.
+Untrusted guest history is validated but not forwarded to generation. Guest
+follow-ups use only ordered groups of validated current item aliases from prior
+answers, never prior prose or questions. This process-local memory retains at most
+six turns for 15 minutes across at most 128 sessions, bound to the exact session,
+snapshot ID and authorized payload fingerprint. A changed payload clears the
+references; fresh access checks still fence revocation and expiry. Missing or
+ambiguous referents require clarification; process restart loses this temporary
+continuity. Current authorized items remain the only factual knowledge.
+
+When no communicable knowledge remains, Projection emits only the shared name and
+its fixed insufficient-access notice. The existing nonempty snapshot envelope
+stores that notice as an unanchored `projection_notice` presentation entry; it is
+never a canonical item, knowledge, citation or model input. Sharing and answering
+that empty projection perform no inference. No schema change is required.
+Exact owner acknowledgements and attachment notifications get short deterministic
+replies; attachment presence must first be checked against the authorized original
+metadata. Questions, compound instructions and ambiguous messages retain normal AI.
+
+
+### Guest conversation fidelity correction — owner, 2026-10-30
+
+Guest employment chronology requires employers, roles, periods and relationships
+already present in authorized items. Activities cannot substitute for missing jobs;
+missing UUM facts remain explicit without source re-extraction or live hydration.
+Ordinal lists are rendered from ordered public subjects with validated references;
+follow-ups retain that list order and use its selected authorized supports. Missing
+or ambiguous references and rejected internal-structure explanations receive a
+safe clarification without repeating generation or disclosing rejected text.
+The later owner regression correction withdraws the automatic three-excerpt
+fallback: unrelated facts are not a semantic recap. New previews may reuse the
+single canonical document synopsis that survives the existing scoped Guard when
+the general recap cannot be disclosed. No arbitrary choice between several safe
+synopses, new inference on sharing, source hydration into old grants or snapshot
+rewrite. Existing grants without such an approved synopsis need a new owner
+approval to acquire one. Empty projections retain the deterministic privacy notice.
+Structured sections supply their own authorized citations; global references and
+conversation referents are derived by the server rather than independently repeated
+by the provider. Extraction preserves contextual actors, roles, periods and explicit
+links in item.text with exact evidence; the UUM wire schema remains unchanged.
+
+### Authorized evidence fidelity — owner, 2026-10-30
+
+When an approved snapshot explicitly includes minimized source quotations, the
+private chat request retains those exact, already guarded quotations under their
+item alias (deduplicated within each item). The question serializer must not discard
+available evidence that qualifies dates, contractual conditions or attribution.
+Absence of quote approval still means no quotation in model input. No original PDF
+read, canonical hydration, new snapshot enrichment, inference on load or automatic
+confirmation follows from this correction. Fresh document scope, revocation and
+expiry checks continue to restrict both item text and its approved quotations.
+
+### Guest evidence selection and composition — owner correction
+
+Guest response generation separates a private relevance assessment from public
+composition. The first phase assesses every current authorized item against the
+requested subject and conditions; it neither composes prose nor chooses a subset
+to satisfy a count. The server validates complete coverage and exact authorized
+aliases. Explicit first/last counts and conservative ordering use only literal
+dates in current item text or already approved quotations; missing or overlapping
+temporal evidence requires clarification, never invented precision or item-order
+selection. No canonical extraction, source hydration or new semantic type follows.
+
+Composition receives only the selected items and their approved quotations, without
+a broader recap or discarded items. Required subject slots and their supporting
+aliases are fixed by the server; the model cannot drop slots, change citation
+assignments or redefine ordinal order. Follow-ups keep only the existing bounded,
+current-payload-bound alias groups, never previous answer prose. Large complete
+enumerations are not truncated to fit reference memory; instead old ordinal
+references are cleared when the list cannot be retained within its existing bound.
+
+A positive question normally uses selection then composition. An already resolved
+ordinal uses composition only; absence/ordering limits stop after selection, and
+existing empty/social paths still avoid inference. These are fixed purposeful
+phases, not paid retry/fallback. Authorization, snapshot equality, receipt, expiry,
+revocation and aggregate budget are checked around each HTTP; each reserves its
+technical maximum atomically and retains durable accounting. Response cost/usage
+aggregate the executed phases without changing limits, history or public contracts.

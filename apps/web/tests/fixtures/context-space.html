@@ -1,0 +1,6 @@
+<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Context Space offline UI verification</title></head><body><div id="root"></div><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';import App from '../../src/App';import '../../src/styles.css';
+const scope=new URLSearchParams(location.search).get('space')||'00000000-0000-0000-0000-000000000001';history.replaceState(null,'','/context-spaces/'+scope);
+const session={subscribe:()=>()=>{},snapshot:()=> 'authenticated',initialize:async()=>{},readyToken:async()=> 'isolated-fixture',accessToken:()=> 'isolated-fixture',expire:()=>{},logout:async()=>{},login:async()=>{}};
+createRoot(document.getElementById('root')).render(React.createElement(App,{session}));
+</script></body></html>

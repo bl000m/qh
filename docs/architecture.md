@@ -1,5 +1,14 @@
 # QH architecture
 
+The owner's 26 October [Context Space V0.2 pivot](context-space-v02.md) replaces
+ordinary item-review navigation with Discussion and one Understanding panel.
+`ContextConsolidation` in the existing understanding application orchestrates UUM
+through the existing development AI boundary, canonical writer and graph retrieval.
+The PostgreSQL adapter adds intake/version/job tables (0010, not activated here).
+Consolidated versions reference proposed immutable revisions without human
+confirmation; sharing/policy and the single Understanding Engine remain intact.
+
+
 The owner-approved [ADR 0010](adr/0010-universal-understanding-model.md) introduces
 the optional UUM primary classification and six universal map nodes, superseding
 primary thematic grouping. Implementation uses additive generic profile3, the same
@@ -15,7 +24,49 @@ service, central PolicyService, canonical PostgreSQL and native graph verificati
 Drafts are neither approved snapshots nor recipient grants; migration 0007 remains
 isolated-only and is not applied on the persistent VPS.
 
+## Canonical recap provenance
+
+UUM generates one free recap with exact statement supports; the existing Engine
+validates original citations/provenance before atomic publication. The recap is
+presentation only: an invalid or missing recap is not persisted and never blocks
+the validated items (owner decision, 2026-10-31). Per-document synopses and the
+extraction-time support filter, inherited from PDF-scoped sharing, are removed;
+understanding no longer imports the Guard. Projection shares the persisted recap
+unchanged when its supports resolve to the same version (full basis, at least one
+shared support). No share-time filtering, inference, evidence trimming,
+semantic certification, source re-extraction or new synthesis service is added.
+Historical approvals remain frozen; see the current
+[Product Contract](product/QH_PRODUCT_CONTRACT.md).
+
+## Unified sharing V1 — owner decision, 2026-10-31
+
+New sharing projects the whole current Understanding through a structural Guard
+only (eligible state, bounded text, relation endpoints): no keyword, regex, number,
+date or category filtering and no masking (V1 owner decision, not anonymisation).
+Original quotations, sources and canonical IDs never leave. PDF download permission
+never filters knowledge; prepare refuses legacy document-scoped or quote policies.
+Guest answers use one generation over the snapshot plus the bounded client
+conversation for follow-ups; the server checks cited aliases only. The explicit persisted
+`knowledge_scope: context` policy/report-v3 marker distinguishes these approvals
+from retained immutable document-scoped snapshots. Original downloads retain their
+separate allowlist. No UUM, storage schema, module boundary or approved ADR boundary
+changes; see the current [Product Contract](product/QH_PRODUCT_CONTRACT.md).
+Natural-language exclusions are deferred, with no new classifier or inference.
+
 ## Demo B sharing boundary — owner decision, 2026-10-25
+
+The later owner-approved [real guest Mistral increment](qh-40-mistral-guest.md)
+adds a snapshot-only outbound adapter to `GuestSnapshotChat`, using the existing
+PrivateSessionFactory/Mistral transport, private diagnostics and aggregate ledger.
+OTP/owner/provider/rights and fresh snapshot checks precede HTTP and follow generation.
+No new schema, retrieval engine, provider SDK, guest write or public deployment;
+offline remains the automatic-test provider and a distinct immutable policy choice.
+
+The owner's later [private activation](qh-40-private-activation.md) applies the
+additive 0009 schema without reset and explicitly binds the same sharing/guest
+services on the VPS, with private HTTPS and capture mailbox. It supersedes the
+isolated-only deployment statements of the earlier checkpoints below; public
+deployment, external mail and real guest inference remain unenabled.
 
 The subsequent [Block 3 browser increment](qh-40-demo-b.md) implements owner policy
 preview/approval UI and the OTP-gated guest page. Explicit sharing factory bindings
@@ -630,9 +681,12 @@ The [ADR 0007 amendment](adr/0007-scoped-provider-sessions.md#later-owner-amendm
 separates fixed provider availability from short token-bound conversation grants
 and automatic official-price freshness. No module or canonical persistence boundary
 changes. The same outbound factory checks private receipt revocation, fixed
-owner/Space/model/synthetic snapshot and cumulative ledger; a fixed public docs
-price fetch uses no key/context and no Mistral API call. Unknown or increased
-prices fail closed after cache expiry. This does not verify semantic entailment.
+owner/Space/model/synthetic snapshot and cumulative ledger. **Superseded 2026-10-31:**
+availability no longer scrapes the public price page; the private receipt pins the
+rates, which must equal the accounting constants at startup. Provider failures are
+classified (request, transport, rate_limit, provider, auth, accounting); only auth
+and accounting anomalies block the ledger. In-flight reservations stay counted at
+their maximum but never suspend other calls. This does not verify semantic entailment.
 
 The owner authorizes an actual 30-day private-POC activation for Alice / Projet
 pilote only, one Codex smoke and remaining owner manual calls under the existing
