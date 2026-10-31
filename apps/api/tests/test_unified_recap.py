@@ -107,9 +107,11 @@ def test_duplicate_support_declaration_still_memorizes_items_and_recap(long):
     summary = recap.from_version(result.rows, dict(id=result.version, revision_ids=[r['id'] for r in result.rows]))
     assert summary['title'] == SUMMARY['title'] and len(summary['support_revision_ids']) == len(TEXTS)
     assert result.delegate.generate.await_count == (len(result.provider.parts)+1 if long else 1)
-    # Bounded provider schemas: no per-document components, regex patterns or statement texts.
+    # Bounded provider schemas: no per-document components, regex patterns or statement texts,
+    # and no keyword Mistral rejects with HTTP 400 (uniqueItems).
     final = json.dumps(result.schemas[-1], ensure_ascii=False)
     assert 'documents' not in final and 'pattern' not in final and TEXTS[0] not in final
+    assert all('uniqueItems' not in json.dumps(s) for s in result.schemas)
 
 
 @pytest.mark.parametrize('long', [False, True], ids=['one-call', 'chunked-final-recap'])

@@ -17,7 +17,7 @@ RECAP_SCHEMA = dict(type='object', additionalProperties=False,
             description='Short subject title in the main language of the original memorized content.'),
         text=dict(type='string', minLength=1, maxLength=1500,
             description='Reusable final content: subject and available knowledge, ideally 1-3 sentences in the original content language, at most 100 words. Attribution only when essential to meaning; never a history of how the content was produced.'),
-        supporting_statements=dict(type='array', minItems=1, maxItems=MAX_SUPPORT, uniqueItems=True,
+        supporting_statements=dict(type='array', minItems=1, maxItems=MAX_SUPPORT,
             description='Exact copies of understanding.items[].text supporting this recap; never evidence[].quote or source quotations.',
             items=dict(type='string', minLength=1, maxLength=16000,
                 description='Copy one complete understanding.items[].text verbatim, not its evidence quote.'))))
@@ -136,7 +136,7 @@ missing details from document names or provenance metadata. No new atomic items.
         self.packet['statements'] = [dict(ref=ref, text=text) for ref, text in self.statements.items()]
         self.schema = deepcopy(RECAP_SCHEMA)
         support = self.schema['properties'].pop('supporting_statements')
-        support['maxItems'] = min(MAX_SUPPORT, len(self.statements))
+        support['maxItems'] = min(MAX_SUPPORT, len(self.statements))  # No uniqueItems: Mistral rejects it; expand() deduplicates.
         support['items'] = dict(type='string', enum=list(self.statements))
         self.schema['properties']['supporting_refs'] = support
         self.schema['required'] = ['title', 'text', 'supporting_refs']
