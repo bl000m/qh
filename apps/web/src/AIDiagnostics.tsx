@@ -46,7 +46,7 @@ export default function AIDiagnostics({api,scope}:{api:QhApi;scope:string}){
  {item.kind==='uum'&&item.metrics&&<section aria-label="Performances UUM privées">
   <h4>{phaseLabel(item.call_phase)}</h4>
   <p>{number(item.metrics.atomic_items)} éléments atomiques dans cette réponse · {number(item.metrics.input_tokens)} tokens d’entrée · {number(item.metrics.request_message_chars)} caractères transmis.</p>
-  {item.call_phase==='recap_review'&&<p>Cette revue est une appréciation probabiliste, pas une preuve logique ni une confirmation humaine.</p>}
+  {item.call_phase==='recap_review'&&<p>Cette appréciation probabiliste est informative et non bloquante. Elle ne prouve pas les affirmations et ne constitue pas une confirmation humaine. Les contrôles de structure et de provenance restent obligatoires.</p>}
   {item.call_phase==='summary'&&<p>La synthèse produit un résumé, pas de nouveaux éléments atomiques. Les validations du lot ci-dessous ne comptent pas les éléments de cette réponse.</p>}
   {item.legacy_metrics&&<p className="small">Ancien diagnostic : les compteurs hérités du dernier bloc sont écartés pour la synthèse. Aucun regroupement entre appels n’est déduit ; l’agrégat historique n’était pas enregistré.</p>}
   {!!item.validation_rounds?.length&&<p>Validation des lots : {item.validation_rounds.map((round,index)=>`passage ${index+1} · ${round.items} éléments`).join(' ; ')}. Les passages répétés ne sont pas de nouveaux éléments.</p>}

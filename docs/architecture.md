@@ -33,7 +33,11 @@ Private presentation-v4 metadata maps complete title/body coverage to canonical
 revision IDs and exact source-citation fingerprints. Projection rechecks these
 bindings locally, without inference or PDF hydration. Semantic entailment remains
 a probabilistic model assessment, explicitly distinct from structural validation
-and human confirmation. Historical approvals remain frozen; see the current
+and human confirmation. In V1, negative semantic verdicts and unused declared
+supports are advisory: all original supports remain, the inconclusive status is
+persisted, and precise-support disclosure is withheld. Malformed review structure,
+invalid citations and provenance still block atomic publication.
+Historical approvals remain frozen; see the current
 [Product Contract](product/QH_PRODUCT_CONTRACT.md).
 
 ## Unified sharing V1 — owner decision, 2026-10-31

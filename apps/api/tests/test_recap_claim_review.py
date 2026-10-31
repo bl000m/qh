@@ -62,20 +62,43 @@ def test_more_than_two_supports_persist_with_exact_claim_and_source_provenance()
     assert recap.from_version(rows,current)['text']==root['text']
 
 
-@pytest.mark.parametrize('failure',['unsupported','coverage','foreign-item','foreign-quote','mismatched-quote','unused','overlap'])
-def test_rejects_unsupported_incomplete_or_unbound_claims(failure):
+@pytest.mark.parametrize('failure',['nonboolean','coverage','foreign-item','foreign-quote','mismatched-quote','missing-evidence','overlap'])
+def test_rejects_structurally_invalid_or_unbound_claims(failure):
     summary,atomic,packet,_,_=corpus();review=RecapReview(summary,atomic,packet)
     value=json.loads(review_reply(review.request).content)
     claim=value['reviews']['general'][1]
-    if failure=='unsupported':claim['supported']=False
+    if failure=='nonboolean':claim['supported']='false'
     elif failure=='coverage':claim['quote']='Le projet Atlas est proposé, sans approbation.'
     elif failure=='foreign-item':claim['supports'][0]['statement_ref']='OUTSIDE'
     elif failure=='foreign-quote':claim['supports'][0]['evidence_refs']=['q006']
     elif failure=='mismatched-quote':claim['supports'][0]['evidence_refs']=['q002']
-    elif failure=='unused':
-        for c in value['reviews']['general']:c['supports']=c['supports'][:1]
+    elif failure=='missing-evidence':claim['supports']=[]
     else:value['reviews']['general'].append(deepcopy(claim))
     with pytest.raises(ValueError):review.accept(Message(role=MessageRole.ASSISTANT,content=json.dumps(value)))
+
+
+@pytest.mark.parametrize('advisory',['unsupported_assertion','unused_declared_supports'])
+def test_informative_review_retains_all_original_supports_and_safe_fallback(advisory):
+    summary,atomic,packet,rows,_=corpus();review=RecapReview(summary,atomic,packet)
+    value=json.loads(review_reply(review.request).content)
+    if advisory=='unsupported_assertion':
+        value['reviews']['general'][0].update(supported=False,supports=[])
+    else:
+        for claim in value['reviews']['general']:claim['supports']=claim['supports'][:1]
+    assessment=review.accept(Message(role=MessageRole.ASSISTANT,content=json.dumps(value)))
+    assert assessment['status']=='inconclusive' and advisory in assessment['advisories']
+    assert 'claim_review' not in summary
+    bound=recap.bind(summary,rows,str(uuid4()));root=bound[0]['content']['extraction']['recap']
+    assert root['presentation_version']==3 and len(root['support_revision_ids'])==4
+    assert root['review_assessment']==assessment
+    assert recap.from_version(bound,dict(id=root['version_id'],revision_ids=[r['id'] for r in bound]))['text']==summary['text']
+    # Unreviewed metadata cannot obtain the precise-support disclosure privilege.
+    from app.core.models import SourceRevisionRef
+    base=projected()[0]
+    projected_rows=[replace(base,revision_id=r['id'],item_id=r['item_id'],content=r['content'],
+        provenance=tuple(SourceRevisionRef(source_id=str(uuid4()),revision_id=p) for p in r['provenance'])) for r in bound]
+    payload,_=OutboundDisclosureGuard().apply(projected_rows,policy(knowledge_scope='context'))
+    assert 'recap' not in payload
 
 
 @pytest.mark.parametrize('originals',[0,1,2])
@@ -149,12 +172,13 @@ def test_rejected_batch_never_attaches_a_partial_review():
     summary,atomic,packet,_,_=corpus()
     summary['documents']=[dict(title='Un autre résumé',text='Texte à refuser.',supporting_statements=TEXTS[:1])]
     review=RecapReview(summary,atomic,packet);value=json.loads(review_reply(review.request).content)
-    value['reviews']['d1'][0]['supported']=False
+    value['reviews']['d1'][0]['supports'][0]['statement_ref']='OUTSIDE'
     with pytest.raises(ValueError):review.accept(Message(role=MessageRole.ASSISTANT,content=json.dumps(value)))
     assert 'claim_review' not in summary and 'claim_review' not in summary['documents'][0]
 
 
-def test_semantic_review_failure_prevents_canonical_publication():
+@pytest.mark.parametrize('invalid_structure',[False,True])
+def test_semantic_verdict_is_informative_but_structure_still_gates_atomic_publication(invalid_structure):
     from tests.test_consolidation import fixture as consolidation_fixture,consolidation_output,reference_output
     from app.core.models import GenerationResult
     from unittest.mock import Mock
@@ -165,12 +189,22 @@ def test_semantic_review_failure_prevents_canonical_publication():
         packet=json.loads(request.messages[-1].content)
         if 'candidates' in packet:
             data=json.loads(review_reply(request).content);data['reviews']['general'][0]['supported']=False
+            data['reviews']['general'][0]['supports']=[]
+            if invalid_structure:data['reviews']['general'].append(deepcopy(data['reviews']['general'][1]))
             return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(data)))
         return GenerationResult(message=Message(role=MessageRole.ASSISTANT,content=json.dumps(reference_output(consolidation_output(atomic),packet))))
     delegate=Mock(generate=AsyncMock(side_effect=generate));ai._provider.return_value=delegate
-    with pytest.raises(ValueError,match='Unsupported recap assertion'):asyncio.run(service.consolidate(who,scope))
+    if invalid_structure:
+        with pytest.raises(ValueError,match='Overlapping recap claims'):asyncio.run(service.consolidate(who,scope))
+        repo.publish.assert_not_awaited();repo.fail.assert_awaited_once()
+    else:
+        asyncio.run(service.consolidate(who,scope))
+        repo.publish.assert_awaited_once();repo.fail.assert_not_awaited()
+        root=repo.publish.call_args.args[4][0]['content']['extraction']['recap']
+        assert root['review_assessment']['status']=='inconclusive' and 'claim_review' not in root
+        ai.factory.diagnostic_call.return_value.check.assert_any_call('uum.recap_semantic_advisory',True,
+            'Informative only: unsupported_assertion; conservative disclosure retained')
     assert delegate.generate.await_count==2
-    repo.publish.assert_not_awaited();repo.fail.assert_awaited_once()
 
 
 

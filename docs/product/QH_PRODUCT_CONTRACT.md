@@ -19,8 +19,12 @@ Non viene eseguita inferenza per caricare, condividere o consultare un résumé.
 Il server verifica deterministicamente che le porzioni dichiarate coprano tutti i
 caratteri non bianchi di titolo e testo, senza buchi o sovrapposizioni; ogni porzione
 ha supporti esatti, citazioni originali appartenenti a tali supporti e nessun supporto
-inutilizzato. Un giudizio negativo o una struttura/evidenza non valida interrompe la
-pubblicazione canonica; non vengono accettati risultati parziali della revisione.
+inutilizzato per attribuire la provenance affinata v4. Una struttura/evidenza non
+valida interrompe la pubblicazione canonica. Per la V1, il giudizio semantico negativo
+o la selezione non minimale dei supporti sono invece informativi: la memorizzazione
+può riuscire con tutti i supporti originali validati, senza attribuirsi la verifica
+v4. Lo stato `inconclusive` e i motivi sono conservati nei metadati e nei diagnostici.
+Non vengono accettate prove parziali né scartati supporti per aggirare il Guard.
 
 **Limite esplicito:** entailment, granularità delle affermazioni, attribuzione e
 minimalità semantica sono valutazioni probabilistiche del modello indipendente,
@@ -37,7 +41,7 @@ restrizione in un supporto o citazione necessari continua invece a bloccarlo.
 I PDF originali rimangono una scelta esclusiva di consultazione/download.
 
 Lo storico v2/v3 resta leggibile dall'owner senza migrazione o attestazioni nuove.
-Nelle nuove condivisioni V1, un résumé storico senza revisione rimane sul fallback
+Nelle nuove condivisioni V1, un résumé storico o con revisione inconcludente rimane sul fallback
 sicuro, anche se il testo sembra innocuo. Le compatibilità delle policy storiche e
 gli snapshot già approvati restano immutati. Nessun aggiornamento o rigenerazione
 automatica degli Space reali segue dal correttivo.

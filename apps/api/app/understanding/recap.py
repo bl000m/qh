@@ -340,6 +340,7 @@ def bind(recap, revisions, version_id, documents=()):
         presentation_version=PRESENTATION_VERSION if proof else 3, title=recap['title'], text=recap['text'],
         basis_revision_ids=[r['id'] for r in rows], support_revision_ids=support,
         provider_output_sha256=recap['provider_output_sha256'])
+    if 'review_assessment' in recap:root['review_assessment']=deepcopy(recap['review_assessment'])
     if proof:
         root['claim_review']=proof
         from app.understanding.recap_review import reviewed_evidence
@@ -371,6 +372,7 @@ def _bind_components(recap, rows, root, documents):
         value=dict(root,kind='document',source_revision_id=component['source_revision_id'],
             title=component['title'],text=component['text'],support_revision_ids=support)
         value.pop('claim_review',None)
+        if 'review_assessment' in component:value['review_assessment']=deepcopy(component['review_assessment'])
         proof=bind_review(component,rows)
         value['presentation_version']=PRESENTATION_VERSION if proof else 3
         if proof:

@@ -94,16 +94,18 @@ class RecapReview:
         output=decode_output(message.content);object_fields(output,('format','reviews'))
         if output['format']!=FORMAT:raise ValueError('Invalid recap review format')
         output=output['reviews'];object_fields(output,self.components)
-        accepted={}
+        accepted={};advisories=set()
         for key,component in self.components.items():
             claims=output[key]
             if not isinstance(claims,list) or not 1<=len(claims)<=100:raise ValueError('Bounded recap claims required')
             used=set();normalized=[]
             for claim in claims:
                 object_fields(claim,('field','quote','supported','supports'))
-                if claim['supported'] is not True:raise ValueError('Unsupported recap assertion')
+                if type(claim['supported']) is not bool:raise ValueError('Boolean recap assessment required')
+                if not claim['supported']:advisories.add('unsupported_assertion')
                 supports=claim['supports']
-                if not isinstance(supports,list) or not 1<=len(supports)<=100:raise ValueError('Recap claim evidence required')
+                if not isinstance(supports,list) or not (1 if claim['supported'] else 0)<=len(supports)<=100:
+                    raise ValueError('Recap claim evidence required')
                 selected=[];seen=set()
                 for support in supports:
                     object_fields(support,('statement_ref','evidence_refs'))
@@ -116,11 +118,18 @@ class RecapReview:
                     selected.append(dict(statement=self.statements[ref],quotes=[self.evidence[q]['quote'] for q in quotes]))
                 normalized.append(dict(field=claim['field'],quote=claim['quote'],supports=selected))
             _coverage(normalized,component['title'],component['text'])
-            if used!=set(component['supporting_statements']):raise ValueError('Unused recap supports')
+            if used!=set(component['supporting_statements']):advisories.add('unused_declared_supports')
             accepted[key]=dict(format=FORMAT,method=METHOD,
                 candidate_sha256=digest(dict(title=component['title'],text=component['text'])),
                 review_output_sha256=digest(message.content),claims=normalized)
-        for key,proof in accepted.items():self.components[key]['claim_review']=proof
+        assessment=dict(method=METHOD,status='inconclusive' if advisories else 'supported',
+            advisories=sorted(advisories),review_output_sha256=digest(message.content))
+        for key,proof in accepted.items():
+            self.components[key]['review_assessment']=deepcopy(assessment)
+            # An inconclusive review never grants precise-support disclosure.
+            # Keep every original support and the conservative historical Guard.
+            if not advisories:self.components[key]['claim_review']=proof
+        return assessment
 
 
 def bind_review(component, rows):

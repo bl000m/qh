@@ -324,11 +324,14 @@ class UumExtractionProvider:
         try:
             result=await self.delegate.generate(review.request)
             with measured_phase(self.measure,'validation_ms'):
-                review.accept(result.message)
+                assessment=review.accept(result.message)
         except ValueError:
-            if self.observer:self.observer('uum.recap_claim_review',False,'Claim coverage or semantic support rejected')
+            if self.observer:self.observer('uum.recap_claim_review',False,'Invalid review structure or evidence')
             raise
         if self.observer:self.observer('uum.recap_claim_review',True)
+        if self.observer and assessment['status']=='inconclusive':
+            self.observer('uum.recap_semantic_advisory',True,
+                'Informative only: '+', '.join(assessment['advisories'])+'; conservative disclosure retained')
 
     def _decode_recap(self, content, atomic=None, references=None):
         try:

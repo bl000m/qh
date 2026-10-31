@@ -3,6 +3,36 @@
 Branche `feat/QH-18-21-22-demo-b`, PR #29, sans merge.
 Le plafond de deux supports a déjà été supprimé dans `7e637ee`.
 
+## Correctif après le test manuel de mémorisation
+
+Diagnostic privé lu sans nouvelle génération, le 31 octobre, heure de Paris :
+
+- 08:51 : extraction et support exact du résumé acceptés, HTTP 200 ; la revue
+  finale est rejetée par `uum.recap_claim_review`. Tous ses verdicts sont positifs
+  et les spans couvrent le texte, mais elle sélectionne 7 des 21 supports déclarés
+  du résumé général (14 inutilisés), et 14 des 15 du premier composant. La règle
+  ajoutée par `1abd4e8`, `Unused recap supports`, transforme cette appréciation de
+  minimalité en échec de toute la mémorisation. Ce n'est pas une citation inventée.
+- 08:53 : deuxième échec, avec des verdicts négatifs ; le replay des spans montre
+  aussi des chevauchements et un titre positif sans preuve sélectionnée. Ces
+  violations structurelles demeurent bloquantes, même avec un verdict informatif.
+
+Le correctif rend les verdicts négatifs et les supports déclarés inutilisés
+**informatifs**. Il conserve le résumé naturel et tous ses supports d'origine,
+avec `review_assessment.status=inconclusive`, sans preuve v4 ni privilège de
+divulgation affinée. Le fallback de partage reste conservateur. Schéma, couverture,
+citations, appartenance des preuves et publication atomique restent obligatoires.
+Le test de non-régression couvre une publication atomique après verdict négatif,
+la conservation de tous les supports, et le rejet d'un chevauchement même si le
+verdict est négatif. Aucun appel payé ou changement des données réelles.
+Vérification du correctif : 91 tests API ciblés passent, ainsi que Ruff et lint
+TypeScript. Pas de nouvelle génération réelle ni de Full Verification.
+
+Les sections suivantes documentent les vérifications initiales de `1abd4e8` ;
+le rejet sur simple verdict négatif décrit ci-dessous est remplacé par cette règle V1.
+
+## Vérification initiale de `1abd4e8`
+
 La nouvelle présentation v4 conserve un seul résumé libre. Une revue sémantique
 indépendante évalue ses assertions contre les statements déclarés et des citations
 originales prévalidées. Les contrôles locaux imposent couverture complète des spans,
